@@ -3,29 +3,23 @@
  * Plugin Name: MONEI Gateway for WooCommerce
  * Plugin URI: https://monei.net
  * Description: WooCommerce Plugin for accepting payment through MONEI Payment Gateway.
- * Version: 1.0.10
- * Author: Suvith K
- * Author URI: https://monei.net
- * Contributors: suvithk
  * Requires at least: 4.0
  * Tested up to: 4.6
  *
- *
  * @package MONEI Payment Gateway for WooCommerce
- * @author SuvithK
  */
-	
+
 add_action('plugins_loaded', 'init_woocommerce_monei', 0);
- 
+
 function init_woocommerce_monei() {
- 	
+
     if ( ! class_exists( 'WC_Payment_Gateway' ) ) { return; }
-	
+
 class woocommerce_monei extends WC_Payment_Gateway {
-		
-	public function __construct() { 
+
+	public function __construct() {
 		global $woocommerce;
-		
+
         $this->id			= 'monei';
         $this->method_title = __( 'MONEI Payment Gateway', 'woo-monei-gateway' );
 		$this->icon			= plugins_url( 'monei.png', __FILE__ );
@@ -34,16 +28,16 @@ class woocommerce_monei extends WC_Payment_Gateway {
 
 		// Load the form fields.
 		$this->init_form_fields();
-		
+
 		// Load the settings.
 		$this->init_settings();
-		
+
 		// Define user set variables
 		$this->title 		= $this->settings['title'];
 		$this->description 	= $this->settings['description'];
 		$this->operation 	= $this->settings['operation_mode'];
 		$this->supports     = array( 'refunds' );
-		
+
 		$this->style 		= $this->settings['widget_style'];
 
 		if($this->operation == 'live'){
@@ -62,29 +56,29 @@ class woocommerce_monei extends WC_Payment_Gateway {
 
 	    $this->woocommerce_version 	= $woocommerce->version;
         $this->return_url   = str_replace( 'https:', 'http:', add_query_arg( 'wc-api', 'monei_payment', home_url( '/' ) ) );
-		
+
 		// Actions
-		
+
 		add_action( 'init', array($this, 'monei_process') );
 		add_action( 'woocommerce_api_monei_payment', array( $this, 'monei_process' ) );
 		add_action( 'woocommerce_receipt_monei', array($this, 'receipt_page') );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		// add the action 
+		// add the action
 		add_action( 'woocommerce_order_refunded', array($this, 'action_woocommerce_order_refunded'), 10, 2 );
-	
+
 
 		// Lets check for SSL
 		add_action( 'admin_notices', array( $this,	'do_ssl_check' ) );
 
-		
-		
-    } 
 
 
-    
-		
-	
-    
+    }
+
+
+
+
+
+
 	/**
 	 * Woocommerce Admin Panel Option
 	 * - Manage MONEI Settings here.
@@ -92,12 +86,12 @@ class woocommerce_monei extends WC_Payment_Gateway {
 	 */
 	public function admin_options() {
 
-  
+
     	echo '<h2>'. __('MONEI Payment Gateway.', 'woo-monei-gateway') .' </h2>';
 
     	echo '<p>'. __('MONEI Configuration Settings.', 'woo-monei-gateway') .'</p>';
     	echo '<table class="form-table">';
-    	
+
     	$this->generate_settings_html();
 
     	echo '</table>';
@@ -108,7 +102,7 @@ class woocommerce_monei extends WC_Payment_Gateway {
 				var monei_live_fields	  = '#woocommerce_monei_channel_id, #woocommerce_monei_user_id, #woocommerce_monei_password';
 
 
-				
+
 				$( '#woocommerce_monei_operation_mode' ).change(function(){
 					$( monei_test_fields + ',' + monei_live_fields ).closest( 'tr' ).hide();
 
@@ -126,25 +120,25 @@ class woocommerce_monei extends WC_Payment_Gateway {
 					}
 				}).change();
 
-				
+
 			});
 		" );
-    	
-    } 
-    
+
+    }
+
 	/**
      * Initialise MONEI Payment Gateway Settings Form Fields
      */
     function init_form_fields() {
-    
+
     	$this->form_fields = array(
 
     		'enabled' => array(
-							'title' => __( 'Enable/Disable', 'woo-monei-gateway' ), 
-							'type' => 'checkbox', 
-							'label' => __( 'Enable MONEI', 'woo-monei-gateway' ), 
+							'title' => __( 'Enable/Disable', 'woo-monei-gateway' ),
+							'type' => 'checkbox',
+							'label' => __( 'Enable MONEI', 'woo-monei-gateway' ),
 							'default' => 'yes'
-						 ), 
+						 ),
     		'operation_mode' => array(
 								'title' => __("Operation Mode", 'woo-monei-gateway'),
 				 				'default' => 'test',
@@ -157,16 +151,16 @@ class woocommerce_monei extends WC_Payment_Gateway {
 				 				)
 				 			),
  			'title' => array(
-							'title' => __( 'Title', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'This controls the title which the user sees during checkout.', 'woo-monei-gateway' ), 
+							'title' => __( 'Title', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'This controls the title which the user sees during checkout.', 'woo-monei-gateway' ),
 							'default' => __( 'MONEI Payment gateway', 'woo-monei-gateway' ),
 							'desc_tip'    => true
 						),
  			'description' => array(
-							'title' => __( 'Description', 'woo-monei-gateway' ), 
-							'type' => 'textarea', 
-							'description' => __( 'This controls the description which the user sees during checkout.', 'woo-monei-gateway' ), 
+							'title' => __( 'Description', 'woo-monei-gateway' ),
+							'type' => 'textarea',
+							'description' => __( 'This controls the description which the user sees during checkout.', 'woo-monei-gateway' ),
 							'default' => __("Pay via MONEI payment gateway.", 'woo-monei-gateway'),
 							'desc_tip'    => true
 						),
@@ -174,26 +168,26 @@ class woocommerce_monei extends WC_Payment_Gateway {
 								'title'       => __( 'API Test Credentials', 'woo-monei-gateway' ),
 								'type'        => 'title',
 								'description' => sprintf( __( 'Enter your MONEI Test API Credentials to process transactions via %sMONEI%s. You can find your MONEI Test Credentials by clicking on your Profile and then on Channels. See a screenshot of how this MONEI section looks like by %sclicking here%s', 'woo-monei-gateway' ), '<a target="_blank" href="https://monei.net/en/">', '</a>', '<a target="_blank" href="'.$this->screen.'">', '</a>' ),
-								
+
 							),
  			'test_channel_id' => array(
-							'title' => __( 'Channel ID', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take payment.', 'woo-monei-gateway' ), 
+							'title' => __( 'Channel ID', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
 							'default' => '',
 							'desc_tip'    => true
 						),
  			'test_user_id' => array(
-							'title' => __( 'User ID', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'Please enter your MONEI User ID; this is needed in order to take payment.', 'woo-monei-gateway' ), 
+							'title' => __( 'User ID', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'Please enter your MONEI User ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
 							'default' => '',
 							'desc_tip'    => true
 						),
  			'test_password' => array(
-							'title' => __( 'Password', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'Please enter your MONEI Password; this is needed in order to take payment.', 'woo-monei-gateway' ), 
+							'title' => __( 'Password', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'Please enter your MONEI Password; this is needed in order to take payment.', 'woo-monei-gateway' ),
 							'default' => '',
 							'desc_tip'    => true
 
@@ -202,29 +196,29 @@ class woocommerce_monei extends WC_Payment_Gateway {
 								'title'       => __( 'API LIVE Credentials', 'woo-monei-gateway' ),
 								'type'        => 'title',
 								'description' => sprintf( __( 'Enter your MONEI Live API Credentials to process transactions via %sMONEI%s. You can find your MONEI Live Credentials by clicking on your Profile and then on Channels. See a screenshot of how this MONEI section looks like by %sclicking here%s', 'woo-monei-gateway' ), '<a target="_blank" href="https://monei.net/en/">', '</a>', '<a target="_blank" href="'.$this->screen.'">', '</a>' ),
-								
+
 							),
  			'channel_id' => array(
-							'title' => __( 'Channel ID', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take payment.', 'woo-monei-gateway' ), 
+							'title' => __( 'Channel ID', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
 							'default' => '',
 							'desc_tip'    => true
 						),
  			'user_id' => array(
-							'title' => __( 'User ID', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'Please enter your MONEI User ID; this is needed in order to take payment.', 'woo-monei-gateway' ), 
+							'title' => __( 'User ID', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'Please enter your MONEI User ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
 							'default' => '',
 							'desc_tip'    => true
 						),
  			'password' => array(
-							'title' => __( 'Password', 'woo-monei-gateway' ), 
-							'type' => 'text', 
-							'description' => __( 'Please enter your MONEI Password; this is needed in order to take payment.', 'woo-monei-gateway' ), 
+							'title' => __( 'Password', 'woo-monei-gateway' ),
+							'type' => 'text',
+							'description' => __( 'Please enter your MONEI Password; this is needed in order to take payment.', 'woo-monei-gateway' ),
 							'default' => '',
 							'desc_tip'    => true
-							
+
 						),
  			'widget_style' => array(
 				'title' => __("Payment form Style", 'woo-monei-gateway'),
@@ -253,11 +247,11 @@ class woocommerce_monei extends WC_Payment_Gateway {
  					'VISAELECTRON' => __("VISA ELECTRON", 'woo-monei-gateway'),
  				)
  			)
-			
+
 			);
-    
+
     } // End init_form_fields()
-    
+
     /**
 	 * Adding MONEI Payment Gateway Button in checkout page.
 	 **/
@@ -267,7 +261,7 @@ class woocommerce_monei extends WC_Payment_Gateway {
     }
 
 
-   
+
 
 	/**
 	*	Creating MONEI Payment Form.
@@ -282,13 +276,13 @@ class woocommerce_monei extends WC_Payment_Gateway {
 		//Required Order Details
 		$amount 	= $order->get_total();
 
-		
+
 		$currency 	= get_woocommerce_currency();
 
-			
+
 	    	$url = $this->monei_url."/v1/checkouts";
 
-			
+
 			$data = "authentication.userId=".$this->USER_ID .
 				"&authentication.password=".$this->PASSWORD .
 				"&authentication.entityId=".$this->CHANNEL_ID .
@@ -308,7 +302,7 @@ class woocommerce_monei extends WC_Payment_Gateway {
 				return curl_error($ch);
 			}
 			curl_close($ch);
-			
+
 			$status = json_decode($responseData);
 
 			if($status->id){
@@ -321,12 +315,12 @@ class woocommerce_monei extends WC_Payment_Gateway {
 				}
 				echo '<script src="'.$this->monei_url.'/v1/paymentWidgets.js?checkoutId='.$status->id.'"></script>';
 				echo '<form action="'.$this->return_url.'" class="paymentWidgets">'. $this->cards .'</form>';
-				
+
 			} else {
 				return false;
 			}
 
-			
+
 	}
 
 	/**
@@ -338,8 +332,8 @@ class woocommerce_monei extends WC_Payment_Gateway {
 		if(isset($_GET['resourcePath'])) {
 
 			$url = $this->monei_url.$_GET['resourcePath'];
-	    	
-	    	
+
+
 			$url .= "?authentication.userId=".$this->USER_ID;
 			$url .= "&authentication.password=".$this->PASSWORD;
 			$url .= "&authentication.entityId=".$this->CHANNEL_ID;
@@ -362,11 +356,11 @@ class woocommerce_monei extends WC_Payment_Gateway {
 			$order = new WC_Order( $response->merchantInvoiceId );
 
 			if(in_array($response->result->code, $success_code)){
-				
+
 				$order->payment_complete( $response->id );
 
 				$order->add_order_note(sprintf(__('MONEI Transaction Successful. The Transaction ID was %s and Payment Status %s.', 'woo-monei-gateway'), $response->id, $response->result->description ));
-				
+
 				wp_redirect($this->get_return_url( $order )); exit();
 			} else {
 				$order->add_order_note(sprintf(__('MONEI Transaction Failed. The Transaction Status %s.', 'woo-monei-gateway'), $response->result->description ));
@@ -375,27 +369,27 @@ class woocommerce_monei extends WC_Payment_Gateway {
 
 		}
 	}
-    
-	
-	
+
+
+
 	/**
 	 * Process the payment and return the result
 	 **/
 	function process_payment( $order_id ) {
-		
+
 		$order = new WC_Order( $order_id );
-			
+
 		if($this->woocommerce_version >= 2.1){
-			$redirect = $order->get_checkout_payment_url( true );			
+			$redirect = $order->get_checkout_payment_url( true );
 		} else{
 			$redirect = add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(get_option('woocommerce_pay_page_id'))));
 		}
-			
+
 		return array(
 			'result' 	=> 'success',
 			'redirect'	=> $redirect
 		);
-		
+
 	}
 
 
@@ -403,50 +397,50 @@ class woocommerce_monei extends WC_Payment_Gateway {
 	 * Process the payment and return the result
 	 **/
 	function process_refund( $order_id, $amount = null, $reason = ''  ) {
-		
+
 		global $woocommerce;
 		$order 	= new WC_Order( $order_id );
 
 
 	    $trx_id		= get_post_meta( $order_id , '_transaction_id', true );
-	    
+
 
 	    $amount 	= $order->get_total();
 		$currency 	= get_woocommerce_currency();
 
 	    $response = json_decode($this->refund_request($trx_id, $amount, $currency));
 
-	    
+
 
 	    $success_code = array('000.000.000', '000.000.100', '000.100.110', '000.100.111', '000.100.112', '000.300.000');
 	    if(in_array($response->result->code, $success_code)){
-				
+
 			$order->add_order_note(sprintf(__('MONEI Refund Processed Successful. The Refund ID was %s and Request Status => %s.', 'woo-monei-gateway'), $response->id, $response->result->description ));
-			$order->update_status('wc-refunded'); 
-			return true;	
-				
+			$order->update_status('wc-refunded');
+			return true;
+
 		} else {
-			$order->add_order_note(sprintf(__('MONEI Refund Request Failed. The Refund Status => %s.', 'woo-monei-gateway'), $response->result->description ));				
+			$order->add_order_note(sprintf(__('MONEI Refund Request Failed. The Refund Status => %s.', 'woo-monei-gateway'), $response->result->description ));
 			return false;
 		}
 		return false;
-		
+
 	}
-	         
-	
+
+
 	/**
 	 * receipt_page
 	 **/
 	function receipt_page( $order ) {
-		
+
 		//Generating Payment Form.
 		$this->generate_monei_payment_form( $order );
-		
+
 	}
 
 
 	function refund_request($id, $amount, $currency) {
-		
+
 
 		$url = $this->monei_url."/v1/payments/".$id;
 
@@ -470,19 +464,19 @@ class woocommerce_monei extends WC_Payment_Gateway {
 		curl_close($ch);
 		return $responseData;
 	}
-	
+
 
 	// Custom function not required by the Gateway
 	public function do_ssl_check() {
 		if( $this->enabled == "yes" ) {
 			if( get_option( 'woocommerce_force_ssl_checkout' ) == "no" ) {
-				echo "<div class=\"error\"><p>". sprintf( __( "<strong>%s</strong> is enabled and WooCommerce is not forcing the SSL certificate on your checkout page. Please ensure that you have a valid SSL certificate and that you are <a href=\"%s\">forcing the checkout pages to be secured.</a>" ), $this->method_title, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ) ."</p></div>";	
+				echo "<div class=\"error\"><p>". sprintf( __( "<strong>%s</strong> is enabled and WooCommerce is not forcing the SSL certificate on your checkout page. Please ensure that you have a valid SSL certificate and that you are <a href=\"%s\">forcing the checkout pages to be secured.</a>" ), $this->method_title, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ) ."</p></div>";
 			}
-		}		
+		}
 	}
-	
-		
-	
+
+
+
 }
 
 /**
