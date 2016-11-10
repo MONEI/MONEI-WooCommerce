@@ -6,3 +6,5 @@ WooCommerce plugin for MONEI
 Accept payments in your WooCommerce store using MONEI payment gateway.
 
 Supported countries: AD, AT, BE, BG, CA, CH, CY, CZ, DE, DK, EE, ES, FI, FO, FR, GB, GI, GR, HU, IE, IL, IS, IT, LI, LT, LU, LV, MT, NL, NO, PL, PT, RO, SE, SI, SK, TR, US, VA
+
+[See a fully functional WooCommerce demo store with MONEI as a payment gateway.](http://woocommerce.demo-monei.com/)
