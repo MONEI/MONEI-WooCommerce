@@ -2,7 +2,7 @@
 /**
 * Plugin Name: MONEI Gateway for WooCommerce
 * Plugin URI: https://monei.net
-* Description: WooCommerce Plugin for accepting payment through MONEI Payment Gateway.
+* Description: WooCommerce Plugin for accepting payments through MONEI Payment Gateway.
 * Requires at least: 4.0
 * Tested up to: 4.6
 *
@@ -122,52 +122,52 @@ function init_woocommerce_monei() {
           'test_credentials' => array(
             'title'       => __( 'API Test Credentials', 'woo-monei-gateway' ),
             'type'        => 'title',
-            'description' => sprintf( __( 'Enter your MONEI Test API Credentials to process transactions via %sMONEI%s. You can find your MONEI Test Credentials by clicking on your Profile and then on Channels. See a screenshot of how this MONEI section looks like by %sclicking here%s', 'woo-monei-gateway' ), '<a target="_blank" href="https://monei.net/en/">', '</a>', '<a target="_blank" href="'.$this->screen.'">', '</a>' ),
+            'description' => sprintf( __( 'Enter your MONEI Test API Credentials to process transactions via %sMONEI%s. You can find your MONEI Test Credentials by clicking on your Profile and then on Sub accounts.', 'woo-monei-gateway' ), '<a target="_blank" href="https://monei.net/">', '</a>' ),
           ),
           'test_channel_id' => array(
             'title' => __( 'Channel ID', 'woo-monei-gateway' ),
             'type' => 'text',
-            'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
+            'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take the payment.', 'woo-monei-gateway' ),
             'default' => '',
             'desc_tip'    => true
           ),
           'test_user_id' => array(
             'title' => __( 'User ID', 'woo-monei-gateway' ),
             'type' => 'text',
-            'description' => __( 'Please enter your MONEI User ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
+            'description' => __( 'Please enter your MONEI User ID; this is needed in order to take the payment.', 'woo-monei-gateway' ),
             'default' => '',
             'desc_tip'    => true
           ),
           'test_password' => array(
             'title' => __( 'Password', 'woo-monei-gateway' ),
             'type' => 'text',
-            'description' => __( 'Please enter your MONEI Password; this is needed in order to take payment.', 'woo-monei-gateway' ),
+            'description' => __( 'Please enter your MONEI Password; this is needed in order to take the payment.', 'woo-monei-gateway' ),
             'default' => '',
             'desc_tip'    => true
           ),
           'live_credentials' => array(
             'title'       => __( 'API LIVE Credentials', 'woo-monei-gateway' ),
             'type'        => 'title',
-            'description' => sprintf( __( 'Enter your MONEI Live API Credentials to process transactions via %sMONEI%s. You can find your MONEI Live Credentials by clicking on your Profile and then on Channels. See a screenshot of how this MONEI section looks like by %sclicking here%s', 'woo-monei-gateway' ), '<a target="_blank" href="https://monei.net/en/">', '</a>', '<a target="_blank" href="'.$this->screen.'">', '</a>' ),
+            'description' => sprintf( __( 'Enter your MONEI Live API Credentials to process transactions via %sMONEI%s. You can find your MONEI Live Credentials by clicking on your Profile and then on Sub accounts.', 'woo-monei-gateway' ), '<a target="_blank" href="https://monei.net/">', '</a>'  ),
           ),
           'channel_id' => array(
             'title' => __( 'Channel ID', 'woo-monei-gateway' ),
             'type' => 'text',
-            'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
+            'description' => __( 'Please enter your MONEI Channel ID; this is needed in order to the take payment.', 'woo-monei-gateway' ),
             'default' => '',
             'desc_tip'    => true
           ),
           'user_id' => array(
             'title' => __( 'User ID', 'woo-monei-gateway' ),
             'type' => 'text',
-            'description' => __( 'Please enter your MONEI User ID; this is needed in order to take payment.', 'woo-monei-gateway' ),
+            'description' => __( 'Please enter your MONEI User ID; this is needed in order to take the payment.', 'woo-monei-gateway' ),
             'default' => '',
             'desc_tip'    => true
           ),
           'password' => array(
             'title' => __( 'Password', 'woo-monei-gateway' ),
             'type' => 'text',
-            'description' => __( 'Please enter your MONEI Password; this is needed in order to take payment.', 'woo-monei-gateway' ),
+            'description' => __( 'Please enter your MONEI Password; this is needed in order to take the payment.', 'woo-monei-gateway' ),
             'default' => '',
             'desc_tip'    => true
           ),
