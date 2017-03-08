@@ -8,3 +8,6 @@ Accept payments in your WooCommerce store using MONEI payment gateway.
 Supported countries: AD, AT, BE, BG, CA, CH, CY, CZ, DE, DK, EE, ES, FI, FO, FR, GB, GI, GR, HU, IE, IL, IS, IT, LI, LT, LU, LV, MT, NL, NO, PL, PT, RO, SE, SI, SK, TR, US, VA
 
 [See a fully functional WooCommerce demo store with MONEI as a payment gateway.](http://woocommerce.demo-monei.com/)
+
+# Development/Contributing
+git svn is recommended to mirror between svn and git. The one in Github is the main repo and everything should be syncrhonized to https://plugins.svn.wordpress.org/monei/
