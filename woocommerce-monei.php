@@ -9,6 +9,19 @@
  * @package MONEI Payment Gateway for WooCommerce
  */
 add_action( 'plugins_loaded', 'init_woocommerce_monei', 0 );
+add_action( 'admin_enqueue_scripts', 'add_color_picker' );
+function add_color_picker( $hook ) {
+
+	if ( is_admin() ) {
+
+		// Add the color picker css file
+		wp_enqueue_style( 'wp-color-picker' );
+
+		// Include our custom jQuery file with WordPress Color Picker dependency
+		wp_enqueue_script( 'custom-script-handle', plugins_url( 'custom-script.js', __FILE__ ), array( 'wp-color-picker' ), false, true );
+	}
+}
+
 function init_woocommerce_monei() {
 	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 		return;
@@ -29,11 +42,7 @@ function init_woocommerce_monei() {
 			// Define user set variables
 			$this->title               = $this->settings['title'];
 			$this->description         = $this->settings['description'];
-			$this->production          = $this->settings['production'];
 			$this->supports            = array( 'refunds' );
-			$this->token               = $this->settings['token'];
-			$this->cards               = implode( ' ', $this->settings['card_supported'] );
-			$this->popup               = $this->settings['popup'];
 			$this->woocommerce_version = $woocommerce->version;
 			$this->return_url          = str_replace( 'https:', 'http:', add_query_arg( 'wc-api', 'monei_payment', home_url( '/' ) ) );
 			// Actions
@@ -60,6 +69,17 @@ function init_woocommerce_monei() {
 			echo '<p>' . __( 'The easiest way to accept payments from your customers.', 'woo-monei-gateway' ) . '</p>';
 			echo '<p>' . sprintf( __( 'To use this payment method you need to be registered in %sMONEI Payment Gateway%s', 'woo-monei-gateway' ), '<a href="https://monei.net" target="_blank"><b>', '</b></a>' ) . '</p>';
 			echo '<table class="form-table">';
+			wc_enqueue_js( "
+		      $('#woocommerce_monei_primary_color').wpColorPicker();
+		        console.log($('#woocommerce_monei_popup'));
+		        $('#woocommerce_monei_popup').change(function(){
+		          if (this.checked) {
+		            $( '#woocommerce_monei_popup_config, #woocommerce_monei_popup_config + .form-table' ).show();
+		          } else {
+		            $( '#woocommerce_monei_popup_config, #woocommerce_monei_popup_config + .form-table' ).hide();
+		          }
+		        }).change();
+            " );
 			$this->generate_settings_html();
 			echo '</table>';
 		}
@@ -69,38 +89,30 @@ function init_woocommerce_monei() {
 		 */
 		function init_form_fields() {
 			$this->form_fields = array(
-				'enabled'        => array(
+				'enabled'           => array(
 					'title'   => __( 'Enable', 'woo-monei-gateway' ),
 					'type'    => 'checkbox',
 					'label'   => __( 'Enable MONEI Payment Gateway', 'woo-monei-gateway' ),
 					'default' => 'yes'
 				),
-				'title'          => array(
-					'title'       => __( 'Title', 'woo-monei-gateway' ),
-					'type'        => 'text',
-					'description' => __( 'title of payment method which the user sees during checkout', 'woo-monei-gateway' ),
-					'default'     => __( 'MONEI Payment gateway', 'woo-monei-gateway' )
+				'payment'           => array(
+					'title' => __( 'Payment configuration', 'woo-monei-gateway' ),
+					'type'  => 'title'
 				),
-				'description'    => array(
-					'title'       => __( 'Description', 'woo-monei-gateway' ),
-					'type'        => 'text',
-					'description' => __( 'description of payment method which the user sees during checkout', 'woo-monei-gateway' ),
-					'default'     => __( "Pay via MONEI payment gateway.", 'woo-monei-gateway' )
-				),
-				'production'     => array(
-					'title'       => __( 'Production mode', 'woo-monei-gateway' ),
-					'type'        => 'checkbox',
-					'label'       => __( 'Enable production mode', 'woo-monei-gateway' ),
-					'description' => __( 'to use production mode you need to obtain production token', 'woo-monei-gateway' ),
-					'default'     => 'no'
-				),
-				'token'          => array(
-					'title'       => __( 'Token', 'woo-monei-token' ),
+				'token'             => array(
+					'title'       => __( 'Token', 'woo-monei-gateway' ),
 					'type'        => 'text',
 					'description' => sprintf( __( 'token generated for sub account in %sMONEI dashboard%s', 'woo-monei-gateway' ), '<a href="https://dashboard.monei.net" target="_blank">', '</a>' ),
 					'default'     => ''
 				),
-				'card_supported' => array(
+				'production'        => array(
+					'title'       => __( 'Production mode', 'woo-monei-gateway' ),
+					'type'        => 'checkbox',
+					'label'       => __( 'Enable production mode', 'woo-monei-gateway' ),
+					'description' => __( 'to use production mode you need to provide production token', 'woo-monei-gateway' ),
+					'default'     => 'no'
+				),
+				'card_supported'    => array(
 					'title'       => __( "Accepted Cards", 'woo-monei-gateway' ),
 					'default'     => array(
 						'AMEX',
@@ -125,12 +137,81 @@ function init_woocommerce_monei() {
 						'VISAELECTRON' => __( "VISA ELECTRON", 'woo-monei-gateway' ),
 					)
 				),
-				'popup'          => array(
+				'appearance'        => array(
+					'title' => __( 'Appearance configuration', 'woo-monei-gateway' ),
+					'type'  => 'title'
+				),
+				'title'             => array(
+					'title'       => __( 'Title', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'title of payment method which the user sees during checkout', 'woo-monei-gateway' ),
+					'default'     => __( 'MONEI Payment gateway', 'woo-monei-gateway' )
+				),
+				'description'       => array(
+					'title'       => __( 'Description', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'description of payment method which the user sees during checkout', 'woo-monei-gateway' ),
+					'default'     => __( "Pay via MONEI payment gateway.", 'woo-monei-gateway' )
+				),
+				'submit_text'       => array(
+					'title'       => __( 'Submit text', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'submit button text, {amount} will be replaced with amount value with currency. Default: Pay now', 'woo-monei-gateway' )
+				),
+				'show_cardholder'   => array(
+					'title'   => __( 'Show cardholder', 'woo-monei-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Shows cardholder field in payment form', 'woo-monei-gateway' ),
+					'default' => 'no'
+				),
+				'show_cvv_hint'     => array(
+					'title'       => __( 'Show cvv hint', 'woo-monei-gateway' ),
+					'type'        => 'checkbox',
+					'label'       => __( 'Show cvv hint', 'woo-monei-gateway' ),
+					'description' => __( 'if set to true then the credit card form will display a hint on where the CVV is located when the mouse is hovering over the CVV field.', 'woo-monei-gateway' ),
+					'default'     => 'no'
+				),
+				'show_labels'       => array(
+					'title'   => __( 'Show labels', 'woo-monei-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Shows input labels.', 'woo-monei-gateway' ),
+					'default' => 'no'
+				),
+				'show_placeholders' => array(
+					'title'   => __( 'Show placeholders', 'woo-monei-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Shows input placeholders.', 'woo-monei-gateway' ),
+					'default' => 'yes'
+				),
+				'primary_color'     => array(
+					'title'       => __( 'Primary color', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'a color for checkout and submit button', 'woo-monei-gateway' ),
+					'default'     => ''
+				),
+				'popup'             => array(
 					'title'       => __( 'Popup mode', 'woo-monei-gateway' ),
 					'type'        => 'checkbox',
 					'label'       => __( 'Enable popup mode', 'woo-monei-gateway' ),
 					'description' => __( 'renders a button and shows payment form in a popup when button is clicked', 'woo-monei-gateway' ),
 					'default'     => 'no'
+				),
+				'popup_config'      => array(
+					'title' => __( 'Popup configuration', 'woo-monei-gateway' ),
+					'type'  => 'title'
+				),
+				'checkout_text'     => array(
+					'title'       => __( 'Checkout text', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'checkout button text in popup mode, {amount} will be replaced with amount value with currency. Default: Pay {amount}', 'woo-monei-gateway' )
+				),
+				'popup_name'        => array(
+					'title' => __( 'Popup header name', 'woo-monei-gateway' ),
+					'type'  => 'text',
+				),
+				'popup_description' => array(
+					'title' => __( 'Popup header description', 'woo-monei-gateway' ),
+					'type'  => 'text',
 				)
 			);
 		} // End init_form_fields()
@@ -149,45 +230,57 @@ function init_woocommerce_monei() {
 		 **/
 		public function generate_monei_payment_form( $order_id ) {
 			global $woocommerce;
-			$order      = new WC_Order( $order_id );
-			$order_data = $order_data = $order->get_data();
-			$amount     = $order->get_total();
-			$currency   = $order->get_currency();
-			$billing    = $order_data['billing'];
+			$order       = new WC_Order( $order_id );
+			$customer_id = $order->get_customer_id();
+			$order_data  = $order->get_data();
+			$amount      = $order->get_total();
+			$currency    = $order->get_currency();
+			$billing     = $order_data['billing'];
 			$shipping    = $order_data['shipping'];
-			$config     = array(
-				'token'       => $this->token,
-				'brands'      => $this->cards,
-				'redirectUrl' => $this->return_url,
-				'amount'      => $amount,
-				'currency'    => $currency,
-				'popup'       => $this->popup === 'yes',
-				'test'        => $this->production === 'no',
+			$brands      = implode( ' ', $this->settings['card_supported'] );
+			$config      = array(
+				'token'             => $this->settings['token'],
+				'brands'            => $brands,
+				'redirectUrl'       => $this->return_url,
+				'amount'            => $amount,
+				'currency'          => $currency,
+				'popup'             => $this->settings['popup'] === 'yes',
+				'test'              => $this->settings['production'] === 'no',
 				'merchantInvoiceId' => $order_id,
-				'customer'    => array(
-					'email'       => $billing['email'],
-					'givenName'   => $billing['first_name'],
-					'surname'     => $billing['last_name'],
-					'phone'       => $billing['phone'],
-					'companyName' => $billing['company'],
+				'primaryColor'      => $this->settings['primary_color'],
+				'name'              => $this->settings['popup_name'],
+				'description'       => $this->settings['popup_description'],
+				'showCardHolder'    => $this->settings['show_cardholder'] === 'yes',
+				'submitText'        => $this->settings['submit_text'],
+				'checkoutText'      => $this->settings['checkout_text'],
+				'showCvvHint'       => $this->settings['show_cvv_hint'] === 'yes',
+				'showLabels'        => $this->settings['show_labels'] === 'yes',
+				'showPlaceholders'  => $this->settings['show_placeholders'] === 'yes',
+				'customer'          => array(
+					'merchantCustomerId' => $customer_id,
+					'email'              => $billing['email'],
+					'givenName'          => $billing['first_name'],
+					'surname'            => $billing['last_name'],
+					'phone'              => $billing['phone'],
+					'companyName'        => $billing['company'],
 				),
-				'billingAddress' => array(
-					'country' => $billing['country'],
-				    'state' => $billing['state'],
-				    'city' => $billing['city'],
-				    'postcode' => $billing['postcode'],
-				    'street1' => $billing['address_1'],
-				    'street2' => $billing['address_2']
+				'billingAddress'    => array(
+					'country'  => $billing['country'],
+					'state'    => $billing['state'],
+					'city'     => $billing['city'],
+					'postcode' => $billing['postcode'],
+					'street1'  => $billing['address_1'],
+					'street2'  => $billing['address_2']
 				),
-				'shipping' => array(
-					'country' => $shipping['country'],
-					'state' => $shipping['state'],
-					'city' => $shipping['city'],
+				'shipping'          => array(
+					'country'  => $shipping['country'],
+					'state'    => $shipping['state'],
+					'city'     => $shipping['city'],
 					'postcode' => $shipping['postcode'],
-					'street1' => $shipping['address_1'],
-					'street2' => $shipping['address_2']
+					'street1'  => $shipping['address_1'],
+					'street2'  => $shipping['address_2']
 				),
-				'customParameters' => array(
+				'customParameters'  => array(
 					'customerNote' => $order_data['customer_note']
 				)
 			);
