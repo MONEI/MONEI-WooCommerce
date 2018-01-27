@@ -253,7 +253,7 @@ function init_woocommerce_monei() {
 				'showCardHolder'    => $this->settings['show_cardholder'] === 'yes',
 				'submitText'        => $this->settings['submit_text'],
 				'checkoutText'      => $this->settings['checkout_text'],
-				'showCvvHint'       => $this->settings['show_cvv_hint'] === 'yes',
+				'showCVVHint'       => $this->settings['show_cvv_hint'] === 'yes',
 				'showLabels'        => $this->settings['show_labels'] === 'yes',
 				'showPlaceholders'  => $this->settings['show_placeholders'] === 'yes',
 				'customer'          => array(
