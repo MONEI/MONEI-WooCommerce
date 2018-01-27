@@ -237,6 +237,7 @@ function init_woocommerce_monei() {
 			$currency    = $order->get_currency();
 			$billing     = $order_data['billing'];
 			$shipping    = $order_data['shipping'];
+			$locale      = get_locale();
 			$brands      = implode( ' ', $this->settings['card_supported'] );
 			$config      = array(
 				'token'             => $this->settings['token'],
@@ -256,6 +257,7 @@ function init_woocommerce_monei() {
 				'showCVVHint'       => $this->settings['show_cvv_hint'] === 'yes',
 				'showLabels'        => $this->settings['show_labels'] === 'yes',
 				'showPlaceholders'  => $this->settings['show_placeholders'] === 'yes',
+				'locale'            => $locale,
 				'customer'          => array(
 					'merchantCustomerId' => $customer_id,
 					'email'              => $billing['email'],
