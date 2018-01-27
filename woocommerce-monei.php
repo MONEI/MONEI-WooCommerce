@@ -44,7 +44,6 @@ function init_woocommerce_monei() {
 			$this->description         = $this->settings['description'];
 			$this->supports            = array( 'refunds' );
 			$this->woocommerce_version = $woocommerce->version;
-			$this->return_url          = str_replace( 'https:', 'http:', add_query_arg( 'wc-api', 'monei_payment', home_url( '/' ) ) );
 			// Actions
 			add_action( 'init', array( $this, 'monei_process' ) );
 			add_action( 'woocommerce_api_monei_payment', array( $this, 'monei_process' ) );
@@ -239,10 +238,14 @@ function init_woocommerce_monei() {
 			$shipping    = $order_data['shipping'];
 			$locale      = get_locale();
 			$brands      = implode( ' ', $this->settings['card_supported'] );
+			$return_url  = str_replace( 'https:', 'http:', add_query_arg( array(
+				'wc-api'  => 'monei_payment',
+				'orderId' => $order_id
+			), home_url( '/' ) ) );
 			$config      = array(
 				'token'             => $this->settings['token'],
 				'brands'            => $brands,
-				'redirectUrl'       => $this->return_url,
+				'redirectUrl'       => $return_url,
 				'amount'            => $amount,
 				'currency'          => $currency,
 				'popup'             => $this->settings['popup'] === 'yes',
@@ -304,11 +307,9 @@ function init_woocommerce_monei() {
 		 **/
 		public function monei_process() {
 			global $woocommerce;
-			if ( isset( $_GET['resourcePath'] ) ) {
-				$url = $this->monei_url . $_GET['resourcePath'];
-				$url .= "?authentication.userId=" . $this->USER_ID;
-				$url .= "&authentication.password=" . $this->PASSWORD;
-				$url .= "&authentication.entityId=" . $this->CHANNEL_ID;
+			if ( isset( $_GET['id'] ) ) {
+				$url = 'https://api.monei.net/checkouts/' . $_GET['id'];
+				$url .= "?token=" . $_GET['token'];
 				$ch  = curl_init();
 				curl_setopt( $ch, CURLOPT_URL, $url );
 				curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'GET' );
@@ -328,7 +329,7 @@ function init_woocommerce_monei() {
 					'000.100.112',
 					'000.300.000'
 				);
-				$order        = new WC_Order( $response->merchantInvoiceId );
+				$order        = new WC_Order( $_GET['orderId'] );
 				if ( in_array( $response->result->code, $success_code ) ) {
 					$order->payment_complete( $response->id );
 					$order->add_order_note( sprintf( __( 'MONEI Transaction Successful. The Transaction ID was %s and Payment Status %s.', 'woo-monei-gateway' ), $response->id, $response->result->description ) );
