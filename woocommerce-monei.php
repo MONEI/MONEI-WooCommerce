@@ -154,6 +154,7 @@ function init_woocommerce_monei() {
 			$amount     = $order->get_total();
 			$currency   = $order->get_currency();
 			$billing    = $order_data['billing'];
+			$shipping    = $order_data['shipping'];
 			$config     = array(
 				'token'       => $this->token,
 				'brands'      => $this->cards,
@@ -162,6 +163,7 @@ function init_woocommerce_monei() {
 				'currency'    => $currency,
 				'popup'       => $this->popup === 'yes',
 				'test'        => $this->production === 'no',
+				'merchantInvoiceId' => $order_id,
 				'customer'    => array(
 					'email'       => $billing['email'],
 					'givenName'   => $billing['first_name'],
@@ -176,6 +178,17 @@ function init_woocommerce_monei() {
 				    'postcode' => $billing['postcode'],
 				    'street1' => $billing['address_1'],
 				    'street2' => $billing['address_2']
+				),
+				'shipping' => array(
+					'country' => $shipping['country'],
+					'state' => $shipping['state'],
+					'city' => $shipping['city'],
+					'postcode' => $shipping['postcode'],
+					'street1' => $shipping['address_1'],
+					'street2' => $shipping['address_2']
+				),
+				'customParameters' => array(
+					'customerNote' => $order_data['customer_note']
 				)
 			);
 
