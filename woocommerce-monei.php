@@ -8,6 +8,9 @@
  *
  * @package MONEI Payment Gateway for WooCommerce
  */
+
+include dirname( __FILE__ ) . '/utils.php';
+
 add_action( 'plugins_loaded', 'init_woocommerce_monei', 0 );
 add_action( 'admin_enqueue_scripts', 'add_color_picker' );
 function add_color_picker( $hook ) {
@@ -28,22 +31,37 @@ function init_woocommerce_monei() {
 	}
 
 	class woocommerce_monei extends WC_Payment_Gateway {
+		private $test_mode;
+		private $monei_url;
+		private $USER_ID;
+		private $CHANNEL_ID;
+		private $PASSWORD;
+
 		public function __construct() {
-			global $woocommerce;
 			$this->id           = 'monei';
 			$this->method_title = __( 'MONEI Payment Gateway', 'woo-monei-gateway' );
 			$this->icon         = plugins_url( 'monei.png', __FILE__ );
 			$this->screen       = plugins_url( 'screen.png', __FILE__ );
 			$this->has_fields   = false;
+
 			// Load the form fields.
 			$this->init_form_fields();
 			// Load the settings.
 			$this->init_settings();
 			// Define user set variables
-			$this->title               = $this->settings['title'];
-			$this->description         = $this->settings['description'];
-			$this->supports            = array( 'refunds' );
-			$this->woocommerce_version = $woocommerce->version;
+
+			$this->title       = $this->settings['title'];
+			$this->description = $this->settings['description'];
+			$this->supports    = array( 'refunds' );
+
+			$token            = $this->settings['token'];
+			$credentials      = json_decode( _base64_decode( $token ) );
+			$this->test_mode  = $this->settings['production'] == 'no';
+			$this->monei_url  = $this->test_mode ? "https://test.monei-api.net" : "https://monei-api.net";
+			$this->USER_ID    = $credentials->l;
+			$this->PASSWORD   = $credentials->p;
+			$this->CHANNEL_ID = $credentials->c;
+
 			// Actions
 			add_action( 'init', array( $this, 'monei_process' ) );
 			add_action( 'woocommerce_api_monei_payment', array( $this, 'monei_process' ) );
@@ -99,9 +117,9 @@ function init_woocommerce_monei() {
 					'type'  => 'title'
 				),
 				'token'             => array(
-					'title'       => __( 'Token', 'woo-monei-gateway' ),
+					'title'       => __( 'Secret Token', 'woo-monei-gateway' ),
 					'type'        => 'text',
-					'description' => sprintf( __( 'token generated for sub account in %sMONEI dashboard%s', 'woo-monei-gateway' ), '<a href="https://dashboard.monei.net" target="_blank">', '</a>' ),
+					'description' => sprintf( __( 'secret token generated for sub account in %sMONEI dashboard%s', 'woo-monei-gateway' ), '<a href="https://dashboard.monei.net" target="_blank">', '</a>' ),
 					'default'     => ''
 				),
 				'production'        => array(
@@ -136,6 +154,11 @@ function init_woocommerce_monei() {
 						'VISAELECTRON' => __( "VISA ELECTRON", 'woo-monei-gateway' ),
 					)
 				),
+				'descriptor'        => array(
+					'title'       => __( 'Descriptor', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'Descriptor that will be shown in customer\'s bank statement', 'woo-monei-gateway' )
+				),
 				'appearance'        => array(
 					'title' => __( 'Appearance configuration', 'woo-monei-gateway' ),
 					'type'  => 'title'
@@ -161,6 +184,12 @@ function init_woocommerce_monei() {
 					'title'   => __( 'Show cardholder', 'woo-monei-gateway' ),
 					'type'    => 'checkbox',
 					'label'   => __( 'Shows cardholder field in payment form', 'woo-monei-gateway' ),
+					'default' => 'no'
+				),
+				'mask_cvv'          => array(
+					'title'   => __( 'Mask CVV field', 'woo-monei-gateway' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Mask CVV field', 'woo-monei-gateway' ),
 					'default' => 'no'
 				),
 				'show_cvv_hint'     => array(
@@ -228,92 +257,115 @@ function init_woocommerce_monei() {
 		 *    Creating MONEI Payment Form.
 		 **/
 		public function generate_monei_payment_form( $order_id ) {
-			global $woocommerce;
+
 			$order       = new WC_Order( $order_id );
-			$customer_id = $order->get_customer_id();
-			$order_data  = $order->get_data();
 			$amount      = $order->get_total();
 			$currency    = $order->get_currency();
+			$customer_id = $order->get_customer_id();
+			$order_data  = $order->get_data();
 			$billing     = $order_data['billing'];
 			$shipping    = $order_data['shipping'];
-			$locale      = get_locale();
-			$brands      = implode( ' ', $this->settings['card_supported'] );
-			$return_url  = str_replace( 'https:', 'http:', add_query_arg( array(
-				'wc-api'  => 'monei_payment',
-				'orderId' => $order_id
-			), home_url( '/' ) ) );
-			$config      = array(
-				'token'             => $this->settings['token'],
-				'brands'            => $brands,
-				'redirectUrl'       => $return_url,
-				'amount'            => $amount,
-				'currency'          => $currency,
-				'popup'             => $this->settings['popup'] === 'yes',
-				'test'              => $this->settings['production'] === 'no',
-				'merchantInvoiceId' => $order_id,
-				'primaryColor'      => $this->settings['primary_color'],
-				'name'              => $this->settings['popup_name'],
-				'description'       => $this->settings['popup_description'],
-				'showCardHolder'    => $this->settings['show_cardholder'] === 'yes',
-				'submitText'        => $this->settings['submit_text'],
-				'checkoutText'      => $this->settings['checkout_text'],
-				'showCVVHint'       => $this->settings['show_cvv_hint'] === 'yes',
-				'showLabels'        => $this->settings['show_labels'] === 'yes',
-				'showPlaceholders'  => $this->settings['show_placeholders'] === 'yes',
-				'locale'            => $locale,
-				'customer'          => array(
-					'merchantCustomerId' => $customer_id,
-					'email'              => $billing['email'],
-					'givenName'          => $billing['first_name'],
-					'surname'            => $billing['last_name'],
-					'phone'              => $billing['phone'],
-					'companyName'        => $billing['company'],
-				),
-				'billingAddress'    => array(
-					'country'  => $billing['country'],
-					'state'    => $billing['state'],
-					'city'     => $billing['city'],
-					'postcode' => $billing['postcode'],
-					'street1'  => $billing['address_1'],
-					'street2'  => $billing['address_2']
-				),
-				'shipping'          => array(
-					'country'  => $shipping['country'],
-					'state'    => $shipping['state'],
-					'city'     => $shipping['city'],
-					'postcode' => $shipping['postcode'],
-					'street1'  => $shipping['address_1'],
-					'street2'  => $shipping['address_2']
-				),
-				'customParameters'  => array(
-					'customerNote' => $order_data['customer_note']
+
+			$url  = $this->monei_url . "/v1/checkouts";
+			$data = http_build_query( array(
+				'authentication.userId'       => $this->USER_ID,
+				'authentication.password'     => $this->PASSWORD,
+				'authentication.entityId'     => $this->CHANNEL_ID,
+				'amount'                      => $amount,
+				'currency'                    => $currency,
+				'merchantInvoiceId'           => $order_id,
+				'paymentType'                 => 'DB',
+				'customer.merchantCustomerId' => $customer_id,
+				'customer.email'              => $billing['email'],
+				'customer.givenName'          => $billing['first_name'],
+				'customer.surname'            => $billing['last_name'],
+				'customer.phone'              => $billing['phone'],
+				'customer.companyName'        => $billing['company'],
+				'billing.country'             => $billing['country'],
+				'billing.state'               => $billing['state'],
+				'billing.city'                => $billing['city'],
+				'billing.postcode'            => $billing['postcode'],
+				'billing.street1'             => $billing['address_1'],
+				'billing.street2'             => $billing['address_2'],
+				'shipping.country'            => $shipping['country'],
+				'shipping.state'              => $shipping['state'],
+				'shipping.city'               => $shipping['city'],
+				'shipping.postcode'           => $shipping['postcode'],
+				'shipping.street1'            => $shipping['address_1'],
+				'shipping.street2'            => $shipping['address_2'],
+				'customParameters'            => array(
+					'customerNote'      => $order_data['customer_note'],
+					'customerUserAgent' => $order_data['customer_user_agent']
 				)
-			);
+			) );
+			$ch   = curl_init();
+			curl_setopt( $ch, CURLOPT_URL, $url );
+			curl_setopt( $ch, CURLOPT_POST, 1 );
+			curl_setopt( $ch, CURLOPT_POSTFIELDS, $data );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
+			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+			$responseData = curl_exec( $ch );
+			if ( curl_errno( $ch ) ) {
+				return curl_error( $ch );
+			}
+			curl_close( $ch );
+			$status = json_decode( $responseData );
 
-			$json_config = json_encode( $config );
+			if ( $status->id ) {
+				$locale     = get_locale();
+				$brands     = implode( ' ', $this->settings['card_supported'] );
+				$return_url = add_query_arg( 'wc-api', 'monei_payment', home_url( '/' ) );
+				$config     = array(
+					'checkoutId'       => $status->id,
+					'brands'           => $brands,
+					'redirectUrl'      => $return_url,
+					'amount'           => $amount,
+					'currency'         => $currency,
+					'popup'            => $this->settings['popup'] === 'yes',
+					'test'             => $this->test_mode,
+					'primaryColor'     => $this->settings['primary_color'],
+					'name'             => $this->settings['popup_name'],
+					'description'      => $this->settings['popup_description'],
+					'showCardHolder'   => $this->settings['show_cardholder'] === 'yes',
+					'submitText'       => $this->settings['submit_text'],
+					'checkoutText'     => $this->settings['checkout_text'],
+					'showCVVHint'      => $this->settings['show_cvv_hint'] === 'yes',
+					'maskCvv'          => $this->settings['mask_cvv'] === 'yes',
+					'showLabels'       => $this->settings['show_labels'] === 'yes',
+					'showPlaceholders' => $this->settings['show_placeholders'] === 'yes',
+					'showEmail'        => false,
+					'locale'           => $locale,
+				);
 
-			echo '<script src="https://widget.monei.net/widget2.js"></script>';
-			echo "<script>
-				moneiWidget.disableAutoSetup();
-				document.addEventListener('DOMContentLoaded', function() {
-				  moneiWidget.setup('monei-payment-widget', $json_config)
-				})
-			</script>";
-			echo '<div id="monei-payment-widget"></div>';
+				$json_config = json_encode( $config );
+
+				echo '<script src="https://widget.monei.net/widget2.js"></script>';
+				echo "<script>
+					moneiWidget.disableAutoSetup();
+					document.addEventListener('DOMContentLoaded', function() {
+					  moneiWidget.setup('monei-payment-widget', $json_config)
+					})
+				</script>";
+				echo '<div id="monei-payment-widget"></div>';
+			} else {
+				return false;
+			}
 		}
 
 		/**
 		 *    Updating the Payment Status and redirect to success/Failes Page
 		 **/
 		public function monei_process() {
-			global $woocommerce;
-			if ( isset( $_GET['id'] ) ) {
-				$url = 'https://api.monei.net/checkouts/' . $_GET['id'];
-				$url .= "?token=" . $_GET['token'];
+			if ( isset( $_GET['resourcePath'] ) ) {
+				$url = add_query_arg( array(
+					'authentication.userId'   => $this->USER_ID,
+					'authentication.password' => $this->PASSWORD,
+					'authentication.entityId' => $this->CHANNEL_ID
+				), $this->monei_url . $_GET['resourcePath'] );
 				$ch  = curl_init();
 				curl_setopt( $ch, CURLOPT_URL, $url );
 				curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'GET' );
-				curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );// this should be set to true in production
+				curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
 				curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 				$responseData = curl_exec( $ch );
 				if ( curl_errno( $ch ) ) {
@@ -329,7 +381,7 @@ function init_woocommerce_monei() {
 					'000.100.112',
 					'000.300.000'
 				);
-				$order        = new WC_Order( $_GET['orderId'] );
+				$order        = new WC_Order( $response->merchantInvoiceId );
 				if ( in_array( $response->result->code, $success_code ) ) {
 					$order->payment_complete( $response->id );
 					$order->add_order_note( sprintf( __( 'MONEI Transaction Successful. The Transaction ID was %s and Payment Status %s.', 'woo-monei-gateway' ), $response->id, $response->result->description ) );
@@ -347,8 +399,9 @@ function init_woocommerce_monei() {
 		 * Process the payment and return the result
 		 **/
 		function process_payment( $order_id ) {
+			global $woocommerce;
 			$order = new WC_Order( $order_id );
-			if ( $this->woocommerce_version >= 2.1 ) {
+			if ( $woocommerce->version >= 2.1 ) {
 				$redirect = $order->get_checkout_payment_url( true );
 			} else {
 				$redirect = add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink( get_option( 'woocommerce_pay_page_id' ) ) ) );
@@ -364,7 +417,6 @@ function init_woocommerce_monei() {
 		 * Process the payment and return the result
 		 **/
 		function process_refund( $order_id, $amount = null, $reason = '' ) {
-			global $woocommerce;
 			$order        = new WC_Order( $order_id );
 			$trx_id       = get_post_meta( $order_id, '_transaction_id', true );
 			$amount       = $order->get_total();
@@ -388,8 +440,6 @@ function init_woocommerce_monei() {
 
 				return false;
 			}
-
-			return false;
 		}
 
 		/**
@@ -402,17 +452,20 @@ function init_woocommerce_monei() {
 
 		function refund_request( $id, $amount, $currency ) {
 			$url  = $this->monei_url . "/v1/payments/" . $id;
-			$data = "authentication.userId=" . $this->USER_ID .
-			        "&authentication.password=" . $this->PASSWORD .
-			        "&authentication.entityId=" . $this->CHANNEL_ID .
-			        "&amount=" . $amount .
-			        "&currency=" . $currency .
-			        "&paymentType=DB";
+			$data = http_build_query( array(
+					'authentication.userId'   => $this->USER_ID,
+					'authentication.password' => $this->PASSWORD,
+					'authentication.entityId' => $this->CHANNEL_ID,
+					'amount'                  => $amount,
+					'currency'                => $currency,
+					'paymentType'             => 'RF',
+				)
+			);
 			$ch   = curl_init();
 			curl_setopt( $ch, CURLOPT_URL, $url );
 			curl_setopt( $ch, CURLOPT_POST, 1 );
 			curl_setopt( $ch, CURLOPT_POSTFIELDS, $data );
-			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );// this should be set to true in production
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
 			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 			$responseData = curl_exec( $ch );
 			if ( curl_errno( $ch ) ) {
