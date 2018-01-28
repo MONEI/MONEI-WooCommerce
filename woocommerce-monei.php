@@ -89,7 +89,7 @@ function init_woocommerce_monei() {
 
 			$token            = $this->settings['token'];
 			$credentials      = json_decode( _base64_decode( $token ) );
-			$this->test_mode  = $this->settings['production'] == 'no';
+			$this->test_mode  = $credentials->t;
 			$this->monei_url  = $this->test_mode ? "https://test.monei-api.net" : "https://monei-api.net";
 			$this->USER_ID    = $credentials->l;
 			$this->PASSWORD   = $credentials->p;
@@ -154,13 +154,6 @@ function init_woocommerce_monei() {
 					'type'        => 'text',
 					'description' => sprintf( __( 'Secret token generated for your sub account in %sMONEI dashboard%s', 'woo-monei-gateway' ), '<a href="https://dashboard.monei.net/sub-accounts" target="_blank">', '</a>' ),
 					'default'     => ''
-				),
-				'production'        => array(
-					'title'       => __( 'Production mode', 'woo-monei-gateway' ),
-					'type'        => 'checkbox',
-					'label'       => __( 'Enable production mode', 'woo-monei-gateway' ),
-					'description' => __( 'To use production mode you need to provide production token', 'woo-monei-gateway' ),
-					'default'     => 'no'
 				),
 				'card_supported'    => array(
 					'title'       => __( "Accepted Cards", 'woo-monei-gateway' ),
