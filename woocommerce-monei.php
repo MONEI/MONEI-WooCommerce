@@ -38,7 +38,7 @@ function child_plugin_notice(){
 	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="'.$install_url.'">WooCommerce plugin</a> to be installed and active.</p></div>';
 }
 
-function add_color_picker( $hook ) {
+function add_color_picker() {
 
 	if ( is_admin() ) {
 
@@ -146,20 +146,20 @@ function init_woocommerce_monei() {
 					'default' => 'yes'
 				),
 				'payment'           => array(
-					'title' => __( 'Payment configuration', 'woo-monei-gateway' ),
+					'title' => __( 'Payment settings', 'woo-monei-gateway' ),
 					'type'  => 'title'
 				),
 				'token'             => array(
 					'title'       => __( 'Secret Token', 'woo-monei-gateway' ),
 					'type'        => 'text',
-					'description' => sprintf( __( 'secret token generated for sub account in %sMONEI dashboard%s', 'woo-monei-gateway' ), '<a href="https://dashboard.monei.net" target="_blank">', '</a>' ),
+					'description' => sprintf( __( 'Secret token generated for your sub account in %sMONEI dashboard%s', 'woo-monei-gateway' ), '<a href="https://dashboard.monei.net/sub-accounts" target="_blank">', '</a>' ),
 					'default'     => ''
 				),
 				'production'        => array(
 					'title'       => __( 'Production mode', 'woo-monei-gateway' ),
 					'type'        => 'checkbox',
 					'label'       => __( 'Enable production mode', 'woo-monei-gateway' ),
-					'description' => __( 'to use production mode you need to provide production token', 'woo-monei-gateway' ),
+					'description' => __( 'To use production mode you need to provide production token', 'woo-monei-gateway' ),
 					'default'     => 'no'
 				),
 				'card_supported'    => array(
@@ -174,7 +174,7 @@ function init_woocommerce_monei() {
 						'VISA DEBIT',
 						'VISA ELECTRON'
 					),
-					'description' => sprintf( __( 'Contact support at %ssupport@monei.net%s if you want to accept AMEX cards.', 'woo-monei-gateway' ), '<a href="mailto:support@monei.net" target="_blank">', '</a>' ),
+					'description' => sprintf( __( 'Contact support at %ssupport@monei.net%s if you want to accept AMEX cards', 'woo-monei-gateway' ), '<a href="mailto:support@monei.net" target="_blank">', '</a>' ),
 					'type'        => 'multiselect',
 					'options'     => array(
 						'AMEX'         => __( "AMEX", 'woo-monei-gateway' ),
@@ -193,7 +193,7 @@ function init_woocommerce_monei() {
 					'description' => __( 'Descriptor that will be shown in customer\'s bank statement', 'woo-monei-gateway' )
 				),
 				'appearance'        => array(
-					'title' => __( 'Appearance configuration', 'woo-monei-gateway' ),
+					'title' => __( 'Appearance settings', 'woo-monei-gateway' ),
 					'type'  => 'title'
 				),
 				'title'             => array(
@@ -205,13 +205,13 @@ function init_woocommerce_monei() {
 				'description'       => array(
 					'title'       => __( 'Description', 'woo-monei-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'description of payment method which the user sees during checkout', 'woo-monei-gateway' ),
+					'description' => __( 'Description of payment method which the user sees during checkout', 'woo-monei-gateway' ),
 					'default'     => __( "Pay via MONEI payment gateway.", 'woo-monei-gateway' )
 				),
 				'submit_text'       => array(
 					'title'       => __( 'Submit text', 'woo-monei-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'submit button text, {amount} will be replaced with amount value with currency. Default: Pay now', 'woo-monei-gateway' )
+					'description' => __( 'Submit button text, {amount} will be replaced with amount value with currency. Default: Pay now', 'woo-monei-gateway' )
 				),
 				'show_cardholder'   => array(
 					'title'   => __( 'Show cardholder', 'woo-monei-gateway' ),
@@ -229,7 +229,7 @@ function init_woocommerce_monei() {
 					'title'       => __( 'Show CVV hint', 'woo-monei-gateway' ),
 					'type'        => 'checkbox',
 					'label'       => __( 'Show CVV hint', 'woo-monei-gateway' ),
-					'description' => __( 'if set to true then the credit card form will display a hint on where the CVV is located when the mouse is hovering over the CVV field.', 'woo-monei-gateway' ),
+					'description' => __( 'If set to true then the credit card form will display a hint on where the CVV is located when the mouse is hovering over the CVV field.', 'woo-monei-gateway' ),
 					'default'     => 'no'
 				),
 				'show_labels'       => array(
@@ -247,14 +247,14 @@ function init_woocommerce_monei() {
 				'primary_color'     => array(
 					'title'       => __( 'Primary color', 'woo-monei-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'a color for checkout and submit button', 'woo-monei-gateway' ),
+					'description' => __( 'A color for checkout and submit button', 'woo-monei-gateway' ),
 					'default'     => ''
 				),
 				'popup'             => array(
 					'title'       => __( 'Popup mode', 'woo-monei-gateway' ),
 					'type'        => 'checkbox',
 					'label'       => __( 'Enable popup mode', 'woo-monei-gateway' ),
-					'description' => __( 'renders a button and shows payment form in a popup when button is clicked', 'woo-monei-gateway' ),
+					'description' => __( 'Renders a button and shows payment form in a popup when button is clicked', 'woo-monei-gateway' ),
 					'default'     => 'no'
 				),
 				'popup_config'      => array(
@@ -264,7 +264,7 @@ function init_woocommerce_monei() {
 				'checkout_text'     => array(
 					'title'       => __( 'Checkout text', 'woo-monei-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'checkout button text in popup mode, {amount} will be replaced with amount value with currency. Default: Pay {amount}', 'woo-monei-gateway' )
+					'description' => __( 'Checkout button text in popup mode, {amount} will be replaced with amount value with currency. Default: Pay {amount}', 'woo-monei-gateway' )
 				),
 				'popup_name'        => array(
 					'title' => __( 'Popup header name', 'woo-monei-gateway' ),
