@@ -42,11 +42,14 @@ function add_color_picker() {
 
 	if ( is_admin() ) {
 
+		wp_enqueue_style( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.min.css' );
+		wp_enqueue_script( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.jquery.min.js' );
+
 		// Add the color picker css file
 		wp_enqueue_style( 'wp-color-picker' );
 
 		// Include our custom jQuery file with WordPress Color Picker dependency
-		wp_enqueue_script( 'custom-script-handle', plugins_url( 'custom-script.js', __FILE__ ), array( 'wp-color-picker' ), false, true );
+		wp_enqueue_script( 'admin-scripts', plugins_url( 'admin.js', __FILE__ ), array( 'wp-color-picker', 'chosen' ), false, true );
 	}
 }
 
@@ -119,17 +122,6 @@ function init_woocommerce_monei() {
 			echo '<p>' . __( 'The easiest way to accept payments from your customers.', 'woo-monei-gateway' ) . '</p>';
 			echo '<p>' . sprintf( __( 'To use this payment method you need to be registered in %sMONEI Payment Gateway%s', 'woo-monei-gateway' ), '<a href="https://monei.net" target="_blank"><b>', '</b></a>' ) . '</p>';
 			echo '<table class="form-table">';
-			wc_enqueue_js( "
-		      $('#woocommerce_monei_primary_color').wpColorPicker();
-		        console.log($('#woocommerce_monei_popup'));
-		        $('#woocommerce_monei_popup').change(function(){
-		          if (this.checked) {
-		            $( '#woocommerce_monei_popup_config, #woocommerce_monei_popup_config + .form-table' ).show();
-		          } else {
-		            $( '#woocommerce_monei_popup_config, #woocommerce_monei_popup_config + .form-table' ).hide();
-		          }
-		        }).change();
-            " );
 			$this->generate_settings_html();
 			echo '</table>';
 		}
