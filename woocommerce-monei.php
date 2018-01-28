@@ -40,8 +40,7 @@ function init_woocommerce_monei() {
 		public function __construct() {
 			$this->id           = 'monei';
 			$this->method_title = __( 'MONEI Payment Gateway', 'woo-monei-gateway' );
-			$this->icon         = plugins_url( 'monei.png', __FILE__ );
-			$this->screen       = plugins_url( 'screen.png', __FILE__ );
+			$this->	view_transaction_url = 'https://dashboard.monei.net/transactions/%s';
 			$this->has_fields   = false;
 
 			// Load the form fields.
@@ -193,9 +192,9 @@ function init_woocommerce_monei() {
 					'default' => 'no'
 				),
 				'show_cvv_hint'     => array(
-					'title'       => __( 'Show cvv hint', 'woo-monei-gateway' ),
+					'title'       => __( 'Show CVV hint', 'woo-monei-gateway' ),
 					'type'        => 'checkbox',
-					'label'       => __( 'Show cvv hint', 'woo-monei-gateway' ),
+					'label'       => __( 'Show CVV hint', 'woo-monei-gateway' ),
 					'description' => __( 'if set to true then the credit card form will display a hint on where the CVV is located when the mouse is hovering over the CVV field.', 'woo-monei-gateway' ),
 					'default'     => 'no'
 				),
