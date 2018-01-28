@@ -38,17 +38,12 @@ function child_plugin_notice(){
 	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="'.$install_url.'">WooCommerce plugin</a> to be installed and active.</p></div>';
 }
 
-function add_color_picker() {
-
+function add_dependencies() {
 	if ( is_admin() ) {
-
 		wp_enqueue_style( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.min.css' );
 		wp_enqueue_script( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.jquery.min.js' );
 
-		// Add the color picker css file
 		wp_enqueue_style( 'wp-color-picker' );
-
-		// Include our custom jQuery file with WordPress Color Picker dependency
 		wp_enqueue_script( 'admin-scripts', plugins_url( 'admin.js', __FILE__ ), array( 'wp-color-picker', 'chosen' ), false, true );
 	}
 }
