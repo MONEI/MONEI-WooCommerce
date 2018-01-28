@@ -1,10 +1,15 @@
 <?php
 /**
- * Plugin Name: MONEI Gateway for WooCommerce
+ * Plugin Name: MONEI WooCommerce
  * Plugin URI: https://monei.net
+ * Version: 2.0.0
+ * Author:       moeni.net
+ * Author URI:   https://moeni.net/
  * Description: WooCommerce Plugin for accepting payments through MONEI Payment Gateway.
+ * License:      GPL2
+ * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least: 4.0
- * Tested up to: 4.6
+ * Tested up to: 4.9.2
  *
  * @package MONEI Payment Gateway for WooCommerce
  */
@@ -13,6 +18,26 @@ include dirname( __FILE__ ) . '/utils.php';
 
 add_action( 'plugins_loaded', 'init_woocommerce_monei', 0 );
 add_action( 'admin_enqueue_scripts', 'add_color_picker' );
+add_filter( "plugin_action_links", 'plugin_add_settings_link' , plugin_basename( __FILE__ ));
+add_action( 'admin_init', 'child_plugin_has_parent_plugin' );
+
+function child_plugin_has_parent_plugin() {
+	if ( is_admin() && current_user_can( 'activate_plugins' ) &&  !is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+		add_action( 'admin_notices', 'child_plugin_notice' );
+
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+
+		if ( isset( $_GET['activate'] ) ) {
+			unset( $_GET['activate'] );
+		}
+	}
+}
+
+function child_plugin_notice(){
+	$install_url = admin_url('plugin-install.php?s=WooCommerce&tab=search&type=term');
+	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="'.$install_url.'">WooCommerce plugin</a> to be installed and active.</p></div>';
+}
+
 function add_color_picker( $hook ) {
 
 	if ( is_admin() ) {
@@ -24,6 +49,15 @@ function add_color_picker( $hook ) {
 		wp_enqueue_script( 'custom-script-handle', plugins_url( 'custom-script.js', __FILE__ ), array( 'wp-color-picker' ), false, true );
 	}
 }
+
+function plugin_add_settings_link( $links ) {
+	$url = admin_url('admin.php?page=wc-settings&tab=checkout&section=monei');
+	$settings_link = '<a href="'. $url .'">' . __( 'Settings' ) . '</a>';
+	array_unshift( $links, $settings_link );
+
+	return $links;
+}
+
 
 function init_woocommerce_monei() {
 	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
@@ -38,10 +72,10 @@ function init_woocommerce_monei() {
 		private $PASSWORD;
 
 		public function __construct() {
-			$this->id           = 'monei';
-			$this->method_title = __( 'MONEI Payment Gateway', 'woo-monei-gateway' );
-			$this->	view_transaction_url = 'https://dashboard.monei.net/transactions/%s';
-			$this->has_fields   = false;
+			$this->id                   = 'monei';
+			$this->method_title         = __( 'MONEI Payment Gateway', 'woo-monei-gateway' );
+			$this->view_transaction_url = 'https://dashboard.monei.net/transactions/%s';
+			$this->has_fields           = false;
 
 			// Load the form fields.
 			$this->init_form_fields();
