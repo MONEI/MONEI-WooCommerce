@@ -17,14 +17,18 @@
 include dirname( __FILE__ ) . '/utils.php';
 include dirname( __FILE__ ) . '/WC_Monei_API_Handler.php';
 
-add_action( 'plugins_loaded', 'init_woocommerce_monei', 0 );
+add_action( 'plugins_loaded', 'init_monei_woocommerce', 0 );
 add_action( 'admin_enqueue_scripts', 'enqueue_scripts' );
 add_filter( "plugin_action_links", 'plugin_add_settings_link', plugin_basename( __FILE__ ) );
-add_action( 'admin_init', 'child_plugin_has_parent_plugin' );
+add_action( 'admin_init', 'wc_active_check' );
 
-function child_plugin_has_parent_plugin() {
+
+/**
+ * Checks if WooCommerce plugin is active before activating MONEI
+ */
+function wc_active_check() {
 	if ( is_admin() && current_user_can( 'activate_plugins' ) && ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		add_action( 'admin_notices', 'plugin_notice' );
+		add_action( 'admin_notices', 'wp_not_active_notice' );
 
 		deactivate_plugins( plugin_basename( __FILE__ ) );
 
@@ -34,11 +38,17 @@ function child_plugin_has_parent_plugin() {
 	}
 }
 
-function plugin_notice() {
+/**
+ * Shows a worning if WooCommerce plugin is not active
+ */
+function wp_not_active_notice() {
 	$install_url = admin_url( 'plugin-install.php?s=WooCommerce&tab=search&type=term' );
 	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="' . $install_url . '">WooCommerce plugin</a> to be installed and active.</p></div>';
 }
 
+/**
+ * Adds color picker and chosen to plugin admin settings
+ */
 function enqueue_scripts() {
 	if ( is_admin() ) {
 		wp_enqueue_style( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.min.css' );
@@ -52,6 +62,13 @@ function enqueue_scripts() {
 	}
 }
 
+/**
+ * Adds a settings link on plugins page
+ *
+ * @param $links - set of existing links
+ *
+ * @return mixed modified links set
+ */
 function plugin_add_settings_link( $links ) {
 	$url           = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=monei' );
 	$settings_link = '<a href="' . $url . '">' . __( 'Settings' ) . '</a>';
@@ -61,7 +78,10 @@ function plugin_add_settings_link( $links ) {
 }
 
 
-function init_woocommerce_monei() {
+/**
+ * Initializes MONEI WooCommerce plugin
+ */
+function init_monei_woocommerce() {
 	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 		return;
 	}
@@ -85,13 +105,13 @@ function init_woocommerce_monei() {
 
 			$this->title       = $this->get_option( 'title' );
 			$this->description = $this->get_option( 'description' );
-			$this->supports    = array( 'refunds', 'products' );
+			$this->supports    = array( 'refunds' );
 
 			$token             = $this->get_option( 'token' );
 			$this->preauth     = $this->get_option( 'preauth' ) === 'yes';
 			$credentials       = json_decode( _base64_decode( $token ) );
 			$this->test_mode   = $credentials->t;
-			$this->api_handler = new WC_Monei_API_Handler( $token, $this->preauth );
+			$this->api_handler = new WC_Monei_API_Handler( $credentials, $this->preauth );
 
 			// Actions
 			add_action( 'init', array( $this, 'monei_process' ) );
@@ -110,9 +130,7 @@ function init_woocommerce_monei() {
 		}
 
 		/**
-		 * Woocommerce Admin Panel Option
-		 * - Manage MONEI Settings here.
-		 *
+		 * Woocommerce Admin Panel Settings
 		 */
 		public function admin_options() {
 			echo '<h2>' . __( 'MONEI Payment Gateway.', 'woo-monei-gateway' ) . ' </h2>';
@@ -323,7 +341,7 @@ function init_woocommerce_monei() {
 		}
 
 		/**
-		 *    Updating the Payment Status and redirect to success/Failes Page
+		 *    Updating payment status and redirect to success/fail Page
 		 **/
 		public function monei_process() {
 			if ( isset( $_GET['resourcePath'] ) ) {
@@ -357,9 +375,13 @@ function init_woocommerce_monei() {
 			}
 		}
 
+
 		/**
-		 * Process the payment and return the result
-		 **/
+		 * Process payment and return the result
+		 * @param int $order_id - an order to process payment for
+		 *
+		 * @return array - redirect array
+		 */
 		function process_payment( $order_id ) {
 			global $woocommerce;
 			$order = wc_get_order( $order_id );
@@ -376,11 +398,15 @@ function init_woocommerce_monei() {
 		}
 
 		/**
-		 * Process the payment and return the result
-		 **/
+		 * @param int $order_id - an order to process refund for
+		 * @param int $amount - amount to refund
+		 * @param string $reason
+		 *
+		 * @return bool
+		 */
 		function process_refund( $order_id, $amount = null, $reason = '' ) {
 			$order    = wc_get_order( $order_id );
-			$response = $this->api_handler->refund_transaction( $order, $amount,  $reason);
+			$response = $this->api_handler->refund_transaction( $order, $amount, $reason );
 			if ( ! $response ) {
 				return false;
 			}
@@ -401,6 +427,10 @@ function init_woocommerce_monei() {
 
 		/**
 		 * Capture payment when the order is changed from on-hold to complete or processing
+		 * @param $order_id - an order to process capture for
+		 *
+		 * @return bool
+		 * @throws WC_Data_Exception
 		 */
 		public function capture_payment( $order_id ) {
 			$order    = wc_get_order( $order_id );
@@ -425,7 +455,7 @@ function init_woocommerce_monei() {
 		}
 
 		/**
-		 * receipt_page
+		 * Generates receipt page
 		 **/
 		function receipt_page( $order ) {
 			//Generating Payment Form.
@@ -433,7 +463,9 @@ function init_woocommerce_monei() {
 		}
 
 
-		// Custom function not required by the Gateway
+		/**
+		 * Checks is WooCommerce is forcing ssl
+		 */
 		public function do_ssl_check() {
 			if ( $this->enabled == "yes" ) {
 				if ( get_option( 'woocommerce_force_ssl_checkout' ) == "no" ) {
@@ -442,7 +474,6 @@ function init_woocommerce_monei() {
 			}
 		}
 	}
-
 
 	/**
 	 * Add the gateway to WooCommerce

@@ -18,8 +18,13 @@ class WC_Monei_API_Handler {
 		'000.300.000'
 	);
 
-	public function __construct( $token, $preauth ) {
-		$credentials        = json_decode( _base64_decode( $token ) );
+	/**
+	 * WC_Monei_API_Handler constructor.
+	 *
+	 * @param $credentials - decoded secret token credentials
+	 * @param $preauth - boolean, process transactions in pre-authorisation mode
+	 */
+	public function __construct( $credentials, $preauth ) {
 		$this->test_mode    = $credentials->t;
 		$this->api_base_url = $this->test_mode ? "https://test.monei-api.net" : "https://monei-api.net";
 		$this->preauth      = $preauth;
@@ -30,6 +35,12 @@ class WC_Monei_API_Handler {
 		);
 	}
 
+	/**
+	 * Checks errors and decodes api response
+	 * @param $raw_response
+	 *
+	 * @return false if error or decoded json response
+	 */
 	private function handle_api_response( $raw_response ) {
 		if ( is_wp_error( $raw_response ) ) {
 			$error_message = $raw_response->get_error_message();
@@ -48,6 +59,12 @@ class WC_Monei_API_Handler {
 		return json_decode( $raw_response['body'] );
 	}
 
+	/**
+	 * Prepares checkout
+	 * @param $order - WC_Order to prepare checkout for
+	 *
+	 * @return false if error or decoded json response
+	 */
 	public function prepare_checkout( $order ) {
 		$order_id     = $order->get_id();
 		$amount       = $order->get_total();
@@ -90,6 +107,14 @@ class WC_Monei_API_Handler {
 		return $this->handle_api_response( wp_safe_remote_post( $url ) );
 	}
 
+	/**
+	 * Refunds transaction for an order
+	 * @param $order - WC_Order to refund
+	 * @param $amount - amount to refund
+	 * @param $reason - reason of the refund
+	 *
+	 * @return false if error or decoded json response
+	 */
 	public function refund_transaction( $order, $amount, $reason ) {
 		$status = get_post_meta( $order->get_id(), '_monei_status', true );
 		if (! in_array($status, array('success', 'pending'))) {
@@ -110,6 +135,12 @@ class WC_Monei_API_Handler {
 		return $this->handle_api_response( wp_safe_remote_post( $url ) );
 	}
 
+	/**
+	 * Captures pre-authorisation for an order
+	 * @param $order - WC_Order to capture transaction for
+	 *
+	 * @return false if error or decoded json response
+	 */
 	public function capture_transaction( $order ) {
 		$status = get_post_meta( $order->get_id(), '_monei_status', true );
 		if ($status !== 'pending') {
@@ -127,6 +158,12 @@ class WC_Monei_API_Handler {
 		return $this->handle_api_response( wp_safe_remote_post( $url ) );
 	}
 
+	/**
+	 * Fetches transaction status
+	 * @param $resource_path - path returned from redirect url
+	 *
+	 * @return false if error or decoded json response
+	 */
 	public function get_transaction_status( $resource_path ) {
 		$url = add_query_arg( $this->auth_params, $this->api_base_url . $resource_path );
 

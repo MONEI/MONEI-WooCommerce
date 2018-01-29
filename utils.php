@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Decodes base64 string
+ * @param string $input - base64 encoded string
+ *
+ * @return string - decoded string
+ */
 function _base64_decode( $input ) {
 	$keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	$chr1   = $chr2 = $chr3 = "";

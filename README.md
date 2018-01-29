@@ -1,13 +1,15 @@
-# WooCommerce
-WooCommerce plugin for MONEI 
-[![Twitter](https://img.shields.io/twitter/url/https/github.com/MONEI/WooCommerce.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=%5Bobject%20Object%5D)
-[![GitHub stars](https://img.shields.io/github/stars/MONEI/WooCommerce.svg)](https://github.com/MONEI/WooCommerce/stargazers)
+# MONEI WooCommerce
+WooCommerce plugin for [MONEI payment gateway](https://monei.net/)
 
-Accept payments in your WooCommerce store using MONEI payment gateway.
+Accept payments in your WooCommerce store using [MONEI](https://monei.net/).
 
-Supported countries: AD, AT, BE, BG, CA, CH, CY, CZ, DE, DK, EE, ES, FI, FO, FR, GB, GI, GR, HU, IE, IL, IS, IT, LI, LT, LU, LV, MT, NL, NO, PL, PT, RO, SE, SI, SK, TR, US, VA
+![preview](https://cl.ly/343Z3R1U3g18/Screen%20Shot%202018-01-29%20at%2013.51.39.png)
 
-[See a fully functional WooCommerce demo store with MONEI as a payment gateway.](http://woocommerce.demo-monei.com/)
+## Features
+ - accept credit and debit cards `American Express, JCB, Maestro, MasterCard, Visa`
+ - accept virtual payments like `Paypal, Bitcoin, Alipay`
+ - supports pre-authorisations that can be captured on order status change in admin dashboard
+ - supports partial and full refunds
+ - configurable ui
 
-# Development/Contributing
-git svn is recommended to mirror between svn and git. The one in Github is the main repo and everything should be syncrhonized to https://plugins.svn.wordpress.org/monei/
+[WooCommerce demo store with MONEI as a payment gateway.](http://woocommerce.demo-monei.com/)
