@@ -1,7 +1,5 @@
 # MONEI WooCommerce
-WooCommerce plugin for [MONEI payment gateway](https://monei.net/)
-
-Accept payments in your WooCommerce store using [MONEI](https://monei.net/).
+Accept payments in your WooCommerce store using [MONEI payment gateway](https://monei.net/)
 
 <img src="https://cl.ly/343Z3R1U3g18/Screen%20Shot%202018-01-29%20at%2013.51.39.png" width="450">
 
