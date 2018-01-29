@@ -101,8 +101,10 @@ function init_monei_woocommerce() {
 			$this->init_form_fields();
 			// Load the settings.
 			$this->init_settings();
-			// Define user set variables
 
+			$this->do_ssl_check();
+
+			// Define user set variables
 			$this->title       = $this->get_option( 'title' );
 			$this->description = $this->get_option( 'description' );
 			$this->supports    = array( 'refunds' );
@@ -125,8 +127,6 @@ function init_monei_woocommerce() {
 			) );
 			// add the action
 			add_action( 'woocommerce_order_refunded', array( $this, 'action_woocommerce_order_refunded' ), 10, 2 );
-			// Lets check for SSL
-			add_action( 'admin_notices', array( $this, 'do_ssl_check' ) );
 		}
 
 		/**
@@ -378,6 +378,7 @@ function init_monei_woocommerce() {
 
 		/**
 		 * Process payment and return the result
+		 *
 		 * @param int $order_id - an order to process payment for
 		 *
 		 * @return array - redirect array
@@ -427,6 +428,7 @@ function init_monei_woocommerce() {
 
 		/**
 		 * Capture payment when the order is changed from on-hold to complete or processing
+		 *
 		 * @param $order_id - an order to process capture for
 		 *
 		 * @return bool
@@ -463,14 +465,14 @@ function init_monei_woocommerce() {
 		}
 
 
+
 		/**
 		 * Checks is WooCommerce is forcing ssl
 		 */
 		public function do_ssl_check() {
-			if ( $this->enabled == "yes" ) {
-				if ( get_option( 'woocommerce_force_ssl_checkout' ) == "no" ) {
-					echo "<div class=\"error\"><p>" . sprintf( __( "<strong>%s</strong> is enabled and WooCommerce is not forcing the SSL certificate on your checkout page. Please ensure that you have a valid SSL certificate and that you are <a href=\"%s\">forcing the checkout pages to be secured.</a>" ), $this->method_title, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ) . "</p></div>";
-				}
+			if ( $this->enabled === "yes" && $_GET['section'] == 'monei' && get_option( 'woocommerce_force_ssl_checkout' ) === "no" ) {
+				echo "<div class=\"error\"><p>" . sprintf( __( "<strong>%s</strong> is enabled and WooCommerce is not forcing the SSL certificate on your checkout page. Please ensure that you have a valid SSL certificate and that you are <a href=\"%s\">forcing the checkout pages to be secured.</a>" ), $this->method_title, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ) . "</p></div>";
+
 			}
 		}
 	}
