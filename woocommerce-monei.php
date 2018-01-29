@@ -17,7 +17,7 @@
 include dirname( __FILE__ ) . '/utils.php';
 
 add_action( 'plugins_loaded', 'init_woocommerce_monei', 0 );
-add_action( 'admin_enqueue_scripts', 'add_color_picker' );
+add_action( 'admin_enqueue_scripts', 'enqueue_scripts' );
 add_filter( "plugin_action_links", 'plugin_add_settings_link' , plugin_basename( __FILE__ ));
 add_action( 'admin_init', 'child_plugin_has_parent_plugin' );
 
@@ -38,7 +38,7 @@ function child_plugin_notice(){
 	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="'.$install_url.'">WooCommerce plugin</a> to be installed and active.</p></div>';
 }
 
-function add_dependencies() {
+function enqueue_scripts() {
 	if ( is_admin() ) {
 		wp_enqueue_style( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.min.css' );
 		wp_enqueue_script( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.jquery.min.js' );
@@ -145,26 +145,23 @@ function init_woocommerce_monei() {
 				'card_supported'    => array(
 					'title'       => __( "Accepted Cards", 'woo-monei-gateway' ),
 					'default'     => array(
-						'AMEX',
-						'JCB',
-						'MAESTRO',
 						'MASTER',
-						'MASTER DEBIT',
-						'VISA',
-						'VISA DEBIT',
-						'VISA ELECTRON'
+						'VISA'
 					),
 					'description' => sprintf( __( 'Contact support at %ssupport@monei.net%s if you want to accept AMEX cards', 'woo-monei-gateway' ), '<a href="mailto:support@monei.net" target="_blank">', '</a>' ),
 					'type'        => 'multiselect',
 					'options'     => array(
-						'AMEX'         => __( "AMEX", 'woo-monei-gateway' ),
+						'AMEX'         => __( "American Express", 'woo-monei-gateway' ),
 						'JCB'          => __( "JCB", 'woo-monei-gateway' ),
-						'MAESTRO'      => __( "MAESTRO", 'woo-monei-gateway' ),
-						'MASTER'       => __( "MASTER", 'woo-monei-gateway' ),
-						'MASTERDEBIT'  => __( "MASTER DEBIT", 'woo-monei-gateway' ),
-						'VISA'         => __( "VISA", 'woo-monei-gateway' ),
-						'VISADEBIT'    => __( "VISA DEBIT", 'woo-monei-gateway' ),
-						'VISAELECTRON' => __( "VISA ELECTRON", 'woo-monei-gateway' ),
+						'MAESTRO'      => __( "Maestro", 'woo-monei-gateway' ),
+						'MASTER'       => __( "MasterCard", 'woo-monei-gateway' ),
+						'MASTERDEBIT'  => __( "MasterCard Debit", 'woo-monei-gateway' ),
+						'VISA'         => __( "Visa", 'woo-monei-gateway' ),
+						'VISADEBIT'    => __( "Visa Debit", 'woo-monei-gateway' ),
+						'VISAELECTRON' => __( "Visa Electron", 'woo-monei-gateway' ),
+						'PAYPAL'=> __( "PayPal", 'woo-monei-gateway' ),
+						'BITCOIN'=> __( "Bitcoin", 'woo-monei-gateway' ),
+						'ALIPAY' => __( "Alipay", 'woo-monei-gateway' )
 					)
 				),
 				'descriptor'        => array(
