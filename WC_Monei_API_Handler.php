@@ -90,21 +90,31 @@ class WC_Monei_API_Handler {
 		return $this->handle_api_response( wp_safe_remote_post( $url ) );
 	}
 
-	public function refund_transaction( $order ) {
-		$payment_type  = $this->preauth ? 'RV' : 'RF';
+	public function refund_transaction( $order, $amount, $reason ) {
+		$status = get_post_meta( $order->get_id(), '_monei_status', true );
+		if (! in_array($status, array('success', 'pending'))) {
+			return false;
+		}
+		$payment_type  = $status === 'pending' ? 'RV' : 'RF';
 		$transactionId = $order->get_transaction_id();
-		$amount        = $order->get_total();
 		$currency      = $order->get_currency();
 		$url           = add_query_arg( array_merge( $this->auth_params, array(
 			'amount'      => $amount,
 			'currency'    => $currency,
 			'paymentType' => $payment_type,
+			'customParameters'            => array(
+				'refundReason' => $reason
+			)
 		) ), $this->api_base_url . "/v1/payments/" . $transactionId );
 
 		return $this->handle_api_response( wp_safe_remote_post( $url ) );
 	}
 
 	public function capture_transaction( $order ) {
+		$status = get_post_meta( $order->get_id(), '_monei_status', true );
+		if ($status !== 'pending') {
+			return false;
+		}
 		$transactionId = $order->get_transaction_id();
 		$amount        = $order->get_total();
 		$currency      = $order->get_currency();

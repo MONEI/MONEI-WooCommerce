@@ -302,7 +302,7 @@ function init_woocommerce_monei() {
 					'showLabels'       => $this->get_option( 'show_labels' ) === 'yes',
 					'showPlaceholders' => $this->get_option( 'show_placeholders' ) === 'yes',
 					'showEmail'        => false,
-					'locale'           => $locale,
+					'locale'           => $locale
 				);
 
 				$json_config = json_encode( $config );
@@ -331,24 +331,26 @@ function init_woocommerce_monei() {
 				if ( ! $response ) {
 					return false;
 				}
-				$order_id = $response->merchantInvoiceId;
+				$order_id       = $response->merchantInvoiceId;
 				$order          = wc_get_order( $order_id );
 				$transaction_id = $response->id;
-				$status         = $response->result->description;
+				$desc           = $response->result->description;
 				if ( $this->api_handler->is_transaction_successful( $response ) ) {
 					if ( $this->preauth ) {
-						update_post_meta( $order_id, '_transaction_id',  $response->id);
+						update_post_meta( $order_id, '_transaction_id', $response->id );
+						update_post_meta( $order_id, '_monei_status', 'pending' );
 						$order->update_status( 'wc-on-hold' );
-						$order->add_order_note( sprintf( __( 'Preauthorisation success with status "%s."', 'woo-monei-gateway' ), $status ) );
-						$order->save();
+						$order->add_order_note( sprintf( __( 'Preauthorisation success with status "%s."', 'woo-monei-gateway' ), $desc ) );
 					} else {
 						$order->payment_complete( $transaction_id );
-						$order->add_order_note( sprintf( __( 'Payment success with status: "%s."', 'woo-monei-gateway' ), $status ) );
+						update_post_meta( $order_id, '_monei_status', 'success' );
+						$order->add_order_note( sprintf( __( 'Payment success with status: "%s."', 'woo-monei-gateway' ), $desc ) );
 					}
 					wp_redirect( $this->get_return_url( $order ) );
 					exit();
 				} else {
-					$order->add_order_note( sprintf( __( 'Payment fail with status: "%s."', 'woo-monei-gateway' ), $status ) );
+					update_post_meta( $order_id, '_monei_status', 'fail' );
+					$order->add_order_note( sprintf( __( 'Payment fail with status: "%s."', 'woo-monei-gateway' ), $desc ) );
 					wp_redirect( $order->get_cancel_order_url() );
 					exit();
 				}
@@ -364,7 +366,7 @@ function init_woocommerce_monei() {
 			if ( $woocommerce->version >= 2.1 ) {
 				$redirect = $order->get_checkout_payment_url( true );
 			} else {
-				$redirect = add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink( get_option( 'woocommerce_pay_page_id' ) ) ) );
+				$redirect = add_query_arg( 'order', $order->get_id(), add_query_arg( 'key', $order->get_order_key(), get_permalink( get_option( 'woocommerce_pay_page_id' ) ) ) );
 			}
 
 			return array(
@@ -377,20 +379,21 @@ function init_woocommerce_monei() {
 		 * Process the payment and return the result
 		 **/
 		function process_refund( $order_id, $amount = null, $reason = '' ) {
-			$order          = wc_get_order( $order_id );
-			$response       = $this->api_handler->refund_transaction( $order );
+			$order    = wc_get_order( $order_id );
+			$response = $this->api_handler->refund_transaction( $order, $amount,  $reason);
 			if ( ! $response ) {
 				return false;
 			}
-			$status         = $response->result->description;
+			$desc = $response->result->description;
 			if ( $this->api_handler->is_transaction_successful( $response ) ) {
-				update_post_meta( $order_id, '_transaction_id',  $response->id);
+				update_post_meta( $order_id, '_transaction_id', $response->id );
+				update_post_meta( $order_id, '_monei_status', 'refund' );
 				$order->update_status( 'wc-refunded' );
-				$order->add_order_note( sprintf( __( 'Refund success with status: "%s."', 'woo-monei-gateway' ), $status ) );
+				$order->add_order_note( sprintf( __( 'Refund success with status: "%s."', 'woo-monei-gateway' ), $desc ) );
 
 				return true;
 			} else {
-				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $status ) );
+				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $desc ) );
 
 				return false;
 			}
@@ -405,14 +408,17 @@ function init_woocommerce_monei() {
 			if ( ! $response ) {
 				return false;
 			}
-			$status         = $response->result->description;
+			$desc = $response->result->description;
 			if ( $this->api_handler->is_transaction_successful( $response ) ) {
-				update_post_meta( $order_id, '_transaction_id',  $response->id);
+				update_post_meta( $order_id, '_transaction_id', $response->id );
+				update_post_meta( $order_id, '_monei_status', 'success' );
 				$order->set_date_paid( current_time( 'timestamp', true ) );
-				$order->add_order_note( sprintf( __( 'Capture success with status: "%s."', 'woo-monei-gateway' ), $status ) );
+				$order->add_order_note( sprintf( __( 'Capture success with status: "%s."', 'woo-monei-gateway' ), $desc ) );
+
 				return true;
 			} else {
-				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $status ) );
+				update_post_meta( $order_id, '_monei_status', 'fail' );
+				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $desc ) );
 
 				return false;
 			}
