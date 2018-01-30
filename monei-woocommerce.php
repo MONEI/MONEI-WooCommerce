@@ -18,7 +18,7 @@ include dirname( __FILE__ ) . '/monei-utils.php';
 include dirname( __FILE__ ) . '/class-monei-api-handler.php';
 
 add_action( 'plugins_loaded', '_monei_init_plugin', 0 );
-add_filter( "plugin_action_links", '_monei_add_settings_link', plugin_basename( __FILE__ ) );
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), '_monei_add_settings_link' );
 add_action( 'admin_init', '_monei_wc_active_check' );
 
 /**
