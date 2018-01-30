@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WC_Monei_API_Handler {
+class Monei_API_Handler {
 	private $test_mode;
 	private $api_base_url;
 	private $preauth;
@@ -37,6 +37,7 @@ class WC_Monei_API_Handler {
 
 	/**
 	 * Checks errors and decodes api response
+	 *
 	 * @param $raw_response
 	 *
 	 * @return false if error or decoded json response
@@ -45,13 +46,13 @@ class WC_Monei_API_Handler {
 		if ( is_wp_error( $raw_response ) ) {
 			$error_message = $raw_response->get_error_message();
 
-			new WP_Error( 'monei-api', $error_message );
+			new WP_Error( 'monei_gateway_error', $error_message );
 
 			return false;
 		}
 		$code = $raw_response['response']['code'];
 		if ( $code < 200 || $code >= 300 ) {
-			new WP_Error( 'monei-api', $raw_response['response']['message'] );
+			new WP_Error( 'monei_gateway_error', $raw_response['response']['message'] );
 
 			return false;
 		}
@@ -61,6 +62,7 @@ class WC_Monei_API_Handler {
 
 	/**
 	 * Prepares checkout
+	 *
 	 * @param $order - WC_Order to prepare checkout for
 	 *
 	 * @return false if error or decoded json response
@@ -109,6 +111,7 @@ class WC_Monei_API_Handler {
 
 	/**
 	 * Refunds transaction for an order
+	 *
 	 * @param $order - WC_Order to refund
 	 * @param $amount - amount to refund
 	 * @param $reason - reason of the refund
@@ -117,17 +120,17 @@ class WC_Monei_API_Handler {
 	 */
 	public function refund_transaction( $order, $amount, $reason ) {
 		$status = get_post_meta( $order->get_id(), '_monei_status', true );
-		if (! in_array($status, array('success', 'pending'))) {
+		if ( ! in_array( $status, array( 'success', 'pending', 'partial_refund' ) ) ) {
 			return false;
 		}
 		$payment_type  = $status === 'pending' ? 'RV' : 'RF';
 		$transactionId = $order->get_transaction_id();
 		$currency      = $order->get_currency();
 		$url           = add_query_arg( array_merge( $this->auth_params, array(
-			'amount'      => $amount,
-			'currency'    => $currency,
-			'paymentType' => $payment_type,
-			'customParameters'            => array(
+			'amount'           => $amount,
+			'currency'         => $currency,
+			'paymentType'      => $payment_type,
+			'customParameters' => array(
 				'refundReason' => $reason
 			)
 		) ), $this->api_base_url . "/v1/payments/" . $transactionId );
@@ -137,19 +140,20 @@ class WC_Monei_API_Handler {
 
 	/**
 	 * Captures pre-authorisation for an order
+	 *
 	 * @param $order - WC_Order to capture transaction for
 	 *
 	 * @return false if error or decoded json response
 	 */
 	public function capture_transaction( $order ) {
 		$status = get_post_meta( $order->get_id(), '_monei_status', true );
-		if ($status !== 'pending') {
+		if ( $status !== 'pending' ) {
 			return false;
 		}
 		$transactionId = $order->get_transaction_id();
 		$amount        = $order->get_total();
 		$currency      = $order->get_currency();
-		$url = add_query_arg( array_merge( $this->auth_params, array(
+		$url           = add_query_arg( array_merge( $this->auth_params, array(
 			'amount'      => $amount,
 			'currency'    => $currency,
 			'paymentType' => 'CP',
@@ -160,6 +164,7 @@ class WC_Monei_API_Handler {
 
 	/**
 	 * Fetches transaction status
+	 *
 	 * @param $resource_path - path returned from redirect url
 	 *
 	 * @return false if error or decoded json response
@@ -172,5 +177,23 @@ class WC_Monei_API_Handler {
 
 	public function is_transaction_successful( $response ) {
 		return in_array( $response->result->code, self::$success_codes );
+	}
+
+	public function get_payment_message( $order, $response ) {
+		$desc     = $response->result->description;
+		$amount   = $response->amount . ' ' . $response->currency;
+		$customer = $order->get_billing_email();
+		if ( $response->paymentType === 'PA' ) {
+			return sprintf( __( '%s was frozen on %s bank account. Status: "%s."', 'woo-monei-gateway' ), $amount, $customer, $desc );
+		}
+		if ( $response->paymentType === 'DB' ) {
+			return sprintf( __( '%s was charged %s. Status: "%s."', 'woo-monei-gateway' ), $customer, $amount, $desc );
+		}
+		if ( $response->paymentType === 'RV' ) {
+			return sprintf( __( '%s was unfrozen on %s bank account. Status: "%s."', 'woo-monei-gateway' ), $amount, $customer, $desc );
+		}
+		if ( $response->paymentType === 'RF' ) {
+			return sprintf( __( '%s was refunded to %s. Status: "%s."', 'woo-monei-gateway' ), $amount, $customer, $desc );
+		}
 	}
 }

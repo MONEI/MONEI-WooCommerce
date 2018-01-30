@@ -14,21 +14,19 @@
  * @package MONEI Payment Gateway for WooCommerce
  */
 
-include dirname( __FILE__ ) . '/utils.php';
-include dirname( __FILE__ ) . '/WC_Monei_API_Handler.php';
+include dirname( __FILE__ ) . '/monei-utils.php';
+include dirname( __FILE__ ) . '/class-monei-api-handler.php';
 
-add_action( 'plugins_loaded', 'init_monei_woocommerce', 0 );
-add_action( 'admin_enqueue_scripts', 'enqueue_scripts' );
-add_filter( "plugin_action_links", 'plugin_add_settings_link', plugin_basename( __FILE__ ) );
-add_action( 'admin_init', 'wc_active_check' );
-
+add_action( 'plugins_loaded', '_monei_init_plugin', 0 );
+add_filter( "plugin_action_links", '_monei_add_settings_link', plugin_basename( __FILE__ ) );
+add_action( 'admin_init', '_monei_wc_active_check' );
 
 /**
  * Checks if WooCommerce plugin is active before activating MONEI
  */
-function wc_active_check() {
+function _monei_wc_active_check() {
 	if ( is_admin() && current_user_can( 'activate_plugins' ) && ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		add_action( 'admin_notices', 'wp_not_active_notice' );
+		add_action( 'admin_notices', '_monei_wp_not_active_notice' );
 
 		deactivate_plugins( plugin_basename( __FILE__ ) );
 
@@ -41,25 +39,9 @@ function wc_active_check() {
 /**
  * Shows a worning if WooCommerce plugin is not active
  */
-function wp_not_active_notice() {
+function _monei_wp_not_active_notice() {
 	$install_url = admin_url( 'plugin-install.php?s=WooCommerce&tab=search&type=term' );
 	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="' . $install_url . '">WooCommerce plugin</a> to be installed and active.</p></div>';
-}
-
-/**
- * Adds color picker and chosen to plugin admin settings
- */
-function enqueue_scripts() {
-	if ( is_admin() ) {
-		wp_enqueue_style( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.min.css' );
-		wp_enqueue_script( 'chosen', '//cdnjs.cloudflare.com/ajax/libs/chosen/1.1.0/chosen.jquery.min.js' );
-
-		wp_enqueue_style( 'wp-color-picker' );
-		wp_enqueue_script( 'admin-scripts', plugins_url( 'admin.js', __FILE__ ), array(
-			'wp-color-picker',
-			'chosen'
-		), false, true );
-	}
 }
 
 /**
@@ -69,7 +51,7 @@ function enqueue_scripts() {
  *
  * @return mixed modified links set
  */
-function plugin_add_settings_link( $links ) {
+function _monei_add_settings_link( $links ) {
 	$url           = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=monei' );
 	$settings_link = '<a href="' . $url . '">' . __( 'Settings' ) . '</a>';
 	array_unshift( $links, $settings_link );
@@ -81,19 +63,18 @@ function plugin_add_settings_link( $links ) {
 /**
  * Initializes MONEI WooCommerce plugin
  */
-function init_monei_woocommerce() {
+function _monei_init_plugin() {
 	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 		return;
 	}
 
 	class WC_Monei_Gateway extends WC_Payment_Gateway {
 		private $test_mode;
-		private $preauth;
 		private $api_handler;
 
 		public function __construct() {
 			$this->id                   = 'monei';
-			$this->method_title         = __( 'MONEI', 'woo-monei-gateway' );
+			$this->method_title         = __( 'MONEI Payment Gateway', 'woo-monei-gateway' );
 			$this->view_transaction_url = 'https://dashboard.monei.net/transactions/%s';
 			$this->has_fields           = false;
 
@@ -102,31 +83,46 @@ function init_monei_woocommerce() {
 			// Load the settings.
 			$this->init_settings();
 
-			$this->do_ssl_check();
-
 			// Define user set variables
 			$this->title       = $this->get_option( 'title' );
 			$this->description = $this->get_option( 'description' );
-			$this->supports    = array( 'refunds' );
+			$this->supports    = array( 'products', 'refunds' );
 
 			$token             = $this->get_option( 'token' );
-			$this->preauth     = $this->get_option( 'preauth' ) === 'yes';
+			$preauth           = $this->get_option( 'preauth' ) === 'yes';
 			$credentials       = json_decode( _base64_decode( $token ) );
 			$this->test_mode   = $credentials->t;
-			$this->api_handler = new WC_Monei_API_Handler( $credentials, $this->preauth );
+			$this->api_handler = new Monei_API_Handler( $credentials, $preauth );
+
+			$this->do_ssl_check();
 
 			// Actions
-			add_action( 'init', array( $this, 'monei_process' ) );
-			add_action( 'woocommerce_api_monei_payment', array( $this, 'monei_process' ) );
+			add_action( 'init', array( $this, 'complete_payment' ) );
+			add_action( 'woocommerce_api_monei_payment', array( $this, 'complete_payment' ) );
 			add_action( 'woocommerce_receipt_monei', array( $this, 'receipt_page' ) );
-			add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'capture_payment' ) );
-			add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'capture_payment' ) );
+			add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'process_capture' ) );
+			add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'process_capture' ) );
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
 				$this,
 				'process_admin_options'
 			) );
-			// add the action
-			add_action( 'woocommerce_order_refunded', array( $this, 'action_woocommerce_order_refunded' ), 10, 2 );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_options_scripts' ) );
+		}
+
+		/**
+		 * Adds color picker and chosen to plugin admin settings
+		 */
+		public function enqueue_admin_options_scripts() {
+			if ( is_admin() ) {
+				wp_enqueue_style( 'chosen', plugins_url( 'assets/chosen.min.css', __FILE__ ) );
+				wp_enqueue_script( 'chosen', plugins_url( 'assets/chosen.jquery.min.js', __FILE__ ) );
+
+				wp_enqueue_style( 'wp-color-picker' );
+				wp_enqueue_script( 'monei-admin-scripts', plugins_url( 'monei-admin.js', __FILE__ ), array(
+					'wp-color-picker',
+					'chosen'
+				), false, true );
+			}
 		}
 
 		/**
@@ -253,6 +249,12 @@ function init_monei_woocommerce() {
 					'description' => __( 'A color for checkout and submit button', 'woo-monei-gateway' ),
 					'default'     => ''
 				),
+				'custom_css_class'  => array(
+					'title'       => __( 'Widget css class', 'woo-monei-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'CSS class of the root widget element', 'woo-monei-gateway' ),
+					'default'     => 'monei-payment-widget'
+				),
 				'popup'             => array(
 					'title'       => __( 'Popup mode', 'woo-monei-gateway' ),
 					'type'        => 'checkbox',
@@ -278,7 +280,7 @@ function init_monei_woocommerce() {
 					'type'  => 'text',
 				)
 			);
-		} // End init_form_fields()
+		}
 
 		/**
 		 * Adding MONEI Payment Gateway Button in checkout page.
@@ -323,7 +325,8 @@ function init_monei_woocommerce() {
 					'locale'           => $locale
 				);
 
-				$json_config = json_encode( $config );
+				$json_config      = json_encode( $config );
+				$custom_css_class = $this->get_option( 'custom_css_class' );
 
 				echo '<script src="https://widget.monei.net/widget2.js"></script>';
 				echo "<script>
@@ -332,7 +335,7 @@ function init_monei_woocommerce() {
 					  moneiWidget.setup('monei-payment-widget', $json_config);
 					})
 				</script>";
-				echo '<div id="monei-payment-widget"></div>';
+				echo '<div id="monei-payment-widget" class="' . $custom_css_class . '"></div>';
 
 				return true;
 			} else {
@@ -343,7 +346,7 @@ function init_monei_woocommerce() {
 		/**
 		 *    Updating payment status and redirect to success/fail Page
 		 **/
-		public function monei_process() {
+		public function complete_payment() {
 			if ( isset( $_GET['resourcePath'] ) ) {
 				$response = $this->api_handler->get_transaction_status( $_GET['resourcePath'] );
 				if ( ! $response ) {
@@ -352,23 +355,21 @@ function init_monei_woocommerce() {
 				$order_id       = $response->merchantInvoiceId;
 				$order          = wc_get_order( $order_id );
 				$transaction_id = $response->id;
-				$desc           = $response->result->description;
 				if ( $this->api_handler->is_transaction_successful( $response ) ) {
-					if ( $this->preauth ) {
-						update_post_meta( $order_id, '_transaction_id', $response->id );
+					if ( $response->paymentType === 'PA' ) {
+						update_post_meta( $order_id, '_transaction_id', $transaction_id );
 						update_post_meta( $order_id, '_monei_status', 'pending' );
 						$order->update_status( 'wc-on-hold' );
-						$order->add_order_note( sprintf( __( 'Preauthorisation success with status "%s."', 'woo-monei-gateway' ), $desc ) );
 					} else {
 						$order->payment_complete( $transaction_id );
 						update_post_meta( $order_id, '_monei_status', 'success' );
-						$order->add_order_note( sprintf( __( 'Payment success with status: "%s."', 'woo-monei-gateway' ), $desc ) );
 					}
+					$order->add_order_note( $this->api_handler->get_payment_message( $order, $response ) );
 					wp_redirect( $this->get_return_url( $order ) );
 					exit();
 				} else {
 					update_post_meta( $order_id, '_monei_status', 'fail' );
-					$order->add_order_note( sprintf( __( 'Payment fail with status: "%s."', 'woo-monei-gateway' ), $desc ) );
+					$order->add_order_note( sprintf( __( 'Payment fail with status: "%s."', 'woo-monei-gateway' ), $response->result->description ) );
 					wp_redirect( $order->get_cancel_order_url() );
 					exit();
 				}
@@ -406,21 +407,27 @@ function init_monei_woocommerce() {
 		 * @return bool
 		 */
 		function process_refund( $order_id, $amount = null, $reason = '' ) {
-			$order    = wc_get_order( $order_id );
+			$order = wc_get_order( $order_id );
+
+			if ( $amount === 0 || $amount === null ) {
+				new WP_Error( 'monei_gateway_error', __( 'Refund Error: You need to specify a refund amount.', 'woo-monei-gateway' ) );
+
+				return false;
+			}
+
 			$response = $this->api_handler->refund_transaction( $order, $amount, $reason );
 			if ( ! $response ) {
 				return false;
 			}
-			$desc = $response->result->description;
 			if ( $this->api_handler->is_transaction_successful( $response ) ) {
-				update_post_meta( $order_id, '_transaction_id', $response->id );
-				update_post_meta( $order_id, '_monei_status', 'refund' );
+				$status = $order->get_remaining_refund_amount() > 0 ? 'partial_refund' : 'full_refund';
+				update_post_meta( $order_id, '_monei_status', $status );
 				$order->update_status( 'wc-refunded' );
-				$order->add_order_note( sprintf( __( 'Refund success with status: "%s."', 'woo-monei-gateway' ), $desc ) );
+				$order->add_order_note( $this->api_handler->get_payment_message( $order, $response ) );
 
 				return true;
 			} else {
-				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $desc ) );
+				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $response->result->description ) );
 
 				return false;
 			}
@@ -434,23 +441,21 @@ function init_monei_woocommerce() {
 		 * @return bool
 		 * @throws WC_Data_Exception
 		 */
-		public function capture_payment( $order_id ) {
+		public function process_capture( $order_id ) {
 			$order    = wc_get_order( $order_id );
 			$response = $this->api_handler->capture_transaction( $order );
 			if ( ! $response ) {
 				return false;
 			}
-			$desc = $response->result->description;
 			if ( $this->api_handler->is_transaction_successful( $response ) ) {
-				update_post_meta( $order_id, '_transaction_id', $response->id );
 				update_post_meta( $order_id, '_monei_status', 'success' );
 				$order->set_date_paid( current_time( 'timestamp', true ) );
-				$order->add_order_note( sprintf( __( 'Capture success with status: "%s."', 'woo-monei-gateway' ), $desc ) );
+				$order->add_order_note( $this->api_handler->get_payment_message( $order, $response ) );
 
 				return true;
 			} else {
 				update_post_meta( $order_id, '_monei_status', 'fail' );
-				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $desc ) );
+				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $response->result->description ) );
 
 				return false;
 			}
@@ -465,12 +470,11 @@ function init_monei_woocommerce() {
 		}
 
 
-
 		/**
 		 * Checks is WooCommerce is forcing ssl
 		 */
 		public function do_ssl_check() {
-			if ( $this->enabled === "yes" && $_GET['section'] == 'monei' && get_option( 'woocommerce_force_ssl_checkout' ) === "no" ) {
+			if ( $this->enabled === "yes" && ! $this->test_mode && $_GET['section'] !== 'monei' && get_option( 'woocommerce_force_ssl_checkout' ) === "no" ) {
 				echo "<div class=\"error\"><p>" . sprintf( __( "<strong>%s</strong> is enabled and WooCommerce is not forcing the SSL certificate on your checkout page. Please ensure that you have a valid SSL certificate and that you are <a href=\"%s\">forcing the checkout pages to be secured.</a>" ), $this->method_title, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ) . "</p></div>";
 
 			}
