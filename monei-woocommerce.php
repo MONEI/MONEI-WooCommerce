@@ -14,19 +14,16 @@
  * @package MONEI Payment Gateway for WooCommerce
  */
 
-include dirname( __FILE__ ) . '/monei-utils.php';
-include dirname( __FILE__ ) . '/class-monei-api-handler.php';
-
-add_action( 'plugins_loaded', '_monei_init_plugin', 0 );
-add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), '_monei_add_settings_link' );
-add_action( 'admin_init', '_monei_wc_active_check' );
+add_action( 'plugins_loaded', 'woo_monei_init_plugin', 0 );
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'woo_monei_add_settings_link' );
+add_action( 'admin_init', 'woo_monei_wc_active_check' );
 
 /**
  * Checks if WooCommerce plugin is active before activating MONEI
  */
-function _monei_wc_active_check() {
+function woo_monei_wc_active_check() {
 	if ( is_admin() && current_user_can( 'activate_plugins' ) && ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		add_action( 'admin_notices', '_monei_wp_not_active_notice' );
+		add_action( 'admin_notices', 'woo_monei_wp_not_active_notice' );
 
 		deactivate_plugins( plugin_basename( __FILE__ ) );
 
@@ -39,7 +36,7 @@ function _monei_wc_active_check() {
 /**
  * Shows a worning if WooCommerce plugin is not active
  */
-function _monei_wp_not_active_notice() {
+function woo_monei_wp_not_active_notice() {
 	$install_url = admin_url( 'plugin-install.php?s=WooCommerce&tab=search&type=term' );
 	echo '<div class="error"><p>MONEI WooCommerce requires the <a href="' . $install_url . '">WooCommerce plugin</a> to be installed and active.</p></div>';
 }
@@ -51,7 +48,7 @@ function _monei_wp_not_active_notice() {
  *
  * @return mixed modified links set
  */
-function _monei_add_settings_link( $links ) {
+function woo_monei_add_settings_link( $links ) {
 	$url           = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=monei' );
 	$settings_link = '<a href="' . $url . '">' . __( 'Settings' ) . '</a>';
 	array_unshift( $links, $settings_link );
@@ -59,14 +56,16 @@ function _monei_add_settings_link( $links ) {
 	return $links;
 }
 
-
 /**
  * Initializes MONEI WooCommerce plugin
  */
-function _monei_init_plugin() {
+function woo_monei_init_plugin() {
 	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 		return;
 	}
+
+	include_once dirname( __FILE__ ) . '/monei-utils.php';
+	include_once dirname( __FILE__ ) . '/class-monei-api-handler.php';
 
 	class WC_Monei_Gateway extends WC_Payment_Gateway {
 		private $test_mode;
@@ -90,7 +89,7 @@ function _monei_init_plugin() {
 
 			$token             = $this->get_option( 'token' );
 			$preauth           = $this->get_option( 'preauth' ) === 'yes';
-			$credentials       = json_decode( _base64_decode( $token ) );
+			$credentials       = json_decode( decode( $token ) );
 			$this->test_mode   = $credentials->t;
 			$this->api_handler = new Monei_API_Handler( $credentials, $preauth );
 
@@ -98,7 +97,7 @@ function _monei_init_plugin() {
 
 			// Actions
 			add_action( 'init', array( $this, 'complete_payment' ) );
-			add_action( 'woocommerce_api_monei_payment', array( $this, 'complete_payment' ) );
+			add_action( 'woocommerce_apiwoo_monei_payment', array( $this, 'complete_payment' ) );
 			add_action( 'woocommerce_receipt_monei', array( $this, 'receipt_page' ) );
 			add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'process_capture' ) );
 			add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'process_capture' ) );
@@ -294,7 +293,7 @@ function _monei_init_plugin() {
 		/**
 		 *    Creating MONEI Payment Form.
 		 **/
-		public function generate_monei_payment_form( $order_id ) {
+		public function generatewoo_monei_payment_form( $order_id ) {
 			$order    = wc_get_order( $order_id );
 			$amount   = $order->get_total();
 			$currency = $order->get_currency();
@@ -358,17 +357,17 @@ function _monei_init_plugin() {
 				if ( $this->api_handler->is_transaction_successful( $response ) ) {
 					if ( $response->paymentType === 'PA' ) {
 						update_post_meta( $order_id, '_transaction_id', $transaction_id );
-						update_post_meta( $order_id, '_monei_status', 'pending' );
+						update_post_meta( $order_id, 'woo_monei_status', 'pending' );
 						$order->update_status( 'wc-on-hold' );
 					} else {
 						$order->payment_complete( $transaction_id );
-						update_post_meta( $order_id, '_monei_status', 'success' );
+						update_post_meta( $order_id, 'woo_monei_status', 'success' );
 					}
 					$order->add_order_note( $this->api_handler->get_payment_message( $order, $response ) );
 					wp_redirect( $this->get_return_url( $order ) );
 					exit();
 				} else {
-					update_post_meta( $order_id, '_monei_status', 'fail' );
+					update_post_meta( $order_id, 'woo_monei_status', 'fail' );
 					$order->add_order_note( sprintf( __( 'Payment fail with status: "%s."', 'woo-monei-gateway' ), $response->result->description ) );
 					wp_redirect( $order->get_cancel_order_url() );
 					exit();
@@ -421,7 +420,7 @@ function _monei_init_plugin() {
 			}
 			if ( $this->api_handler->is_transaction_successful( $response ) ) {
 				$status = $order->get_remaining_refund_amount() > 0 ? 'partial_refund' : 'full_refund';
-				update_post_meta( $order_id, '_monei_status', $status );
+				update_post_meta( $order_id, 'woo_monei_status', $status );
 				$order->update_status( 'wc-refunded' );
 				$order->add_order_note( $this->api_handler->get_payment_message( $order, $response ) );
 
@@ -448,13 +447,13 @@ function _monei_init_plugin() {
 				return false;
 			}
 			if ( $this->api_handler->is_transaction_successful( $response ) ) {
-				update_post_meta( $order_id, '_monei_status', 'success' );
+				update_post_meta( $order_id, 'woo_monei_status', 'success' );
 				$order->set_date_paid( current_time( 'timestamp', true ) );
 				$order->add_order_note( $this->api_handler->get_payment_message( $order, $response ) );
 
 				return true;
 			} else {
-				update_post_meta( $order_id, '_monei_status', 'fail' );
+				update_post_meta( $order_id, 'woo_monei_status', 'fail' );
 				$order->add_order_note( sprintf( __( 'Refund fail with status: "%s."', 'woo-monei-gateway' ), $response->result->description ) );
 
 				return false;
@@ -466,7 +465,7 @@ function _monei_init_plugin() {
 		 **/
 		function receipt_page( $order ) {
 			//Generating Payment Form.
-			$this->generate_monei_payment_form( $order );
+			$this->generatewoo_monei_payment_form( $order );
 		}
 
 
@@ -484,11 +483,11 @@ function _monei_init_plugin() {
 	/**
 	 * Add the gateway to WooCommerce
 	 **/
-	function add_monei_gateway( $methods ) {
+	function add_woo_monei_gateway( $methods ) {
 		$methods[] = 'WC_Monei_Gateway';
 
 		return $methods;
 	}
 
-	add_filter( 'woocommerce_payment_gateways', 'add_monei_gateway' );
+	add_filter( 'woocommerce_payment_gateways', 'add_woo_monei_gateway' );
 }

@@ -6,7 +6,7 @@
  *
  * @return string - decoded string
  */
-function _base64_decode( $input ) {
+function decode( $input ) {
 	$keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	$chr1   = $chr2 = $chr3 = "";
 	$enc1   = $enc2 = $enc3 = $enc4 = "";
