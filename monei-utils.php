@@ -6,7 +6,7 @@
  *
  * @return string - decoded string
  */
-function decode( $input ) {
+function woo_monei_decode_token( $input ) {
 	$keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	$chr1   = $chr2 = $chr3 = "";
 	$enc1   = $enc2 = $enc3 = $enc4 = "";

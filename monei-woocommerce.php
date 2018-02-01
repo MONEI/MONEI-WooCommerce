@@ -89,7 +89,7 @@ function woo_monei_init_plugin() {
 
 			$token             = $this->get_option( 'token' );
 			$preauth           = $this->get_option( 'preauth' ) === 'yes';
-			$credentials       = json_decode( decode( $token ) );
+			$credentials       = json_decode( woo_monei_decode_token( $token ) );
 			$this->test_mode   = $credentials->t;
 			$this->api_handler = new Monei_API_Handler( $credentials, $preauth );
 
