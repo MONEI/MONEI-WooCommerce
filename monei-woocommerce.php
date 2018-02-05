@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MONEI WooCommerce
  * Plugin URI: https://monei.net
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author:       MONEI
  * Author URI:   https://monei.net/
  * Description: WooCommerce Plugin for accepting payments through MONEI Payment Gateway.
