@@ -97,7 +97,7 @@ function woo_monei_init_plugin() {
 
 			// Actions
 			add_action( 'init', array( $this, 'complete_payment' ) );
-			add_action( 'woocommerce_apiwoo_monei_payment', array( $this, 'complete_payment' ) );
+			add_action( 'woocommerce_api_monei_payment', array( $this, 'complete_payment' ) );
 			add_action( 'woocommerce_receipt_monei', array( $this, 'receipt_page' ) );
 			add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'process_capture' ) );
 			add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'process_capture' ) );
