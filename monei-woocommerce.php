@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MONEI WooCommerce
  * Plugin URI: https://monei.net
- * Version: 2.0.0
- * Author:       moeni.net
- * Author URI:   https://moeni.net/
+ * Version: 1.0.0
+ * Author:       MONEI
+ * Author URI:   https://monei.net/
  * Description: WooCommerce Plugin for accepting payments through MONEI Payment Gateway.
  * License:      GPL2
  * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least: 4.0
- * Tested up to: 4.9.2
+ * Tested up to: 4.9
  *
  * @package MONEI Payment Gateway for WooCommerce
  */
