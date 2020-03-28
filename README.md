@@ -1,12 +1,14 @@
-[MONEI](https://monei.net/) is a very cheap and easy way to accept payments in your WooCommerce store.
+[Accept payments in your WooCommerce store with MONEI](https://monei.net/)
 
 ## Features
-* accept credit and debit cards `American Express, JCB, Maestro, MasterCard, Visa`
-* accept virtual payments like `Paypal, Bitcoin, Alipay`
+* accept credit and debit cards `JCB, Maestro, MasterCard, Visa`
+* accept virtual payments like `Paypal, Alipay, Bizum, Apple Pay & Google Pay`
 * accept direct SEPA payments
 * supports pre-authorisations that can be captured when order is completed in admin dashboard
 * supports partial and full automatic refunds
 * configurable ui
+* tokenization
+* support for Subscriptions
 
 
 ## Demo store
