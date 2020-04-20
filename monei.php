@@ -11,7 +11,7 @@
  * Plugin Name: WooCommerce MONEI Gateway
  * Plugin URI: https://wordpress.org/plugins/monei/
  * Description: Extends WooCommerce with a MONEI gateway. Best payment gateway rates. The perfect solution to manage your digital payments.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: MONEI
  * Author URI: https://www.monei.net/
  * Tested up to: 5.4
@@ -24,7 +24,7 @@
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
-define( 'MONEI_VERSION', '2.0.0' );
+define( 'MONEI_VERSION', '2.1.0' );
 define( 'MONEI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MONEI_SIGNUP', 'https://dashboard.monei.net/?action=signUp' );
 define( 'MONEI_WEB', 'https://monei.net/' );
@@ -83,7 +83,7 @@ function woocommerce_gateway_monei_init() {
 			$this->log                  = new WC_Logger();
 			$this->supports             = array(
 			'products',
-			//'refunds',
+			'refunds',
 			);
 			$this->init_form_fields();
 			$this->init_settings();
@@ -464,6 +464,7 @@ function woocommerce_gateway_monei_init() {
 			$transaction_type = sanitize_text_field( $_POST['transaction_type'] ); //sale, authorization, capture, refund and void
 			$order2           = substr( $order_id, 3 ); // cojo los 9 digitos del final.
 			$order            = $this->get_monei_order( (int) $order2 );
+			
 			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'monei', '$account_id: ' . $account_id );
 				$this->log->add( 'monei', '$amount: ' . $amount );
@@ -476,16 +477,6 @@ function woocommerce_gateway_monei_init() {
 				$this->log->add( 'monei', '$timestamp: ' . $timestamp );
 				$this->log->add( 'monei', '$message: ' . $message );
 				$this->log->add( 'monei', '$transaction_type: ' . $transaction_type );
-			}
-			
-			if ( 'refund' === $transaction_type ) {
-				if ( 'yes' === $this->debug ) {
-					$this->log->add( 'monei', ' ' );
-					$this->log->add( 'monei', 'This is a Refund' );
-					$this->log->add( 'monei', '$result : ' . $result );
-					$this->log->add( 'monei', '$message : ' . $message );
-				}
-				set_transient( $order->get_id() . '_monei_refund', 'yes' );
 			}
 
 			if ( 'Transaction Approved' === $message ) {
@@ -581,16 +572,29 @@ function woocommerce_gateway_monei_init() {
 			$test               = $this->test_mode();
 			$transaction_type   = 'refund';
 			$shop_name          = $this->commercename;
-			$password           = $this->secret;
+			$password           = $this->password;
 			$country            = new WC_Countries();
 			$shop_country       = $country->get_base_country();
-			$url_callback       = $this->notify_url;
 			$monei_adr          = $this->refund_url;
 			
-			$message = 'account_id' . $account_id . 'amount' . $amount . 'currency' . $currency_codes . 'order_id' . $order2 . 'shop_name' . $shop_name . 'test' . $test . 'transaction_type' . $transaction_type . 'url_callback' . $url_callback;
+			$message = 'account_id' . $account_id .
+			'amount' . $amount .
+			'currency' . $currency_codes .
+			'monei_order_id' . $monei_order_number .
+			'order_id' . $order2 .
+			'shop_name' . $shop_name .
+			'test' . $test .
+			'transaction_type' . $transaction_type;
 			
 			$sign = hash_hmac('sha256', $message, $password );
 			
+			if ( 'yes' === $this->debug ) {
+				$this->log->add( 'monei', ' ' );
+				$this->log->add( 'monei', '$message ' . $message );
+				$this->log->add( 'monei', '$password ' . $password );
+				$this->log->add( 'monei', '$sign: ' . $sign );
+				$this->log->add( 'monei', __( 'Order Number MONEI : ', 'monei' ) . $monei_order_number );
+			}
 			
 			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'monei', ' ' );
@@ -626,8 +630,7 @@ function woocommerce_gateway_monei_init() {
 				$this->log->add( 'monei', __( 'signature : ', 'monei' ) . $sign );
 				$this->log->add( 'monei', __( 'test : ', 'monei' ) . $test );
 				$this->log->add( 'monei', __( 'transaction_type : refund', 'monei' ) );
-				$this->log->add( 'monei', __( 'url_callback : ', 'monei' ) . $url_callback );
-				$this->log->add( 'monei', __( 'ask_for_refund Asking por order #: ', 'monei' ) . $order_id );
+				$this->log->add( 'monei', __( 'ask_for_refund Asking for order #: ', 'monei' ) . $order_id );
 				$this->log->add( 'monei', ' ' );
 			}
 			
@@ -635,89 +638,52 @@ function woocommerce_gateway_monei_init() {
 				'account_id'       => $account_id,
 				'amount'           => $amount,
 				'currency'         => $currency_codes,
-				'order_id'         => $order2,
 				'monei_order_id'   => $monei_order_number,
+				'order_id'         => $order2,
+				'shop_name'        => $shop_name,
 				'signature'        => $sign,
 				'test'             => $test,
 				'transaction_type' => 'refund',
-				'url_callback'     => $url_callback,
-				);
-
-			$data_string = json_encode( $body );
-			
-			if ( 'yes' === $this->debug ) {
-				$this->log->add( 'monei', ' ' );
-				$this->log->add( 'monei', '$body: ' . $data_string );
-				$this->log->add( 'monei', ' ' );
-			}
-			
-			$ch = curl_init( $monei_adr );
-			curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'POST');
-			curl_setopt( $ch, CURLOPT_POSTFIELDS, $data_string);
-			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt( $ch, CURLOPT_HTTPHEADER, array(
-				'Content-Type: application/json',
-				'Content-Length: ' . strlen( $data_string )
-				)
 			);
-			
-			$post_arg = curl_exec( $ch );
+				
+			$data_string = json_encode( $body );
  
 			$options = array(
-				'headers'     => array(
-					'Content-Type' => 'application/json; charset=utf-8',
+				'headers' => array(
+					'Content-Type' => 'application/json',
 					),
-				'body'        => $body_json,
-				'method'      => 'POST',
-				'data_format' => 'body',
-			);
+				'body' => $data_string,
+				);
 			
-			if ( 'yes' === $this->debug ) {
-				$options_json = json_encode( $options );
-				$this->log->add( 'monei', ' ' );
-				$this->log->add( 'monei', '$options: ', $options_json );
-				$this->log->add( 'monei', ' ' );
-			}
- 
-			//$post_arg = wp_remote_post( $monei_adr, $options );
+			$response      = wp_remote_post( $monei_adr, $options );
+			$response_code = wp_remote_retrieve_response_code( $response );
+			$response_body = wp_remote_retrieve_body( $response );
 
-			if ( is_wp_error( $post_arg ) ) {
+			if ( is_wp_error( $response ) ) {
+				$error_string = $response->get_error_message();
 				if ( 'yes' === $this->debug ) {
 					$this->log->add( 'monei', ' ' );
 					$this->log->add( 'monei', __( 'There is an error', 'monei' ) );
 					$this->log->add( 'monei', '*********************************' );
 					$this->log->add( 'monei', ' ' );
-					$this->log->add( 'monei', __( 'The error is : ', 'monei' ) . $post_arg );
+					$this->log->add( 'monei', __( 'The error is : ', 'monei' ) . $error_string );
 				}
-				return $post_arg;
+				return $error_string;
 			}
+			
+			$result = json_decode( $response_body );
+			$end    = $result->result;
+
 			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'monei', ' ' );
-				$this->log->add( 'monei', ' ' );
-				$this->log->add( 'monei', '/**************************/' );
-				$this->log->add( 'monei', __( 'connection return true', 'monei' ) );
-				$this->log->add( 'monei', '/**************************/' );
+				$this->log->add( 'monei', '$result: ' . $end );
 				$this->log->add( 'monei', ' ' );
 			}
-			return true;
-		}
-		
-		function check_monei_refund( $order_id ) {
-			// check postmeta
-			$order        = $this->get_monei_order( $order_id );
-			$order_refund = get_transient( $order->get_id() . '_monei_refund' );
-			if ( 'yes' === $this->debug ) {
-				$this->log->add( 'monei', ' ' );
-				$this->log->add( 'monei', __( 'Checking and waiting ping from MONEI', 'monei' ) );
-				$this->log->add( 'monei', '*****************************************' );
-				$this->log->add( 'monei', ' ' );
-				$this->log->add( 'monei', __( 'Check order status #: ', 'monei' ) . $order->get_id() );
-				$this->log->add( 'monei', __( 'Check order status with get_transient: ', 'monei' ) . $order_refund );
-			}
-			if ( 'yes' === $order_refund ) {
+			
+			if ( 'completed' === $end ) {
 				return true;
 			} else {
-				return false;
+				return $end;
 			}
 		}
 		
@@ -743,54 +709,39 @@ function woocommerce_gateway_monei_init() {
 					$this->log->add( 'monei', '       Once upon a time       ' );
 					$this->log->add( 'monei', '/****************************/' );
 					$this->log->add( 'monei', ' ' );
-					$this->log->add( 'monei', __( 'check_monei_refund Asking por order #: ', 'monei' ) . $order_id );
+					$this->log->add( 'monei', __( 'check_monei_refund Asking for order #: ', 'monei' ) . $order_id );
 				}
 	
 				$refund_asked = $this->ask_for_refund( $order_id, $monei_order_number, $order_total_sign );
-	
-				if ( is_wp_error( $refund_asked ) ) {
-					if ( 'yes' === $this->debug ) {
-						$this->log->add( 'redsys', __( 'Refund Failed: ', 'monei' ) . $refund_asked->get_error_message() );
-					}
-					return new WP_Error( 'error', $refund_asked->get_error_message() );
-				}
-				$x = 0;
-				do {
-					sleep( 5 );
-					$result = $this->check_monei_refund( $order_id );
-					$x++;
-				} while ( $x <= 20 && false === $result );
-				if ( 'yes' === $this->debug && $result ) {
-					$this->log->add( 'monei', __( 'check_redsys_refund = true ', 'monei' ) . $result );
-					$this->log->add( 'monei', ' ' );
-					$this->log->add( 'monei', '/********************************/' );
-					$this->log->add( 'monei', '  Refund complete by MONEI   ' );
-					$this->log->add( 'monei', '/********************************/' );
-					$this->log->add( 'monei', ' ' );
-					$this->log->add( 'monei', '/******************************************/' );
-					$this->log->add( 'monei', '  The final has come, this story has ended  ' );
-					$this->log->add( 'monei', '/******************************************/' );
-					$this->log->add( 'monei', ' ' );
-				}
-				if ( 'yes' === $this->debug && ! $result ) {
-					$this->log->add( 'monei', __( 'check_monei_refund = false ', 'monei' ) . $result );
-				}
-				if ( $result ) {
-					delete_transient( $order->get_id() . '_monei_refund' );
-					return true;
-				} else {
+				
+				if ( $refund_asked ) {
 					if ( 'yes' === $this->debug && $result ) {
+						$this->log->add( 'monei', __( 'check_monei_refund = true ', 'monei' ) );
 						$this->log->add( 'monei', ' ' );
-						$this->log->add( 'monei', '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' );
-						$this->log->add( 'monei', __( '!!!!Refund Failed, please try again!!!!', 'monei' ) );
-						$this->log->add( 'monei', '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' );
+						$this->log->add( 'monei', '/********************************/' );
+						$this->log->add( 'monei', '  Refund complete by MONEI   ' );
+						$this->log->add( 'monei', '/********************************/' );
 						$this->log->add( 'monei', ' ' );
 						$this->log->add( 'monei', '/******************************************/' );
 						$this->log->add( 'monei', '  The final has come, this story has ended  ' );
 						$this->log->add( 'monei', '/******************************************/' );
 						$this->log->add( 'monei', ' ' );
 					}
-					return false;
+					return true;
+				} else {
+					if ( is_wp_error( $refund_asked ) ) {
+						if ( 'yes' === $this->debug ) {
+							$this->log->add( 'redsys', __( 'Refund Failed: ', 'monei' ) . $refund_asked->get_error_message() );
+						}
+						return new WP_Error( 'error', $refund_asked->get_error_message() );
+					}
+				}
+	
+				if ( is_wp_error( $refund_asked ) ) {
+					if ( 'yes' === $this->debug ) {
+						$this->log->add( 'redsys', __( 'Refund Failed: ', 'monei' ) . $refund_asked->get_error_message() );
+					}
+					return new WP_Error( 'error', $refund_asked->get_error_message() );
 				}
 			} else {
 				if ( 'yes' === $this->debug && $result ) {

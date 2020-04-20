@@ -3,7 +3,7 @@ Tags: woocommerce, monei, credit card, payment gateway, stripe, paypal, gateway
 Contributors: monei, j.conti
 Requires at least: 4.0
 Tested up to: 5.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
@@ -40,6 +40,10 @@ In order to use this plugin you need to be registered in [MONEI](https://monei.n
 1. Basic payment form
 
 == Changelog ==
+
+== 2.1.0 ==
+
+* New: Added refunds from WooCommerce order edit page.
 
 == 2.0.0 ==
 
