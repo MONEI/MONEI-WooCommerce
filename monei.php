@@ -16,7 +16,7 @@
  * Author URI: https://www.monei.net/
  * Tested up to: 5.4
  * WC requires at least: 3.0
- * WC tested up to: 4.0
+ * WC tested up to: 4.1
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2017 MONEI.
@@ -144,21 +144,21 @@ function woocommerce_gateway_monei_init() {
 				'enabled'        => array(
 					'title'   => __( 'Enable/Disable', 'monei' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Enable Monei', 'monei' ),
+					'label'   => __( 'Enable MONEI', 'monei' ),
 					'default' => 'no',
 				),
 				'title'          => array(
 					'title'       => __( 'Title', 'monei' ),
 					'type'        => 'text',
 					'description' => __( 'This controls the title which the user sees during checkout.', 'monei' ),
-					'default'     => __( 'Monei', 'monei' ),
+					'default'     => __( 'MONEI', 'monei' ),
 					'desc_tip'    => true,
 				),
 				'description'    => array(
 					'title'       => __( 'Description', 'monei' ),
 					'type'        => 'textarea',
 					'description' => __( 'This controls the description which the user sees during checkout.', 'monei' ),
-					'default'     => __( 'Pay via Monei; you can pay with your credit card.', 'monei' ),
+					'default'     => __( 'Pay via MONEI; you can pay with your credit card.', 'monei' ),
 				),
 				'logo'           => array(
 					'title'       => __( 'Logo', 'monei' ),
@@ -438,7 +438,7 @@ function woocommerce_gateway_monei_init() {
 				header( 'HTTP/1.1 200 OK' );
 				do_action( 'valid_monei_standard_ipn_request', $_POST );
 			} else {
-				wp_die( 'Monei Notification Request Failure' );
+				wp_die( 'MONEI Notification Request Failure' );
 			}
 		}
 		/**

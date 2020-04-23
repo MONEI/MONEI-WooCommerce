@@ -7,7 +7,7 @@ Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
-WC tested up to: 4.0
+WC tested up to: 4.1
 
 Accept payments in your WooCommerce store using MONEI payment gateway
 
@@ -20,9 +20,8 @@ Accept payments in your WooCommerce store using MONEI payment gateway
 * accept direct SEPA payments
 * automatic brand detection
 * supports pre-authorisations that can be captured when order is completed in admin dashboard (TO-DO)
-* supports partial and full automatic refunds (Next verion)
+* supports partial and full automatic refunds
 * configurable ui
-
 
 ## Demo store
 [WooCommerce demo store with MONEI as a payment gateway.](http://woocommerce.demo-monei.com/)
