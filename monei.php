@@ -11,7 +11,7 @@
  * Plugin Name: WooCommerce MONEI Gateway
  * Plugin URI: https://wordpress.org/plugins/monei/
  * Description: Extends WooCommerce with a MONEI gateway. Best payment gateway rates. The perfect solution to manage your digital payments.
- * Version: 2.1.0
+ * Version: 3.0.0
  * Author: MONEI
  * Author URI: https://www.monei.net/
  * Tested up to: 5.4
@@ -24,7 +24,7 @@
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
-define( 'MONEI_VERSION', '2.1.0' );
+define( 'MONEI_VERSION', '3.0.0' );
 define( 'MONEI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MONEI_SIGNUP', 'https://dashboard.monei.net/?action=signUp' );
 define( 'MONEI_WEB', 'https://monei.net/' );
@@ -63,9 +63,10 @@ function woocommerce_gateway_monei_init() {
 			} else {
 				$this->icon = apply_filters( 'woocommerce_monei_icon', plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) . '/assets/images/MONEI-logo.png' );
 			}
-			$this->has_fields           = false;
+			$this->has_fields           = true;
 			$this->liveurl              = 'https://pay.monei.net/checkout/v1';
-			$this->refund_url           = 'https://pay.monei.net/checkout/v1/refund';
+			$this->refund_url           = 'https://pay.monei.net/ws/v1/refund';
+			$this->charge_url           = 'https://pay.monei.net/ws/v1/charge';
 			$this->testmode             = $this->get_option( 'testmode' );
 			$this->method_title         = __( 'MONEI', 'monei' );
 			$this->notify_url           = add_query_arg( 'wc-api', 'WC_Gateway_monei', home_url( '/' ) );
@@ -79,12 +80,21 @@ function woocommerce_gateway_monei_init() {
 			$this->commercename         = $this->get_option( 'commercename' );
 			$this->secret               = $this->get_option( 'secret' );
 			$this->password             = $this->get_option( 'password' );
+			$this->redorcc              = $this->get_option( 'redorcc' );
 			$this->debug                = $this->get_option( 'debug' );
 			$this->log                  = new WC_Logger();
-			$this->supports             = array(
-			'products',
-			'refunds',
-			);
+			if ( 'onsite' === $this->redorcc ) {
+				$this->supports = array(
+					'products',
+					'refunds',
+					'default_credit_card_form',
+				);
+			} else {
+				$this->supports = array(
+					'products',
+					'refunds',
+				);
+			}
 			$this->init_form_fields();
 			$this->init_settings();
 			// Actions.
@@ -184,6 +194,16 @@ function woocommerce_gateway_monei_init() {
 					'description' => __( 'MONEI Password', 'monei' ),
 					'desc_tip'    => true,
 				),
+				'redorcc'     => array(
+					'title'       => __( 'Select Type', 'monei' ),
+					'type'        => 'select',
+					'description' => __( 'Select the type of payment you want your customers do.', 'monei' ),
+					'default'     => 'offsite',
+					'options'     => array(
+						'redirection' => __( 'Payment Off-site (redirection to MONEI)', 'monei' ),
+						'onsite'  => __( 'Payment On-site (Credit Card in Checkout)', 'monei' ),
+					),
+				),
 				'orderdo'     => array(
 					'title'       => __( 'What to do after payment?', 'monei' ),
 					'type'        => 'select',
@@ -222,63 +242,76 @@ function woocommerce_gateway_monei_init() {
 		function get_monei_args( $order ) {
 			global $woocommerce;
 
-			$order_id           = $order->get_id();
-			$currency           = get_woocommerce_currency();
-			$account_id         = $this->accountid;
-			$transaction_id     = str_pad( $order_id, 12, '0', STR_PAD_LEFT );
-			$transaction_id1    = wp_rand( 1, 999 ); // lets to create a random number.
-			$transaction_id2    = substr_replace( $transaction_id, $transaction_id1, 0, -9 ); // new order number.
-			$amount             = $order->get_total();
-			$country            = new WC_Countries();
-			$shop_country       = $country->get_base_country();
-			$shop_name          = $this->commercename;
-			$url_callback       = $this->notify_url;
-			$url_cancel         = html_entity_decode( $order->get_cancel_order_url() );
-			$url_complete       = utf8_encode( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) );
-			$transaction_type   = 'sale';
-			$password           = $this->password;
-			$test               = $this->test_mode();
+			$order_id      = $order->get_id();
+			$url_challenge = get_transient( 'monei_url_challenge_' . sanitize_title( $order_id ) );
+			$param_md      = get_transient( 'monei_param_md_challenge_' . sanitize_title( $order_id ) );
+			$param_pareq   = get_transient( 'monei_param_pareq_challenge_' . sanitize_title( $order_id ) );
+			$param_termurl = get_transient( 'monei_param_termurl_challenge_' . sanitize_title( $$order_id ) );
 			
-			$message = 'account_id' . $account_id . 'amount' . $amount . 'currency' . $currency . 'order_id' . $transaction_id2 . 'shop_name' . $shop_name . 'test' . $test . 'transaction_type' . $transaction_type . 'url_callback' . $url_callback . 'url_cancel' . $url_cancel . 'url_complete' . $url_complete;
-			
-			$sign = hash_hmac('sha256', $message, $password );
-			
-			if ( 'yes' === $this->debug ) {
-				$this->log->add( 'monei', 'Generating payment form for order ' . $order->get_order_number() );
-				$this->log->add( 'monei', 'Helping to understand the encrypted code: ' );
-				$this->log->add( 'monei', 'account_id: ' . $account_id );
-				$this->log->add( 'monei', 'amount: ' . $amount );
-				$this->log->add( 'monei', 'currency: ' . $currency );
-				$this->log->add( 'monei', 'order_id: ' . $transaction_id2 );
-				$this->log->add( 'monei', 'shop_name: ' . $shop_name );
-				$this->log->add( 'monei', 'test: ' . $test );
-				$this->log->add( 'monei', 'url_callback: ' . $url_callback );
-				$this->log->add( 'monei', 'url_cancel: ' . $url_cancel );
-				$this->log->add( 'monei', 'url_complete: ' . $url_complete );
-				$this->log->add( 'monei', 'Password: ' . $password );
-				$this->log->add( 'monei', 'Shop country: ' . $shop_country );
-				$this->log->add( 'monei', 'concatenated: ' . $message );
-				$this->log->add( 'monei', 'sign: ' . $sign );
-			}
+			if ( $url_challenge ) {
 
-			$monei_args = array(
-				'account_id'       => $account_id,
-				'amount'           => $amount,
-				'currency'         => $currency,
-				'order_id'         => $transaction_id2,
-				'shop_name'        => $shop_name,
-				'test'             => $test,
-				'transaction_type' => $transaction_type,
-				'url_callback'     => $url_callback,
-				'url_cancel'       => $url_cancel,
-				'url_complete'     => $url_complete,
-				'signature'        => $sign,
+				$monei_args = array();
+
+			} else {
+
+			
+				$currency           = get_woocommerce_currency();
+				$account_id         = $this->accountid;
+				$transaction_id     = str_pad( $order_id, 12, '0', STR_PAD_LEFT );
+				$transaction_id1    = wp_rand( 1, 999 ); // lets to create a random number.
+				$transaction_id2    = substr_replace( $transaction_id, $transaction_id1, 0, -9 ); // new order number.
+				$amount             = $order->get_total();
+				$country            = new WC_Countries();
+				$shop_country       = $country->get_base_country();
+				$shop_name          = $this->commercename;
+				$url_callback       = $this->notify_url;
+				$url_cancel         = html_entity_decode( $order->get_cancel_order_url() );
+				$url_complete       = utf8_encode( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) );
+				$transaction_type   = 'sale';
+				$password           = $this->password;
+				$test               = $this->test_mode();
 				
-			);
+				$message = 'account_id' . $account_id . 'amount' . $amount . 'currency' . $currency . 'order_id' . $transaction_id2 . 'shop_name' . $shop_name . 'test' . $test . 'transaction_type' . $transaction_type . 'url_callback' . $url_callback . 'url_cancel' . $url_cancel . 'url_complete' . $url_complete;
+				
+				$sign = hash_hmac('sha256', $message, $password );
+				
+				if ( 'yes' === $this->debug ) {
+					$this->log->add( 'monei', 'Generating payment form for order ' . $order->get_order_number() );
+					$this->log->add( 'monei', 'Helping to understand the encrypted code: ' );
+					$this->log->add( 'monei', 'account_id: ' . $account_id );
+					$this->log->add( 'monei', 'amount: ' . $amount );
+					$this->log->add( 'monei', 'currency: ' . $currency );
+					$this->log->add( 'monei', 'order_id: ' . $transaction_id2 );
+					$this->log->add( 'monei', 'shop_name: ' . $shop_name );
+					$this->log->add( 'monei', 'test: ' . $test );
+					$this->log->add( 'monei', 'url_callback: ' . $url_callback );
+					$this->log->add( 'monei', 'url_cancel: ' . $url_cancel );
+					$this->log->add( 'monei', 'url_complete: ' . $url_complete );
+					$this->log->add( 'monei', 'Password: ' . $password );
+					$this->log->add( 'monei', 'Shop country: ' . $shop_country );
+					$this->log->add( 'monei', 'concatenated: ' . $message );
+					$this->log->add( 'monei', 'sign: ' . $sign );
+				}
+	
+				$monei_args = array(
+					'account_id'       => $account_id,
+					'amount'           => $amount,
+					'currency'         => $currency,
+					'order_id'         => $transaction_id2,
+					'shop_name'        => $shop_name,
+					'test'             => $test,
+					'transaction_type' => $transaction_type,
+					'url_callback'     => $url_callback,
+					'url_cancel'       => $url_cancel,
+					'url_complete'     => $url_complete,
+					'signature'        => $sign,
+				);
+			}
 			
 			$monei_args = apply_filters( 'woocommerce_monei_args', $monei_args );
 			return $monei_args;
 		}
+
 		/**
 		 * Generate the monei form
 		 *
@@ -289,10 +322,16 @@ function woocommerce_gateway_monei_init() {
 		function generate_monei_form( $order_id ) {
 			global $woocommerce;
 				
-				$order = new WC_Order( $order_id );
-				$monei_adr = $this->liveurl . '?';
-				$monei_args = $this->get_monei_args( $order );
+				$order       = new WC_Order( $order_id );
+				$monei_args  = $this->get_monei_args( $order );
 				$form_inputs = '';
+				$url_challenge = get_transient( 'monei_url_challenge_' . sanitize_title( $order_id ) );
+				if ( $url_challenge ) {
+					$monei_adr = $url_challenge;
+				} else {
+					$monei_adr   = $this->liveurl . '?';
+				}
+				
 				foreach ( $monei_args as $key => $value ) {
 					$form_inputs .= '<input type="hidden" name="' . $key . '" value="' . esc_attr( $value ) . '" />';
 				}
@@ -302,7 +341,7 @@ function woocommerce_gateway_monei_init() {
 					overlayCSS:
 					{
 						background: "#fff",
-						opacity: 0.6
+						opacity: 1.0
 					},
 					css: {
 						padding:		20,
@@ -321,6 +360,108 @@ function woocommerce_gateway_monei_init() {
 				<input type="submit" class="button-alt" id="submit_monei_payment_form" value="' . __( 'Pay with Credit Card via MONEI', 'monei' ) . '" /> <a class="button cancel" href="' . esc_url( $order->get_cancel_order_url() ) . '">' . __( 'Cancel order &amp; restore cart', 'monei' ) . '</a>
 			</form>';
 		}
+		
+		function monei_send_cc( $order, $card_num, $card_code, $exp_date ) {
+			
+			$card_num         = str_replace( array(' ', '-' ), '', $_POST['monei-card-number'] );
+			$card_code        = ( isset( $_POST['monei-card-cvc'] ) ) ? $_POST['monei-card-cvc'] : '';
+			$exp_date         = str_replace( array( '/', ' '), '', $_POST['monei-card-expiry'] );
+			$order_id         = $order->get_id();
+			$currency         = get_woocommerce_currency();
+			$account_id       = $this->accountid;
+			$transaction_id   = str_pad( $order_id, 12, '0', STR_PAD_LEFT );
+			$transaction_id1  = wp_rand( 1, 999 ); // lets to create a random number.
+			$transaction_id2  = substr_replace( $transaction_id, $transaction_id1, 0, -9 ); // new order number.
+			$amount           = $order->get_total();
+			$country          = new WC_Countries();
+			$shop_country     = $country->get_base_country();
+			$shop_name        = $this->commercename;
+			$url_callback     = $this->notify_url;
+			$url_cancel       = html_entity_decode( $order->get_cancel_order_url() );
+			$url_complete     = utf8_encode( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) );
+			$transaction_type = 'sale';
+			$password         = $this->password;
+			$test             = $this->test_mode();
+			$monei_url        = $this->charge_url;
+			$month            = substr( $exp_date, 0, 2);
+			$year             = substr($exp_date, 2, 2);
+			$monei_adr        = $this->charge_url;
+			$userip           = WC_Geolocation::get_ip_address();
+			$useragent        = wc_get_user_agent();
+			
+			$message = 'account_id' . $account_id . 'amount' . $amount . 'currency' . $currency . 'order_id' . $transaction_id2 . 'payment_card_cvc' . $card_code .  'payment_card_exp_month' . $month . 'payment_card_exp_year' . $year . 'payment_card_number' . $card_num . 'shop_name' . $shop_name . 'test' . $test . 'transaction_type' . $transaction_type . 'url_callback' . $url_callback . 'url_cancel' . $url_cancel . 'url_complete' . $url_complete;
+			
+			$sign = hash_hmac('sha256', $message, $password );
+			
+			if ( 'yes' === $this->debug ) {
+				$this->log->add( 'monei', 'account_id: ' . $account_id );
+				$this->log->add( 'monei', 'amount: ' . $amount );
+				$this->log->add( 'monei', 'currency: ' . $currency );
+				$this->log->add( 'monei', 'order_id: ' . $transaction_id2 );
+				$this->log->add( 'monei', 'shop_name: ' . $shop_name );
+				$this->log->add( 'monei', 'test: ' . $test );
+				$this->log->add( 'monei', 'url_callback: ' . $url_callback );
+				$this->log->add( 'monei', 'url_cancel: ' . $url_cancel );
+				$this->log->add( 'monei', 'url_complete: ' . $url_complete );
+				$this->log->add( 'monei', 'Password: ' . $password );
+				$this->log->add( 'monei', 'Shop country: ' . $shop_country );
+				$this->log->add( 'monei', 'concatenated: ' . $message );
+				$this->log->add( 'monei', 'sign: ' . $sign );
+				$this->log->add( 'monei', '$message: ' . $message );
+			}
+
+			$body = array(
+				'charge' => array(
+					'account_id'             => $account_id,
+					'amount'                 => $amount,
+					'currency'               => $currency,
+					'order_id'               => $transaction_id2,
+					'payment_card_cvc'       => $card_code,
+					'payment_card_exp_month' => $month,
+					'payment_card_exp_year'  => $year,
+					'payment_card_number'    => $card_num,
+					'shop_name'              => $shop_name,
+					'signature'              => $sign,
+					'test'                   => $test,
+					'transaction_type'       => $transaction_type,
+					'url_callback'           => $url_callback,
+					'url_cancel'             => $url_cancel,
+					'url_complete'           => $url_complete,
+				),
+				'context' => array(
+					'ip'        => $userip,
+					'userAgent' => $useragent,
+				),
+			);
+			
+			$data_string = json_encode( $body );
+ 
+			$options = array(
+				'headers' => array(
+					'Content-Type' => 'application/json',
+					),
+				'body' => $data_string,
+				);
+			
+			$response      = wp_remote_post( $monei_adr, $options );
+			$response_code = wp_remote_retrieve_response_code( $response );
+			$response_body = wp_remote_retrieve_body( $response );
+
+			$result       = json_decode( $response_body );
+			$urlchallenge = $result->redirect_url;
+
+			if ( 'yes' === $this->debug ) {
+				$this->log->add( 'monei', '$response_body: ' . $response_body );
+				$this->log->add( 'monei', '$urlchallenge: ' . $urlchallenge );
+			}
+			if ( ! $urlchallenge ) {
+				return 'yes';
+			} else {
+				set_transient( 'monei_url_challenge_' . sanitize_title( $order_id ), $urlchallenge, 600 );
+				return 'challenge';
+			}
+		}
+		
 		/**
 		 * Process the payment and return the result
 		 *
@@ -330,10 +471,60 @@ function woocommerce_gateway_monei_init() {
 		 */
 		function process_payment( $order_id ) {
 			$order = new WC_Order( $order_id );
-			return array(
-				'result'   => 'success',
-				'redirect' => $order->get_checkout_payment_url( true ),
-			);
+			
+			if ( 'onsite' === $this->redorcc ) {
+				if ( isset( $_POST['monei-card-number'] ) && ! empty( $_POST['monei-card-number'] ) ) {
+					$card_num  = str_replace( array(' ', '-' ), '', $_POST['monei-card-number'] );
+				} else {
+					wc_add_notice( 'Fill the Credit Card Number', 'error' );
+					
+				}
+				if ( isset( $_POST['monei-card-cvc'] ) && ! empty( $_POST['monei-card-cvc'] ) ) {
+					$card_code = ( isset( $_POST['monei-card-cvc'] ) ) ? $_POST['monei-card-cvc'] : '';
+				} else {
+					wc_add_notice( 'Fill the CVC Credit Card', 'error' );
+				}
+				if ( isset( $_POST['monei-card-expiry'] ) && ! empty( $_POST['monei-card-expiry'] ) ) {
+					$exp_date  = str_replace( array( '/', ' '), '', $_POST['monei-card-expiry'] );
+				} else {
+					wc_add_notice( 'Fill the Credit Card Expiration Date', 'error' );
+				}
+				
+				if ( $card_num && $card_code && $exp_date ) {
+				
+					/*
+					if ( 'yes' === $this->debug ) {
+						$this->log->add( 'monei', '$card_num: ' . $card_num );
+						$this->log->add( 'monei', '$card_code: ' . $card_code );
+						$this->log->add( 'monei', '$exp_date: ' . $exp_date );
+					}
+					*/
+					
+					$response = $this->monei_send_cc( $order, $card_num, $card_code, $exp_date );
+					
+					if ( 'yes' === $response ) {
+						$order->payment_complete();
+						if ( 'yes' === $this->debug ) {
+							$this->log->add( 'monei', 'Redirecting to: ' . utf8_encode( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) ) );
+						}
+						return array(
+							'result'   => 'success',
+							'redirect' => utf8_encode( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) )
+						);
+					} elseif ( 'challenge' === $response ) {
+						$url_challenge = get_transient( 'monei_url_challenge_' . sanitize_title( $order_id ) );
+						return array(
+							'result'   => 'success',
+							'redirect' => $url_challenge,
+						);
+					}
+				}
+			} else {
+				return array(
+					'result'   => 'success',
+					'redirect' => $order->get_checkout_payment_url( true ),
+				);
+			}
 		}
 		/**
 		 * Output for the order received page.
@@ -374,7 +565,7 @@ function woocommerce_gateway_monei_init() {
 					$sign = hash_hmac('sha256', $content, $password );
 					if ( 'yes' === $this->debug ) {
 						$this->log->add( 'monei', 'data: ' .  $content );
-						$this->log->add( 'monei', 'signature form Manei: ' .  $signature );
+						$this->log->add( 'monei', 'signature form MONEI: ' .  $signature );
 						$this->log->add( 'monei', 'signature at Plugin: ' .  $sign );
 					}
 					if ( $sign !== $signature ) {
@@ -793,6 +984,12 @@ function woocommerce_gateway_monei_init() {
 		wp_enqueue_style( 'monei_notice_css' );
 	}
 	add_action( 'admin_enqueue_scripts', 'monei_notice_style' );
+	
+	function monei_style_checkout() {
+		wp_register_style( 'monei_checkput_css', MONEI_PLUGIN_URL . 'assets/css/monei-checkout-card.css', false, MONEI_VERSION );
+		wp_enqueue_style( 'monei_checkput_css' );
+	}
+	//add_action( 'wp_enqueue_scripts', 'monei_style_checkout' );
 
 	function woocommerce_add_gateway_monei_gateway( $methods ) {
 		$methods[] = 'WC_Gateway_monei';
