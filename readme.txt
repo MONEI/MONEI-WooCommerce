@@ -51,11 +51,11 @@ MONEI is available to businesses in all European countries. With MONEI, you can 
 * Go to WooCommerce > Settings > Payments > MONEI
 * Add your Account ID & Password.
 
-= If you don't have you Account ID & Password =
+= If you don't have Account ID & Password =
 
 * Go to MONEI Dashboard
 * Select your sub account
-* Go to Ecommerce Guides -> WooCommerce and follow the instructions there
+* Go to Monei.net > login > Configuration -> Account
 
 == Screenshots ==
 

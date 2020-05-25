@@ -16,7 +16,7 @@
  * Author URI: https://www.monei.net/
  * Tested up to: 5.4
  * WC requires at least: 3.0
- * WC tested up to: 4.1
+ * WC tested up to: 4.2
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2017 MONEI.
@@ -64,9 +64,9 @@ function woocommerce_gateway_monei_init() {
 				$this->icon = apply_filters( 'woocommerce_monei_icon', plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) . '/assets/images/MONEI-logo.png' );
 			}
 			$this->has_fields           = true;
-			$this->liveurl              = 'https://pay.monei.net/checkout/v1';
-			$this->refund_url           = 'https://pay.monei.net/ws/v1/refund';
-			$this->charge_url           = 'https://pay.monei.net/ws/v1/charge';
+			$this->liveurl              = 'https://pay.monei.net/checkout';
+			$this->refund_url           = 'https://api.monei.net/v1/refund';
+			$this->charge_url           = 'https://api.monei.net/v1/charge';
 			$this->testmode             = $this->get_option( 'testmode' );
 			$this->method_title         = __( 'MONEI', 'monei' );
 			$this->notify_url           = add_query_arg( 'wc-api', 'WC_Gateway_monei', home_url( '/' ) );
