@@ -1,44 +1,143 @@
 === MONEI WooCommerce ===
-Tags: woocommerce, monei, credit card, payment gateway, stripe, paypal, gateway
+Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, j.conti
 Requires at least: 4.0
-Tested up to: 5.4
-Stable tag: 2.1.0
+Tested up to: 5.7
+Stable tag: 4.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
-WC tested up to: 4.1
+WC tested up to: 5.3
 
 Accept payments in your WooCommerce store using MONEI payment gateway
 
 == Description ==
-[MONEI](https://monei.net/) is a very cheap and easy way to accept payments in your WooCommerce store.
 
-## Features
-* accept credit and debit cards `American Express, JCB, Maestro, MasterCard, Visa`
-* accept virtual payments like `Paypal, Bitcoin, Alipay`
-* accept direct SEPA payments
-* automatic brand detection
-* supports pre-authorisations that can be captured when order is completed in admin dashboard (TO-DO)
-* supports partial and full automatic refunds
-* configurable ui
+= ACCEPT ONLINE PAYMENTS WITH MONEI =
+MONEI is an e-commerce payment gateway for WooCommerce (and other e-commerce platforms). 
 
-## Demo store
-[WooCommerce demo store with MONEI as a payment gateway.](http://woocommerce.demo-monei.com/)
+
+Its payment gateway is the choice of many Spain and Andorra based e-commerce businesses. Use MONEI’s technology to accept and manage all major and alternative payment methods in a single platform. 
+
+
+MONEI is dedicated to helping you simplify your digital payments so you can focus on growing your online business. 
+
+= PAYMENT METHODS =
+Use MONEI’s payment gateway to accept debit and credit card payments from customers worldwide in 230+ currencies. 
+
+
+Let shoppers pay from the convenience of their smartphone with digital wallets like Apple Pay, Google Pay, and PayPal. And accept local payment methods such as Bizum (Spain) and SEPA Direct Debit (EU).
+
+
+Offering customers many payment methods leads to an increase in sales and customer satisfaction. 🚀
+
+= WHY TO USE MONEI’S PAYMENT GATEWAY PLUGIN FOR WOOCOMMERCE =
+
+MONEI’s serverless architecture allows you to scale and process a high volume of transactions. Its dynamic pricing model means as you sell more your transaction fees decrease. Once you’re an approved merchant, enjoy 1-day payment settlements.
+
+
+Payment security is crucial. MONEI is PCI DSS compliant, 3D Secure, and uses payment tokenization to make sure sensitive payment information is never compromised. 
+
+
+Connect your custom domain to MONEI and customize the appearance of your checkout page to build trust and brand awareness.
+
+
+With MONEI’s payment gateway for e-commerce, get real-time sales analytics via your customer dashboard.
+
+
+Please go to the 👉 [signup page](https://dashboard.monei.com/) 👈 to create a new MONEI account. Contact support@monei.com if you have any questions or feedback about this plugin.
+
+
+= PAYMENT GATEWAY FEATURES =
+* Merchant support for all available MONEI payment methods 
+* Accept and manage all major and alternative payment methods in a single platform 
+* Quickly and easily integrate with your WooCommerce website using MONEI’s API 
+* Connect your custom domain to MONEI and customize the appearance of your checkout page
+* Scale and process a high volume of transactions
+* Dynamic pricing model — as you sell more your transaction fees decrease
+* Verified merchants enjoy 1-day payment settlements
+* PCI-DSS compliant 
+* Self-hosted flexible input fields
+* Supports 3D Secure and 3D Secure exemptions
+* Tokenization for deep integration of recurring billing + usage-based charges
+* Subscriptions support for various payment methods via WooCommerce Subscriptions
+* 13 languages available with auto-detection based on browser language
+* Capture pre-authorized payments and process refunds within your WooCommerce admin Dashboard 
+* Notifications via email or SMS for customer information and monitoring your store
+* Get real-time sales analytics via your customer dashboard
+
+
+= GETTING STARTED WITH MONEI =
+
+1. How do I open my MONEI account so I can plug in with WooCommerce? 
+
+Learn how to [get started with MONEI here ››](https://support.monei.com/hc/en-us/articles/360017801677-Get-started-with-MONEI)
+
+2. What countries does MONEI support? 
+
+Currently, MONEI is available in Spain and Andorra, but our global expansion is happening fast. [Join our newsletter here](https://client.moonmail.io/ac8e391c-8cfb-46e3-aed9-e7a84d0fd830/forms/6bafcdbf-442a-4e3b-874f-7e2ed30ee001) to get notified once we support your country! 
+
+3. I have different questions about this plugin.
+
+Please contact support@monei.com with your MONEI ID. Describe your problem in detail and include screenshots when necessary.
+
 
 == Installation ==
 
-In order to use this plugin you need to be registered in [MONEI](https://monei.net/)
+* Go to wp-admin > Plugins
+* Click Add new
+* Search for MONEI
+* Press Install
+* Press Activate now
+* Go to WooCommerce > Settings > Payments > MONEI
+* Add your Account ID & Password.
 
-* go to [MONEI Dashboard](https://dashboard.monei.net/)
-* select your sub account
-* go to *Ecommerce Guides -> WooCommerce* and follow the instructions there
+= If you don't have Account ID & Password =
+
+* Go to MONEI Dashboard
+* Select your sub account
+* Go to Monei.net > login > Configuration -> Account
 
 == Screenshots ==
 
-1. Basic payment form
+1. Apple Pay, Bizum, PayPal, credit Card
+2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+== 4.2.1 ==
+
+* FIXED refunds
+
+== 4.2.0 ==
+
+* Updated API URLs.
+
+== 4.1.1 ==
+
+* NEW: Added failUrl.
+* Added a check for try to avoid multiple order notes.
+
+== 4.1.0 ==
+
+* NEW: Added compatibility with WooCommerce Subscriptions.
+
+== 4.0.0 ==
+
+* NEW: Added tokenization.
+
+== 3.1.1 ==
+
+* Fixed customer email.
+
+== 3.1.0 ==
+
+* New: Added New API.
+* Temporarily Removed Onsite.
+
+== 3.0.0 ==
+
+* New: Added Pay On-Site.
 
 == 2.1.0 ==
 
