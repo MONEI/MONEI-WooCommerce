@@ -1,7 +1,7 @@
 === MONEI WooCommerce ===
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
-Contributors: monei, j.conti
-Requires at least: 4.0
+Contributors: monei, furi3r
+Requires at least: 5.0
 Tested up to: 5.7
 Stable tag: 4.2.1
 License: GPLv2 or later
@@ -104,6 +104,10 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+== 5.0 ==
+
+* Major refactor.
 
 == 4.2.1 ==
 
