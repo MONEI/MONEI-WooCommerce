@@ -71,7 +71,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			}
 
 			if ( ! $this->get_installed_version() ) {
-				add_action( 'admin_notices', array( $this, 'admin_new_install_notice') );
+				add_action( 'admin_notices', array( $this, 'admin_new_install_notice' ) );
 			}
 
 			$this->define_constants();
@@ -85,6 +85,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * WC_Monei Constants.
 		 */
 		private function define_constants() {
+			$this->define( 'MONEI_GATEWAY_ID', 'monei' );
 			$this->define( 'MONEI_VERSION', $this->version );
 			$this->define( 'MONEI_SIGNUP', 'https://dashboard.monei.net/?action=signUp' );
 			$this->define( 'MONEI_WEB', 'https://monei.net/' );
@@ -123,13 +124,13 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			/**
 			 * If Dismissed, we save the versions installed.
 			 */
-            if ( isset( $_GET['monei-hide-new-version'] ) && 'hide-new-version-monei' === $_GET['monei-hide-new-version'] ) {
-                if ( wp_verify_nonce( $_GET['_monei_hide_new_version_nonce'], 'monei_hide_new_version_nonce' ) ) {
-                    update_option( 'hide-new-version-monei-notice', MONEI_VERSION );
-                }
-                return;
-            }
-			woocommerce_gateway_monei_get_template('notice-admin-new-install.php');
+			if ( isset( $_GET['monei-hide-new-version'] ) && 'hide-new-version-monei' === $_GET['monei-hide-new-version'] ) {
+				if ( wp_verify_nonce( $_GET['_monei_hide_new_version_nonce'], 'monei_hide_new_version_nonce' ) ) {
+					update_option( 'hide-new-version-monei-notice', MONEI_VERSION );
+				}
+				return;
+			}
+			woocommerce_gateway_monei_get_template( 'notice-admin-new-install.php' );
 		}
 
 		/**
@@ -138,7 +139,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return void
 		 */
 		public function dependency_notice() {
-			woocommerce_gateway_monei_get_template('notice-admin-dependency.php');
+			woocommerce_gateway_monei_get_template( 'notice-admin-dependency.php' );
 		}
 
 		/**
@@ -199,19 +200,42 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * Hooks when plugin_loaded
 		 */
 		public function plugins_loaded() {
+			$this->include_payment_methods();
+			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
+		}
 
+		/**
+		 * Include Payment Methods.
+		 */
+		private function include_payment_methods() {
+			// Including abstract.
+			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway.php';
+			// Including hosted payments.
+			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted.php';
+		}
+
+		/**
+		 * Add Monei Gateways.
+		 *
+		 * @param $methods
+		 *
+		 * @return array
+		 */
+		public function add_gateways( $methods ) {
+			$methods[] = 'WC_Gateway_monei';
+			return $methods;
 		}
 
 		/**private function load_plugin_textdomain() {
 		}**/
 
 		/**
-         * Get installed version. For retro compat we keep "hide-new-version-monei-notice"
-         *
+		 * Get installed version. For retro compat we keep "hide-new-version-monei-notice"
+		 *
 		 * @return false|string
 		 */
 		private function get_installed_version() {
-            return get_option( 'hide-new-version-monei-notice' );
+			return get_option( 'hide-new-version-monei-notice' );
 		}
 
 		/**

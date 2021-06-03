@@ -84,4 +84,3 @@ function woocommerce_gateway_monei_get_template_html( $template_name, $args = ar
 	return ob_get_clean();
 }
 
-
