@@ -97,9 +97,10 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * Include required core files used in admin and on the frontend.
 		 */
 		private function includes() {
-			include_once 'includes/woocommerce-gatewai-monei-template-functions.php';
 
+			include_once 'includes/woocommerce-gateway-monei-template-functions.php';
 			if ( $this->is_request( 'admin' ) ) {
+
 			}
 
 			if ( $this->is_request( 'frontend' ) ) {
