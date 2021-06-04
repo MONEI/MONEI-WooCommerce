@@ -99,5 +99,19 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @var array
 	 */
 	public $form_fields = array();
+
+	/**
+	 * Check if this gateway is enabled and available in the user's country
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	protected function is_valid_for_use() {
+		if ( ! in_array( get_woocommerce_currency(), array( 'EUR', 'USD', 'GBP' ), true ) ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 }
 
