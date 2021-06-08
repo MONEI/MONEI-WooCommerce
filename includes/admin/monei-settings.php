@@ -58,12 +58,6 @@ return apply_filters(
 			'type'        => 'text',
 			'description' => __( 'API Key', 'monei' ),
 		),
-		'password'   => array(
-			'title'       => __( 'Password', 'monei' ),
-			'type'        => 'text',
-			'description' => __( 'MONEI Password', 'monei' ),
-			'desc_tip'    => true,
-		),
 		'tokenization'        => array(
 			'title'   => __( 'Enable/Disable', 'monei' ),
 			'type'    => 'checkbox',
