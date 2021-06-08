@@ -99,11 +99,13 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		private function includes() {
 
 			include_once 'includes/woocommerce-gateway-monei-template-functions.php';
+
 			if ( $this->is_request( 'admin' ) ) {
 
 			}
 
 			if ( $this->is_request( 'frontend' ) ) {
+				include_once 'includes/class-wc-monei-logger.php';
 			}
 		}
 
