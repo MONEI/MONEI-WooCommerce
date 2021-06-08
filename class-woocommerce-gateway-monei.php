@@ -106,6 +106,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			if ( $this->is_request( 'frontend' ) ) {
 				include_once 'includes/class-wc-monei-logger.php';
+				include_once 'includes/class-wc-monei-api.php';
 			}
 		}
 
