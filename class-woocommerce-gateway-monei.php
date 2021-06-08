@@ -107,6 +107,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			if ( $this->is_request( 'frontend' ) ) {
 				include_once 'includes/class-wc-monei-logger.php';
 				include_once 'includes/class-wc-monei-api.php';
+				include_once 'includes/class-wc-monei-ipn.php';
 			}
 		}
 
@@ -240,6 +241,15 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		private function get_installed_version() {
 			return get_option( 'hide-new-version-monei-notice' );
+		}
+
+		/**
+		 * Get IPN url.
+		 *
+		 * @return string
+		 */
+		public function get_ipn_url() {
+			return WC()->api_request_url( 'monei_ipn' );
 		}
 
 		/**

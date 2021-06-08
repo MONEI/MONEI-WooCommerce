@@ -29,8 +29,9 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		// Load the settings.
 		$this->init_settings();
 
-		//todo: has_field is false in hosted
-		$this->has_fields           = false;
+		// Hosted payment with redirect.
+		$this->has_fields = false;
+
 		// Settings variable
 		$this->icon                 = ( ! empty( $this->get_option( 'logo' ) ) ) ? $this->get_option( 'logo' ) : apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'MONEI-logo.png' ) );
 		$this->testmode             = ( ! empty( $this->get_option( 'testmode' ) && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
@@ -41,19 +42,20 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
 		$this->shop_name            = ( ! empty( $this->get_option( 'commercename' ) ) ) ? $this->get_option( 'commercename' ) : '';
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
-		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false; ;
+		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
-		$this->logger                 = new WC_Logger();
+		// todo: remove, we are using logger class.
+		$this->logger               = new WC_Logger();
 
 		// IPN callbacks
-        // todo maybe move from here
-		$this->notify_url           = add_query_arg( 'wc-api', 'WC_Gateway_monei', home_url( '/' ) );
+		$this->notify_url           = WC_Monei()->get_ipn_url();
+		new WC_Monei_IPN();
 
 		//todo: what is really supported?
 		$this->supports             = array(
 			'products',
-			'tokenization',
-			'refunds',
+			//'tokenization',
+			//'refunds',
 			/**'subscriptions',
 			'subscription_cancellation',
 			'subscription_suspension',
@@ -68,17 +70,15 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 
 		// Actions.
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'valid_monei_standard_ipn_request', array( $this, 'successful_request' ) );
 		add_action( 'woocommerce_receipt_monei', array( $this, 'receipt_page' ) );
 
-		// Payment listener/API hook.
-		add_action( 'woocommerce_api_wc_gateway_' . $this->id, array( $this, 'check_ipn_response' ) );
 	}
 
 	/**
 	 * Admin Panel Options
 	 *
-	 * @since 1.0.0
+	 * @access public
+	 * @since 5.0
 	 * @return void
 	 */
 	public function admin_options() {
@@ -93,6 +93,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 	 * Initialise Gateway Settings Form Fields
 	 *
 	 * @access public
+	 * @since 5.0
 	 * @return void
 	 */
 	public function init_form_fields() {
@@ -458,36 +459,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		echo $this->generate_monei_form( $order );
 	}
 
-	/**
-	 * Check for Monei HTTP Notification
-	 *
-	 * @access public
-	 * @return void
-	 */
-	function check_ipn_response() {
-		if ( 'yes' === $this->logging ) {
-			$this->logger->add( 'monei', ' ' );
-			$this->logger->add( 'monei', '/****************************/' );
-			$this->logger->add( 'monei', '      check_ipn_response      ' );
-			$this->logger->add( 'monei', '/****************************/' );
-			$this->logger->add( 'monei', ' ' );
-		}
-		@ob_clean();
-		$json   = file_get_contents( 'php://input' );
-		$data   = json_decode( $json );
-		$result = $data->status;
-		if ( 'yes' === $this->logging ) {
-			$this->logger->add( 'monei', $json );
-			$this->logger->add( 'monei', '$result: ' . $result );
-		}
 
-		if ( 'SUCCEEDED' === $result ) {
-			header( 'HTTP/1.1 200 OK' );
-			do_action( 'valid_monei_standard_ipn_request', $data );
-		} else {
-			wp_die( 'MONEI Notification Request Failure' );
-		}
-	}
 	function is_paid( $order_id ) {
 
 		$order       = wc_get_order( $order_id );
@@ -518,122 +490,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			return false;
 		}
 	}
-	/**
-	 * Successful Payment!
-	 *
-	 * @access public
-	 * @param array $posted
-	 * @return void
-	 */
-	function successful_request( $data ) {
-		global $woocommerce;
 
-		$monei_order_id   = sanitize_text_field( $data->id );
-		$order_id         = sanitize_text_field( $data->orderId );
-		$message          = sanitize_text_field( $data->message );
-		$order2           = substr( $order_id, 3 ); // cojo los 9 digitos del final.
-		$order            = $this->get_monei_order( (int) $order2 );
-		$status           = sanitize_text_field( $data->status );
-		$amount           = floatval( $data->amount ) / 100;
-		$json             = file_get_contents( 'php://input' );
-		$data             = json_decode( $json );
-
-		if ( 'yes' === $this->logging ) {
-			$this->logger->add( 'monei', '$monei_order_id: ' . $monei_order_id );
-			$this->logger->add( 'monei', '$order_id: ' . $order_id );
-			$this->logger->add( 'monei', '$status: ' . $status );
-			$this->logger->add( 'monei', '$message: ' . $message );
-		}
-
-		if ( 'SUCCEEDED' === $status ) {
-			// authorized.
-			$order2    = substr( $order_id, 3 ); //cojo los 9 digitos del final
-			$order     = new WC_Order( $order2 );
-			$amountwoo = floatval( $order->get_total() );
-
-			if ( $amountwoo !== $amount ) {
-				// amount does not match.
-				if ( 'yes' === $this->logging ) {
-					$this->logger->add( 'monei', 'Payment error: Amounts do not match (order: ' . $amountwoo . ' - received: ' . $amount . ')' );
-				}
-				// Put this order on-hold for manual checking.
-				/* translators: order an received are the amount */
-				$order->update_status( 'on-hold', sprintf( __( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2&s).', 'monei' ), $amountwoo, $amount ) );
-				exit;
-			}
-
-			if ( ! empty( $monei_order_id ) ) {
-				update_post_meta( $order->get_id(), '_payment_order_number_monei', $monei_order_id );
-			}
-
-			if ( ! empty( $order_id ) ) {
-				update_post_meta( $order->get_id(), '_payment_wc_order_id_monei', $order_id );
-			}
-
-			// Payment completed.
-			$order->add_order_note( __( 'HTTP Notification received - payment completed', 'monei' ) );
-			$order->add_order_note( __( 'MONEI Order Number: ', 'monei' ) . $monei_order_id );
-			$is_paid = $this->is_paid( $order2 );
-			if ( $is_paid ) {
-				return;
-			}
-			$order->payment_complete();
-			if ( 'completed' === $this->status_after_payment ) {
-				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
-			}
-
-			$get_token = get_post_meta( $order->get_id(), 'get_token', true );
-
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', '$get_token: ' . $get_token );
-			}
-
-			if ( 'yes' === $get_token ) {
-				$monei        = new Monei\MoneiClient( $this->api_key );
-				$data_payment = $monei->payments->get( $monei_order_id );
-
-				$data_array   = json_decode( $data_payment );
-
-				if ( isset( $data_array->paymentToken ) ) {
-					if ( 'yes' === $this->logging ) {
-						$this->logger->add( 'monei', '$token: ' . $data_array->paymentToken );
-						$this->logger->add( 'monei', '$brand: ' . $data->paymentMethod->card->brand );
-						$this->logger->add( 'monei', '$lastfour: ' . $data->paymentMethod->card->last4 );
-					}
-					$token_n  = $data_array->paymentToken;
-					$brand    = $data->paymentMethod->card->brand;
-					$lastfour = $data->paymentMethod->card->last4;
-					$token    = new WC_Payment_Token_CC();
-					$token->set_token( $token_n );
-					$token->set_gateway_id( 'monei' );
-					$token->set_user_id( $order->get_user_id() );
-					$token->set_card_type( $brand );
-					$token->set_last4( $lastfour );
-					$token->set_expiry_month( '12' );
-					$token->set_expiry_year( '2040' );
-					$token->set_default( true );
-					$token->save();
-				}
-			}
-
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', '$data_payment: ' . $data_payment );
-			}
-
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', 'Payment complete.' );
-			}
-		} else {
-			// Tarjeta caducada.
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', 'Order cancelled by MONEI: ' . $message );
-			}
-			// Order cancelled.
-			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $message );
-			$order->add_order_note( 'Order cancelled by MONEI: ' . $message );
-			WC()->cart->empty_cart();
-		}
-	}
 
 	/**
 	 * get_monei_order function.

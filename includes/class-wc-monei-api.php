@@ -46,5 +46,18 @@ class WC_Monei_API {
 		self::$client = new Monei\MoneiClient( self::get_api_key() );
 		return self::$client;
 	}
+
+	/**
+	 * @param $body
+	 * @param $signature
+	 *
+	 * @return object
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function verify_signature( $body, $signature ) {
+		$client = self::get_client();
+		return $client->verifySignature( $body, $signature );
+	}
+
 }
 
