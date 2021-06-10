@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Monei_API {
 
-	const option_api_key = 'woocommerce_monei_apikey';
+	const OPTION_API_KEY = 'apikey';
 
 	/**
 	 * @var string
@@ -31,7 +31,8 @@ class WC_Monei_API {
 		if ( isset( self::$api_key ) ) {
 			return self::$api_key;
 		}
-		return get_option( self::option_api_key, true );
+
+		return monei_get_settings(self::OPTION_API_KEY );
 	}
 
 	/**
@@ -57,6 +58,17 @@ class WC_Monei_API {
 	public static function verify_signature( $body, $signature ) {
 		$client = self::get_client();
 		return $client->verifySignature( $body, $signature );
+	}
+
+	/**
+	 * @param array $payload
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function create_payment( $payload ) {
+		$client = self::get_client();
+		return $client->payments->create( $payload );
 	}
 
 }

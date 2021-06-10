@@ -52,52 +52,6 @@ class WC_Monei_IPN {
 	}
 
 	/**
-	 * Verify signature, if all good returns payload.
-	 * Throws Exception if Signaturit not valid.
-	 *
-	 * @param $request_body
-	 * @param $monei_signature
-	 *
-	 * @return object
-	 * @throws \OpenAPI\Client\ApiException
-	 */
-	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		return WC_Monei_API::verify_signature( $request_body, $monei_signature );
-	}
-
-	/**
-	 * getallheaders is only available for apache, we need a fallback in case of nginx or others,
-	 * http://php.net/manual/es/function.getallheaders.php
-	 * @return array|false
-	 */
-	private function get_all_headers() {
-		if ( ! function_exists( 'getallheaders' ) ) {
-			$headers = array();
-			foreach ( $_SERVER as $name => $value ) {
-				if ( substr( $name, 0, 5 ) == 'HTTP_' ) {
-					$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
-				}
-			}
-			return $headers;
-
-		} else {
-			return getallheaders();
-		}
-	}
-
-	/**
-	 * @param $headers
-	 * @param $raw_body
-	 */
-	protected function log_ipn_request( $headers, $raw_body ) {
-		foreach ( $headers as $key => $value ) {
-			$headers[ $key ] = $key . ': ' . $value;
-		}
-		$headers = implode( "\n", $headers );
-		WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
-	}
-
-	/**
 	 * todo: refactor this.
 	 * Successful Payment!
 	 *
@@ -213,6 +167,52 @@ class WC_Monei_IPN {
 			$order->add_order_note( 'Order cancelled by MONEI: ' . $message );
 			WC()->cart->empty_cart();
 		}
+	}
+
+	/**
+	 * Verify signature, if all good returns payload.
+	 * Throws Exception if Signaturit not valid.
+	 *
+	 * @param $request_body
+	 * @param $monei_signature
+	 *
+	 * @return object
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
+		return WC_Monei_API::verify_signature( $request_body, $monei_signature );
+	}
+
+	/**
+	 * getallheaders is only available for apache, we need a fallback in case of nginx or others,
+	 * http://php.net/manual/es/function.getallheaders.php
+	 * @return array|false
+	 */
+	private function get_all_headers() {
+		if ( ! function_exists( 'getallheaders' ) ) {
+			$headers = array();
+			foreach ( $_SERVER as $name => $value ) {
+				if ( substr( $name, 0, 5 ) == 'HTTP_' ) {
+					$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
+				}
+			}
+			return $headers;
+
+		} else {
+			return getallheaders();
+		}
+	}
+
+	/**
+	 * @param $headers
+	 * @param $raw_body
+	 */
+	protected function log_ipn_request( $headers, $raw_body ) {
+		foreach ( $headers as $key => $value ) {
+			$headers[ $key ] = $key . ': ' . $value;
+		}
+		$headers = implode( "\n", $headers );
+		WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
 	}
 
 }
