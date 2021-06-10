@@ -99,6 +99,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		private function includes() {
 
 			include_once 'includes/woocommerce-gateway-monei-template-functions.php';
+			include_once 'includes/woocommerce-gateway-monei-core-functions.php';
+			include_once 'includes/class-wc-monei-ipn.php';
 
 			if ( $this->is_request( 'admin' ) ) {
 
@@ -107,7 +109,6 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			if ( $this->is_request( 'frontend' ) ) {
 				include_once 'includes/class-wc-monei-logger.php';
 				include_once 'includes/class-wc-monei-api.php';
-				include_once 'includes/class-wc-monei-ipn.php';
 			}
 		}
 
