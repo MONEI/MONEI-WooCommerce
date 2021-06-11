@@ -124,7 +124,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		/**
 		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
 		 */
-		$fail_url       = wp_sanitize_redirect( esc_url_raw( $order->get_cancel_order_url() ) );
+		$fail_url       = esc_url_raw( $order->get_cancel_order_url_raw() );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -145,6 +145,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			'callbackUrl' => $callback_url,
 			'completeUrl' => $complete_url,
 			'cancelUrl'   => $fail_url,
+			'failUrl'     => $fail_url,
 			'transactionType' => self::TRANSACTION_TYPE,
 			'sessionDetails'  => [
 				'ip'        => WC_Geolocation::get_ip_address(),
@@ -169,7 +170,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			return array();
+			return;
 		}
 
 	}
