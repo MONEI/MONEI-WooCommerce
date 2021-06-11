@@ -144,7 +144,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			],
 			'callbackUrl' => $callback_url,
 			'completeUrl' => $complete_url,
-			'cancelUrl'   => $fail_url,
+			'cancelUrl'   => wc_get_checkout_url(),
 			'failUrl'     => $fail_url,
 			'transactionType' => self::TRANSACTION_TYPE,
 			'sessionDetails'  => [
