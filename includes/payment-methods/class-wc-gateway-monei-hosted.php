@@ -120,15 +120,15 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		/**
 		 * The URL to which a payment result should be sent asynchronously.
 		 */
-		$callback_url   = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
+		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
 		/**
 		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
 		 */
-		$fail_url       = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url     = esc_url_raw( $order->get_cancel_order_url_raw() );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
-		$complete_url     = wp_sanitize_redirect( esc_url_raw( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) ) );
+		$complete_url = wp_sanitize_redirect( esc_url_raw( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) ) );
 
 		/**
 		 * Create Payment Payload
@@ -136,7 +136,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		$payload = [
 			'amount'      => $amount,
 			'currency'    => $currency,
-			'orderId'     => (string) $order_id,
+			'orderId'     => ( string ) $order_id,
 			'description' => $description,
 			'customer' => [
 				'email' => $user_email,
@@ -165,16 +165,13 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
-
 		} catch ( Exception $e ) {
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			return;
 		}
-
 	}
-
 
 	function get_monei_args( $order ) {
 		global $woocommerce;

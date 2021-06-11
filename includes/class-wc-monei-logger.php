@@ -37,7 +37,17 @@ class WC_Monei_Logger {
 			self::$logger = wc_get_logger();
 		}
 
-		$message = is_array( $message ) ? print_r( $message, true ) : $message;
+		switch ( $message ) {
+			case is_object( $message ):
+				$message = print_r( (array) $message, true );
+				break;
+			case is_array( $message ):
+				$message = print_r( $message, true );
+				break;
+			default:
+				break;
+		}
+
 		$log_entry  = "\n" . '==== MONEI Version: ' . WC_Monei()->version . '====' . "\n";
 		$log_entry .= '====Start Log====' . "\n" . $message . "\n" . '====End Log====' . "\n\n";
 

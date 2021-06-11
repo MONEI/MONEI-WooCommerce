@@ -52,120 +52,59 @@ class WC_Monei_IPN {
 	}
 
 	/**
-	 * todo: refactor this.
-	 * Successful Payment!
+	 * MONEI IPN
 	 *
 	 * @access public
-	 * @param array $posted
+	 * @param array $payload
 	 * @return void
 	 */
-	function handle_valid_ipn( $data ) {
-		global $woocommerce;
+	function handle_valid_ipn( $payload ) {
 
-		$monei_order_id   = sanitize_text_field( $data->id );
-		$order_id         = sanitize_text_field( $data->orderId );
-		$message          = sanitize_text_field( $data->message );
-		$order2           = substr( $order_id, 3 ); // cojo los 9 digitos del final.
-		$order            = $this->get_monei_order( (int) $order2 );
-		$status           = sanitize_text_field( $data->status );
-		$amount           = floatval( $data->amount ) / 100;
-		$json             = file_get_contents( 'php://input' );
-		$data             = json_decode( $json );
+		$order_id   = $payload['orderId'];
+		$monei_id   = $payload['id'];
+		$status     = $payload['status'];
+		$status_code    = $payload['statusCode'];
+		$status_message = $payload['statusMessage'];
+		$amount         = $payload['amount'];
 
-		if ( 'yes' === $this->logging ) {
-			$this->logger->add( 'monei', '$monei_order_id: ' . $monei_order_id );
-			$this->logger->add( 'monei', '$order_id: ' . $order_id );
-			$this->logger->add( 'monei', '$status: ' . $status );
-			$this->logger->add( 'monei', '$message: ' . $message );
+		$order = wc_get_order( $order_id );
+
+		/**
+		 * Saving related information into order meta.
+		 */
+		$order->update_meta_data( '_payment_order_number_monei', $monei_id );
+		$order->update_meta_data( '_payment_order_status_monei', $status );
+		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
+		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
+
+		if ( 'FAILED' === $status || 'CANCELED' === $status ) {
+			// Order cancelled.
+			$order->add_order_note( __( 'HTTP Notification received - payment ', 'monei' ) . $status );
+			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $status_message );
+			return;
 		}
 
 		if ( 'SUCCEEDED' === $status ) {
-			// authorized.
-			$order2    = substr( $order_id, 3 ); //cojo los 9 digitos del final
-			$order     = new WC_Order( $order2 );
-			$amountwoo = floatval( $order->get_total() );
+			$order_total = $order->get_total();
 
-			if ( $amountwoo !== $amount ) {
-				// amount does not match.
-				if ( 'yes' === $this->logging ) {
-					$this->logger->add( 'monei', 'Payment error: Amounts do not match (order: ' . $amountwoo . ' - received: ' . $amount . ')' );
-				}
-				// Put this order on-hold for manual checking.
-				/* translators: order an received are the amount */
-				$order->update_status( 'on-hold', sprintf( __( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2&s).', 'monei' ), $amountwoo, $amount ) );
+			/**
+			 * If amounts don't match, we mark the order on-hold for manual validation.
+			 */
+			if ( (int) $amount !== monei_price_format( $order_total ) ) {
+				$order->update_status( 'on-hold', sprintf( __( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2&s).', 'monei' ), $amount, monei_price_format( $order_total ) ) );
 				exit;
-			}
-
-			if ( ! empty( $monei_order_id ) ) {
-				update_post_meta( $order->get_id(), '_payment_order_number_monei', $monei_order_id );
-			}
-
-			if ( ! empty( $order_id ) ) {
-				update_post_meta( $order->get_id(), '_payment_wc_order_id_monei', $order_id );
 			}
 
 			// Payment completed.
 			$order->add_order_note( __( 'HTTP Notification received - payment completed', 'monei' ) );
-			$order->add_order_note( __( 'MONEI Order Number: ', 'monei' ) . $monei_order_id );
-			$is_paid = $this->is_paid( $order2 );
-			if ( $is_paid ) {
-				return;
-			}
+			$order->add_order_note( __( 'MONEI Order Number: ', 'monei' ) . $monei_id );
+			$order->add_order_note( __( 'MONEI Status Message: ', 'monei' ) . $status_message );
+
 			$order->payment_complete();
-			if ( 'completed' === $this->status_after_payment ) {
+			if ( 'completed' === monei_get_settings('orderdo' ) ) {
 				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 			}
-
-			$get_token = get_post_meta( $order->get_id(), 'get_token', true );
-
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', '$get_token: ' . $get_token );
-			}
-
-			if ( 'yes' === $get_token ) {
-				$monei        = new Monei\MoneiClient( $this->api_key );
-				$data_payment = $monei->payments->get( $monei_order_id );
-
-				$data_array   = json_decode( $data_payment );
-
-				if ( isset( $data_array->paymentToken ) ) {
-					if ( 'yes' === $this->logging ) {
-						$this->logger->add( 'monei', '$token: ' . $data_array->paymentToken );
-						$this->logger->add( 'monei', '$brand: ' . $data->paymentMethod->card->brand );
-						$this->logger->add( 'monei', '$lastfour: ' . $data->paymentMethod->card->last4 );
-					}
-					$token_n  = $data_array->paymentToken;
-					$brand    = $data->paymentMethod->card->brand;
-					$lastfour = $data->paymentMethod->card->last4;
-					$token    = new WC_Payment_Token_CC();
-					$token->set_token( $token_n );
-					$token->set_gateway_id( 'monei' );
-					$token->set_user_id( $order->get_user_id() );
-					$token->set_card_type( $brand );
-					$token->set_last4( $lastfour );
-					$token->set_expiry_month( '12' );
-					$token->set_expiry_year( '2040' );
-					$token->set_default( true );
-					$token->save();
-				}
-			}
-
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', '$data_payment: ' . $data_payment );
-			}
-
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', 'Payment complete.' );
-			}
-		} else {
-			// Tarjeta caducada.
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', 'Order cancelled by MONEI: ' . $message );
-			}
-			// Order cancelled.
-			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $message );
-			$order->add_order_note( 'Order cancelled by MONEI: ' . $message );
-			WC()->cart->empty_cart();
+			return;
 		}
 	}
 
@@ -176,11 +115,11 @@ class WC_Monei_IPN {
 	 * @param $request_body
 	 * @param $monei_signature
 	 *
-	 * @return object
+	 * @return array
 	 * @throws \OpenAPI\Client\ApiException
 	 */
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		return WC_Monei_API::verify_signature( $request_body, $monei_signature );
+		return ( array ) WC_Monei_API::verify_signature( $request_body, $monei_signature );
 	}
 
 	/**
