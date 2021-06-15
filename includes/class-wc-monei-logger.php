@@ -49,9 +49,9 @@ class WC_Monei_Logger {
 		}
 
 		$log_entry  = "\n" . '==== MONEI Version: ' . WC_Monei()->version . '====' . "\n";
-		$log_entry .= '====Start Log====' . "\n" . $message . "\n" . '====End Log====' . "\n\n";
+		$log_entry .= '====Start Log====' . "\n" . $message . "\n" . '====End Log====' . "\n";
 
-		self::$logger->log( $error_level, $log_entry, self::WC_LOG_FILENAME );
+		self::$logger->log( $error_level, $log_entry, [ 'source' => self::WC_LOG_FILENAME ] );
 	}
 
 }
