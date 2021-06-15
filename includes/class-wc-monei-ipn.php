@@ -44,6 +44,7 @@ class WC_Monei_IPN {
 			http_response_code( 200 );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
 		} catch ( Exception $e ) {
+			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
 			WC_Monei_Logger::log( 'Failed IPN request: ' . $e->getMessage() );
 			// Invalid signature
 			http_response_code( 400 );
