@@ -47,28 +47,15 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
-		// todo: remove, we are using logger class.
-		$this->logger               = new WC_Logger();
 
 		// IPN callbacks
 		$this->notify_url           = WC_Monei()->get_ipn_url();
 		new WC_Monei_IPN();
 
-		//todo: what is really supported?
 		$this->supports             = array(
 			'products',
+			'refunds',
 			//'tokenization',
-			//'refunds',
-			/**'subscriptions',
-			'subscription_cancellation',
-			'subscription_suspension',
-			'subscription_reactivation',
-			'subscription_amount_changes',
-			'subscription_date_changes',
-			'subscription_payment_method_change',
-			'subscription_payment_method_change_customer',
-			'subscription_payment_method_change_admin',
-			'multiple_subscriptions',**/
 		);
 
 		// Actions.
@@ -519,124 +506,6 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			$this->logger->add( 'monei', '$status: ' . $status );
 			$this->logger->add( 'monei', '$authorizationCode: ' . $authorizationCode );
 			$this->logger->add( 'monei', '$id: ' . $id );
-		}
-	}
-	/**
-	 * Refund
-	 */
-
-	function ask_for_refund( $order_id, $transaction_id, $amount ) {
-
-		//post code to MONEI
-		$order2             = get_post_meta( $order_id, '_payment_wc_order_id_monei', true );
-		$monei_order_number = $transaction_id;
-		$currency_codes     = get_woocommerce_currency();
-		$account_id         = $this->account_id;
-		$test               = $this->testmode;
-		$transaction_type   = 'refund';
-		$shop_name          = $this->shop_name;
-		$password           = $this->password;
-		$country            = new WC_Countries();
-		$shop_country       = $country->get_base_country();
-		$monei_adr          = self::REFUND_URL;
-		$api_apssword       = $this->api_key;
-
-		$amount = $this->amount_format( $amount );
-
-		if ( 'yes' === $this->logging ) {
-			$this->logger->add( 'monei', ' ' );
-			$this->logger->add( 'monei', '$api_apssword ' . $api_apssword );
-			$this->logger->add( 'monei', '$monei_order_number ' . $monei_order_number );
-			$this->logger->add( 'monei', '$amount: ' . $amount );
-		}
-
-		$monei   = new Monei\MoneiClient( $api_apssword );
-		$message = $monei->payments->refund(
-			$monei_order_number,
-			[
-				'amount' => (int) $amount,
-				'refundReason' => 'requested_by_customer',
-			]
-		);
-		$json   = json_decode( $message, true );
-		$status = $json['status'];
-
-		//$sign = hash_hmac('sha256', $message, $password );
-
-		if ( 'yes' === $this->logging ) {
-			$this->logger->add( 'monei', ' ' );
-			$this->logger->add( 'monei', '$message ' . $message );
-			$this->logger->add( 'monei', '$status ' . $status );
-			$this->logger->add( 'monei', __( 'Order Number MONEI : ', 'monei' ) . $monei_order_number );
-		}
-
-		if ( 'REFUNDED' === $status || 'PARTIALLY_REFUNDED' === $status ) {
-			return true;
-		} else {
-			return $status;
-		}
-	}
-
-	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-
-		// Do your refund here. Refund $amount for the order with ID $order_id _transaction_id
-		set_time_limit( 0 );
-		$order              = $this->get_monei_order( $order_id );
-		$order2             = get_post_meta( $order_id, '_payment_wc_order_id_monei', true );
-		$monei_order_number = get_post_meta( $order_id, '_payment_order_number_monei', true );
-
-		if ( ! $amount ) {
-			$order_total_sign  = $order->get_total();
-		} else {
-			$order_total_sign = $amount;
-		}
-
-		if ( ! empty( $order2 ) ) {
-			if ( 'yes' === $this->logging ) {
-				$this->logger->add( 'monei', ' ' );
-				$this->logger->add( 'monei', '/****************************/' );
-				$this->logger->add( 'monei', '       Once upon a time       ' );
-				$this->logger->add( 'monei', '/****************************/' );
-				$this->logger->add( 'monei', ' ' );
-				$this->logger->add( 'monei', __( 'check_monei_refund Asking for order #: ', 'monei' ) . $order_id );
-			}
-
-			$refund_asked = $this->ask_for_refund( $order_id, $monei_order_number, $order_total_sign );
-
-			if ( $refund_asked ) {
-				if ( 'yes' === $this->logging && $result ) {
-					$this->logger->add( 'monei', __( 'check_monei_refund = true ', 'monei' ) );
-					$this->logger->add( 'monei', ' ' );
-					$this->logger->add( 'monei', '/********************************/' );
-					$this->logger->add( 'monei', '  Refund complete by MONEI   ' );
-					$this->logger->add( 'monei', '/********************************/' );
-					$this->logger->add( 'monei', ' ' );
-					$this->logger->add( 'monei', '/******************************************/' );
-					$this->logger->add( 'monei', '  The final has come, this story has ended  ' );
-					$this->logger->add( 'monei', '/******************************************/' );
-					$this->logger->add( 'monei', ' ' );
-				}
-				return true;
-			} else {
-				if ( is_wp_error( $refund_asked ) ) {
-					if ( 'yes' === $this->logging ) {
-						$this->logger->add( 'monei', __( 'Refund Failed: ', 'monei' ) . $refund_asked->get_error_message() );
-					}
-					return new WP_Error( 'error', $refund_asked->get_error_message() );
-				}
-			}
-
-			if ( is_wp_error( $refund_asked ) ) {
-				if ( 'yes' === $this->logging ) {
-					$this->logger->add( 'monei', __( 'Refund Failed: ', 'monei' ) . $refund_asked->get_error_message() );
-				}
-				return new WP_Error( 'error', $refund_asked->get_error_message() );
-			}
-		} else {
-			if ( 'yes' === $this->logging && $result ) {
-				$this->logger->add( 'monei', __( 'Refund Failed: No transaction ID', 'monei' ) );
-			}
-			return new WP_Error( 'monei', __( 'Refund Failed: No transaction ID', 'monei' ) );
 		}
 	}
 }

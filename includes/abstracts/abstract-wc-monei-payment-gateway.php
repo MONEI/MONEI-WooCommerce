@@ -82,13 +82,6 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	public $logging;
 
 	/**
-	 * Logger.
-	 *
-	 * @var WC_Logger
-	 */
-	public $logger;
-
-	/**
 	 * @var string
 	 */
 	public $notify_url;
@@ -112,6 +105,40 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		} else {
 			return true;
 		}
+	}
+
+	/**
+	 * @param int $order_id
+	 * @param null $amount
+	 * @param string $reason
+	 *
+	 * @return bool
+	 */
+	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return false;
+		}
+
+		if ( ! $amount ) {
+			$amount = $order->get_total();
+		}
+
+		$payment_id = $order->get_meta( '_payment_order_number_monei', true );
+		try {
+			$result = WC_Monei_API::refund_payment( $payment_id, monei_price_format( $amount ) );
+			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
+				WC_Monei_Logger::log( 'Refund approved.', 'debug' );
+				WC_Monei_Logger::log( $result, 'debug' );
+				$order->add_order_note( 'Refund approved: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				return true;
+			}
+		} catch ( Exception $e ) {
+			WC_Monei_Logger::log( 'Refund error: ' . $e->getMessage(), 'error' );
+			$order->add_order_note( 'Refund error: ' . $e->getMessage() );
+		}
+		return false;
 	}
 }
 

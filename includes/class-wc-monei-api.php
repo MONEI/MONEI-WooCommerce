@@ -32,7 +32,7 @@ class WC_Monei_API {
 			return self::$api_key;
 		}
 
-		return monei_get_settings(self::OPTION_API_KEY );
+		return monei_get_settings( self::OPTION_API_KEY );
 	}
 
 	/**
@@ -69,6 +69,25 @@ class WC_Monei_API {
 	public static function create_payment( $payload ) {
 		$client = self::get_client();
 		return $client->payments->create( $payload );
+	}
+
+	/**
+	 * @param $payment_id
+	 * @param $amount
+	 * @param string $refund_reason
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function refund_payment( $payment_id, $amount, $refund_reason = 'requested_by_customer' ) {
+		$client = self::get_client();
+		return $client->payments->refund(
+			$payment_id,
+			[
+				'amount' => (int) $amount,
+				'refundReason' => $refund_reason,
+			]
+		);
 	}
 
 }
