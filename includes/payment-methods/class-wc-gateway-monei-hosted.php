@@ -64,6 +64,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		// Actions.
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		add_action( 'woocommerce_receipt_monei', array( $this, 'receipt_page' ) );
+
 	}
 
 	/**
@@ -102,7 +103,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 	public function process_payment( $order_id ) {
 
 		$order         = new WC_Order( $order_id );
-		$amount        = monei_price_format( $order->get_total());
+		$amount        = monei_price_format( $order->get_total() );
 		$currency      = get_woocommerce_currency();
 		$user_email    = $order->get_billing_email();
 		$description   = "user_email: $user_email order_id: $order_id";
@@ -126,7 +127,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		$payload = [
 			'amount'      => $amount,
 			'currency'    => $currency,
-			'orderId'     => ( string ) $order_id,
+			'orderId'     => (string) $order_id,
 			'description' => $description,
 			'customer' => [
 				'email' => $user_email,
@@ -144,7 +145,6 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		];
 
 		try {
-
 			$payment = WC_Monei_API::create_payment( $payload );
 			WC_Monei_Logger::log( 'WC_Monei_API::create_payment', 'debug' );
 			WC_Monei_Logger::log( $payload, 'debug' );
@@ -163,50 +163,63 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		}
 	}
 
-	function payment_fields() {
+	public function add_payment_method() {
 
-		if ( is_user_logged_in() && 'yes' === $this->tokenization ) {
-			$user_id = get_current_user_id();
-			$tokens = WC_Payment_Tokens::get_customer_tokens( $user_id, $this->id );
-			if ( ! empty( $tokens ) ) {
-				echo '<h4>Select a Credit Card</h4>';
-				echo '<div class="credit-cards-monei">';
-				foreach ( $tokens as $token ) {
-					$is_default = $token->is_default();
-					if ( $is_default ) {
-						$checked = 'checked="checked"';
-					} else {
-						$checked = '';
-					}
-					echo '<div class="moneicreditcards">';
-					echo '<input id="' . $token->get_id() . '" name="moneitoken" type="radio" ' . $checked . ' value="' . $token->get_id() . '"/>';
-					echo '<label for="' . $token->get_id() . '">' . $token->get_card_type() . ' ended in ' . $token->get_last4() . ' ' . $token->get_expiry_month() . '/' . $token->get_expiry_year() . '</label>';
-					echo '</div>';
-					continue;
-				}
-				echo '<div class="moneicreditcards">';
-				echo '<input id="yes" name="moneitoken" type="radio" value="yes"/>';
-				echo '<label for="yes">Add new Credit Card</label>';
-				echo '</div>';
-				echo '<div class="moneicreditcards">';
-				echo '<input id="no" name="moneitoken" type="radio" value="no"/>';
-				echo '<label for="no">Do not use any Credit Card</label>';
-				echo '</div>';
-				echo '</div>';
-			} else {
-				echo '<div class="credit-cards-monei">
-							<h4>Do we save your credit card?</h4>
-							<p>We won\'t keep your card, we\'ll keep a token that MONEI will provide. It\'s totally safe.</p>
-							<div class="moneicreditcards">
-							<input id="yes" name="moneitoken" type="radio" value="yes"/>
-							<label for="yes">Yes</label>
-						</div>
-						<div class="moneicreditcards">
-							<input id="no" name="moneitoken" type="radio" value="no"/>
-							<label for="no">No</label>
-						</div>
-					</div>';
-			}
+		if ( ! wp_verify_nonce( $_POST['woocommerce-add-payment-method-nonce'], 'woocommerce-add-payment-method' ) ) {
+			return array(
+				'result'   => 'failure',
+				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+			);
+		}
+
+		// Since it is a hosted version, we need to create a 0 EUR payment and send customer to MONEI.
+		try {
+			$zero_payload = $this->create_zero_eur_payload();
+			$payment = WC_Monei_API::create_payment( $zero_payload );
+			WC_Monei_Logger::log( 'WC_Monei_API::add_payment_method', 'debug' );
+			WC_Monei_Logger::log( $zero_payload, 'debug' );
+			WC_Monei_Logger::log( $payment, 'debug' );
+			do_action( 'wc_gateway_monei_add_payment_method_success', $zero_payload, $payment );
+			return array(
+				'result'   => 'success',
+				'redirect' => $payment->getNextAction()->getRedirectUrl(),
+			);
+		} catch ( Exception $e ) {
+			WC_Monei_Logger::log( $e, 'error' );
+			wc_add_notice( $e->getMessage(), 'error' );
+			return array(
+				'result'   => 'failure',
+				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+			);
+		}
+	}
+
+	protected function create_zero_eur_payload() {
+		$current_user_id = (string) get_current_user_id();
+		/**
+		 * Create 0 EUR Payment Payload
+		 */
+		return [
+			'amount'      => 0,
+			'currency'    => get_woocommerce_currency(),
+			'orderId'     => $current_user_id . 'generatetoken' . rand( 0, 1000000 ),
+			'description' => "User $current_user_id creating empty transaction to generate token",
+			'callbackUrl' => wp_sanitize_redirect( esc_url_raw( $this->notify_url ) ),
+			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ),
+			'cancelUrl'   => wc_get_endpoint_url( 'payment-methods' ),
+			'failUrl'     => wc_get_endpoint_url( 'payment-methods' ),
+			'transactionType' => self::TRANSACTION_TYPE,
+			'sessionDetails'  => [
+				'ip'        => WC_Geolocation::get_ip_address(),
+				'userAgent' => wc_get_user_agent(),
+			],
+			'generatePaymentToken' => true,
+		];
+	}
+
+	function payment_fields() {
+		if ( is_add_payment_method_page() ) {
+			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 		} else {
 			echo $this->description;
 		}

@@ -61,6 +61,7 @@ class WC_Monei_API {
 	}
 
 	/**
+	 * https://docs.monei.com/api/#operation/payments_create
 	 * @param array $payload
 	 *
 	 * @return \OpenAPI\Client\Model\Payment
@@ -72,6 +73,22 @@ class WC_Monei_API {
 	}
 
 	/**
+	 * Get the details of a payment that has previously been created. Supply the unique payment ID that was returned from your previous request.
+	 * https://docs.monei.com/api/#operation/payments_get
+	 *
+	 * @param string $payment_id
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function get_payment( $payment_id ) {
+		$client = self::get_client();
+		return $client->payments->get( $payment_id, );
+	}
+
+	/**
+	 * https://docs.monei.com/api/#operation/payments_cancel
+	 *
 	 * @param $payment_id
 	 * @param $amount
 	 * @param string $refund_reason
