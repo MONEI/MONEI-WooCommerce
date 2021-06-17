@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 5.0
  * @version 5.0
  */
-class WC_Monei_Redirect {
+class WC_Monei_Redirect_Hooks {
 
 	/**
 	 * Constructor.
@@ -95,5 +95,5 @@ class WC_Monei_Redirect {
 
 }
 
-new WC_Monei_Redirect();
+new WC_Monei_Redirect_Hooks();
 
