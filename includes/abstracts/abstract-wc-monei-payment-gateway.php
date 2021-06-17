@@ -15,10 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
-	public const LIVE_URL   = 'https://pay.monei.com/checkout';
-	public const REFUND_URL = 'https://api.monei.com/v1/refund';
-	public const CHARGE_URL = 'https://api.monei.com/v1/charge';
-
 	/**
 	 * Is sandbox?
 	 *
