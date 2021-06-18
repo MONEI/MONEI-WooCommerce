@@ -163,6 +163,11 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Add payment method in Account add_payment_method_page.
+	 *
+	 * @return array
+	 */
 	public function add_payment_method() {
 
 		if ( ! wp_verify_nonce( $_POST['woocommerce-add-payment-method-nonce'], 'woocommerce-add-payment-method' ) ) {
@@ -217,12 +222,22 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		];
 	}
 
+	/**
+	 * Payments fields, shown on checkout or payment method page (add payment method).
+	 */
 	function payment_fields() {
 		if ( is_add_payment_method_page() ) {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 		} else {
+			// Checkout screen. We show description, if tokenization available, we show saved cards and checkbox to save.
 			echo $this->description;
+			if ( $this->tokenization ) {
+				$this->tokenization_script();
+				$this->saved_payment_methods();
+				$this->save_payment_method_checkbox();
+			}
 		}
 	}
 
 }
+

@@ -82,13 +82,14 @@ class WC_Monei_Redirect_Hooks {
 			$token->set_gateway_id( MONEI_GATEWAY_ID );
 			$token->set_card_type( $payment_method->getCard()->getBrand() );
 			$token->set_last4( $payment_method->getCard()->getLast4() );
-			// todo - no expiration and year
+			// todo - no expiration and year back from MONEI, working on this.
 			$token->set_expiry_month( '12' );
 			$token->set_expiry_year( '2022' );
 			$token->set_user_id( get_current_user_id() );
 			$token->save();
+
 		} catch ( Exception $e ) {
-			wc_add_notice( __( 'Error while adding your payment method to MONEI.', 'monei' ), 'error' );
+			wc_add_notice( __( 'Error while adding your payment method to MONEI. Payment ID: ' . $payment_id, 'monei' ), 'error' );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 		}
 	}
