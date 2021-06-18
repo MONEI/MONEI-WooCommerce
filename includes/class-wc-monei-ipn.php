@@ -70,6 +70,12 @@ class WC_Monei_IPN {
 
 		$order = wc_get_order( $order_id );
 
+		// IPN can come from a non-order payment ( 0 eur order to tokenize card )
+		// In this case, we just need to ignore it.
+		if ( ! $order ) {
+			return;
+		}
+
 		/**
 		 * Saving related information into order meta.
 		 */
@@ -102,7 +108,7 @@ class WC_Monei_IPN {
 			$order->add_order_note( __( 'MONEI Status Message: ', 'monei' ) . $status_message );
 
 			$order->payment_complete();
-			if ( 'completed' === monei_get_settings('orderdo' ) ) {
+			if ( 'completed' === monei_get_settings( 'orderdo' ) ) {
 				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 			}
 			return;
@@ -120,7 +126,7 @@ class WC_Monei_IPN {
 	 * @throws \OpenAPI\Client\ApiException
 	 */
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		return ( array ) WC_Monei_API::verify_signature( $request_body, $monei_signature );
+		return (array) WC_Monei_API::verify_signature( $request_body, $monei_signature );
 	}
 
 	/**

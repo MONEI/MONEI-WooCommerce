@@ -144,6 +144,17 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			],
 		];
 
+		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
+		if ( $token_id = $this->get_payment_token_id_if_selected() ) {
+			$wc_token = WC_Payment_Tokens::get( $token_id );
+			$payload['paymentToken'] = $wc_token->get_token();
+		}
+
+		// If customer has checkboxed "Save payment information to my account for future purchases."
+		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
+			$payload['generatePaymentToken'] = true;
+		}
+
 		try {
 			$payment = WC_Monei_API::create_payment( $payload );
 			WC_Monei_Logger::log( 'WC_Monei_API::create_payment', 'debug' );

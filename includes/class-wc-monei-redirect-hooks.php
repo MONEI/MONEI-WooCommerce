@@ -19,7 +19,7 @@ class WC_Monei_Redirect_Hooks {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_cancelled_order', array( $this, 'add_notice_monei_order_cancelled' ) );
-		add_action( 'wp', array( $this, 'is_add_payment_method_page' ) );
+		add_action( 'wp', array( $this, 'save_payment_token' ) );
 	}
 
 	/**
@@ -46,12 +46,18 @@ class WC_Monei_Redirect_Hooks {
 	}
 
 	/**
+	 * Triggered in is_add_payment_method_page && is_order_received_page.
+	 *
 	 * When customer adds a CC on its profile, we need to make a 0 EUR payment in order to generate the payment.
 	 * This means, we need to send them to MONEI, and in the callback on success, we end up in payment_method_page.
 	 * Once we are in payment_method_page, we need to actually get the token from the API and save it in Woo.
+	 *
+	 * We trigger this same behaviour in order received page. After a successful payment in MONEI we are redirected
+	 * to order_received_page. If there is a token available, we need to save it.
+	 * We don't do this at IPN level, since right now, token doesn't come thru.
 	 */
-	public function is_add_payment_method_page() {
-		if ( ! is_add_payment_method_page() ) {
+	public function save_payment_token() {
+		if ( ! is_add_payment_method_page() && ! is_order_received_page() ) {
 			return;
 		}
 
@@ -67,6 +73,13 @@ class WC_Monei_Redirect_Hooks {
 		try {
 			$payment        = WC_Monei_API::get_payment( $payment_id );
 			$payment_token  = $payment->getPaymentToken();
+
+			// A payment can come withouth token, user didn't check on save payment method.
+			// We just ignore it then and do nothing.
+			if ( ! $payment_token || empty( $payment_token ) ) {
+				return;
+			}
+
 			$payment_method = $payment->getPaymentMethod();
 
 			// If Token already saved into DB, we just ignore this.

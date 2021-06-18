@@ -150,5 +150,22 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 			esc_html( apply_filters( 'wc_onei_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'monei' ) ) )
 		);
 	}
+
+	/**
+	 * If user has selected a saved payment method, we will return it's id.
+	 * @return int|false
+	 */
+	protected function get_payment_token_id_if_selected() {
+		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( $_POST[ 'wc-' . $this->id . '-payment-token' ], FILTER_SANITIZE_NUMBER_INT ) : false; // WPCS: CSRF ok.
+	}
+
+	/**
+	 * IF user has selected save payment method checkbox in checkout.
+	 * @return bool
+	 */
+	protected function get_save_payment_card_checkbox() {
+		return ( isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) );
+	}
+
 }
 
