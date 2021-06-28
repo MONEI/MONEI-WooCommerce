@@ -90,14 +90,15 @@ class WC_Monei_Redirect_Hooks {
 			WC_Monei_Logger::log( 'saving tokent into DB', 'debug' );
 			WC_Monei_Logger::log( $payment_method, 'debug' );
 
+			$expiration = new DateTime( date( 'm/d/Y', $payment_method->getCard()->getExpiration() ) );
+
 			$token = new WC_Payment_Token_CC();
 			$token->set_token( $payment_token );
 			$token->set_gateway_id( MONEI_GATEWAY_ID );
 			$token->set_card_type( $payment_method->getCard()->getBrand() );
 			$token->set_last4( $payment_method->getCard()->getLast4() );
-			// todo - no expiration and year back from MONEI, working on this.
-			$token->set_expiry_month( '12' );
-			$token->set_expiry_year( '2022' );
+			$token->set_expiry_month( $expiration->format( 'm' ) );
+			$token->set_expiry_year( $expiration->format( 'Y' ) );
 			$token->set_user_id( get_current_user_id() );
 			$token->save();
 
