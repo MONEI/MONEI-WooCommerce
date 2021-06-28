@@ -219,6 +219,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway.php';
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted.php';
+			include_once 'includes/payment-methods/class-wc-gateway-monei-bizum.php';
 		}
 
 		/**
@@ -230,6 +231,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_monei';
+			$methods[] = 'WC_Gateway_Monei_Bizum';
 			return $methods;
 		}
 

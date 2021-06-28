@@ -4,13 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class that handle Monei Payment method by default (HOSTED / Form based ) for retro compatibility.
- * Form based: This is where the user must click a button on a form that then redirects them to the payment processor on the gateway’s own website.
- * https://docs.monei.com/docs/integrations/use-prebuilt-payment-page/
+ * Class that handle Monei Bizum Payment method.
  *
- * Class WC_Gateway_Monei
+ * Class WC_Gateway_Monei_Bizum
  */
-class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
+class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 
 	const TRANSACTION_TYPE = 'SALE';
 
@@ -22,8 +20,8 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 	 */
 	public function __construct() {
 
-		$this->id = MONEI_GATEWAY_ID;
-		$this->method_title  = __( 'MONEI - Hosted Version', 'monei' );
+		$this->id = MONEI_GATEWAY_ID . '_bizum';
+		$this->method_title  = __( 'MONEI - Bizum', 'monei' );
 		$this->method_description = __( 'Best payment gateway rates. The perfect solution to manage your digital payments.', 'monei' );
 		$this->enabled = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
@@ -45,7 +43,6 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
 		$this->shop_name            = ( ! empty( $this->get_option( 'commercename' ) ) ) ? $this->get_option( 'commercename' ) : '';
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
-		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
 
 		// IPN callbacks
@@ -56,10 +53,6 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 			'products',
 			'refunds',
 		);
-
-		if ( $this->tokenization ) {
-			$this->supports[] = 'tokenization';
-		}
 	}
 
 	/**
@@ -85,7 +78,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-settings.php';
+		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-bizum-settings.php';
 	}
 
 	/**
