@@ -199,8 +199,26 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// todo: not translation yet.
 			//$this->load_plugin_textdomain();
 
+			add_filter( 'option_woocommerce_monei_bizum_settings', array( $this, 'monei_settings_by_default' ), 1 );
+
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
+		}
+
+
+		/**
+		 * We have more than a Monei payment provider, we will use by default the main money set up in case they don't set them up.
+		 *
+		 * @param $default_params
+		 *
+		 * @return array
+		 */
+		public function monei_settings_by_default( $default_params ) {
+			$default_params['testmode'] = ( empty( $default_params['testmode'] ) ) ? monei_get_settings( 'testmode' ) : $default_params['testmode'];
+			$default_params['apikey']   = ( empty( $default_params['apikey'] ) )   ? monei_get_settings( 'apikey' )   : $default_params['apikey'];
+			$default_params['debug']    = ( empty( $default_params['debug'] ) )    ? monei_get_settings( 'debug' )    : $default_params['debug'];
+			$default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
+			return $default_params;
 		}
 
 		/**

@@ -15,6 +15,13 @@ return apply_filters(
 			'label'   => __( 'Enable Bizum by MONEI', 'monei' ),
 			'default' => 'no',
 		),
+		'testmode'       => array(
+			'title'       => __( 'Running in test mode', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Running in test mode', 'monei' ),
+			'default'     => 'yes',
+			'description' => sprintf( __( 'Select this option for the initial testing required by MONEI, deselect this option once you pass the required test phase and your production environment is active.', 'monei' ) ),
+		),
 		'title'          => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -33,6 +40,28 @@ return apply_filters(
 			'type'        => 'text',
 			'description' => __( 'Add link to image logo.', 'monei' ),
 			'desc_tip'    => true,
+		),
+		'apikey'       => array(
+			'title'       => __( 'API Key', 'monei' ),
+			'type'        => 'text',
+			'description' => __( 'API Key', 'monei' ),
+		),
+		'orderdo'     => array(
+			'title'       => __( 'What to do after payment?', 'monei' ),
+			'type'        => 'select',
+			'description' => __( 'Chose what to do after the customer pay the order.', 'monei' ),
+			'default'     => 'processing',
+			'options'     => array(
+				'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
+				'completed'  => __( 'Mark as Complete', 'monei' ),
+			),
+		),
+		'debug'          => array(
+			'title'       => __( 'Debug Log', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Enable logging', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Log MONEY events, such as notifications requests, inside <code>WooCommerce > Status > Logs > Select MONEI Logs</code>', 'monei' ),
 		),
 	)
 );

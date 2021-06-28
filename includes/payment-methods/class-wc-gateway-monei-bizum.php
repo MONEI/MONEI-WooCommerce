@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 
 	const TRANSACTION_TYPE = 'SALE';
+	const PAYMENT_METHOD = 'bizum';
 
 	/**
 	 * Constructor for the gateway.
@@ -39,10 +40,7 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
-		$this->account_id           = ( ! empty( $this->get_option( 'accountid' ) ) ) ? $this->get_option( 'accountid' ) : '';
 		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
-		$this->shop_name            = ( ! empty( $this->get_option( 'commercename' ) ) ) ? $this->get_option( 'commercename' ) : '';
-		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
 
 		// IPN callbacks
@@ -53,6 +51,8 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 			'products',
 			'refunds',
 		);
+
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
 	/**
@@ -130,7 +130,7 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
 			],
-			'allowedPaymentMethods' => [ 'card' ]
+			'allowedPaymentMethods' => [ self::PAYMENT_METHOD ],
 		];
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
