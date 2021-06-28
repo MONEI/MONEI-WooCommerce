@@ -142,6 +142,7 @@ class WC_Gateway_Monei extends WC_Monei_Payment_Gateway {
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
 			],
+			'allowedPaymentMethods' => [ 'card' ]
 		];
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.

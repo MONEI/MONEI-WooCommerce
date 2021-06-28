@@ -26,7 +26,7 @@ return apply_filters(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
 			'description' => __( 'This controls the title which the user sees during checkout.', 'monei' ),
-			'default'     => __( 'MONEI', 'monei' ),
+			'default'     => __( 'Card (MONEI)', 'monei' ),
 			'desc_tip'    => true,
 		),
 		'description'    => array(
