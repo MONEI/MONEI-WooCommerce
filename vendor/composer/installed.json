@@ -196,17 +196,17 @@
     },
     {
         "name": "monei/monei-php-sdk",
-        "version": "0.1.8",
-        "version_normalized": "0.1.8.0",
+        "version": "0.1.9",
+        "version_normalized": "0.1.9.0",
         "source": {
             "type": "git",
             "url": "https://github.com/MONEI/monei-php-sdk.git",
-            "reference": "43356542fb6692857bb3800ddc7e949c9fa6bb5c"
+            "reference": "cfa29850916cb4d992630d83cd230b5b619b6af5"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/43356542fb6692857bb3800ddc7e949c9fa6bb5c",
-            "reference": "43356542fb6692857bb3800ddc7e949c9fa6bb5c",
+            "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/cfa29850916cb4d992630d83cd230b5b619b6af5",
+            "reference": "cfa29850916cb4d992630d83cd230b5b619b6af5",
             "shasum": ""
         },
         "require": {
@@ -221,7 +221,7 @@
             "phpunit/phpunit": "^7.4",
             "squizlabs/php_codesniffer": "~2.6"
         },
-        "time": "2021-05-13T08:51:24+00:00",
+        "time": "2021-06-21T18:44:33+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

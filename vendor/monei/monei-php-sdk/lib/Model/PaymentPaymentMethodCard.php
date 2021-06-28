@@ -63,6 +63,7 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
         'type' => 'string',
         'three_d_secure' => 'bool',
         'three_d_secure_version' => 'string',
+        'expiration' => 'int',
         'last4' => 'string'
     ];
 
@@ -77,6 +78,7 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
         'type' => null,
         'three_d_secure' => null,
         'three_d_secure_version' => null,
+        'expiration' => 'int64',
         'last4' => null
     ];
 
@@ -112,6 +114,7 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
         'type' => 'type',
         'three_d_secure' => 'threeDSecure',
         'three_d_secure_version' => 'threeDSecureVersion',
+        'expiration' => 'expiration',
         'last4' => 'last4'
     ];
 
@@ -126,6 +129,7 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
         'type' => 'setType',
         'three_d_secure' => 'setThreeDSecure',
         'three_d_secure_version' => 'setThreeDSecureVersion',
+        'expiration' => 'setExpiration',
         'last4' => 'setLast4'
     ];
 
@@ -140,6 +144,7 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
         'type' => 'getType',
         'three_d_secure' => 'getThreeDSecure',
         'three_d_secure_version' => 'getThreeDSecureVersion',
+        'expiration' => 'getExpiration',
         'last4' => 'getLast4'
     ];
 
@@ -248,6 +253,7 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
         $this->container['type'] = isset($data['type']) ? $data['type'] : null;
         $this->container['three_d_secure'] = isset($data['three_d_secure']) ? $data['three_d_secure'] : null;
         $this->container['three_d_secure_version'] = isset($data['three_d_secure_version']) ? $data['three_d_secure_version'] : null;
+        $this->container['expiration'] = isset($data['expiration']) ? $data['expiration'] : null;
         $this->container['last4'] = isset($data['last4']) ? $data['last4'] : null;
     }
 
@@ -425,6 +431,30 @@ class PaymentPaymentMethodCard implements ModelInterface, ArrayAccess
     public function setThreeDSecureVersion($three_d_secure_version)
     {
         $this->container['three_d_secure_version'] = $three_d_secure_version;
+
+        return $this;
+    }
+
+    /**
+     * Gets expiration
+     *
+     * @return int|null
+     */
+    public function getExpiration()
+    {
+        return $this->container['expiration'];
+    }
+
+    /**
+     * Sets expiration
+     *
+     * @param int|null $expiration Time at which the card will expire. Measured in seconds since the Unix epoch.
+     *
+     * @return $this
+     */
+    public function setExpiration($expiration)
+    {
+        $this->container['expiration'] = $expiration;
 
         return $this;
     }

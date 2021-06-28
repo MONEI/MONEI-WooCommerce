@@ -476,3 +476,5 @@ composer.lock
 build/node_modules/
 build/openapi.json
 test.php
+
+.idea

@@ -27,7 +27,7 @@ Or add the following to `composer.json`:
 ```json
 {
   "require": {
-    "monei/monei-php-sdk": "^0.1.8"
+    "monei/monei-php-sdk": "^0.1.9"
   }
 }
 ```
