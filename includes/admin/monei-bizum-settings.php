@@ -15,13 +15,6 @@ return apply_filters(
 			'label'   => __( 'Enable Bizum by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'testmode'       => array(
-			'title'       => __( 'Running in test mode', 'monei' ),
-			'type'        => 'checkbox',
-			'label'       => __( 'Running in test mode', 'monei' ),
-			'default'     => 'yes',
-			'description' => sprintf( __( 'Select this option for the initial testing required by MONEI, deselect this option once you pass the required test phase and your production environment is active.', 'monei' ) ),
-		),
 		'title'          => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',

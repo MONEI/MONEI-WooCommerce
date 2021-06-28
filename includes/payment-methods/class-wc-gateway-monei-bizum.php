@@ -36,7 +36,6 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 
 		// Settings variable
 		$this->icon                 = ( ! empty( $this->get_option( 'logo' ) ) ) ? $this->get_option( 'logo' ) : apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'MONEI-logo.png' ) );
-		$this->testmode             = ( ! empty( $this->get_option( 'testmode' ) && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
@@ -53,21 +52,6 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-	}
-
-	/**
-	 * Admin Panel Options
-	 *
-	 * @access public
-	 * @since 5.0
-	 * @return void
-	 */
-	public function admin_options() {
-		if ( $this->is_valid_for_use() ) {
-			parent::admin_options();
-		} else {
-			woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available.php' );
-		}
 	}
 
 	/**
