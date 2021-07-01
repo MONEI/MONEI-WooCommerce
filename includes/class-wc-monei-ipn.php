@@ -96,6 +96,7 @@ class WC_Monei_IPN {
 
 			// Payment completed.
 			$order->add_order_note( $order_note );
+			$order->update_status( 'on-hold', __( 'Order On-Hold by MONEI', 'monei' ) );
 			return;
 		}
 
