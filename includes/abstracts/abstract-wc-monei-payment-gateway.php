@@ -7,7 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Abstract class that will be inherited by all payment methods.
- * Empty for now.
  *
  * @extends WC_Payment_Gateway_CC
  *
