@@ -17,9 +17,6 @@ class WC_Monei_IPN {
 	public function __construct() {
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
-
-		// Handle valid IPN message.
-		add_action( 'woocommerce_monei_handle_valid_ipn', array( $this, 'handle_valid_ipn' ) );
 	}
 
 	/**
@@ -41,8 +38,10 @@ class WC_Monei_IPN {
 		try {
 			$payload = $this->verify_signature_get_payload( $raw_body, $_SERVER['HTTP_MONEI_SIGNATURE'] );
 			WC_Monei_Logger::log( $payload, 'debug' );
-			http_response_code( 200 );
+			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
+			http_response_code( 200 );
+			exit();
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
 			WC_Monei_Logger::log( 'Failed IPN request: ' . $e->getMessage() );
@@ -59,7 +58,7 @@ class WC_Monei_IPN {
 	 * @param array $payload
 	 * @return void
 	 */
-	function handle_valid_ipn( $payload ) {
+	protected function handle_valid_ipn( $payload ) {
 
 		$order_id   = $payload['orderId'];
 		$monei_id   = $payload['id'];
@@ -69,7 +68,6 @@ class WC_Monei_IPN {
 		$amount         = $payload['amount'];
 
 		$order = wc_get_order( $order_id );
-
 		// IPN can come from a non-order payment ( 0 eur order to tokenize card )
 		// In this case, we just need to ignore it.
 		if ( ! $order ) {
@@ -102,10 +100,12 @@ class WC_Monei_IPN {
 				exit;
 			}
 
+			$order_note  = __( 'HTTP Notification received - payment completed', 'monei' ) . '. <br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+
 			// Payment completed.
-			$order->add_order_note( __( 'HTTP Notification received - payment completed', 'monei' ) );
-			$order->add_order_note( __( 'MONEI Order Number: ', 'monei' ) . $monei_id );
-			$order->add_order_note( __( 'MONEI Status Message: ', 'monei' ) . $status_message );
+			$order->add_order_note( $order_note );
 
 			$order->payment_complete();
 			if ( 'completed' === monei_get_settings( 'orderdo' ) ) {

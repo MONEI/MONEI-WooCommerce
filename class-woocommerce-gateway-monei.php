@@ -199,7 +199,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// todo: not translation yet.
 			//$this->load_plugin_textdomain();
 
-			add_filter( 'option_woocommerce_monei_bizum_settings', array( $this, 'monei_settings_by_default' ), 1 );
+			add_filter( 'option_woocommerce_monei_bizum_settings',  array( $this, 'monei_settings_by_default' ), 1 );
+			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
@@ -238,6 +239,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-bizum.php';
+			include_once 'includes/payment-methods/class-wc-gateway-monei-paypal.php';
 		}
 
 		/**
@@ -250,6 +252,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_monei';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
+			$methods[] = 'WC_Gateway_Monei_Paypal';
 			return $methods;
 		}
 
