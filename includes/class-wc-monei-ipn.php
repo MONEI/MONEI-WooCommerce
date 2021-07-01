@@ -89,6 +89,16 @@ class WC_Monei_IPN {
 			return;
 		}
 
+		if ( 'AUTHORIZED' === $status ) {
+			$order_note  = __( 'HTTP Notification received - payment authorized', 'monei' ) . '. <br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+
+			// Payment completed.
+			$order->add_order_note( $order_note );
+			return;
+		}
+
 		if ( 'SUCCEEDED' === $status ) {
 			$order_total = $order->get_total();
 

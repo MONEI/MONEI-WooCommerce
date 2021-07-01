@@ -70,6 +70,12 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	public $tokenization;
 
 	/**
+	 * Enable Pre-Auth.
+	 * @var bool
+	 */
+	public $pre_auth;
+
+	/**
 	 * Enable Debugging.
 	 *
 	 * @var bool

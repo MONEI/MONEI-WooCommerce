@@ -64,6 +64,13 @@ return apply_filters(
 			'label'   => __( 'Enable Tokenization', 'monei' ),
 			'default' => 'no',
 		),
+		'pre-authorize'        => array(
+			'title'   => __( 'Pre-Authorize', 'monei' ),
+			'type'    => 'checkbox',
+			'label'   => __( 'Pre-Authorize payment instead of Capture', 'monei' ),
+			'description' => __( 'When checked, gateway will issue a pre-authorization, that will need to be captured later. By Default we "capture" all the payments directly.', 'monei' ),
+			'default' => 'no',
+		),
 		'orderdo'     => array(
 			'title'       => __( 'What to do after payment?', 'monei' ),
 			'type'        => 'select',

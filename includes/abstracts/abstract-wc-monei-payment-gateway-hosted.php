@@ -14,7 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway {
 
-	const TRANSACTION_TYPE = 'SALE';
+	const SALE_TRANSACTION_TYPE = 'SALE';
+	const PRE_AUTH_TRANSACTION_TYPE = 'AUTH';
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -74,7 +75,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			'completeUrl' => $complete_url,
 			'cancelUrl'   => wc_get_checkout_url(),
 			'failUrl'     => $fail_url,
-			'transactionType' => self::TRANSACTION_TYPE,
+			'transactionType' => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
 			'sessionDetails'  => [
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),

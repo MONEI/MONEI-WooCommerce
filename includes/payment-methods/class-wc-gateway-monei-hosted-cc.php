@@ -46,6 +46,7 @@ class WC_Gateway_Monei_Hosted_CC extends WC_Monei_Payment_Gateway_Hosted {
 		$this->shop_name            = ( ! empty( $this->get_option( 'commercename' ) ) ) ? $this->get_option( 'commercename' ) : '';
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
+		$this->pre_auth             = ( ! empty( $this->get_option( 'pre-authorize' ) && 'yes' === $this->get_option( 'pre-authorize' ) ) ) ? true : false;
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
 
 		// IPN callbacks
@@ -139,7 +140,7 @@ class WC_Gateway_Monei_Hosted_CC extends WC_Monei_Payment_Gateway_Hosted {
 			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ),
 			'cancelUrl'   => wc_get_endpoint_url( 'payment-methods' ),
 			'failUrl'     => wc_get_endpoint_url( 'payment-methods' ),
-			'transactionType' => self::TRANSACTION_TYPE,
+			'transactionType' => self::SALE_TRANSACTION_TYPE,
 			'sessionDetails'  => [
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
