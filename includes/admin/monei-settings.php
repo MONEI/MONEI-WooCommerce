@@ -68,7 +68,7 @@ return apply_filters(
 			'title'   => __( 'Pre-Authorize', 'monei' ),
 			'type'    => 'checkbox',
 			'label'   => __( 'Pre-Authorize payment instead of Capture', 'monei' ),
-			'description' => __( 'When checked, gateway will issue a pre-authorization, that will need to be captured later. By Default we "capture" all the payments directly.', 'monei' ),
+			'description' => __( 'If checked, gateway will issue a <strong>pre-authorization</strong>, that will need to be captured later manually. If unchecked we <strong>capture</strong> payments by default. <br>You can capture the payment changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br> You can cancel the Payment changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.', 'monei' ),
 			'default' => 'no',
 		),
 		'orderdo'     => array(

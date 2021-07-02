@@ -19,6 +19,8 @@ class WC_Monei_Pre_Auth {
 	public function __construct() {
 		add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'capture_payment_when_pre_auth' ) );
 		add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'capture_payment_when_pre_auth' ) );
+		add_action( 'woocommerce_order_status_on-hold_to_cancelled', array( $this, 'cancel_payment_when_pre_auth' ) );
+		add_action( 'woocommerce_order_status_on-hold_to_refunded', array( $this, 'cancel_payment_when_pre_auth' ) );
 	}
 
 	/**
@@ -29,25 +31,7 @@ class WC_Monei_Pre_Auth {
 	public function capture_payment_when_pre_auth( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		/**
-		 * If not MONEI payment, bail.
-		 */
-		if ( 'monei' !== $order->get_payment_method() ) {
-			return;
-		}
-
-		/**
-		 * If not payment_id, bail.
-		 */
-		$payment_id = $order->get_meta( '_payment_order_number_monei', true );
-		if ( ! $payment_id ) {
-			return;
-		}
-
-		/**
-		 * If order has already being captured, bail.
-		 */
-		if ( ! $order->get_meta( '_payment_not_captured_monei', true ) ) {
+		if ( ! $payment_id = $this->is_pre_auth_order( $order ) ) {
 			return;
 		}
 
@@ -63,6 +47,64 @@ class WC_Monei_Pre_Auth {
 			WC_Monei_Logger::log( 'Capture error: ' . $e->getMessage(), 'error' );
 			$order->add_order_note( '<strong>Capture error</strong>: ' . $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Capture $order_id Pre-Authorized payment.
+	 *
+	 * @param $order_id
+	 */
+	public function cancel_payment_when_pre_auth( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $payment_id = $this->is_pre_auth_order( $order ) ) {
+			return;
+		}
+
+		try {
+			$result = WC_Monei_API::cancel_payment( $payment_id );
+			WC_Monei_Logger::log( 'Cancel Payment Payment OK.', 'debug' );
+			WC_Monei_Logger::log( $result, 'debug' );
+			$order->add_order_note( '<strong>Cancel Payment approved</strong>: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() . ' ' . $result->getStatusCode() );
+		} catch ( Exception $e ) {
+			WC_Monei_Logger::log( 'Cancel Payment error: ' . $e->getMessage(), 'error' );
+			$order->add_order_note( '<strong>Cancel Payment error</strong>: ' . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Checks to know if we are on a pre-auth order.
+	 * If it is, we return monei payment id.
+	 *
+	 * @param WC_Order $order
+	 *
+	 * @return string|false
+	 */
+	protected function is_pre_auth_order( $order ) {
+
+		/**
+		 * If not MONEI payment, bail.
+		 */
+		if ( 'monei' !== $order->get_payment_method() ) {
+			return false;
+		}
+
+		/**
+		 * If not payment_id, bail.
+		 */
+		$payment_id = $order->get_meta( '_payment_order_number_monei', true );
+		if ( ! $payment_id ) {
+			return false;
+		}
+
+		/**
+		 * If order has already being captured, bail.
+		 */
+		if ( ! $order->get_meta( '_payment_not_captured_monei', true ) ) {
+			return false;
+		}
+
+		return $payment_id;
 	}
 
 }

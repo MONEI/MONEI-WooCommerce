@@ -103,6 +103,21 @@ class WC_Monei_API {
 	}
 
 	/**
+	 * Release customer's funds that were reserved earlier. You can only cancel a payment with the AUTHORIZED status.
+	 * This is the second half of the two-step payment flow, where first you created a payment with the transactionType set to AUTH.
+	 * https://docs.monei.com/api/#operation/payments_cancel
+	 *
+	 * @param string $payment_id
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function cancel_payment( $payment_id ) {
+		$client = self::get_client();
+		return $client->payments->cancel( $payment_id, [ 'cancellationReason' => 'requested_by_customer' ] );
+	}
+
+	/**
 	 * https://docs.monei.com/api/#operation/payments_cancel
 	 *
 	 * @param $payment_id
