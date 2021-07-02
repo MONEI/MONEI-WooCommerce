@@ -87,6 +87,22 @@ class WC_Monei_API {
 	}
 
 	/**
+	 * Capture the payment of an existing, uncaptured, payment. This is the second half of the two-step payment flow, where first you created a payment with the transactionType set to AUTH.
+	 * Uncaptured payments expire exactly seven days after they are created. If they are not captured by that point in time, they will be marked as expired and will no longer be capturable.
+	 * https://docs.monei.com/api/#operation/payments_capture
+	 *
+	 * @param string $payment_id
+	 * @param string $amount
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function capture_payment( $payment_id, $amount ) {
+		$client = self::get_client();
+		return $client->payments->capture( $payment_id, [ 'amount' => $amount ] );
+	}
+
+	/**
 	 * https://docs.monei.com/api/#operation/payments_cancel
 	 *
 	 * @param $payment_id

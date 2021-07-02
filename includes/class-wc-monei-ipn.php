@@ -84,17 +84,18 @@ class WC_Monei_IPN {
 
 		if ( 'FAILED' === $status || 'CANCELED' === $status ) {
 			// Order cancelled.
-			$order->add_order_note( __( 'HTTP Notification received - payment ', 'monei' ) . $status );
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
 			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $status_message );
 			return;
 		}
 
 		if ( 'AUTHORIZED' === $status ) {
-			$order_note  = __( 'HTTP Notification received - payment authorized', 'monei' ) . '. <br>';
-			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br>';
-			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			// We save is a non captured order.
+			$order->update_meta_data( '_payment_not_captured_monei', 1 );
 
-			// Payment completed.
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Authorized</strong>', 'monei' ) . '. <br><br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
 			$order->add_order_note( $order_note );
 			$order->update_status( 'on-hold', __( 'Order On-Hold by MONEI', 'monei' ) );
 			return;
@@ -106,13 +107,13 @@ class WC_Monei_IPN {
 			/**
 			 * If amounts don't match, we mark the order on-hold for manual validation.
 			 */
-			if ( (int) $amount !== monei_price_format( $order_total ) ) {
+			if ( ( int ) $amount !== monei_price_format( $order_total ) ) {
 				$order->update_status( 'on-hold', sprintf( __( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2&s).', 'monei' ), $amount, monei_price_format( $order_total ) ) );
 				exit;
 			}
 
-			$order_note  = __( 'HTTP Notification received - payment completed', 'monei' ) . '. <br>';
-			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br>';
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Completed</strong>', 'monei' ) . '. <br><br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
 			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
 
 			// Payment completed.
@@ -137,7 +138,7 @@ class WC_Monei_IPN {
 	 * @throws \OpenAPI\Client\ApiException
 	 */
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		return (array) WC_Monei_API::verify_signature( $request_body, $monei_signature );
+		return ( array ) WC_Monei_API::verify_signature( $request_body, $monei_signature );
 	}
 
 	/**
@@ -154,7 +155,6 @@ class WC_Monei_IPN {
 				}
 			}
 			return $headers;
-
 		} else {
 			return getallheaders();
 		}
