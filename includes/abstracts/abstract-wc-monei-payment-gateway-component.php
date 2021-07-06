@@ -6,13 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Abstract class that will be inherited by all Hosted payment methods.
- * Class WC_Monei_Payment_Gateway_Hosted
+ * Abstract class that will be inherited by all integrated components payment methods.
+ * Class WC_Monei_Payment_Gateway_Component
  *
  * @extends WC_Monei_Payment_Gateway
  * @since 5.0
  */
-abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway {
+abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gateway {
 
 	/**
 	 * Initialise Gateway Settings Form Fields

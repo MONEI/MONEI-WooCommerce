@@ -91,6 +91,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$this->define( 'MONEI_WEB', 'https://monei.net/' );
 			$this->define( 'MONEI_REVIEW', 'https://wordpress.org/support/plugin/monei/reviews/?rate=5#new-post' );
 			$this->define( 'MONEI_SUPPORT', 'https://support.monei.net/' );
+			$this->define( 'MONEI_MAIN_FILE', __FILE__ );
 		}
 
 		/**
@@ -237,9 +238,11 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Including abstract.
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway.php';
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-hosted.php';
+			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-component.php';
 
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cc.php';
+			include_once 'includes/payment-methods/class-wc-gateway-monei-component-cc.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
 		}
@@ -253,6 +256,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_Monei_Hosted_CC';
+			$methods[] = 'WC_Gateway_Monei_Component_CC';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';
 			return $methods;

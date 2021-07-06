@@ -14,6 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
+	const SALE_TRANSACTION_TYPE = 'SALE';
+	const PRE_AUTH_TRANSACTION_TYPE = 'AUTH';
+
 	/**
 	 * Is sandbox?
 	 *
