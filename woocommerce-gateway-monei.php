@@ -9,7 +9,7 @@
  *
  * Plugin Name: WooCommerce MONEI Gateway
  * Plugin URI: https://wordpress.org/plugins/monei/
- * Description: Extends WooCommerce with a MONEI gateway. Best payment gateway rates. The perfect solution to manage your digital payments.
+ * Description: Accept Credit Card / PayPal / Bizum payments through MONEI.
  * Version: 5.0
  * Author: MONEI
  * Author URI: https://www.monei.net/
