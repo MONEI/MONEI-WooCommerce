@@ -7,7 +7,6 @@
 		function() {
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
-				console.log( 'updated_checkout monei selected' );
 			}
 		}
 	);
@@ -45,6 +44,7 @@
 		},
 		on_payment_selected() {
 			if ( wc_monei_form.is_monei_selected() ) {
+				wc_monei_form.init_checkout_monei();
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			} else {
 				$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
@@ -74,9 +74,9 @@
 					onChange: function (event) {
 						// Handle real-time validation errors.
 						if (event.isTouched && event.error) {
-							wc_monei_form.print_error( event.error );
+							wc_monei_form.print_errors( event.error );
 						} else {
-							wc_monei_form.clear_error();
+							wc_monei_form.clear_errors();
 						}
 					}
 				}
@@ -98,7 +98,7 @@
 					function (result) {
 						if (result.error) {
 							// Inform the user if there was an error.
-							wc_monei_form.print_error( result.error );
+							wc_monei_form.print_errors( result.error );
 						} else {
 							// Send the token to your server.
 							wc_monei_form.monei_token_handler( result.token );
@@ -109,7 +109,7 @@
 				.catch(
 					function (error) {
 						// paymentButton.disabled = false;
-						wc_monei_form.print_error( event.error );
+						wc_monei_form.print_errors( error );
 					}
 				);
 			return false;
@@ -118,7 +118,7 @@
 		 * Printing errors into checkout form.
 		 * @param error_string
 		 */
-		print_error: function ( error_string ) {
+		print_errors: function (error_string ) {
 			$( wc_monei_form.$errorContainer ).html( '<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>' );
 			$( wc_monei_form.$errorContainer ).find( 'li' ).text( error_string );
 			/**
@@ -136,7 +136,7 @@
 		/**
 		 * Clearing form errors.
 		 */
-		clear_error: function() {
+		clear_errors: function() {
 			$( '.monei-error' ).remove();
 		},
 		monei_token_handler: function( token ) {
