@@ -173,12 +173,12 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public function save_payment_method_checkbox() {
 		printf(
-			'<br><p class="form-row woocommerce-SavedPaymentMethods-saveNew">
+			'<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
 				<input id="wc-%1$s-new-payment-method" name="wc-%1$s-new-payment-method" type="checkbox" value="true" style="width:auto;" />
 				<label for="wc-%1$s-new-payment-method" style="display:inline;">%2$s</label>
 			</p>',
 			esc_attr( $this->id ),
-			esc_html( apply_filters( 'wc_onei_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'monei' ) ) )
+			esc_html( apply_filters( 'wc_monei_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'monei' ) ) )
 		);
 	}
 
