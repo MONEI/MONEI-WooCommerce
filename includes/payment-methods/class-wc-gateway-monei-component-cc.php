@@ -185,9 +185,9 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 							<!-- A MONEI Card Input Component will be inserted here. -->
 						</div>
 						<!-- Used to display card errors. -->
-						<div id="card-error"></div>
+						<div id="monei-card-error"></div>
 					</div>
-					<button type="submit" id="payment-button">Submit payment</button>
+					<!--<button type="submit" id="payment-button">Submit payment</button>-->
 				</form>
 			</fieldset>
 		<?php
