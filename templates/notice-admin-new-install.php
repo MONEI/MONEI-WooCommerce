@@ -7,7 +7,7 @@
 		</h3>
 		</p>
 		<p>
-			<?php esc_html_e( 'The best payment gateway rates. The perfect solution to manage your digital payments.,', 'monei' ); ?>
+			<?php esc_html_e( 'The best payment gateway rates. The perfect solution to manage your digital payments.', 'monei' ); ?>
 		</p>
 		<p class="submit">
 			<a href="<?php esc_html_e( MONEI_SIGNUP ); ?>" class="button-primary" target="_blank"><?php esc_html_e( 'Signup', 'monei' ); ?></a>

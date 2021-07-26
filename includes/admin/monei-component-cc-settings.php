@@ -9,36 +9,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 return apply_filters(
 	'wc_monei_component_cc_settings',
 	array(
-		'enabled'        => array(
-			'title'   => __( 'Enable/Disable', 'monei' ),
-			'type'    => 'checkbox',
-			'label'   => __( 'Enable MONEI', 'monei' ),
-			'default' => 'no',
-		),
-		'testmode'       => array(
-			'title'       => __( 'Running in test mode', 'monei' ),
-			'type'        => 'checkbox',
-			'label'       => __( 'Running in test mode', 'monei' ),
-			'default'     => 'yes',
-			'description' => sprintf( __( 'Select this option for the initial testing required by MONEI, deselect this option once you pass the required test phase and your production environment is active.', 'monei' ) ),
-		),
+        'enabled'        => array(
+            'title'   => __( 'Enable/Disable', 'monei' ),
+            'type'    => 'checkbox',
+            'label'   => __( 'Enable Credt Card by MONEI', 'monei' ),
+            'default' => 'no',
+        ),
+        'testmode'       => array(
+            'title'       => __( 'Test mode', 'monei' ),
+            'type'        => 'checkbox',
+            'label'       => __( 'Enable test mode', 'monei' ),
+            'default'     => 'yes',
+            'description' => sprintf( __( 'Select this option for the initial testing required by MONEI, deselect this option once you pass the required test phase and your production environment is active.', 'monei' ) ),
+        ),
 		'title'          => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
-			'description' => __( 'This controls the title which the user sees during checkout.', 'monei' ),
-			'default'     => __( 'Card (MONEI)', 'monei' ),
+			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
+			'default'     => __( 'Credt Card', 'monei' ),
 			'desc_tip'    => true,
 		),
 		'description'    => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'This controls the description which the user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay via MONEI; you can pay with your credit card.', 'monei' ),
+			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
+			'default'     => __( 'Pay with credit card. Powered by MONEI.', 'monei' ),
 		),
 		'hide_logo'        => array(
 			'title'   => __( 'Hide Logo', 'monei' ),
 			'type'    => 'checkbox',
-			'label'   => __( 'Hide Logo in checkout', 'monei' ),
+			'label'   => __( 'Hide payment method logo', 'monei' ),
 			'default' => 'no',
 			'description' => __( 'Hide Logo in checkout.', 'monei' ),
 			'desc_tip'    => true,
@@ -52,7 +52,7 @@ return apply_filters(
 		'apikey'       => array(
 			'title'       => __( 'API Key', 'monei' ),
 			'type'        => 'text',
-			'description' => __( 'Account ID and API key in the test mode are different from the live (production) mode and can only be used for testing purposes. Lean more" and a link to https://docs.monei.com/docs/testing/', 'monei' ),
+			'description' => __( 'Account ID and API key in the test mode are different from the live (production) mode and can only be used for testing purposes.', 'monei' ),
 			'desc_tip'    => true,
 		),
 		'tokenization'        => array(
@@ -85,7 +85,7 @@ return apply_filters(
 			'type'        => 'checkbox',
 			'label'       => __( 'Enable logging', 'monei' ),
 			'default'     => 'no',
-			'description' => __( 'Log MONEY events, such as notifications requests, inside <code>WooCommerce > Status > Logs > Select MONEI Logs</code>', 'monei' ),
+			'description' => __( 'Log MONEI events, such as notifications requests, inside <code>WooCommerce > Status > Logs > Select MONEI Logs</code>', 'monei' ),
 		),
 	)
 );
