@@ -12,12 +12,12 @@
         "rest",
         "api"
     ],
-    "homepage": "https://monei.net",
+    "homepage": "https://monei.com",
     "license": "MIT",
     "authors": [
         {
             "name": "MONEI",
-            "homepage": "https://monei.net"
+            "homepage": "https://monei.com"
         }
     ],
     "require": {

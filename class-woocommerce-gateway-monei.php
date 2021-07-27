@@ -87,10 +87,10 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		private function define_constants() {
 			$this->define( 'MONEI_GATEWAY_ID', 'monei' );
 			$this->define( 'MONEI_VERSION', $this->version );
-			$this->define( 'MONEI_SIGNUP', 'https://dashboard.monei.net/?action=signUp' );
-			$this->define( 'MONEI_WEB', 'https://monei.net/' );
+			$this->define( 'MONEI_SIGNUP', 'https://dashboard.monei.com/?action=signUp' );
+			$this->define( 'MONEI_WEB', 'https://monei.com/' );
 			$this->define( 'MONEI_REVIEW', 'https://wordpress.org/support/plugin/monei/reviews/?rate=5#new-post' );
-			$this->define( 'MONEI_SUPPORT', 'https://support.monei.net/' );
+			$this->define( 'MONEI_SUPPORT', 'https://support.monei.com/' );
 			$this->define( 'MONEI_MAIN_FILE', __FILE__ );
 		}
 

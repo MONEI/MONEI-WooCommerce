@@ -235,11 +235,11 @@
             "authors": [
                 {
                     "name": "MONEI",
-                    "homepage": "https://monei.net"
+                    "homepage": "https://monei.com"
                 }
             ],
             "description": "The MONEI SDK will allow you to interact with our API in an easy and predictable way.",
-            "homepage": "https://monei.net",
+            "homepage": "https://monei.com",
             "keywords": [
                 "api",
                 "monei",
