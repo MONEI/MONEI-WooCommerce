@@ -12,7 +12,7 @@
  * Description: Accept Credit Card / PayPal / Bizum payments through MONEI.
  * Version: 5.0
  * Author: MONEI
- * Author URI: https://www.monei.net/
+ * Author URI: https://www.monei.com/
  * Tested up to: 5.7
  * WC requires at least: 3.0
  * WC tested up to: 5.3

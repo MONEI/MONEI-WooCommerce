@@ -7,7 +7,7 @@
  * @category Class
  * @package  Monei\MoneiClient
  * @author   MONEI
- * @link     https://monei.net
+ * @link     https://monei.com
  */
 
 namespace Monei;

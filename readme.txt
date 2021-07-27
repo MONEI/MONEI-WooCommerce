@@ -96,7 +96,7 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 * Go to MONEI Dashboard
 * Select your sub account
-* Go to Monei.net > login > Configuration -> Account
+* Go to monei.com > login > Configuration -> Account
 
 == Screenshots ==
 
