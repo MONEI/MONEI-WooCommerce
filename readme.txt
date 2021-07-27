@@ -92,11 +92,11 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 * Go to WooCommerce > Settings > Payments > MONEI
 * Add your API Key.
 
-= If you don't have Account ID & Password =
+= If you don't have API Key =
 
 * Go to MONEI Dashboard
 * Select your sub account
-* Go to monei.com > login > Configuration -> Account
+* Go to dashboard.monei.com > Settings > API Access > Create API Key
 
 == Screenshots ==
 
