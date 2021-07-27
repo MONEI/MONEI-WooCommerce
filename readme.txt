@@ -90,7 +90,7 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 * Press Install
 * Press Activate now
 * Go to WooCommerce > Settings > Payments > MONEI
-* Add your Account ID & Password.
+* Add your API Key.
 
 = If you don't have Account ID & Password =
 
