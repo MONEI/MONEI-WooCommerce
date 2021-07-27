@@ -26,7 +26,7 @@ return apply_filters(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with Bizum. Powered by MONEI', 'monei' ),
+			'default'     => __( 'Pay with Bizum, you will be redirected to Bizum. Powered by MONEI', 'monei' ),
 		),
 		'hide_logo'        => array(
 			'title'   => __( 'Logo', 'monei' ),
