@@ -45,7 +45,7 @@ Connect your custom domain to MONEI and customize the appearance of your checkou
 With MONEI’s payment gateway for e-commerce, get real-time sales analytics via your customer dashboard.
 
 
-Please go to the 👉 [signup page](https://dashboard.monei.com/) 👈 to create a new MONEI account. Contact support@monei.com if you have any questions or feedback about this plugin.
+Please go to the 👉 [signup page](https://dashboard.monei.com/?action=signUp) 👈 to create a new MONEI account. Contact support@monei.com if you have any questions or feedback about this plugin.
 
 
 = PAYMENT GATEWAY FEATURES =
@@ -94,9 +94,8 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 = If you don't have API Key =
 
-* Go to MONEI Dashboard
-* Select your sub account
-* Go to dashboard.monei.com > Settings > API Access > Create API Key
+* Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
+* Click on "Create API Key"
 
 == Screenshots ==
 
