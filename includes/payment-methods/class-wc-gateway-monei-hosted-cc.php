@@ -24,7 +24,7 @@ class WC_Gateway_Monei_Hosted_CC extends WC_Monei_Payment_Gateway_Hosted {
 
 		$this->id = MONEI_GATEWAY_ID;
 		$this->method_title  = __( 'MONEI - Credit Card (redirect)', 'monei' );
-		$this->method_description = __( 'Best payment gateway rates. The perfect solution to manage your digital payments.', 'monei' );
+		$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
 		$this->enabled = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.

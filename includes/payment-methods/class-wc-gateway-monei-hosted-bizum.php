@@ -22,7 +22,7 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 
 		$this->id = MONEI_GATEWAY_ID . '_bizum';
 		$this->method_title  = __( 'MONEI - Bizum', 'monei' );
-		$this->method_description = __( 'Best payment gateway rates. The perfect solution to manage your digital payments.', 'monei' );
+		$this->method_description = __( 'Accept Bizum payments.', 'monei' );
 		$this->enabled = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
