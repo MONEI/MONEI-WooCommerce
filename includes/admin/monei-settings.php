@@ -43,12 +43,12 @@ return apply_filters(
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
 		),
-        'apikey'       => array(
-            'title'       => __( 'API Key', 'monei' ),
-            'type'        => 'text',
-            'description' => __( 'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/> Account ID and API key in the test mode are different from the live<br/> (production) mode and can only be used for testing purposes.', 'monei' ),
-            'desc_tip'    => 'no',
-        ),
+		'apikey'       => array(
+			'title'       => __( 'API Key', 'monei' ),
+			'type'        => 'text',
+			'description' => __( 'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/> Account ID and API key in the test mode are different from the live<br/> (production) mode and can only be used for testing purposes.', 'monei' ),
+			'desc_tip'    => 'no',
+		),
 		'tokenization'        => array(
 			'title'   => __( 'Saved cards', 'monei' ),
 			'type'    => 'checkbox',
