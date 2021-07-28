@@ -1,2 +1,3 @@
 # Directories
 /build export-ignore
+/.github export-ignore
