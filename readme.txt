@@ -1,9 +1,9 @@
 === MONEI WooCommerce ===
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
-Contributors: monei, j.conti
-Requires at least: 4.0
+Contributors: monei, furi3r
+Requires at least: 5.0
 Tested up to: 5.7
-Stable tag: 4.2.1
+Stable tag: 5.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
@@ -45,7 +45,7 @@ Connect your custom domain to MONEI and customize the appearance of your checkou
 With MONEI’s payment gateway for e-commerce, get real-time sales analytics via your customer dashboard.
 
 
-Please go to the 👉 [signup page](https://dashboard.monei.com/) 👈 to create a new MONEI account. Contact support@monei.com if you have any questions or feedback about this plugin.
+Please go to the 👉 [signup page](https://dashboard.monei.com/?action=signUp) 👈 to create a new MONEI account. Contact support@monei.com if you have any questions or feedback about this plugin.
 
 
 = PAYMENT GATEWAY FEATURES =
@@ -90,13 +90,12 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 * Press Install
 * Press Activate now
 * Go to WooCommerce > Settings > Payments > MONEI
-* Add your Account ID & Password.
+* Add your API Key.
 
-= If you don't have Account ID & Password =
+= If you don't have API Key =
 
-* Go to MONEI Dashboard
-* Select your sub account
-* Go to Monei.net > login > Configuration -> Account
+* Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
+* Click on "Create API Key"
 
 == Screenshots ==
 
@@ -104,6 +103,10 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+== 5.0 ==
+
+* Major refactor.
 
 == 4.2.1 ==
 
