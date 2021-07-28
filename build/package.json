@@ -1,0 +1,35 @@
+{
+  "name": "monei-woocommerce",
+  "version": "5.1.1",
+  "main": "index.js",
+  "repository": "git@github.com:MONEI/MONEI-WooCommerce.git",
+  "author": "MONEI <support@monei.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "release": "release-it"
+  },
+  "release-it": {
+    "git": {
+      "tagName": "${version}",
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": false
+    },
+    "plugins": {
+      "@release-it/bumper": {
+        "out": [
+          "../readme.txt"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "@release-it/bumper": "^3.0.1",
+    "release-it": "^14.10.1"
+  }
+}
