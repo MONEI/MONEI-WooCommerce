@@ -38,12 +38,13 @@ function monei_get_settings( $key = false ) {
 
 /**
  * Check if a $monei_token is already saved into Woo Token DB.
- * @param $monei_token
+ * @param string $monei_token
+ * @param string $gateway_id
  *
  * @return bool
  */
-function monei_token_exits( $monei_token ) {
-	$tokens = WC_Payment_Tokens::get_customer_tokens( get_current_user_id(), MONEI_GATEWAY_ID );
+function monei_token_exits( $monei_token, $gateway_id ) {
+	$tokens = WC_Payment_Tokens::get_customer_tokens( get_current_user_id(), $gateway_id );
 	foreach ( $tokens as $token ) {
 		if ( $monei_token === $token->get_token() ) {
 			return true;

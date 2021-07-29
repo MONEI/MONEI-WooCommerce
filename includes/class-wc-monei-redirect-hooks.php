@@ -74,6 +74,7 @@ class WC_Monei_Redirect_Hooks {
 		try {
 			$payment        = WC_Monei_API::get_payment( $payment_id );
 			$payment_token  = $payment->getPaymentToken();
+			$order          = new WC_Order( $order_id );
 
 			// A payment can come withouth token, user didn't check on save payment method.
 			// We just ignore it then and do nothing.
@@ -84,14 +85,13 @@ class WC_Monei_Redirect_Hooks {
 			$payment_method = $payment->getPaymentMethod();
 
 			// If Token already saved into DB, we just ignore this.
-			if ( monei_token_exits( $payment_token ) ) {
+			if ( monei_token_exits( $payment_token, $order->get_payment_method() ) ) {
 				return;
 			}
 
 			WC_Monei_Logger::log( 'saving tokent into DB', 'debug' );
 			WC_Monei_Logger::log( $payment_method, 'debug' );
 
-			$order = new WC_Order( $order_id );
 			$expiration = new DateTime( date( 'm/d/Y', $payment_method->getCard()->getExpiration() ) );
 
 			$token = new WC_Payment_Token_CC();
