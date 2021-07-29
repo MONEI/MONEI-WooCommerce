@@ -180,6 +180,24 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	protected function render_monei_form() {
 		?>
+            <style>
+                #payment-form {
+                    padding-bottom: 15px;
+                }
+                #card-input {
+                    border: 1px solid transparent;
+                    border-radius: 4px;
+                    background-color: white;
+                    box-shadow: 0 1px 3px 0 #e6ebf1;
+                    height: 38px;
+                    box-sizing: border-box;
+                    -webkit-transition: box-shadow 150ms ease;
+                    transition: box-shadow 150ms ease;
+                }
+                #card-input.is-focused {
+                    box-shadow: 0 1px 3px 0 #cfd7df;
+                }
+            </style>
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
 				<div id="payment-form">
 					<div class="card-field">

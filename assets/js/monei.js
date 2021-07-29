@@ -67,10 +67,30 @@
 			wc_monei_form.$container = document.getElementById( 'card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
+			var style = {
+				base: {
+				},
+				input: {
+					color: "#31325F",
+					fontSmoothing: "antialiased",
+					fontSize: "16px",
+					"::placeholder": {
+						color: "#848589"
+					},
+					"-webkit-autofill": {
+						backgroundColor: "#FAFFBD"
+					}
+				},
+				invalid: {
+					color: "#fa755a"
+				}
+			};
+
 			wc_monei_form.$cardInput = monei.CardInput(
 				{
 					accountId: wc_monei_params.account_id,
 					sessionId: wc_monei_params.session_id,
+					style: style,
 					onChange: function (event) {
 						// Handle real-time validation errors.
 						if (event.isTouched && event.error) {
