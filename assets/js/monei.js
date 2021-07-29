@@ -54,7 +54,7 @@
 			return $( '#payment_method_monei_card_input_component' ).is( ':checked' );
 		},
 		is_monei_saved_token_selected: function() {
-			return ( $( '#payment_method_monei_card_input_component' ).is( ':checked' ) && ( $( 'input[name="wc-monei_card_input_component-new-payment-method"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei_card_input_component-new-payment-method"]:checked' ).val() ) );
+			return ( wc_monei_form.is_monei_selected() && ( $( 'input[name="wc-monei_card_input_component-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei_card_input_component-new-payment-method"]:checked' ).val() ) );
 		},
 		init_checkout_monei: function() {
 			// init monei just once, despite how many times this may be triggered.
