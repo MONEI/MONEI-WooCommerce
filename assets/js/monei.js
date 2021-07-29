@@ -92,11 +92,17 @@
 				return;
 			}
 
-			// If token already created
+			// If user has selected any tokenized CC, we just submit the form normally.
+			if ( wc_monei_form.is_monei_saved_token_selected() ) {
+				return;
+			}
+
+			// If MONEI token already created, submit form.
 			if ( $('#monei_payment_token').length ) {
 				return;
 			}
 
+			// This will be trigger, when CC component is used and "Place order" has been clicked.
 			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			monei.createToken( wc_monei_form.$cardInput )
 				.then(
