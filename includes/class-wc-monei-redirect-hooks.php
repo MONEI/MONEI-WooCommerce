@@ -70,6 +70,7 @@ class WC_Monei_Redirect_Hooks {
 		}
 
 		$payment_id = filter_input( INPUT_GET, 'id' );
+		$order_id   = filter_input( INPUT_GET, 'order-received' );
 		try {
 			$payment        = WC_Monei_API::get_payment( $payment_id );
 			$payment_token  = $payment->getPaymentToken();
@@ -90,11 +91,12 @@ class WC_Monei_Redirect_Hooks {
 			WC_Monei_Logger::log( 'saving tokent into DB', 'debug' );
 			WC_Monei_Logger::log( $payment_method, 'debug' );
 
+			$order = new WC_Order( $order_id );
 			$expiration = new DateTime( date( 'm/d/Y', $payment_method->getCard()->getExpiration() ) );
 
 			$token = new WC_Payment_Token_CC();
 			$token->set_token( $payment_token );
-			$token->set_gateway_id( MONEI_GATEWAY_ID );
+			$token->set_gateway_id( $order->get_payment_method() );
 			$token->set_card_type( $payment_method->getCard()->getBrand() );
 			$token->set_last4( $payment_method->getCard()->getLast4() );
 			$token->set_expiry_month( $expiration->format( 'm' ) );

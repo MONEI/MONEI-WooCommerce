@@ -93,7 +93,7 @@
 			}
 
 			// If token already created
-			if ( $('#paymentToken').length ) {
+			if ( $('#monei_payment_token').length ) {
 				return;
 			}
 
