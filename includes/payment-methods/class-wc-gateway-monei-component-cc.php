@@ -172,14 +172,16 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 				$this->save_payment_method_checkbox();
 			}
 		}
-
 		ob_end_flush();
 	}
 
+	/**
+	 * Form where MONEI JS will render CC Component.
+	 */
 	protected function render_monei_form() {
 		?>
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
-				<form id="payment-form">
+				<div id="payment-form">
 					<div class="card-field">
 						<div id="card-input">
 							<!-- A MONEI Card Input Component will be inserted here. -->
@@ -187,13 +189,15 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 						<!-- Used to display card errors. -->
 						<div id="monei-card-error"></div>
 					</div>
-					<!--<button type="submit" id="payment-button">Submit payment</button>-->
-				</form>
+				</div>
 			</fieldset>
 		<?php
-
 	}
 
+	/**
+	 * Registering MONEI JS library and plugin js.
+     * todo: use minified version in prod, non minified in sandbox mode.
+	 */
 	public function monei_scripts() {
 
 		if ( ! is_checkout() ) {
@@ -218,7 +222,6 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 			]
 		);
 		wp_enqueue_script( 'woocommerce_monei' );
-
 		$this->tokenization_script();
 	}
 

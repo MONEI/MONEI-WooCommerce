@@ -92,6 +92,11 @@
 				return;
 			}
 
+			// If token already created
+			if ( $('#paymentToken').length ) {
+				return;
+			}
+
 			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			monei.createToken( wc_monei_form.$cardInput )
 				.then(
@@ -102,6 +107,7 @@
 						} else {
 							// Send the token to your server.
 							wc_monei_form.monei_token_handler( result.token );
+							wc_monei_form.$checkout_form.submit();
 						}
 						//paymentButton.disabled = false;
 					}
@@ -143,7 +149,8 @@
 			console.log( 'token', token );
 			var hiddenInput = document.createElement( 'input' );
 			hiddenInput.setAttribute( 'type', 'hidden' );
-			hiddenInput.setAttribute( 'name', 'paymentToken' );
+			hiddenInput.setAttribute( 'name', 'monei_payment_token' );
+			hiddenInput.setAttribute( 'id', 'monei_payment_token' );
 			hiddenInput.setAttribute( 'value', token );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
 		},

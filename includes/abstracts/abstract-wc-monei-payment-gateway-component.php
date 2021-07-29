@@ -91,23 +91,38 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$payload['generatePaymentToken'] = true;
 		}
 
+		// If customer is coming from component CC, there is a generated frontend token paymentToken
+		if ( MONEI_GATEWAY_ID . '_card_input_component' === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+			$payload['paymentToken'] = $monei_token;
+			$payload['sessionId']    = (string) WC()->session->get_customer_id();
+		}
+
 		try {
 			$payment = WC_Monei_API::create_payment( $payload );
+			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
+
 			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
 			WC_Monei_Logger::log( $payload, 'debug' );
 			WC_Monei_Logger::log( $payment, 'debug' );
-			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
-
 			return array(
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
 		} catch ( Exception $e ) {
+			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
-			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			return;
 		}
+	}
+
+	/**
+	 * Frontend MONEI generated token.
+	 *
+	 * @return false|string
+	 */
+	public function get_frontend_generated_monei_token() {
+		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
 
 }

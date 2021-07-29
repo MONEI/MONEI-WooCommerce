@@ -238,11 +238,11 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Including abstract.
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway.php';
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-hosted.php';
-			//include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-component.php';
+			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-component.php';
 
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cc.php';
-			//include_once 'includes/payment-methods/class-wc-gateway-monei-component-cc.php';
+			include_once 'includes/payment-methods/class-wc-gateway-monei-component-cc.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
 		}
