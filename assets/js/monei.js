@@ -1,9 +1,19 @@
 (function( $ ) {
 	'use strict';
 
-	// On Checkout form.
+	// Checkout form.
 	$( document.body ).on(
 		'updated_checkout',
+		function() {
+			if ( wc_monei_form.is_monei_selected() ) {
+				wc_monei_form.init_checkout_monei();
+			}
+		}
+	);
+
+	// Add Payment Method form.
+	$( 'form#add_payment_method' ).on(
+		'click payment_methods',
 		function() {
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
@@ -19,6 +29,7 @@
 		$errorContainer: null,
 		$paymentForm: null,
 		is_checkout: false,
+		is_add_payment_method: false,
 		form: null,
 		submitted: false,
 		init_counter: 0,
@@ -30,9 +41,24 @@
 				this.form.on( 'checkout_place_order', this.place_order );
 			}
 
-			if (this.form) {
+			// Add payment method Page
+			if ( this.$add_payment_form.length ) {
+				this.is_add_payment_method = true;
+				this.form                  = this.$add_payment_form;
+				//this.form.on( 'add_payment_method', this.place_order );
+				this.form.on( 'submit', this.place_order );
+			}
+
+			if ( this.form ) {
 				this.form.on( 'change', this.on_change );
 			}
+		},
+		submit_form: function() {
+			wc_monei_form.form.submit();
+		},
+		aa: function() {
+			wc_monei_form.form.trigger( 'add_payment_method' );
+			return false;
 		},
 		on_change: function() {
 			$( "[name='payment_method']" ).on(
@@ -45,16 +71,23 @@
 		on_payment_selected() {
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
-				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+				if ( wc_monei_form.is_checkout ) {
+					$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+				}
 			} else {
-				$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
+				if ( wc_monei_form.is_checkout ) {
+					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
+				}
 			}
 		},
 		is_monei_selected: function() {
 			return $( '#payment_method_monei_card_input_component' ).is( ':checked' );
 		},
-		is_monei_saved_token_selected: function() {
-			return ( wc_monei_form.is_monei_selected() && ( $( 'input[name="wc-monei_card_input_component-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei_card_input_component-new-payment-method"]:checked' ).val() ) );
+		is_tokenized_cc_selected: function() {
+			return ( $( 'input[name="wc-monei_card_input_component-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei_card_input_component-payment-token"]:checked' ).val() );
+		},
+		is_monei_saved_cc_selected: function() {
+			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );
 		},
 		init_checkout_monei: function() {
 			// init monei just once, despite how many times this may be triggered.
@@ -62,7 +95,9 @@
 				return;
 			}
 
-			$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+			if ( wc_monei_form.is_checkout ) {
+				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+			}
 
 			wc_monei_form.$container = document.getElementById( 'card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
@@ -108,32 +143,36 @@
 		},
 		place_order: function( e ) {
 			e.preventDefault();
+			return true;
+
+			console.log('a');
 			if ( ! wc_monei_form.is_monei_selected() ) {
-				return;
+				return true;
 			}
-
+			console.log('b');
 			// If user has selected any tokenized CC, we just submit the form normally.
-			if ( wc_monei_form.is_monei_saved_token_selected() ) {
-				return;
+			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
+				return true;
 			}
-
+			console.log('c');
 			// If MONEI token already created, submit form.
 			if ( $('#monei_payment_token').length ) {
-				return;
+				return true;
 			}
+			console.log('d');
 
 			// This will be trigger, when CC component is used and "Place order" has been clicked.
 			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			monei.createToken( wc_monei_form.$cardInput )
 				.then(
-					function (result) {
-						if (result.error) {
+					function ( result ) {
+						if ( result.error ) {
 							// Inform the user if there was an error.
 							wc_monei_form.print_errors( result.error );
 						} else {
-							// Send the token to your server.
+							// Create monei token and append it to DOM
 							wc_monei_form.monei_token_handler( result.token );
-							wc_monei_form.$checkout_form.submit();
+							wc_monei_form.form.submit();
 						}
 						//paymentButton.disabled = false;
 					}
