@@ -158,6 +158,8 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 		ob_start();
 		if ( is_add_payment_method_page() ) {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
+			// This will render Monei CC iFrame
+			$this->render_monei_form();
 		} else {
 			// Checkout screen. We show description, if tokenization available, we show saved cards and checkbox to save.
 			echo $this->description;
@@ -218,7 +220,7 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	public function monei_scripts() {
 
-		if ( ! is_checkout() ) {
+		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
 			return;
 		}
 

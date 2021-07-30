@@ -97,6 +97,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$payload['sessionId']    = ( string ) WC()->session->get_customer_id();
 		}
 
+		var_dump($payload);die;
+
 		try {
 			$payment = WC_Monei_API::create_payment( $payload );
 			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
