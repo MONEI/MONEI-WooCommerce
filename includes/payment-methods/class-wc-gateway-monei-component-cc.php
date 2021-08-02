@@ -129,10 +129,11 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	protected function create_zero_eur_payload() {
 		$current_user_id = (string) get_current_user_id();
+
 		/**
 		 * Create 0 EUR Payment Payload
 		 */
-		return [
+		$payload = [
 			'amount'      => 0,
 			'currency'    => get_woocommerce_currency(),
 			'orderId'     => $current_user_id . 'generatetoken' . rand( 0, 1000000 ),
@@ -149,6 +150,14 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 			'generatePaymentToken' => true,
 			'allowedPaymentMethods' => [ self::PAYMENT_METHOD ],
 		];
+
+		// If customer is coming from component CC, there is a generated frontend token paymentToken
+		if ( MONEI_GATEWAY_ID . '_card_input_component' === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+			$payload['paymentToken'] = $monei_token;
+			$payload['sessionId']    = ( string ) WC()->session->get_customer_id();
+		}
+
+		return $payload;
 	}
 
 	/**

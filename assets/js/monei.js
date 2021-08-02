@@ -45,7 +45,6 @@
 			if ( this.$add_payment_form.length ) {
 				this.is_add_payment_method = true;
 				this.form                  = this.$add_payment_form;
-				//this.form.on( 'add_payment_method', this.place_order );
 				this.form.on( 'submit', this.place_order );
 			}
 
@@ -55,10 +54,6 @@
 		},
 		submit_form: function() {
 			wc_monei_form.form.submit();
-		},
-		aa: function() {
-			wc_monei_form.form.trigger( 'add_payment_method' );
-			return false;
 		},
 		on_change: function() {
 			$( "[name='payment_method']" ).on(
@@ -142,25 +137,18 @@
 			this.init_counter++;
 		},
 		place_order: function( e ) {
-			e.preventDefault();
-			return true;
-
-			console.log('a');
+			// If MONEI token already created, submit form.
+			if ( $( '#monei_payment_token' ).length ) {
+				return true;
+			}
 			if ( ! wc_monei_form.is_monei_selected() ) {
 				return true;
 			}
-			console.log('b');
 			// If user has selected any tokenized CC, we just submit the form normally.
 			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
 				return true;
 			}
-			console.log('c');
-			// If MONEI token already created, submit form.
-			if ( $('#monei_payment_token').length ) {
-				return true;
-			}
-			console.log('d');
-
+			e.preventDefault();
 			// This will be trigger, when CC component is used and "Place order" has been clicked.
 			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			monei.createToken( wc_monei_form.$cardInput )
@@ -172,14 +160,12 @@
 						} else {
 							// Create monei token and append it to DOM
 							wc_monei_form.monei_token_handler( result.token );
-							wc_monei_form.form.submit();
 						}
-						//paymentButton.disabled = false;
 					}
 				)
 				.catch(
 					function (error) {
-						// paymentButton.disabled = false;
+						console.log( error );
 						wc_monei_form.print_errors( error );
 					}
 				);
@@ -218,10 +204,9 @@
 			hiddenInput.setAttribute( 'id', 'monei_payment_token' );
 			hiddenInput.setAttribute( 'value', token );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
-		},
-		block_form: function() {
-		},
-		unblock_form: function() {
+
+			// Once Token is created, submit form.
+			wc_monei_form.form.submit();
 		},
 		get_form: function() {
 			return this.form;
