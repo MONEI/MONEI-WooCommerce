@@ -84,7 +84,17 @@ class WC_Monei_Redirect_Hooks {
 		try {
 			$payment        = WC_Monei_API::get_payment( $payment_id );
 			$payment_token  = $payment->getPaymentToken();
-			$order          = new WC_Order( $order_id );
+
+			/**
+			 * If redirect is coming from an actual order, we will have the payment method available in order.
+			 * If redirect is coming from "Add payment method" we will get the gateway id from "pmt"
+			 */
+			if ( $order_id ) {
+				$order                 = new WC_Order( $order_id );
+				$payment_method_woo_id = $order->get_payment_method();
+			} else {
+				$payment_method_woo_id   = filter_input( INPUT_GET, 'pmt' );
+			}
 
 			// A payment can come withouth token, user didn't check on save payment method.
 			// We just ignore it then and do nothing.
@@ -95,7 +105,7 @@ class WC_Monei_Redirect_Hooks {
 			$payment_method = $payment->getPaymentMethod();
 
 			// If Token already saved into DB, we just ignore this.
-			if ( monei_token_exits( $payment_token, $order->get_payment_method() ) ) {
+			if ( monei_token_exits( $payment_token, $payment_method_woo_id ) ) {
 				return;
 			}
 
@@ -106,7 +116,7 @@ class WC_Monei_Redirect_Hooks {
 
 			$token = new WC_Payment_Token_CC();
 			$token->set_token( $payment_token );
-			$token->set_gateway_id( $order->get_payment_method() );
+			$token->set_gateway_id( $payment_method_woo_id );
 			$token->set_card_type( $payment_method->getCard()->getBrand() );
 			$token->set_last4( $payment_method->getCard()->getLast4() );
 			$token->set_expiry_month( $expiration->format( 'm' ) );

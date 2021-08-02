@@ -138,7 +138,7 @@ class WC_Gateway_Monei_Hosted_CC extends WC_Monei_Payment_Gateway_Hosted {
 			'orderId'     => $current_user_id . 'generatetoken' . rand( 0, 1000000 ),
 			'description' => "User $current_user_id creating empty transaction to generate token",
 			'callbackUrl' => wp_sanitize_redirect( esc_url_raw( $this->notify_url ) ),
-			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ),
+			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ) . '&pmt=' . $this->id,
 			'cancelUrl'   => wc_get_endpoint_url( 'payment-methods' ),
 			'failUrl'     => wc_get_endpoint_url( 'payment-methods' ),
 			'transactionType' => self::SALE_TRANSACTION_TYPE,
