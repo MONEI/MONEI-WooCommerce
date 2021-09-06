@@ -76,10 +76,10 @@
 			}
 		},
 		is_monei_selected: function() {
-			return $( '#payment_method_monei_card_input_component' ).is( ':checked' );
+			return $( '#payment_method_monei' ).is( ':checked' );
 		},
 		is_tokenized_cc_selected: function() {
-			return ( $( 'input[name="wc-monei_card_input_component-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei_card_input_component-payment-token"]:checked' ).val() );
+			return ( $( 'input[name="wc-monei-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei-payment-token"]:checked' ).val() );
 		},
 		is_monei_saved_cc_selected: function() {
 			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );

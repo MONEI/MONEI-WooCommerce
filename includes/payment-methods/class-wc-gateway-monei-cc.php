@@ -81,6 +81,11 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
         add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+
+        // If merchant wants Component CC or is_add_payment_method_page that always use this component method.
+        if ( ! $this->redirect_flow || is_add_payment_method_page() ) {
+            add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
+        }
     }
 
 	/**
@@ -150,7 +155,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		/**
 		 * Create 0 EUR Payment Payload
 		 */
-		return [
+        $payload = [
 			'amount'      => 0,
 			'currency'    => get_woocommerce_currency(),
 			'orderId'     => $current_user_id . 'generatetoken' . rand( 0, 1000000 ),
@@ -167,24 +172,115 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			'generatePaymentToken' => true,
 			'allowedPaymentMethods' => [ self::PAYMENT_METHOD ],
 		];
+
+        // All Zero payloads ( add payment method ) will use component CC.
+        if ( MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+            $payload['paymentToken'] = $monei_token;
+            $payload['sessionId']    = ( string ) WC()->session->get_customer_id();
+        }
+
+        return $payload;
 	}
 
 	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
 	function payment_fields() {
+        ob_start();
 		if ( is_add_payment_method_page() ) {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
+            // Always use component form in Add Payment method page.
+            $this->render_monei_form();
 		} else {
 			// Checkout screen. We show description, if tokenization available, we show saved cards and checkbox to save.
 			echo $this->description;
 			if ( $this->tokenization ) {
-				$this->tokenization_script();
+
 				$this->saved_payment_methods();
+                // If Component CC
+                if ( ! $this->redirect_flow ) {
+                    $this->render_monei_form();
+                } else {
+                    $this->tokenization_script();
+                }
 				$this->save_payment_method_checkbox();
-			}
+			} else {
+                // If Component CC
+                if ( ! $this->redirect_flow ) {
+                    $this->render_monei_form();
+                }
+            }
 		}
+        ob_end_flush();
 	}
+
+    /**
+     * Form where MONEI JS will render CC Component.
+     */
+    protected function render_monei_form() {
+        ?>
+        <style>
+            #payment-form {
+                padding-bottom: 15px;
+            }
+            #card-input {
+                border: 1px solid transparent;
+                border-radius: 4px;
+                background-color: white;
+                box-shadow: 0 1px 3px 0 #e6ebf1;
+                height: 38px;
+                box-sizing: border-box;
+                -webkit-transition: box-shadow 150ms ease;
+                transition: box-shadow 150ms ease;
+            }
+            #card-input.is-focused {
+                box-shadow: 0 1px 3px 0 #cfd7df;
+            }
+        </style>
+        <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
+            <div id="payment-form">
+                <div class="card-field">
+                    <div id="card-input">
+                        <!-- A MONEI Card Input Component will be inserted here. -->
+                    </div>
+                    <!-- Used to display card errors. -->
+                    <div id="monei-card-error"></div>
+                </div>
+            </div>
+        </fieldset>
+        <?php
+    }
+
+    /**
+     * Registering MONEI JS library and plugin js.
+     * todo: use minified version in prod, non minified in sandbox mode.
+     */
+    public function monei_scripts() {
+
+        if ( ! is_checkout() && ! is_add_payment_method_page() ) {
+            return;
+        }
+
+        if ( 'no' === $this->enabled ) {
+            return;
+        }
+
+        wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
+        wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/monei.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
+        wp_enqueue_script( 'monei' );
+
+        wp_localize_script(
+            'woocommerce_monei',
+            'wc_monei_params',
+            [
+                'account_id' => monei_get_settings( 'accountid' ),
+                // todo: check for non logged users.
+                'session_id' => WC()->session->get_customer_id(),
+            ]
+        );
+        wp_enqueue_script( 'woocommerce_monei' );
+        $this->tokenization_script();
+    }
 
 }
 

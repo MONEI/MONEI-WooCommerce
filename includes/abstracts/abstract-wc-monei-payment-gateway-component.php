@@ -78,8 +78,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$payload['generatePaymentToken'] = true;
 		}
 
-		// If customer is coming from component CC, there is a generated frontend token paymentToken
-		if ( MONEI_GATEWAY_ID . '_card_input_component' === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+		// If merchant is not using redirect flow (means component CC), there is a generated frontend token paymentToken
+		if ( ! $this->redirect_flow && MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
 			$payload['paymentToken'] = $monei_token;
 			$payload['sessionId']    = ( string ) WC()->session->get_customer_id();
 		}
