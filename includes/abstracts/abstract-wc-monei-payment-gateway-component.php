@@ -112,5 +112,21 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
 
+    /**
+     * Setting checks when saving.
+     *
+     * @param $is_post
+     * @return bool
+     */
+    public function checks_before_save( $is_post ) {
+        if ( $is_post ) {
+            if ( empty( $_POST['woocommerce_monei_accountid']) || empty( $_POST['woocommerce_monei_apikey'] ) ) {
+                WC_Admin_Settings::add_error( __( 'Please, MONEI needs Account ID and API Key in order to work. Disabling the gateway.', 'monei' ) );
+                unset( $_POST['woocommerce_monei_enabled'] );
+            }
+        }
+        return $is_post;
+    }
+
 }
 

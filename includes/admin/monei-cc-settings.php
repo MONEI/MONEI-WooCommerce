@@ -20,7 +20,7 @@ return apply_filters(
             'type'        => 'checkbox',
             'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
             'default'     => 'yes',
-            'description' => sprintf( __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ) ),
+            'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
         ),
 		'testmode'       => array(
 			'title'       => __( 'Test mode', 'monei' ),
@@ -51,13 +51,14 @@ return apply_filters(
 			'desc_tip'    => true,
 		),
         'accountid'       => array(
-            'title'       => __( 'Account ID', 'monei' ),
+            'title'       => __( 'Account ID', 'monei' ) . ' <span class="required">*</span>',
             'type'        => 'text',
             'description' => __( 'Account ID', 'monei' ),
+            'required'    => true,
             'desc_tip'    => true,
         ),
 		'apikey'       => array(
-			'title'       => __( 'API Key', 'monei' ),
+			'title'       => __( 'API Key', 'monei' ) . ' <span class="required">*</span>',
 			'type'        => 'text',
 			'description' => __( 'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/> Account ID and API key in the test mode are different from the live<br/> (production) mode and can only be used for testing purposes.', 'monei' ),
 			'desc_tip'    => 'no',

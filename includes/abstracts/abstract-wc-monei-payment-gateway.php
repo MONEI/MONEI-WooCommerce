@@ -118,10 +118,6 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		}
 	}
 
-    public function is_available() {
-        parent::is_available();
-    }
-
 	/**
 	 * Admin Panel Options
 	 *
