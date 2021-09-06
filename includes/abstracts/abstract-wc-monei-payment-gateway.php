@@ -118,6 +118,10 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		}
 	}
 
+    public function is_available() {
+        parent::is_available();
+    }
+
 	/**
 	 * Admin Panel Options
 	 *
@@ -127,7 +131,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public function admin_options() {
 		if ( $this->is_valid_for_use() ) {
-			parent::admin_options();
+            parent::admin_options();
 		} else {
 			woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available.php' );
 		}
