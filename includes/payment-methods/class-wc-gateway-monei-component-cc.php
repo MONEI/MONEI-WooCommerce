@@ -74,7 +74,7 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		parent::init_form_fields( 'monei-component-cc-settings.php' );
+        $this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-component-cc-settings.php';
 	}
 
 	/**
@@ -82,9 +82,10 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 *
 	 * @access public
 	 * @param int $order_id
+     * @param null|string $allowed_payment_method
 	 * @return array
 	 */
-	public function process_payment( $order_id ) {
+	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
 

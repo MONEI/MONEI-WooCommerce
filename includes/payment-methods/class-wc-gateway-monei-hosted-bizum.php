@@ -62,7 +62,7 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		parent::init_form_fields( 'monei-bizum-settings.php' );
+        $this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-bizum-settings.php';
 	}
 
 	/**
@@ -70,9 +70,10 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 	 *
 	 * @access public
 	 * @param int $order_id
+     * @param null|string $allowed_payment_method
 	 * @return array
 	 */
-	public function process_payment( $order_id ) {
+    public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
 

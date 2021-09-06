@@ -15,19 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gateway {
 
 	/**
-	 * Initialise Gateway Settings Form Fields
-	 * @param $settings_file
-	 * @access public
-	 * @since 5.0
-	 * @return void
-	 */
-	public function init_form_fields( $settings_file = null ) {
-		if ( $settings_file ) {
-			$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/' . $settings_file;
-		}
-	}
-
-	/**
 	 * Process the payment and return the result
 	 *
 	 * @access public
