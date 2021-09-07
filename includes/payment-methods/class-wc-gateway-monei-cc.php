@@ -253,7 +253,6 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
     /**
      * Registering MONEI JS library and plugin js.
-     * todo: use minified version in prod, non minified in sandbox mode.
      */
     public function monei_scripts() {
 
@@ -265,8 +264,9 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
             return;
         }
 
+        $script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.min.js';
         wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
-        wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/monei.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
+        wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
         wp_enqueue_script( 'monei' );
 
         wp_localize_script(
@@ -274,7 +274,6 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
             'wc_monei_params',
             [
                 'account_id' => monei_get_settings( 'accountid' ),
-                // todo: check for non logged users.
                 'session_id' => WC()->session->get_customer_id(),
             ]
         );

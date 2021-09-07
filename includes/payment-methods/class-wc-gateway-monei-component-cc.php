@@ -238,8 +238,10 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 			return;
 		}
 
+        var_dump($this->testmode);die;
+
 		wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
-		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/monei.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
+		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/monei.min.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
 		wp_enqueue_script( 'monei' );
 
 		wp_localize_script(
