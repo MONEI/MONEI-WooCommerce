@@ -5,6 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Class that handle Monei Cofidis Payment method.
+ * todo: hide payment gateway when not fitting limites Cofidis.
+ * todo: when happens when shipping costs are lower or bigger than limits?
  *
  * Class WC_Gateway_Monei_Cofidis
  */
@@ -51,10 +53,18 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 			'refunds',
 		);
 
+        // todo: check limits.
+        if ( is_checkout() ) {
+            //$this->enabled = false;
+        }
+
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
         add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
         add_action( 'wp_enqueue_scripts', [ $this, 'cofidis_scripts' ] );
+        // Add total price info on update action js
+        add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'add_cart_total' ) );
     }
+
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -114,7 +124,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
     protected function render_cofidis_widget() {
         ?>
         <div id="cofidis_widget">
-            <!-- Cofidis Widget will be rendered here -->
+
         </div>
         <?php
     }
@@ -149,10 +159,26 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
                 'account_id' => monei_get_settings('accountid'),
                 // Ask about this, if it takes automatically the lang.
                 'lang'       => get_locale(),
-                'total'      => monei_price_format ( WC()->cart->get_total( false ) ),
+                //'total'      => monei_price_format ( WC()->cart->get_total( false ) ),
+                'total'      => monei_price_format ( 500 ),
             ]
         );
         wp_enqueue_script('woocommerce_monei_cofidis');
+    }
+
+    /**
+     * On updated_checkout, we need thew new total cart in order to update cofidis plugin.
+     *
+     * @param array $fragments
+     * @return array
+     */
+    public function add_cart_total( $fragments ) {
+        if ( ! WC()->cart ) {
+            return $fragments;
+        }
+
+        $fragments['monei_new_total'] = monei_price_format ( WC()->cart->get_total( false ) );
+        return $fragments;
     }
 
 }
