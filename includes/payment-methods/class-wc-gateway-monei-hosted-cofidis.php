@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class that handle Monei Cofidis Payment method.
  * todo: hide payment gateway when not fitting limites Cofidis.
  * todo: when happens when shipping costs are lower or bigger than limits?
+ * todo: refund?
  *
  * Class WC_Gateway_Monei_Cofidis
  */
@@ -37,7 +38,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : apply_filters( 'woocommerce_monei_cofidis_icon', WC_Monei()->image_url( 'bizum-logo.svg' ) );
+		$this->icon                 = ( $this->hide_logo ) ? '' : apply_filters( 'woocommerce_monei_cofidis_icon', WC_Monei()->image_url( 'cofidis-logo.svg' ) );
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
@@ -124,7 +125,6 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
     protected function render_cofidis_widget() {
         ?>
         <div id="cofidis_widget">
-
         </div>
         <?php
     }
