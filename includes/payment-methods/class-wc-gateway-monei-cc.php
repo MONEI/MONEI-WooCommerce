@@ -37,10 +37,10 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	public function __construct() {
 
-		$this->id = MONEI_GATEWAY_ID;
-		$this->method_title  = __( 'MONEI - Credit Card', 'monei' );
+		$this->id                 = MONEI_GATEWAY_ID;
+		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
 		$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
-		$this->enabled = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -67,10 +67,10 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
 
 		// IPN callbacks
-		$this->notify_url           = WC_Monei()->get_ipn_url();
+		$this->notify_url = WC_Monei()->get_ipn_url();
 		new WC_Monei_IPN();
 
-		$this->supports             = array(
+		$this->supports = array(
 			'products',
 			'refunds',
 		);
@@ -128,7 +128,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		// Since it is a hosted version, we need to create a 0 EUR payment and send customer to MONEI.
 		try {
 			$zero_payload = $this->create_zero_eur_payload();
-			$payment = WC_Monei_API::create_payment( $zero_payload );
+			$payment      = WC_Monei_API::create_payment( $zero_payload );
 			WC_Monei_Logger::log( 'WC_Monei_API::add_payment_method', 'debug' );
 			WC_Monei_Logger::log( $zero_payload, 'debug' );
 			WC_Monei_Logger::log( $payment, 'debug' );
@@ -158,7 +158,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
         $payload = [
 			'amount'      => 0,
 			'currency'    => get_woocommerce_currency(),
-			'orderId'     => $current_user_id . 'generatetoken' . rand( 0, 1000000 ),
+			'orderId'     => $current_user_id . 'generatetoken' . wp_rand( 0, 1000000 ),
 			'description' => "User $current_user_id creating empty transaction to generate token",
 			'callbackUrl' => wp_sanitize_redirect( esc_url_raw( $this->notify_url ) ),
 			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ) . '&pmt=' . $this->id,

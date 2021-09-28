@@ -99,11 +99,13 @@
 
 			var style = {
 				base: {
+					padding: "0.4em"
 				},
 				input: {
 					color: "#31325F",
+					fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
 					fontSmoothing: "antialiased",
-					fontSize: "16px",
+					fontSize: "15px",
 					"::placeholder": {
 						color: "#848589"
 					},
@@ -113,6 +115,9 @@
 				},
 				invalid: {
 					color: "#fa755a"
+				},
+				icon: {
+					marginRight: "0.4em"
 				}
 			};
 
