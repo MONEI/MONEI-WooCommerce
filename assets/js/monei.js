@@ -98,20 +98,10 @@
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
 			var style = {
-				base: {
-					padding: "0.4em"
-				},
 				input: {
-					color: "#31325F",
 					fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
 					fontSmoothing: "antialiased",
 					fontSize: "15px",
-					"::placeholder": {
-						color: "#848589"
-					},
-					"-webkit-autofill": {
-						backgroundColor: "#FAFFBD"
-					}
 				},
 				invalid: {
 					color: "#fa755a"
