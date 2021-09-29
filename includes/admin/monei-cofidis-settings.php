@@ -15,27 +15,6 @@ return apply_filters(
 			'label'   => __( 'Enable Cofidis by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'title'          => array(
-			'title'       => __( 'Title', 'monei' ),
-			'type'        => 'text',
-			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Cofidis', 'monei' ),
-			'desc_tip'    => true,
-		),
-		'description'    => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with Cofidis, you will be redirected to Cofidis. Powered by MONEI', 'monei' ),
-		),
-		'hide_logo'        => array(
-			'title'   => __( 'Hide Logo', 'monei' ),
-			'type'    => 'checkbox',
-			'label'   => __( 'Hide payment method logo', 'monei' ),
-			'default' => 'no',
-			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
-			'desc_tip'    => true,
-		),
         'accountid'       => array(
             'title'       => __( 'Account ID', 'monei' ) . ' <span class="required">*</span>',
             'type'        => 'text',

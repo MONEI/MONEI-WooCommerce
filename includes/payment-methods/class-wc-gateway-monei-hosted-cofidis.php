@@ -33,14 +33,22 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		// Load the settings.
 		$this->init_settings();
 
+		// Cofidis Limits between 75 and 1000. If falling out of limits, disable payment method.
+		if ( is_checkout() ) {
+			$total = ( float ) WC()->cart->get_total( false );
+			if ( $total <= 75 || $total >= 1000 ) {
+				$this->enabled = false;
+			}
+		}
+
 		// Cofidis Hosted payment with redirect.
 		$this->has_fields = false;
 
 		// Settings variable
-		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : apply_filters( 'woocommerce_monei_cofidis_icon', WC_Monei()->image_url( 'cofidis-logo.svg' ) );
-		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$this->hide_logo            = true;
+		$this->icon                 = ''; // No logo
+		$this->title                = __( 'Financia con Cofidis en 4 cuotas/90 días by MONEI', 'monei' ); // Hardcoded Title, asked by provider.
+		$this->description          = ' '; // If description empty, payment_fields() does not render.
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
@@ -54,16 +62,13 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 			'refunds',
 		);
 
-        // todo: check limits.
-        if ( is_checkout() ) {
-            //$this->enabled = false;
-        }
-
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
         add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
         add_action( 'wp_enqueue_scripts', [ $this, 'cofidis_scripts' ] );
+
         // Add total price info on update action js
-        add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'add_cart_total' ) );
+        // We are not gonna control limits in frontend for now.
+        //add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'add_cart_total' ) );
     }
 
 
@@ -124,8 +129,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
      */
     protected function render_cofidis_widget() {
         ?>
-        <div id="cofidis_widget">
-        </div>
+        <div id="cofidis_widget"></div>
         <?php
     }
 
@@ -135,7 +139,6 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
      */
     public function cofidis_scripts()
     {
-
         if ( ! is_checkout() ) {
             return;
         }
@@ -156,11 +159,9 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
             'woocommerce_monei_cofidis',
             'wc_monei_params',
             [
-                'account_id' => monei_get_settings('accountid'),
-                // Ask about this, if it takes automatically the lang.
-                'lang'       => get_locale(),
-                //'total'      => monei_price_format ( WC()->cart->get_total( false ) ),
-                'total'      => monei_price_format ( 500 ),
+                'account_id' => monei_get_settings( 'accountid', 'woocommerce_monei_cofidis_settings' ),
+                'lang'       => ( 0 === strpos( get_locale(), 'en' ) ) ? 'en' : 'es',
+                'total'      => monei_price_format ( WC()->cart->get_total( false ) ),
             ]
         );
         wp_enqueue_script('woocommerce_monei_cofidis');

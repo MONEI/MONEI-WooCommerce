@@ -30,7 +30,7 @@
 			var cofidisWidget = monei.CofidisWidget({
 				accountId: cofidis_widget.account_id, // Your MONEI Account ID
 				amountInt: parseInt( cofidis_widget.total ), // The amount you want to display in cents
-				language: 'es', // Language, supported en, es
+				language: cofidis_widget.lang, // Language, supported en, es
 
 				// You can pass additional styles
 				style: {

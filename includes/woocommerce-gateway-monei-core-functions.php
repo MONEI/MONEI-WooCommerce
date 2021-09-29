@@ -24,15 +24,16 @@ function monei_price_format( $amount ) {
 
 /**
  * @param false|string $key
+ * @param string $option_key
  *
  * @return false|string|array
  */
-function monei_get_settings( $key = false ) {
+function monei_get_settings( $key = false, $option_key = 'woocommerce_monei_settings' ) {
 	if ( ! $key ) {
-		return get_option( 'woocommerce_monei_settings' );
+		return get_option( $option_key );
 	}
 
-	$settings = get_option( 'woocommerce_monei_settings' );
+	$settings = get_option( $option_key );
 	return $settings[ $key ];
 }
 
