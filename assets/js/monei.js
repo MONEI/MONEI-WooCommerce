@@ -56,7 +56,15 @@
 			wc_monei_form.form.submit();
 		},
 		on_change: function() {
+			// Triggers on payment method selection.
 			$( "[name='payment_method']" ).on(
+				'change',
+				function() {
+					wc_monei_form.on_payment_selected();
+				}
+			);
+			// Triggers on saved card selection.
+			$( "[name='wc-monei-payment-token']" ).on(
 				'change',
 				function() {
 					wc_monei_form.on_payment_selected();
@@ -99,7 +107,7 @@
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			}
 
-			wc_monei_form.$container = document.getElementById( 'card-input' );
+			wc_monei_form.$container      = document.getElementById( 'card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
 			var style = {

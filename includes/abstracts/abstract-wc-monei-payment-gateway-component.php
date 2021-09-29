@@ -65,6 +65,11 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 				'userAgent' => wc_get_user_agent(),
 			],
 			'allowedPaymentMethods' => [ $allowed_payment_method ],
+			'paymentMethod' => [
+				'card' => [
+					'cardholderName' => $order->get_formatted_billing_full_name(),
+				]
+			]
 		];
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
