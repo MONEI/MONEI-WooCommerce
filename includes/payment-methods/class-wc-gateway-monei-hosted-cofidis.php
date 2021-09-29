@@ -36,7 +36,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		// Cofidis Limits between 75 and 1000. If falling out of limits, disable payment method.
 		if ( is_checkout() ) {
 			$total = ( float ) WC()->cart->get_total( false );
-			if ( $total <= 75 || $total >= 1000 ) {
+			if ( $total < 75 || $total > 1000 ) {
 				$this->enabled = false;
 			}
 		}
