@@ -90,6 +90,11 @@
 				return;
 			}
 
+			// We don't want to initialise when a saved cc is selected, since form is not visible.
+			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
+				return;
+			}
+
 			if ( wc_monei_form.is_checkout ) {
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			}
@@ -98,21 +103,16 @@
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
 			var style = {
-				base: {
-				},
 				input: {
-					color: "#31325F",
+					fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
 					fontSmoothing: "antialiased",
-					fontSize: "16px",
-					"::placeholder": {
-						color: "#848589"
-					},
-					"-webkit-autofill": {
-						backgroundColor: "#FAFFBD"
-					}
+					fontSize: "15px",
 				},
 				invalid: {
 					color: "#fa755a"
+				},
+				icon: {
+					marginRight: "0.4em"
 				}
 			};
 
@@ -128,7 +128,10 @@
 						} else {
 							wc_monei_form.clear_errors();
 						}
-					}
+					},
+					onEnter: function () {
+						wc_monei_form.form.submit();
+					},
 				}
 			);
 			wc_monei_form.$cardInput.render( wc_monei_form.$container );

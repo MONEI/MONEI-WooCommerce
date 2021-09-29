@@ -104,6 +104,11 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 == Changelog ==
 
+== 5.2 ==
+
+* Adding Component CC and Hosted CC Support.
+* Fixing Warnings.
+
 == 5.0 ==
 
 * Major refactor.

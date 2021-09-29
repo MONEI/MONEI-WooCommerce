@@ -82,18 +82,17 @@ class WC_Monei_Redirect_Hooks {
 		$payment_id = filter_input( INPUT_GET, 'id' );
 		$order_id   = filter_input( INPUT_GET, 'order-received' );
 		try {
-			$payment        = WC_Monei_API::get_payment( $payment_id );
-			$payment_token  = $payment->getPaymentToken();
+			$payment       = WC_Monei_API::get_payment( $payment_id );
+			$payment_token = $payment->getPaymentToken();
 
 			/**
 			 * If redirect is coming from an actual order, we will have the payment method available in order.
-			 * If redirect is coming from "Add payment method" we will get the gateway id from "pmt"
 			 */
 			if ( $order_id ) {
 				$order                 = new WC_Order( $order_id );
 				$payment_method_woo_id = $order->get_payment_method();
 			} else {
-				$payment_method_woo_id   = filter_input( INPUT_GET, 'pmt' );
+				$payment_method_woo_id = MONEI_GATEWAY_ID;
 			}
 
 			// A payment can come withouth token, user didn't check on save payment method.
