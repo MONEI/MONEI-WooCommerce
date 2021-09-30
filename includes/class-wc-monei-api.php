@@ -73,6 +73,20 @@ class WC_Monei_API {
 	}
 
 	/**
+	 * https://docs.monei.com/api/#operation/payments_confirm
+	 *
+	 * @param string $id The payment ID (required)
+	 * @param array $payload
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function confirm_payment( $id, $payload ) {
+		$client = self::get_client();
+		return $client->payments->confirm( $id, $payload );
+	}
+
+	/**
 	 * Get the details of a payment that has previously been created. Supply the unique payment ID that was returned from your previous request.
 	 * https://docs.monei.com/api/#operation/payments_get
 	 *
