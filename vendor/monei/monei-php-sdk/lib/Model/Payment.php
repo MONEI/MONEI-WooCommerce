@@ -82,6 +82,7 @@ class Payment implements ModelInterface, ArrayAccess
         'payment_method' => '\OpenAPI\Client\Model\PaymentPaymentMethod',
         'sequence' => '\OpenAPI\Client\Model\PaymentSequence',
         'sequence_id' => 'string',
+        'point_of_sale_id' => 'string',
         'next_action' => '\OpenAPI\Client\Model\PaymentNextAction',
         'created_at' => 'int',
         'updated_at' => 'int'
@@ -118,6 +119,7 @@ class Payment implements ModelInterface, ArrayAccess
         'payment_method' => null,
         'sequence' => null,
         'sequence_id' => null,
+        'point_of_sale_id' => null,
         'next_action' => null,
         'created_at' => 'int64',
         'updated_at' => 'int64'
@@ -175,6 +177,7 @@ class Payment implements ModelInterface, ArrayAccess
         'payment_method' => 'paymentMethod',
         'sequence' => 'sequence',
         'sequence_id' => 'sequenceId',
+        'point_of_sale_id' => 'pointOfSaleId',
         'next_action' => 'nextAction',
         'created_at' => 'createdAt',
         'updated_at' => 'updatedAt'
@@ -211,6 +214,7 @@ class Payment implements ModelInterface, ArrayAccess
         'payment_method' => 'setPaymentMethod',
         'sequence' => 'setSequence',
         'sequence_id' => 'setSequenceId',
+        'point_of_sale_id' => 'setPointOfSaleId',
         'next_action' => 'setNextAction',
         'created_at' => 'setCreatedAt',
         'updated_at' => 'setUpdatedAt'
@@ -247,6 +251,7 @@ class Payment implements ModelInterface, ArrayAccess
         'payment_method' => 'getPaymentMethod',
         'sequence' => 'getSequence',
         'sequence_id' => 'getSequenceId',
+        'point_of_sale_id' => 'getPointOfSaleId',
         'next_action' => 'getNextAction',
         'created_at' => 'getCreatedAt',
         'updated_at' => 'getUpdatedAt'
@@ -337,6 +342,7 @@ class Payment implements ModelInterface, ArrayAccess
         $this->container['payment_method'] = isset($data['payment_method']) ? $data['payment_method'] : null;
         $this->container['sequence'] = isset($data['sequence']) ? $data['sequence'] : null;
         $this->container['sequence_id'] = isset($data['sequence_id']) ? $data['sequence_id'] : null;
+        $this->container['point_of_sale_id'] = isset($data['point_of_sale_id']) ? $data['point_of_sale_id'] : null;
         $this->container['next_action'] = isset($data['next_action']) ? $data['next_action'] : null;
         $this->container['created_at'] = isset($data['created_at']) ? $data['created_at'] : null;
         $this->container['updated_at'] = isset($data['updated_at']) ? $data['updated_at'] : null;
@@ -962,6 +968,30 @@ class Payment implements ModelInterface, ArrayAccess
     public function setSequenceId($sequence_id)
     {
         $this->container['sequence_id'] = $sequence_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets point_of_sale_id
+     *
+     * @return string|null
+     */
+    public function getPointOfSaleId()
+    {
+        return $this->container['point_of_sale_id'];
+    }
+
+    /**
+     * Sets point_of_sale_id
+     *
+     * @param string|null $point_of_sale_id A unique identifier of the Point of Sale. If specified the payment is attached to this Point of Sale. If there is a QR code attached to the same Point of Sale, this payment will be available by scanning the QR code.
+     *
+     * @return $this
+     */
+    public function setPointOfSaleId($point_of_sale_id)
+    {
+        $this->container['point_of_sale_id'] = $point_of_sale_id;
 
         return $this;
     }

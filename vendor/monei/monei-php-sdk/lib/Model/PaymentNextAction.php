@@ -171,6 +171,7 @@ class PaymentNextAction implements ModelInterface, ArrayAccess
 
     const TYPE_CONFIRM = 'CONFIRM';
     const TYPE_CHALLENGE = 'CHALLENGE';
+    const TYPE_FRICTIONLESS_CHALLENGE = 'FRICTIONLESS_CHALLENGE';
     const TYPE_COMPLETE = 'COMPLETE';
     
 
@@ -185,6 +186,7 @@ class PaymentNextAction implements ModelInterface, ArrayAccess
         return [
             self::TYPE_CONFIRM,
             self::TYPE_CHALLENGE,
+            self::TYPE_FRICTIONLESS_CHALLENGE,
             self::TYPE_COMPLETE,
         ];
     }
@@ -255,7 +257,7 @@ class PaymentNextAction implements ModelInterface, ArrayAccess
     /**
      * Sets type
      *
-     * @param string|null $type - `CONFIRM` - Your customer needs to be redirected to a   [hosted payment page](https://docs.monei.com/docs/use-prebuilt-payment-page)   or confirm payment using   [payment token](https://docs.monei.com/docs/accept-card-payment#3-submitting-the-payment-to-monei-client-side).   The **redirectUrl** will point to the hosted payment page. - `CHALLENGE` - Your customer needs to be redirected to the   3d secure challenge page provided by the bank. The **redirectUrl**   will point to the 3d secure challenge page provided by the bank. - `COMPLETE` - The payment is completed. The **redirectUrl** will be   the **completeUrl** if it was provided when the payment was created.
+     * @param string|null $type - `CONFIRM` - Your customer needs to be redirected to a   [hosted payment page](https://docs.monei.com/docs/use-prebuilt-payment-page)   or confirm payment using   [payment token](https://docs.monei.com/docs/accept-card-payment#3-submitting-the-payment-to-monei-client-side).   The **redirectUrl** will point to the hosted payment page. - `FRICTIONLESS_CHALLENGE` - Your customer needs to be redirected to the frictionless    3d secure challenge page provided by the bank. The **redirectUrl**    will point to the frictionless 3d secure challenge page provided by the bank. - `CHALLENGE` - Your customer needs to be redirected to the   3d secure challenge page provided by the bank. The **redirectUrl**   will point to the 3d secure challenge page provided by the bank. - `COMPLETE` - The payment is completed. The **redirectUrl** will be   the **completeUrl** if it was provided when the payment was created.
      *
      * @return $this
      */
