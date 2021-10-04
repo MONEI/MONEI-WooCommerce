@@ -29,7 +29,7 @@
       }
     },
     "hooks": {
-      "after:bump": "yarn run build && git add -A"
+      "after:bump": "yarn run build"
     }
   },
   "devDependencies": {
