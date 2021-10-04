@@ -30,6 +30,6 @@
   },
   "devDependencies": {
     "@release-it/bumper": "^3.0.1",
-    "release-it": "^14.10.1"
+    "release-it": "^14.11.6"
   }
 }
