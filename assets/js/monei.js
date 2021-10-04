@@ -141,10 +141,10 @@
 						wc_monei_form.form.submit();
 					},
 					onFocus: function () {
-						container.classList.add("is-focused");
+						wc_monei_form.$container.classList.add( 'is-focused' );
 					},
 					onBlur: function () {
-						container.classList.remove("is-focused");
+						wc_monei_form.$container.classList.remove( 'is-focused' );
 					},
 				}
 			);
