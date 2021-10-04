@@ -27,6 +27,9 @@
           "../readme.txt"
         ]
       }
+    },
+    "hooks": {
+      "after:bump": "yarn run build"
     }
   },
   "devDependencies": {
