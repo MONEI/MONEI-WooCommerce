@@ -29,7 +29,7 @@
       }
     },
     "hooks": {
-      "after:bump": "yarn run build"
+      "after:init": "yarn run build"
     }
   },
   "devDependencies": {
