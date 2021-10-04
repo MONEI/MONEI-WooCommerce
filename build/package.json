@@ -1,6 +1,6 @@
 {
   "name": "monei-woocommerce",
-  "version": "5.1.2",
+  "version": "5.2.2",
   "main": "index.js",
   "repository": "git@github.com:MONEI/MONEI-WooCommerce.git",
   "author": "MONEI <support@monei.com>",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@release-it/bumper": "^3.0.1",
-    "release-it": "^14.10.1",
-    "terser": "^5.9.0"
+    "terser": "^5.9.0",
+    "release-it": "^14.11.6"
   }
 }
