@@ -52,7 +52,8 @@ class WC_Gateway_Monei_Paypal extends WC_Monei_Payment_Gateway_Hosted {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-	}
+        add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+    }
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -62,19 +63,36 @@ class WC_Gateway_Monei_Paypal extends WC_Monei_Payment_Gateway_Hosted {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		parent::init_form_fields( 'monei-paypal-settings.php' );
-	}
+        $this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-paypal-settings.php';
+    }
 
 	/**
 	 * Process the payment and return the result
 	 *
 	 * @access public
 	 * @param int $order_id
+     * @param null|string $allowed_payment_method
 	 * @return array
 	 */
-	public function process_payment( $order_id ) {
+    public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
+
+    /**
+     * Setting checks when saving.
+     *
+     * @param $is_post
+     * @return bool
+     */
+    public function checks_before_save( $is_post ) {
+        if ( $is_post ) {
+            if ( empty( $_POST['woocommerce_monei_paypal_apikey'] ) ) {
+                WC_Admin_Settings::add_error( __( 'Please, MONEI needs API Key in order to work. Disabling the gateway.', 'monei' ) );
+                unset( $_POST['woocommerce_monei_paypal_enabled'] );
+            }
+        }
+        return $is_post;
+    }
 
 }
 

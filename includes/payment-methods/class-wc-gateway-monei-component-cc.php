@@ -74,7 +74,7 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		parent::init_form_fields( 'monei-component-cc-settings.php' );
+        $this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-component-cc-settings.php';
 	}
 
 	/**
@@ -82,9 +82,10 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 *
 	 * @access public
 	 * @param int $order_id
+     * @param null|string $allowed_payment_method
 	 * @return array
 	 */
-	public function process_payment( $order_id ) {
+	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
 
@@ -128,17 +129,18 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return array
 	 */
 	protected function create_zero_eur_payload() {
-		$current_user_id = (string) get_current_user_id();
+		$current_user_id = ( string ) get_current_user_id();
+
 		/**
 		 * Create 0 EUR Payment Payload
 		 */
-		return [
+		$payload = [
 			'amount'      => 0,
 			'currency'    => get_woocommerce_currency(),
 			'orderId'     => $current_user_id . 'generatetoken' . rand( 0, 1000000 ),
 			'description' => "User $current_user_id creating empty transaction to generate token",
 			'callbackUrl' => wp_sanitize_redirect( esc_url_raw( $this->notify_url ) ),
-			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ),
+			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ) . '&pmt=' . $this->id,
 			'cancelUrl'   => wc_get_endpoint_url( 'payment-methods' ),
 			'failUrl'     => wc_get_endpoint_url( 'payment-methods' ),
 			'transactionType' => self::SALE_TRANSACTION_TYPE,
@@ -149,6 +151,14 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 			'generatePaymentToken' => true,
 			'allowedPaymentMethods' => [ self::PAYMENT_METHOD ],
 		];
+
+		// If customer is coming from component CC, there is a generated frontend token paymentToken
+		if ( MONEI_GATEWAY_ID . '_card_input_component' === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+			$payload['paymentToken'] = $monei_token;
+			$payload['sessionId']    = ( string ) WC()->session->get_customer_id();
+		}
+
+		return $payload;
 	}
 
 	/**
@@ -158,6 +168,8 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 		ob_start();
 		if ( is_add_payment_method_page() ) {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
+			// This will render Monei CC iFrame
+			$this->render_monei_form();
 		} else {
 			// Checkout screen. We show description, if tokenization available, we show saved cards and checkbox to save.
 			echo $this->description;
@@ -172,14 +184,34 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 				$this->save_payment_method_checkbox();
 			}
 		}
-
 		ob_end_flush();
 	}
 
+	/**
+	 * Form where MONEI JS will render CC Component.
+	 */
 	protected function render_monei_form() {
 		?>
+            <style>
+                #payment-form {
+                    padding-bottom: 15px;
+                }
+                #card-input {
+                    border: 1px solid transparent;
+                    border-radius: 4px;
+                    background-color: white;
+                    box-shadow: 0 1px 3px 0 #e6ebf1;
+                    height: 38px;
+                    box-sizing: border-box;
+                    -webkit-transition: box-shadow 150ms ease;
+                    transition: box-shadow 150ms ease;
+                }
+                #card-input.is-focused {
+                    box-shadow: 0 1px 3px 0 #cfd7df;
+                }
+            </style>
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
-				<form id="payment-form">
+				<div id="payment-form">
 					<div class="card-field">
 						<div id="card-input">
 							<!-- A MONEI Card Input Component will be inserted here. -->
@@ -187,16 +219,18 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 						<!-- Used to display card errors. -->
 						<div id="monei-card-error"></div>
 					</div>
-					<!--<button type="submit" id="payment-button">Submit payment</button>-->
-				</form>
+				</div>
 			</fieldset>
 		<?php
-
 	}
 
+	/**
+	 * Registering MONEI JS library and plugin js.
+     * todo: use minified version in prod, non minified in sandbox mode.
+	 */
 	public function monei_scripts() {
 
-		if ( ! is_checkout() ) {
+		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
 			return;
 		}
 
@@ -204,8 +238,10 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 			return;
 		}
 
+        var_dump($this->testmode);die;
+
 		wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
-		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/monei.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
+		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/monei.min.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
 		wp_enqueue_script( 'monei' );
 
 		wp_localize_script(
@@ -218,7 +254,6 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
 			]
 		);
 		wp_enqueue_script( 'woocommerce_monei' );
-
 		$this->tokenization_script();
 	}
 

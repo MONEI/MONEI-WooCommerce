@@ -65,14 +65,35 @@ class WC_Monei_Redirect_Hooks {
 			return;
 		}
 
+		/**
+		 * In the redirect back, the payment could have been failed, the only way to check is the url $_GET['status']
+		 * We should remove the "Payment method successfully added." notice and add a 'Unable to add payment method to your account.' manually.
+		 */
 		if ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== $_GET['status'] ) {
+			wc_clear_notices();
+			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
+			$error_message = filter_input( INPUT_GET, 'message' );
+			if ( $error_message ) {
+				wc_add_notice( __( $error_message, 'monei' ), 'error' );
+			}
 			return;
 		}
 
 		$payment_id = filter_input( INPUT_GET, 'id' );
+		$order_id   = filter_input( INPUT_GET, 'order-received' );
 		try {
-			$payment        = WC_Monei_API::get_payment( $payment_id );
-			$payment_token  = $payment->getPaymentToken();
+			$payment       = WC_Monei_API::get_payment( $payment_id );
+			$payment_token = $payment->getPaymentToken();
+
+			/**
+			 * If redirect is coming from an actual order, we will have the payment method available in order.
+			 */
+			if ( $order_id ) {
+				$order                 = new WC_Order( $order_id );
+				$payment_method_woo_id = $order->get_payment_method();
+			} else {
+				$payment_method_woo_id = MONEI_GATEWAY_ID;
+			}
 
 			// A payment can come withouth token, user didn't check on save payment method.
 			// We just ignore it then and do nothing.
@@ -83,7 +104,7 @@ class WC_Monei_Redirect_Hooks {
 			$payment_method = $payment->getPaymentMethod();
 
 			// If Token already saved into DB, we just ignore this.
-			if ( monei_token_exits( $payment_token ) ) {
+			if ( monei_token_exits( $payment_token, $payment_method_woo_id ) ) {
 				return;
 			}
 
@@ -94,7 +115,7 @@ class WC_Monei_Redirect_Hooks {
 
 			$token = new WC_Payment_Token_CC();
 			$token->set_token( $payment_token );
-			$token->set_gateway_id( MONEI_GATEWAY_ID );
+			$token->set_gateway_id( $payment_method_woo_id );
 			$token->set_card_type( $payment_method->getCard()->getBrand() );
 			$token->set_last4( $payment_method->getCard()->getLast4() );
 			$token->set_expiry_month( $expiration->format( 'm' ) );

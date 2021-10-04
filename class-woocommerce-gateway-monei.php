@@ -5,7 +5,7 @@
  * @author   Manuel Rodriguez
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  5.0
+ * @version  5.1
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '5.0';
+		public $version = '5.2';
 
 		/**
 		 * The single instance of the class.
@@ -238,10 +238,11 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Including abstract.
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway.php';
 			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-hosted.php';
-			//include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-component.php';
+			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-component.php';
 
 			// Including hosted payments.
-			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cc.php';
+			include_once 'includes/payment-methods/class-wc-gateway-monei-cc.php';
+			//include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cc.php';
 			//include_once 'includes/payment-methods/class-wc-gateway-monei-component-cc.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
@@ -255,8 +256,9 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return array
 		 */
 		public function add_gateways( $methods ) {
-			$methods[] = 'WC_Gateway_Monei_Hosted_CC';
-			$methods[] = 'WC_Gateway_Monei_Component_CC';
+			$methods[] = 'WC_Gateway_Monei_CC';
+			//$methods[] = 'WC_Gateway_Monei_Hosted_CC';
+			//$methods[] = 'WC_Gateway_Monei_Component_CC';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';
 			return $methods;

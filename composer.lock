@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c382d2df953b2dd4bfd1754449e59ab1",
+    "content-hash": "6ae79c72cc15af8e6f68b72f822e5014",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -71,6 +71,10 @@
                 "rest",
                 "web service"
             ],
+            "support": {
+                "issues": "https://github.com/guzzle/guzzle/issues",
+                "source": "https://github.com/guzzle/guzzle/tree/6.5"
+            },
             "time": "2020-06-16T21:01:06+00:00"
         },
         {
@@ -122,6 +126,10 @@
             "keywords": [
                 "promise"
             ],
+            "support": {
+                "issues": "https://github.com/guzzle/promises/issues",
+                "source": "https://github.com/guzzle/promises/tree/1.4.1"
+            },
             "time": "2021-03-07T09:25:29+00:00"
         },
         {
@@ -193,20 +201,24 @@
                 "uri",
                 "url"
             ],
+            "support": {
+                "issues": "https://github.com/guzzle/psr7/issues",
+                "source": "https://github.com/guzzle/psr7/tree/1.8.2"
+            },
             "time": "2021-04-26T09:17:50+00:00"
         },
         {
             "name": "monei/monei-php-sdk",
-            "version": "0.1.9",
+            "version": "0.1.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MONEI/monei-php-sdk.git",
-                "reference": "cfa29850916cb4d992630d83cd230b5b619b6af5"
+                "reference": "de85445bc54d246cba8711f5264c7b78c43eaf54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/cfa29850916cb4d992630d83cd230b5b619b6af5",
-                "reference": "cfa29850916cb4d992630d83cd230b5b619b6af5",
+                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/de85445bc54d246cba8711f5264c7b78c43eaf54",
+                "reference": "de85445bc54d246cba8711f5264c7b78c43eaf54",
                 "shasum": ""
             },
             "require": {
@@ -251,7 +263,11 @@
                 "rest",
                 "sdk"
             ],
-            "time": "2021-06-21T18:44:33+00:00"
+            "support": {
+                "issues": "https://github.com/MONEI/monei-php-sdk/issues",
+                "source": "https://github.com/MONEI/monei-php-sdk/tree/0.1.16"
+            },
+            "time": "2021-09-30T13:55:57+00:00"
         },
         {
             "name": "psr/http-message",
@@ -301,6 +317,9 @@
                 "request",
                 "response"
             ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/master"
+            },
             "time": "2016-08-06T14:39:51+00:00"
         },
         {
@@ -341,6 +360,10 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
+            "support": {
+                "issues": "https://github.com/ralouphie/getallheaders/issues",
+                "source": "https://github.com/ralouphie/getallheaders/tree/develop"
+            },
             "time": "2019-03-08T08:55:37+00:00"
         },
         {
@@ -411,6 +434,23 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-idn/tree/v1.23.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
             "time": "2021-05-27T09:27:20+00:00"
         },
         {
@@ -478,6 +518,23 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.23.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
             "time": "2021-02-19T12:13:01+00:00"
         },
         {
@@ -537,6 +594,23 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php72/tree/v1.23.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
             "time": "2021-05-27T09:17:38+00:00"
         }
     ],
@@ -547,5 +621,6 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.1.0"
 }

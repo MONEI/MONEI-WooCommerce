@@ -71,6 +71,7 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
         'allowed_payment_methods' => '\OpenAPI\Client\Model\PaymentPaymentMethods',
         'transaction_type' => '\OpenAPI\Client\Model\PaymentTransactionType',
         'sequence' => '\OpenAPI\Client\Model\PaymentSequence',
+        'point_of_sale_id' => 'string',
         'description' => 'string',
         'customer' => '\OpenAPI\Client\Model\PaymentCustomer',
         'billing_details' => '\OpenAPI\Client\Model\PaymentBillingDetails',
@@ -98,6 +99,7 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
         'allowed_payment_methods' => null,
         'transaction_type' => null,
         'sequence' => null,
+        'point_of_sale_id' => null,
         'description' => null,
         'customer' => null,
         'billing_details' => null,
@@ -146,6 +148,7 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
         'allowed_payment_methods' => 'allowedPaymentMethods',
         'transaction_type' => 'transactionType',
         'sequence' => 'sequence',
+        'point_of_sale_id' => 'pointOfSaleId',
         'description' => 'description',
         'customer' => 'customer',
         'billing_details' => 'billingDetails',
@@ -173,6 +176,7 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
         'allowed_payment_methods' => 'setAllowedPaymentMethods',
         'transaction_type' => 'setTransactionType',
         'sequence' => 'setSequence',
+        'point_of_sale_id' => 'setPointOfSaleId',
         'description' => 'setDescription',
         'customer' => 'setCustomer',
         'billing_details' => 'setBillingDetails',
@@ -200,6 +204,7 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
         'allowed_payment_methods' => 'getAllowedPaymentMethods',
         'transaction_type' => 'getTransactionType',
         'sequence' => 'getSequence',
+        'point_of_sale_id' => 'getPointOfSaleId',
         'description' => 'getDescription',
         'customer' => 'getCustomer',
         'billing_details' => 'getBillingDetails',
@@ -281,6 +286,7 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
         $this->container['allowed_payment_methods'] = isset($data['allowed_payment_methods']) ? $data['allowed_payment_methods'] : null;
         $this->container['transaction_type'] = isset($data['transaction_type']) ? $data['transaction_type'] : null;
         $this->container['sequence'] = isset($data['sequence']) ? $data['sequence'] : null;
+        $this->container['point_of_sale_id'] = isset($data['point_of_sale_id']) ? $data['point_of_sale_id'] : null;
         $this->container['description'] = isset($data['description']) ? $data['description'] : null;
         $this->container['customer'] = isset($data['customer']) ? $data['customer'] : null;
         $this->container['billing_details'] = isset($data['billing_details']) ? $data['billing_details'] : null;
@@ -659,6 +665,30 @@ class CreatePaymentRequest implements ModelInterface, ArrayAccess
     public function setSequence($sequence)
     {
         $this->container['sequence'] = $sequence;
+
+        return $this;
+    }
+
+    /**
+     * Gets point_of_sale_id
+     *
+     * @return string|null
+     */
+    public function getPointOfSaleId()
+    {
+        return $this->container['point_of_sale_id'];
+    }
+
+    /**
+     * Sets point_of_sale_id
+     *
+     * @param string|null $point_of_sale_id A unique identifier of the Point of Sale. If specified the payment is attached to this Point of Sale. If there is a QR code attached to the same Point of Sale, this payment will be available by scanning the QR code.
+     *
+     * @return $this
+     */
+    public function setPointOfSaleId($point_of_sale_id)
+    {
+        $this->container['point_of_sale_id'] = $point_of_sale_id;
 
         return $this;
     }

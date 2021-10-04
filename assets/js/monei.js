@@ -1,9 +1,19 @@
 (function( $ ) {
 	'use strict';
 
-	// On Checkout form.
+	// Checkout form.
 	$( document.body ).on(
 		'updated_checkout',
+		function() {
+			if ( wc_monei_form.is_monei_selected() ) {
+				wc_monei_form.init_checkout_monei();
+			}
+		}
+	);
+
+	// Add Payment Method form.
+	$( 'form#add_payment_method' ).on(
+		'click payment_methods',
 		function() {
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
@@ -19,6 +29,7 @@
 		$errorContainer: null,
 		$paymentForm: null,
 		is_checkout: false,
+		is_add_payment_method: false,
 		form: null,
 		submitted: false,
 		init_counter: 0,
@@ -30,12 +41,30 @@
 				this.form.on( 'checkout_place_order', this.place_order );
 			}
 
-			if (this.form) {
+			// Add payment method Page
+			if ( this.$add_payment_form.length ) {
+				this.is_add_payment_method = true;
+				this.form                  = this.$add_payment_form;
+				this.form.on( 'submit', this.place_order );
+			}
+
+			if ( this.form ) {
 				this.form.on( 'change', this.on_change );
 			}
 		},
+		submit_form: function() {
+			wc_monei_form.form.submit();
+		},
 		on_change: function() {
+			// Triggers on payment method selection.
 			$( "[name='payment_method']" ).on(
+				'change',
+				function() {
+					wc_monei_form.on_payment_selected();
+				}
+			);
+			// Triggers on saved card selection.
+			$( "[name='wc-monei-payment-token']" ).on(
 				'change',
 				function() {
 					wc_monei_form.on_payment_selected();
@@ -45,16 +74,23 @@
 		on_payment_selected() {
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
-				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+				if ( wc_monei_form.is_checkout ) {
+					$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+				}
 			} else {
-				$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
+				if ( wc_monei_form.is_checkout ) {
+					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
+				}
 			}
 		},
 		is_monei_selected: function() {
-			return $( '#payment_method_monei_card_input_component' ).is( ':checked' );
+			return $( '#payment_method_monei' ).is( ':checked' );
 		},
-		is_monei_saved_token_selected: function() {
-			return ( $( '#payment_method_monei_card_input_component' ).is( ':checked' ) && ( $( 'input[name="wc-monei_card_input_component-new-payment-method"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei_card_input_component-new-payment-method"]:checked' ).val() ) );
+		is_tokenized_cc_selected: function() {
+			return ( $( 'input[name="wc-monei-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei-payment-token"]:checked' ).val() );
+		},
+		is_monei_saved_cc_selected: function() {
+			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );
 		},
 		init_checkout_monei: function() {
 			// init monei just once, despite how many times this may be triggered.
@@ -62,15 +98,37 @@
 				return;
 			}
 
-			$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+			// We don't want to initialise when a saved cc is selected, since form is not visible.
+			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
+				return;
+			}
 
-			wc_monei_form.$container = document.getElementById( 'card-input' );
+			if ( wc_monei_form.is_checkout ) {
+				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+			}
+
+			wc_monei_form.$container      = document.getElementById( 'card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
+
+			var style = {
+				input: {
+					fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+					fontSmoothing: "antialiased",
+					fontSize: "15px",
+				},
+				invalid: {
+					color: "#fa755a"
+				},
+				icon: {
+					marginRight: "0.4em"
+				}
+			};
 
 			wc_monei_form.$cardInput = monei.CardInput(
 				{
 					accountId: wc_monei_params.account_id,
 					sessionId: wc_monei_params.session_id,
+					style: style,
 					onChange: function (event) {
 						// Handle real-time validation errors.
 						if (event.isTouched && event.error) {
@@ -78,7 +136,10 @@
 						} else {
 							wc_monei_form.clear_errors();
 						}
-					}
+					},
+					onEnter: function () {
+						wc_monei_form.form.submit();
+					},
 				}
 			);
 			wc_monei_form.$cardInput.render( wc_monei_form.$container );
@@ -87,28 +148,35 @@
 			this.init_counter++;
 		},
 		place_order: function( e ) {
-			e.preventDefault();
-			if ( ! wc_monei_form.is_monei_selected() ) {
-				return;
+			// If MONEI token already created, submit form.
+			if ( $( '#monei_payment_token' ).length ) {
+				return true;
 			}
-
+			if ( ! wc_monei_form.is_monei_selected() ) {
+				return true;
+			}
+			// If user has selected any tokenized CC, we just submit the form normally.
+			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
+				return true;
+			}
+			e.preventDefault();
+			// This will be trigger, when CC component is used and "Place order" has been clicked.
 			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			monei.createToken( wc_monei_form.$cardInput )
 				.then(
-					function (result) {
-						if (result.error) {
+					function ( result ) {
+						if ( result.error ) {
 							// Inform the user if there was an error.
 							wc_monei_form.print_errors( result.error );
 						} else {
-							// Send the token to your server.
+							// Create monei token and append it to DOM
 							wc_monei_form.monei_token_handler( result.token );
 						}
-						//paymentButton.disabled = false;
 					}
 				)
 				.catch(
 					function (error) {
-						// paymentButton.disabled = false;
+						console.log( error );
 						wc_monei_form.print_errors( error );
 					}
 				);
@@ -143,13 +211,13 @@
 			console.log( 'token', token );
 			var hiddenInput = document.createElement( 'input' );
 			hiddenInput.setAttribute( 'type', 'hidden' );
-			hiddenInput.setAttribute( 'name', 'paymentToken' );
+			hiddenInput.setAttribute( 'name', 'monei_payment_token' );
+			hiddenInput.setAttribute( 'id', 'monei_payment_token' );
 			hiddenInput.setAttribute( 'value', token );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
-		},
-		block_form: function() {
-		},
-		unblock_form: function() {
+
+			// Once Token is created, submit form.
+			wc_monei_form.form.submit();
 		},
 		get_form: function() {
 			return this.form;
