@@ -24,7 +24,8 @@
     "plugins": {
       "@release-it/bumper": {
         "out": [
-          "../readme.txt"
+          "../readme.txt",
+          "../woocommerce-gateway-monei.php"
         ]
       }
     },
