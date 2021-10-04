@@ -7,6 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "build": "terser ../assets/js/monei.js --compress --mangle --output ../assets/js/monei.min.js",
     "release": "release-it"
   },
   "release-it": {
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@release-it/bumper": "^3.0.1",
-    "release-it": "^14.10.1"
+    "release-it": "^14.10.1",
+    "terser": "^5.9.0"
   }
 }
