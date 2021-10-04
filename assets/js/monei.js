@@ -140,6 +140,12 @@
 					onEnter: function () {
 						wc_monei_form.form.submit();
 					},
+					onFocus: function () {
+						wc_monei_form.$container.classList.add( 'is-focused' );
+					},
+					onBlur: function () {
+						wc_monei_form.$container.classList.remove( 'is-focused' );
+					},
 				}
 			);
 			wc_monei_form.$cardInput.render( wc_monei_form.$container );
@@ -166,10 +172,11 @@
 				.then(
 					function ( result ) {
 						if ( result.error ) {
+							console.log('error', result.error);
 							// Inform the user if there was an error.
 							wc_monei_form.print_errors( result.error );
 						} else {
-							// Create monei token and append it to DOM
+							// Create monei token and append it to Dconsole.logOM
 							wc_monei_form.monei_token_handler( result.token );
 						}
 					}

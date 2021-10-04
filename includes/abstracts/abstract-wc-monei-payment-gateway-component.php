@@ -82,7 +82,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		// If merchant is not using redirect flow (means component CC), there is a generated frontend token paymentToken
 		if ( ! $this->redirect_flow && MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
 			$payment_token        = $monei_token;
-			$payload['sessionId'] = ( string ) WC()->session->get_customer_id();
+			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 
 		/**
@@ -102,7 +102,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			WC_Monei_Logger::log( $create_payment, 'debug' );
 
 			$confirm_payment = false;
-			if ( ! isset( $payload['paymentToken'] ) ) {
+			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't chose any tokenised saved method.
+			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
 				// We do 2 steps, in order to confirm card holder Name in the second step.
 				$confirm_payload = [
 					'paymentToken'  => $payment_token,
