@@ -157,10 +157,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		}
 
 		$script_version_name = ( $this->testmode ) ? 'cofidis.js' : 'cofidis.min.js';
-		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [
-			'jquery',
-			'monei'
-		], MONEI_VERSION, true );
+		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
 		wp_localize_script(
 			'woocommerce_monei_cofidis',
 			'wc_monei_params',
@@ -186,9 +183,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		}
 
 		$fragments['monei_new_total'] = monei_price_format( WC()->cart->get_total( false ) );
-
 		return $fragments;
 	}
-
 }
 

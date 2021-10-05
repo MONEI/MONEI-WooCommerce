@@ -80,12 +80,20 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-        add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
 
-        // If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-        if ( ! $this->redirect_flow || is_add_payment_method_page() ) {
+		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
+		if ( ! $this->redirect_flow || is_add_payment_method_page() ) {
             add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
-        }
+		}
+
+		// We want to add a width to MONEI logo.
+		add_filter( 'woocommerce_gateway_icon', function( $icon_html, $id ) {
+			if ( $this->id !== $id ) {
+				return $icon_html;
+			}
+			return str_replace( '<img', '<img width="90px;"', $icon_html );
+		}, 10, 2 );
     }
 
 	/**
@@ -96,7 +104,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return void
 	 */
 	public function init_form_fields() {
-        $this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-cc-settings.php';
+		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-cc-settings.php';
 	}
 
 	/**

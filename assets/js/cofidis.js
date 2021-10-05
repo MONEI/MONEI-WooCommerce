@@ -5,14 +5,12 @@
 	$( document.body ).on(
 		'updated_checkout',
 		function(e, data) {
-			console.log(data);
-
 			if ( cofidis_widget.is_cofidis_selected() ) {
-				cofidis_widget.widget_render();
+				cofidis_widget.on_payment_selected();
 				// Update Cofidis widget with new total.
-				if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
+				/**if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
 					cofidis_widget.widget_update( data.fragments[ 'monei_new_total' ] );
-				}
+				}**/
 			}
 		}
 	);
@@ -26,17 +24,17 @@
 		init: function() {
 			// Track changes in form.
 			this.$checkout_form.on( 'change', this.on_change );
-
 			var cofidisWidget = monei.CofidisWidget({
 				accountId: cofidis_widget.account_id, // Your MONEI Account ID
 				amountInt: parseInt( cofidis_widget.total ), // The amount you want to display in cents
 				language: cofidis_widget.lang, // Language, supported en, es
-
-				// You can pass additional styles
 				style: {
 					base: {
-						//textAlign: 'right',
-						//fontFamily: 'Helvetica,"Helvetica Neue",Arial,"Lucida Grande",sans-serif'
+						color: '#6D6D6D'
+					},
+					label: {
+						fontWeight: 'normal',
+						color: '#333'
 					}
 				}
 			});
@@ -47,9 +45,9 @@
 			// Render Cofidis Widget to the container element
 			window.cofidisWidget.render( '#cofidis_widget' );
 		},
-		widget_update: function( new_total ) {
-			window.cofidisWidget.updateProps({amountInt: parseInt( new_total )});
-		},
+		/**widget_update: function( new_total ) {
+			window.cofidisWidget.updateProps( {amountInt: parseInt( new_total )} );
+		},**/
 		on_change: function() {
 			$( "[name='payment_method']" ).on(
 				'change',
