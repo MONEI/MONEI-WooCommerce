@@ -1,12 +1,13 @@
 {
   "name": "monei-woocommerce",
-  "version": "5.1.2",
+  "version": "5.3.1",
   "main": "index.js",
   "repository": "git@github.com:MONEI/MONEI-WooCommerce.git",
   "author": "MONEI <support@monei.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
+    "build": "terser ../assets/js/monei.js --compress --mangle --output ../assets/js/monei.min.js",
     "release": "release-it"
   },
   "release-it": {
@@ -23,13 +24,18 @@
     "plugins": {
       "@release-it/bumper": {
         "out": [
-          "../readme.txt"
+          "../readme.txt",
+          "../woocommerce-gateway-monei.php"
         ]
       }
+    },
+    "hooks": {
+      "after:bump": "yarn run build && git add -A"
     }
   },
   "devDependencies": {
     "@release-it/bumper": "^3.0.1",
+    "terser": "^5.9.0",
     "release-it": "^14.10.1"
   }
 }

@@ -205,9 +205,11 @@ class WC_Gateway_Monei_Component_CC extends WC_Monei_Payment_Gateway_Component {
                     box-sizing: border-box;
                     -webkit-transition: box-shadow 150ms ease;
                     transition: box-shadow 150ms ease;
+                    border-radius: 2px;
                 }
                 #card-input.is-focused {
                     box-shadow: 0 1px 3px 0 #cfd7df;
+                    border-color: #96588A;
                 }
             </style>
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">

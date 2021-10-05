@@ -56,7 +56,15 @@
 			wc_monei_form.form.submit();
 		},
 		on_change: function() {
+			// Triggers on payment method selection.
 			$( "[name='payment_method']" ).on(
+				'change',
+				function() {
+					wc_monei_form.on_payment_selected();
+				}
+			);
+			// Triggers on saved card selection.
+			$( "[name='wc-monei-payment-token']" ).on(
 				'change',
 				function() {
 					wc_monei_form.on_payment_selected();
@@ -99,7 +107,7 @@
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			}
 
-			wc_monei_form.$container = document.getElementById( 'card-input' );
+			wc_monei_form.$container      = document.getElementById( 'card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
 			var style = {
@@ -132,6 +140,12 @@
 					onEnter: function () {
 						wc_monei_form.form.submit();
 					},
+					onFocus: function () {
+						wc_monei_form.$container.classList.add( 'is-focused' );
+					},
+					onBlur: function () {
+						wc_monei_form.$container.classList.remove( 'is-focused' );
+					},
 				}
 			);
 			wc_monei_form.$cardInput.render( wc_monei_form.$container );
@@ -158,10 +172,11 @@
 				.then(
 					function ( result ) {
 						if ( result.error ) {
+							console.log('error', result.error);
 							// Inform the user if there was an error.
 							wc_monei_form.print_errors( result.error );
 						} else {
-							// Create monei token and append it to DOM
+							// Create monei token and append it to Dconsole.logOM
 							wc_monei_form.monei_token_handler( result.token );
 						}
 					}
