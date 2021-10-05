@@ -243,7 +243,6 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-cc.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
-			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-clicktopay.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
 		}
@@ -260,7 +259,6 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$methods[] = 'WC_Gateway_Monei_Cofidis';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';
-			$methods[] = 'WC_Gateway_Monei_ClickToPay';
 			return $methods;
 		}
 
