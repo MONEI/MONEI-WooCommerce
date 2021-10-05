@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '5.2';
+		public $version = '5.4';
 
 		/**
 		 * The single instance of the class.

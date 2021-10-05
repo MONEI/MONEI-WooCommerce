@@ -106,6 +106,10 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 == 5.2 ==
 
+* Adding Cofidis Support.
+
+== 5.2 ==
+
 * Adding Component CC and Hosted CC Support.
 * Fixing Warnings.
 
