@@ -28,7 +28,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		$amount        = monei_price_format( $order->get_total() );
 		$currency      = get_woocommerce_currency();
 		$user_email    = $order->get_billing_email();
-		$description   = "user_email: $user_email order_id: $order_id";
+		$description   = $this->shop_name . ' - #' . $order_id;
 
 		/**
 		 * The URL to which a payment result should be sent asynchronously.
