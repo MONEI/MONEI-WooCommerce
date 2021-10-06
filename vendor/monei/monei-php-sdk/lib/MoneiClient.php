@@ -27,6 +27,11 @@ use OpenAPI\Client\Api\PaymentsApi;
 class MoneiClient
 {
     /**
+     * SDK Version.
+     */
+    const SDK_VERSION = '0.1.17';
+
+    /**
      * @var Configuration
      */
     protected $config;
@@ -44,9 +49,10 @@ class MoneiClient
         string $apiKey,
         Configuration $config = null
     ) {
+        $userAgent = $config ? $config->getUserAgent() : 'MONEI/PHP/' . self::SDK_VERSION;
         $this->config = $config ?: Configuration::getDefaultConfiguration();
         $this->config->setApiKey('Authorization', $apiKey);
-        $this->config->setUserAgent('MONEI/PHP/0.1.9');
+        $this->config->setUserAgent($userAgent);
 
         $this->payments = new PaymentsApi(null, $this->config);
     }
