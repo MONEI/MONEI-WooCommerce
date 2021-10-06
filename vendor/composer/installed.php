@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '2dadc48557135f85a5e473b436f971392081fd58',
+        'reference' => '0657f2e4cd204256db07b6151f6be821ff0707b6',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '2dadc48557135f85a5e473b436f971392081fd58',
+            'reference' => '0657f2e4cd204256db07b6151f6be821ff0707b6',
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
@@ -47,12 +47,12 @@
             'dev_requirement' => false,
         ),
         'monei/monei-php-sdk' => array(
-            'pretty_version' => '0.1.18',
-            'version' => '0.1.18.0',
+            'pretty_version' => '0.1.19',
+            'version' => '0.1.19.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../monei/monei-php-sdk',
             'aliases' => array(),
-            'reference' => '8fc5cffe2f994a571da2ca74c99b6be97d3c3edc',
+            'reference' => 'b522213c4b34cb158c0247e31ed0e885d15aeb53',
             'dev_requirement' => false,
         ),
         'psr/http-message' => array(

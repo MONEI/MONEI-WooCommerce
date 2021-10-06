@@ -1,6 +1,6 @@
 {
   "name": "monei-php-sdk",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "MONEI PHP SDK",
   "author": "monei",
   "scripts": {
@@ -26,14 +26,14 @@
       "publish": false
     },
     "hooks": {
-      "after:bump": "yarn build"
+      "after:bump": "yarn run build && git add -A"
     },
     "plugins": {
       "@release-it/bumper": {
         "out": [
           {
             "file": "config.json",
-            "path": "packageVersion"
+            "path": "artifactVersion"
           },
           "../lib/MoneiClient.php"
         ]

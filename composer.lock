@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "db7e8a56fcdc0a2ccd82bdd4bc0baeed",
+    "content-hash": "cff58910d86df6a5f9562e3463fa8702",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -244,16 +244,16 @@
         },
         {
             "name": "monei/monei-php-sdk",
-            "version": "0.1.18",
+            "version": "0.1.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MONEI/monei-php-sdk.git",
-                "reference": "8fc5cffe2f994a571da2ca74c99b6be97d3c3edc"
+                "reference": "b522213c4b34cb158c0247e31ed0e885d15aeb53"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/8fc5cffe2f994a571da2ca74c99b6be97d3c3edc",
-                "reference": "8fc5cffe2f994a571da2ca74c99b6be97d3c3edc",
+                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/b522213c4b34cb158c0247e31ed0e885d15aeb53",
+                "reference": "b522213c4b34cb158c0247e31ed0e885d15aeb53",
                 "shasum": ""
             },
             "require": {
@@ -300,9 +300,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MONEI/monei-php-sdk/issues",
-                "source": "https://github.com/MONEI/monei-php-sdk/tree/0.1.18"
+                "source": "https://github.com/MONEI/monei-php-sdk/tree/0.1.19"
             },
-            "time": "2021-10-06T13:51:06+00:00"
+            "time": "2021-10-06T13:59:37+00:00"
         },
         {
             "name": "psr/http-message",
