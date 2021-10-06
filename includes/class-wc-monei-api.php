@@ -1,4 +1,7 @@
 <?php
+
+use OpenAPI\Client\Configuration;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -44,7 +47,9 @@ class WC_Monei_API {
 		}
 
 		include_once WC_Monei()->plugin_path() . '/vendor/autoload.php';
-		self::$client = new Monei\MoneiClient( self::get_api_key() );
+		$config = Configuration::getDefaultConfiguration();
+		$config->setUserAgent( 'MONEI/WooCommerce/' . WC_Monei()->version );
+		self::$client = new Monei\MoneiClient( self::get_api_key(), $config );
 		return self::$client;
 	}
 
