@@ -18,8 +18,8 @@
 	var cofidis_widget = {
 		$checkout_form: $( 'form.woocommerce-checkout' ),
 		$codifis_widget_container: '#cofidis_widget',
-		account_id: wc_monei_params.account_id,
-		total: wc_monei_params.total,
+		account_id: wc_monei_cofidis_params.account_id,
+		total: wc_monei_cofidis_params.total,
 		init_counter: 0,
 		init: function() {
 			// Track changes in form.

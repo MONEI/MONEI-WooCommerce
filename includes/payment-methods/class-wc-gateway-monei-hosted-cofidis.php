@@ -142,6 +142,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 	 * https://docs.monei.com/docs/guides/setup-cofidis-widget/
 	 */
 	public function cofidis_scripts() {
+
 		if ( ! is_checkout() ) {
 			return;
 		}
@@ -160,7 +161,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
 		wp_localize_script(
 			'woocommerce_monei_cofidis',
-			'wc_monei_params',
+			'wc_monei_cofidis_params',
 			[
 				'account_id' => monei_get_settings( 'accountid', 'woocommerce_monei_cofidis_settings' ),
 				'lang'       => ( 0 === strpos( get_locale(), 'en' ) ) ? 'en' : 'es',

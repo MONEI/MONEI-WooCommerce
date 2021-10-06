@@ -115,6 +115,11 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 				];
 				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
+
+				WC_Monei_Logger::log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
+				WC_Monei_Logger::log( $create_payment->getId(), 'debug' );
+				WC_Monei_Logger::log( $confirm_payload, 'debug' );
+				WC_Monei_Logger::log( $confirm_payment, 'debug' );
 			}
 
 			/**
@@ -127,7 +132,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			);
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			WC_Monei_Logger::log( $e, 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			return;
 		}
