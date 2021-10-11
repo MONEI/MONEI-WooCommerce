@@ -104,9 +104,11 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 == Changelog ==
 
-== 5.2 ==
+== 5.4 ==
 
 * Adding Cofidis Support.
+* Adding Pre-Auth to Paypal.
+* Bug Fixing.
 
 == 5.2 ==
 
