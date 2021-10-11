@@ -28,6 +28,13 @@ return apply_filters(
             'description' => __( 'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/> Account ID and API key in the test mode are different from the live<br/> (production) mode and can only be used for testing purposes.', 'monei' ),
             'desc_tip'    => 'no',
         ),
+		'pre-authorize'        => array(
+			'title'   => __( 'Pre-Authorize', 'monei' ),
+			'type'    => 'checkbox',
+			'label'   => __( 'Manually capture payments', 'monei' ),
+			'description' => __( 'Place a hold on the funds when the customer authorizes the payment, but don’t capture the funds until later.<br>You can capture the payment changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br> You can cancel the Payment changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.', 'monei' ),
+			'default' => 'no',
+		),
 		'orderdo'     => array(
 			'title'       => __( 'What to do after payment?', 'monei' ),
 			'type'        => 'select',
