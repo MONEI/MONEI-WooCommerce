@@ -55,6 +55,7 @@ class WC_Monei_Redirect_Hooks {
 	 * We trigger this same behaviour in order received page. After a successful payment in MONEI we are redirected
 	 * to order_received_page. If there is a token available, we need to save it.
 	 * We don't do this at IPN level, since right now, token doesn't come thru.
+	 * todo: refactor and split code for is_add_payment_method_page and is_order_received_page to make it more readable.
 	 */
 	public function save_payment_token() {
 		if ( ! is_add_payment_method_page() && ! is_order_received_page() ) {
@@ -66,10 +67,10 @@ class WC_Monei_Redirect_Hooks {
 		}
 
 		/**
-		 * In the redirect back, the payment could have been failed, the only way to check is the url $_GET['status']
+		 * In the redirect back (from add payment method), the payment could have been failed, the only way to check is the url $_GET['status']
 		 * We should remove the "Payment method successfully added." notice and add a 'Unable to add payment method to your account.' manually.
 		 */
-		if ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== $_GET['status'] ) {
+		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== $_GET['status'] ) ) {
 			wc_clear_notices();
 			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
 			$error_message = filter_input( INPUT_GET, 'message' );

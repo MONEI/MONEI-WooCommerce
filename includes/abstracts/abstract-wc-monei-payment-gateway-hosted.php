@@ -24,11 +24,11 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
 
-		$order         = new WC_Order( $order_id );
-		$amount        = monei_price_format( $order->get_total() );
-		$currency      = get_woocommerce_currency();
-		$user_email    = $order->get_billing_email();
-		$description   = "user_email: $user_email order_id: $order_id";
+		$order       = new WC_Order( $order_id );
+		$amount      = monei_price_format( $order->get_total() );
+		$currency    = get_woocommerce_currency();
+		$user_email  = $order->get_billing_email();
+		$description   = $this->shop_name . ' - #' . $order_id;
 
 		/**
 		 * The URL to which a payment result should be sent asynchronously.
@@ -37,7 +37,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		/**
 		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
 		 */
-		$fail_url     = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url = esc_url_raw( $order->get_cancel_order_url_raw() );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
