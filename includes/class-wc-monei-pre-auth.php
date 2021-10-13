@@ -85,7 +85,7 @@ class WC_Monei_Pre_Auth {
 		/**
 		 * If not MONEI payment, bail.
 		 */
-		if ( 'monei' !== $order->get_payment_method() ) {
+		if ( false === strpos( $order->get_payment_method(), 'monei' ) ) {
 			return false;
 		}
 
