@@ -128,6 +128,10 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
+		if ( $this->is_order_subscription( $order_id ) ) {
+			return $this->process_subscription( $order_id, self::PAYMENT_METHOD );
+		}
+
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
 
@@ -260,19 +264,18 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
             #card-input.is-focused {
                 box-shadow: 0 1px 3px 0 #cfd7df;
             }
-        </style>
-        <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form"
-                  style="background:transparent;">
-            <div id="payment-form">
-                <div class="card-field">
-                    <div id="card-input">
-                        <!-- A MONEI Card Input Component will be inserted here. -->
-                    </div>
-                    <!-- Used to display card errors. -->
-                    <div id="monei-card-error"></div>
-                </div>
-            </div>
-        </fieldset>
+		</style>
+		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
+			<div id="payment-form">
+				<div class="card-field">
+					<div id="card-input">
+						<!-- A MONEI Card Input Component will be inserted here. -->
+					</div>
+					<!-- Used to display card errors. -->
+					<div id="monei-card-error"></div>
+				</div>
+			</div>
+		</fieldset>
 		<?php
 	}
 

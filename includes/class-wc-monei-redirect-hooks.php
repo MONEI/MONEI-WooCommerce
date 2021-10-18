@@ -31,8 +31,8 @@ class WC_Monei_Redirect_Hooks {
 	 */
 	public function add_notice_monei_order_cancelled( $order_id ) {
 		if ( isset( $_GET['status'] ) && isset( $_GET['message'] ) && 'FAILED' === $_GET['status'] ) {
-			$order_id         = absint( $_GET['order_id'] );
-			$order            = wc_get_order( $order_id );
+			$order_id = absint( $_GET['order_id'] );
+			$order    = wc_get_order( $order_id );
 
 			$order->add_order_note( __( 'MONEI Status: ', 'monei' ) . esc_html( $_GET['status'] ) );
 			$order->add_order_note( __( 'MONEI message: ', 'monei' ) . esc_html( $_GET['message'] ) );
