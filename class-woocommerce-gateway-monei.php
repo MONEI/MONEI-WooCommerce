@@ -104,6 +104,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/class-wc-monei-ipn.php';
 			include_once 'includes/class-wc-monei-api.php';
 			include_once 'includes/class-wc-monei-logger.php';
+			include_once 'includes/addons/trait-wc-monei-addons-helper.php';
+			include_once 'includes/addons/trait-wc-monei-subscriptions.php';
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';

@@ -22,12 +22,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
+	use WC_Monei_Subscriptions_Trait;
+
 	const PAYMENT_METHOD = 'card';
 
-    /**
-     * @var bool
-     */
-    protected $redirect_flow;
+	/**
+	 * @var bool
+	 */
+	protected $redirect_flow;
 
 	/**
 	 * Constructor for the gateway.
@@ -79,29 +81,37 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			$this->supports[] = 'tokenization';
 		}
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		if ( $this->is_subscriptions_addon_enabled() ) {
+			$this->init_subscriptions();
+		}
+
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
+			$this,
+			'process_admin_options'
+		) );
 		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
 		if ( ! $this->redirect_flow || is_add_payment_method_page() ) {
-            add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
+			add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
 		}
 
 		// We want to add a width to MONEI logo.
-		add_filter( 'woocommerce_gateway_icon', function( $icon_html, $id ) {
+		add_filter( 'woocommerce_gateway_icon', function ( $icon_html, $id ) {
 			if ( $this->id !== $id ) {
 				return $icon_html;
 			}
+
 			return str_replace( '<img', '<img width="90px;"', $icon_html );
 		}, 10, 2 );
-    }
+	}
 
 	/**
 	 * Initialise Gateway Settings Form Fields
 	 *
 	 * @access public
-	 * @since 5.0
 	 * @return void
+	 * @since 5.0
 	 */
 	public function init_form_fields() {
 		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-cc-settings.php';
@@ -111,11 +121,13 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 * Process the payment and return the result
 	 *
 	 * @access public
+	 *
 	 * @param int $order_id
-     * @param null $allowed_payment_method
+	 * @param null $allowed_payment_method
+	 *
 	 * @return array
 	 */
-    public function process_payment( $order_id, $allowed_payment_method = null ) {
+	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
 
@@ -141,6 +153,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			WC_Monei_Logger::log( $zero_payload, 'debug' );
 			WC_Monei_Logger::log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_add_payment_method_success', $zero_payload, $payment );
+
 			return array(
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
@@ -148,6 +161,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		} catch ( Exception $e ) {
 			WC_Monei_Logger::log( $e, 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
+
 			return array(
 				'result'   => 'failure',
 				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
@@ -163,74 +177,75 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		/**
 		 * Create 0 EUR Payment Payload
 		 */
-        $payload = [
-			'amount'      => 0,
-			'currency'    => get_woocommerce_currency(),
-			'orderId'     => $current_user_id . 'generatetoken' . wp_rand( 0, 1000000 ),
-			'description' => "User $current_user_id creating empty transaction to generate token",
-			'callbackUrl' => wp_sanitize_redirect( esc_url_raw( $this->notify_url ) ),
-			'completeUrl' => wc_get_endpoint_url( 'payment-methods' ),
-			'cancelUrl'   => wc_get_endpoint_url( 'payment-methods' ),
-			'failUrl'     => wc_get_endpoint_url( 'payment-methods' ),
-			'transactionType' => self::SALE_TRANSACTION_TYPE,
-			'sessionDetails'  => [
+		$payload = [
+			'amount'                => 0,
+			'currency'              => get_woocommerce_currency(),
+			'orderId'               => $current_user_id . 'generatetoken' . wp_rand( 0, 1000000 ),
+			'description'           => "User $current_user_id creating empty transaction to generate token",
+			'callbackUrl'           => wp_sanitize_redirect( esc_url_raw( $this->notify_url ) ),
+			'completeUrl'           => wc_get_endpoint_url( 'payment-methods' ),
+			'cancelUrl'             => wc_get_endpoint_url( 'payment-methods' ),
+			'failUrl'               => wc_get_endpoint_url( 'payment-methods' ),
+			'transactionType'       => self::SALE_TRANSACTION_TYPE,
+			'sessionDetails'        => [
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
 			],
-			'generatePaymentToken' => true,
+			'generatePaymentToken'  => true,
 			'allowedPaymentMethods' => [ self::PAYMENT_METHOD ],
 		];
 
-        // All Zero payloads ( add payment method ) will use component CC.
-        if ( MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
-            $payload['paymentToken'] = $monei_token;
-            $payload['sessionId']    = ( string ) WC()->session->get_customer_id();
-        }
+		// All Zero payloads ( add payment method ) will use component CC.
+		if ( MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+			$payload['paymentToken'] = $monei_token;
+			$payload['sessionId']    = (string) WC()->session->get_customer_id();
+		}
 
-        return $payload;
+		return $payload;
 	}
 
 	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
 	function payment_fields() {
-        ob_start();
+		ob_start();
 		if ( is_add_payment_method_page() ) {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
-            // Always use component form in Add Payment method page.
-            $this->render_monei_form();
+			// Always use component form in Add Payment method page.
+			$this->render_monei_form();
 		} else {
 			// Checkout screen. We show description, if tokenization available, we show saved cards and checkbox to save.
 			echo $this->description;
 			if ( $this->tokenization ) {
 
 				$this->saved_payment_methods();
-                // If Component CC
-                if ( ! $this->redirect_flow ) {
-                    $this->render_monei_form();
-                } else {
-                    $this->tokenization_script();
-                }
+				// If Component CC
+				if ( ! $this->redirect_flow ) {
+					$this->render_monei_form();
+				} else {
+					$this->tokenization_script();
+				}
 				$this->save_payment_method_checkbox();
 			} else {
-                // If Component CC
-                if ( ! $this->redirect_flow ) {
-                    $this->render_monei_form();
-                }
-            }
+				// If Component CC
+				if ( ! $this->redirect_flow ) {
+					$this->render_monei_form();
+				}
+			}
 		}
-        ob_end_flush();
+		ob_end_flush();
 	}
 
-    /**
-     * Form where MONEI JS will render CC Component.
-     */
-    protected function render_monei_form() {
-        ?>
+	/**
+	 * Form where MONEI JS will render CC Component.
+	 */
+	protected function render_monei_form() {
+		?>
         <style>
             #payment-form {
                 padding-bottom: 15px;
             }
+
             #card-input {
                 border: 1px solid transparent;
                 border-radius: 4px;
@@ -241,11 +256,13 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                 -webkit-transition: box-shadow 150ms ease;
                 transition: box-shadow 150ms ease;
             }
+
             #card-input.is-focused {
                 box-shadow: 0 1px 3px 0 #cfd7df;
             }
         </style>
-        <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
+        <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form"
+                  style="background:transparent;">
             <div id="payment-form">
                 <div class="card-field">
                     <div id="card-input">
@@ -256,38 +273,41 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                 </div>
             </div>
         </fieldset>
-        <?php
-    }
+		<?php
+	}
 
-    /**
-     * Registering MONEI JS library and plugin js.
-     */
-    public function monei_scripts() {
+	/**
+	 * Registering MONEI JS library and plugin js.
+	 */
+	public function monei_scripts() {
 
-        if ( ! is_checkout() && ! is_add_payment_method_page() ) {
-            return;
-        }
+		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
+			return;
+		}
 
-        if ( 'no' === $this->enabled ) {
-            return;
-        }
+		if ( 'no' === $this->enabled ) {
+			return;
+		}
 
-        $script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.min.js';
-        wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
-        wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
-        wp_enqueue_script( 'monei' );
+		$script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.min.js';
+		wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
+		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [
+			'jquery',
+			'monei'
+		], MONEI_VERSION, true );
+		wp_enqueue_script( 'monei' );
 
-        wp_localize_script(
-            'woocommerce_monei',
-            'wc_monei_params',
-            [
-                'account_id' => monei_get_settings( 'accountid' ),
-                'session_id' => WC()->session->get_customer_id(),
-            ]
-        );
-        wp_enqueue_script( 'woocommerce_monei' );
-        $this->tokenization_script();
-    }
+		wp_localize_script(
+			'woocommerce_monei',
+			'wc_monei_params',
+			[
+				'account_id' => monei_get_settings( 'accountid' ),
+				'session_id' => WC()->session->get_customer_id(),
+			]
+		);
+		wp_enqueue_script( 'woocommerce_monei' );
+		$this->tokenization_script();
+	}
 
 }
 
