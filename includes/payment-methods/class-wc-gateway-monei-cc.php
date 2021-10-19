@@ -128,10 +128,6 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
-		if ( $this->is_order_subscription( $order_id ) ) {
-			return $this->process_subscription( $order_id, self::PAYMENT_METHOD );
-		}
-
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
 

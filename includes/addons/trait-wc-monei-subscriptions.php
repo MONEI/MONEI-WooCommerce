@@ -31,41 +31,17 @@ trait WC_Monei_Subscriptions_Trait {
 				'subscription_payment_method_change_admin',
 			]
 		);
-
-		add_action( 'wp', array( $this, 'save_sequence_id' ) );
 	}
 
 	/**
-	 * When a payment is done on a subscription order, we need to
+	 * It adds subscription configurtion to the payload.
+	 *
+	 * @param $order_id
+	 * @param $payment_method
+	 *
+	 * @return array
 	 */
-	public function save_sequence_id() {
-		die('a');
-		if ( ! is_order_received_page() ) {
-			return;
-		}
-
-		if ( ! isset( $_GET['id'] ) ) {
-			return;
-		}
-
-		$payment_id = filter_input( INPUT_GET, 'id' );
-		$order_id   = filter_input( INPUT_GET, 'order-received' );
-		try {
-			$payment = WC_Monei_API::get_payment( $payment_id );
-			/**
-			 * If order is a subscription, we are getting a sequence_id that we will use to charge next payments.
-			 */
-			if ( $this->is_order_subscription( $order_id ) ) {
-				die('a');
-				update_post_meta( $order_id, '_monei_sequence_id', $payment->getSequenceId() );
-			}
-		} catch ( Exception $e ) {
-
-		}
-
-	}
-
-	public function process_subscription( $order_id, $payment_method ) {
+	public function create_subscription_payload( $order_id, $payment_method ) {
 		$order               = new WC_Order( $order_id );
 		$payload             = parent::create_payload( $order, $payment_method );
 		$payload['sequence'] = [
@@ -75,28 +51,8 @@ trait WC_Monei_Subscriptions_Trait {
 			]
 		];
 
-		try {
-			$payment = WC_Monei_API::create_payment( $payload );
-			WC_Monei_Logger::log( 'WC_Monei_API::process_subscription', 'debug' );
-			WC_Monei_Logger::log( $payload, 'debug' );
-			WC_Monei_Logger::log( $payment, 'debug' );
-			do_action( 'wc_gateway_monei_process_subscription_success', $payload, $payment );
-			return array(
-				'result'   => 'success',
-				'redirect' => $payment->getNextAction()->getRedirectUrl(),
-			);
-		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( $e, 'error' );
-			wc_add_notice( $e->getMessage(), 'error' );
-
-			return array(
-				'result'   => 'failure',
-				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
-			);
-		}
-
+		$payload = apply_filters( 'wc_gateway_monei_create_subscription_payload', $payload );
+		return $payload;
 	}
-
-
 }
 

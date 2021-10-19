@@ -24,7 +24,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		$order   = new WC_Order( $order_id );
-		$payload = $this->create_payload( $order, $allowed_payment_method );
+		$payload = ( $this->is_order_subscription( $order_id ) ) ? $this->create_subscription_payload( $order, $allowed_payment_method ) : $this->create_payload( $order, $allowed_payment_method );
 
 		/**
 		 * If payment is tokenized ( saved cc ) we just need to create_payment with token and everything will work fine.
@@ -148,6 +148,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 
+		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
 		return $payload;
 	}
 

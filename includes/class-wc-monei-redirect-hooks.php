@@ -81,7 +81,7 @@ class WC_Monei_Redirect_Hooks {
 		}
 
 		$payment_id = filter_input( INPUT_GET, 'id' );
-		$order_id   = filter_input( INPUT_GET, 'order-received' );
+		$order_id   = filter_input( INPUT_GET, 'orderId' );
 		try {
 			$payment       = WC_Monei_API::get_payment( $payment_id );
 			$payment_token = $payment->getPaymentToken();
@@ -125,7 +125,7 @@ class WC_Monei_Redirect_Hooks {
 			$token->save();
 
 		} catch ( Exception $e ) {
-			wc_add_notice( __( 'Error while adding your payment method to MONEI. Payment ID: ' . $payment_id, 'monei' ), 'error' );
+			wc_add_notice( __( 'Error while adding your payment method to MONEI. Payment ID: ', 'monei' ) . $payment_id, 'error' );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 		}
 	}
