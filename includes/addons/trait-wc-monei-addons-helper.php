@@ -28,6 +28,9 @@ trait WC_Monei_Addons_Helper_Trait {
 	 * @return boolean
 	 */
 	public function is_order_subscription( $order_id ) {
+		if ( ! $this->is_subscriptions_addon_enabled() ) {
+			return false;
+		}
 		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );
 	}
 
