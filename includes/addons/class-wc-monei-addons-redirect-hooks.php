@@ -51,7 +51,9 @@ class WC_Monei_Addons_Redirect_Hooks {
 			 * If order is a subscription, we are getting a sequence_id that we will use to charge next payments.
 			 */
 			$payment = WC_Monei_API::get_payment( $payment_id );
-			update_post_meta( $order_id, '_monei_sequence_id', $payment->getSequenceId() );
+			$order   = new WC_Order( $order_id );
+			$order->add_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
+			$order->save_meta_data();
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );

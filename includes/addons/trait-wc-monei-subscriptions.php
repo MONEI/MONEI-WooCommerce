@@ -33,6 +33,57 @@ trait WC_Monei_Subscriptions_Trait {
 		);
 
 		add_action( 'wc_gateway_monei_create_payment_success', [ $this, 'subscription_after_payment_success' ], 1, 3 );
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 1, 3 );
+	}
+
+	/**
+	 * Process payment on renewal. Woo automatically triggers this hooks once subscription needs to be renewed.
+	 *
+	 * @param $amount_to_charge
+	 * @param WC_Order $renewal_order
+	 */
+	public function scheduled_subscription_payment( $amount_to_charge, $renewal_order ) {
+		$sequence_id = $this->get_sequence_id_from_renewal_order( $renewal_order );
+		$description = $this->shop_name . ' - #' . (string) $renewal_order->get_id() . ' - Subscription Renewal';
+
+		$payload = [
+			'orderId'     => (string) $renewal_order->get_id(),
+			'amount'      => monei_price_format( $amount_to_charge ),
+			'description' => $description,
+		];
+
+		try {
+			$payment = WC_Monei_API::recurring_payment( $sequence_id, $payload );
+
+			if ( 'SUCCEEDED' === $payment->getStatus() ) {
+				$renewal_order->payment_complete( $payment->getId() );
+
+				$order_note  = __( 'Success Renewal scheduled_subscription_payment.', 'monei' ) . '<br>';
+				$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $payment->getId() . '. <br><br>';
+				$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $payment->getStatusMessage();
+				$renewal_order->add_order_note( $order_note );
+
+				do_action( 'wc_gateway_monei_scheduled_subscription_payment_success', $renewal_order, $amount_to_charge );
+			} else {
+				$order_note  = __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . '<br>';
+				$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $payment->getId() . '. <br><br>';
+				$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $payment->getStatusMessage();
+				$renewal_order->update_status( 'failed' );
+				$renewal_order->add_order_note( $order_note );
+
+				do_action( 'wc_gateway_monei_scheduled_subscription_payment_not_succeeded', $renewal_order, $amount_to_charge );
+			}
+			$renewal_order->save();
+		} catch ( Exception $e ) {
+			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
+			WC_Monei_Logger::log( $e, 'error' );
+			$renewal_order->update_status( 'failed' );
+			$renewal_order->add_order_note( __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . $e->getMessage() );
+			$renewal_order->save();
+			if ( isset( $_REQUEST['process_early_renewal'] ) && ! wp_doing_cron() ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				wc_add_notice( $e->getMessage(), 'error' );
+			}
+		}
 	}
 
 	/**

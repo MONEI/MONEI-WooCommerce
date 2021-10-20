@@ -67,5 +67,35 @@ trait WC_Monei_Addons_Helper_Trait {
 		return $interval_in_days;
 	}
 
+	/**
+	 * Retrieves parent order id from a renewal order.
+	 * @param $renewal_order
+	 *
+	 * @return false|WC_Order
+	 */
+	public function get_parent_order_id( $renewal_order ) {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
+		$subscription  = array_pop( $subscriptions );
+
+		if ( false === $subscription->get_parent_id() ) {
+			$parent_order = null;
+		} else {
+			$parent_order = $subscription->get_parent();
+		}
+		return $parent_order;
+	}
+
+	/**
+	 * From renewal order, get monei sequence id.
+	 *
+	 * @param $renewal_order
+	 *
+	 * @return string|false
+	 */
+	public function get_sequence_id_from_renewal_order( $renewal_order ) {
+		$parent_order = $this->get_parent_order_id( $renewal_order );
+		return $parent_order->get_meta( '_monei_sequence_id', true );
+	}
+
 }
 
