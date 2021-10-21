@@ -92,7 +92,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( ! $this->redirect_flow || is_add_payment_method_page() ) {
+		if ( ! $this->redirect_flow || is_add_payment_method_page() || $this->is_subscription_change_payment_page() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
 		}
 
@@ -280,7 +280,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	public function monei_scripts() {
 
-		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
+		if ( ! is_checkout() && ! is_add_payment_method_page() && ! $this->is_subscription_change_payment_page() ) {
 			return;
 		}
 
@@ -288,12 +288,12 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			return;
 		}
 
-		$script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.min.js';
+		$script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.js';
 		wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
 		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [
 			'jquery',
 			'monei'
-		], MONEI_VERSION, true );
+		], 44, true );
 		wp_enqueue_script( 'monei' );
 
 		wp_localize_script(

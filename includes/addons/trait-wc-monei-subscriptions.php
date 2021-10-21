@@ -34,6 +34,26 @@ trait WC_Monei_Subscriptions_Trait {
 
 		add_action( 'wc_gateway_monei_create_payment_success', [ $this, 'subscription_after_payment_success' ], 1, 3 );
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 1, 3 );
+
+		// Add Payment information to Payment method name in "Subscription" Tab.
+		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'add_extra_info_to_subscriptions_payment_method_title' ], 10, 2 );
+
+	}
+
+	/**
+	 * Enrich Payment method name on "Subscriptions" Tab.
+	 *
+	 * @param string $payment_method_to_display
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return string
+	 */
+	public function add_extra_info_to_subscriptions_payment_method_title( $payment_method_to_display, $subscription ) {
+		// We only will modify Monei subscriptions titles.
+		if ( $subscription->get_payment_method() !== $this->id ) {
+			return $payment_method_to_display;
+		}
+		return $payment_method_to_display . ' - ' . $this->get_subscription_payment_method_friendly_name( $subscription );
 	}
 
 	/**
@@ -74,6 +94,7 @@ trait WC_Monei_Subscriptions_Trait {
 				do_action( 'wc_gateway_monei_scheduled_subscription_payment_not_succeeded', $renewal_order, $amount_to_charge );
 			}
 			$renewal_order->save();
+
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
 			WC_Monei_Logger::log( $e, 'error' );

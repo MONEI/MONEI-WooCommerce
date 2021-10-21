@@ -53,6 +53,8 @@ class WC_Monei_Addons_Redirect_Hooks {
 			$payment = WC_Monei_API::get_payment( $payment_id );
 			$order   = new WC_Order( $order_id );
 			$order->add_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
+			$order->add_meta_data( '_monei_payment_method_brand', $payment->getPaymentMethod()->getCard()->getBrand() );
+			$order->add_meta_data( '_monei_payment_method_4_last_digits', $payment->getPaymentMethod()->getCard()->getLast4() );
 			$order->save_meta_data();
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );

@@ -73,7 +73,7 @@ trait WC_Monei_Addons_Helper_Trait {
 	 *
 	 * @return false|WC_Order
 	 */
-	public function get_parent_order_id( $renewal_order ) {
+	public function get_parent_for_renewal_order_id( $renewal_order ) {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
 		$subscription  = array_pop( $subscriptions );
 
@@ -86,6 +86,17 @@ trait WC_Monei_Addons_Helper_Trait {
 	}
 
 	/**
+	 * Retrieves parent order from a subscription order.
+	 *
+	 * @param WC_Subscription $subscription_order
+	 *
+	 * @return mixed WC_Order|bool
+	 */
+	public function get_parent_for_subscription_id( $subscription_order ) {
+		return $subscription_order->get_parent();
+	}
+
+	/**
 	 * From renewal order, get monei sequence id.
 	 *
 	 * @param $renewal_order
@@ -93,8 +104,33 @@ trait WC_Monei_Addons_Helper_Trait {
 	 * @return string|false
 	 */
 	public function get_sequence_id_from_renewal_order( $renewal_order ) {
-		$parent_order = $this->get_parent_order_id( $renewal_order );
+		$parent_order = $this->get_parent_for_renewal_order_id( $renewal_order );
 		return $parent_order->get_meta( '_monei_sequence_id', true );
+	}
+
+
+	/**
+	 * Gets a readable string to present in subscription frontend.
+	 *
+	 * @param $subscription
+	 *
+	 * @return string
+	 */
+	public function get_subscription_payment_method_friendly_name( $subscription ) {
+		$parent_order = $this->get_parent_for_subscription_id( $subscription );
+		$brand        = $parent_order->get_meta( '_monei_payment_method_brand', true );
+		$last_digits  = $parent_order->get_meta( '_monei_payment_method_4_last_digits', true );
+		/* translators: 1) card brand 2) last 4 digits */
+		return sprintf( __( '%1$s card ending in %2$s', 'monei' ), $brand, $last_digits );
+	}
+
+	/**
+	 * Checks if page is pay for order and change subs payment page.
+	 *
+	 * @return bool
+	 */
+	protected function is_subscription_change_payment_page() {
+		return ( isset( $_GET['pay_for_order'] ) && isset( $_GET['change_payment_method'] ) ); // phpcs:ignore
 	}
 
 }
