@@ -225,7 +225,10 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				} else {
 					$this->tokenization_script();
 				}
-				$this->save_payment_method_checkbox();
+				// On change payment page, we don't want to add checkbox to save tokenized card.
+				if ( ! $this->is_subscription_change_payment_page() ) {
+					$this->save_payment_method_checkbox();
+				}
 			} else {
 				// If Component CC
 				if ( ! $this->redirect_flow ) {

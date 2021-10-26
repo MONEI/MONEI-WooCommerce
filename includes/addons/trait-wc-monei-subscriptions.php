@@ -158,21 +158,41 @@ trait WC_Monei_Subscriptions_Trait {
 	 *
 	 * @return array
 	 */
-	public function create_subscription_payload( $order_id, $payment_method ) {
+	public function create_subscription_payload( WC_Order $order_id, $payment_method ) {
 		$order               = new WC_Order( $order_id );
 		$payload             = parent::create_payload( $order, $payment_method );
 		$payload['sequence'] = [
 			'type' => 'recurring',
 			'recurring' => [
-				'frequency' => $this->get_cart_subscription_interval_in_days() // The minimum number of days between the different recurring payments.
+				//'frequency' => $this->get_cart_subscription_interval_in_days() // The minimum number of days between the different recurring payments.
+				'frequency' => 1 // Testing with 1 to know if we can modify subscription dates.
 			]
 		];
+
 		/**
 		 * If there is a free trial, (first payment for free) and user has selected a tokenized card,
 		 * We hit a monei limitation, so we need to charge the customer 1 cent, that will be refunded afterwards.
 		 */
 		if ( 0 === monei_price_format( $order->get_total() ) && $this->get_payment_token_id_if_selected() ) {
 			$payload['amount'] = 1;
+		}
+
+		/**
+		 * Supporting Subscriber Payment Method Changes
+		 * https://docs.woocommerce.com/document/subscriptions/develop/payment-gateway-integration/#section-18
+		 *
+		 * We need to charge 0, in order to get new sequence id.
+		 * If customer has selected a tokenized card, because of monei restrictions
+		 * we need to charge one cent, to be refunded afterwards in order to get new sequence_id.
+		 */
+		if ( $this->is_subscription_change_payment_page() ) {
+			$payload['amount'] = 0;
+			if ( isset( $payload['paymentToken'] ) ) {
+				$payload['amount'] = 1;
+			}
+
+			$payload['orderId']     = $order->get_id() . '_verification' . time();
+			$payload['description'] = $payload['description'] . ' ' . __( 'Payment Method Subscription Change', 'monei' );
 		}
 
 		$payload = apply_filters( 'wc_gateway_monei_create_subscription_payload', $payload );
