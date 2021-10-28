@@ -104,8 +104,7 @@ trait WC_Monei_Addons_Helper_Trait {
 	 * @return string|false
 	 */
 	public function get_sequence_id_from_renewal_order( $renewal_order ) {
-		$parent_order = $this->get_parent_for_renewal_order_id( $renewal_order );
-		return $parent_order->get_meta( '_monei_sequence_id', true );
+		return $renewal_order->get_meta( '_monei_sequence_id', true );
 	}
 
 
@@ -117,9 +116,8 @@ trait WC_Monei_Addons_Helper_Trait {
 	 * @return string
 	 */
 	public function get_subscription_payment_method_friendly_name( $subscription ) {
-		$parent_order = $this->get_parent_for_subscription_id( $subscription );
-		$brand        = $parent_order->get_meta( '_monei_payment_method_brand', true );
-		$last_digits  = $parent_order->get_meta( '_monei_payment_method_4_last_digits', true );
+		$brand        = $subscription->get_meta( '_monei_payment_method_brand', true );
+		$last_digits  = $subscription->get_meta( '_monei_payment_method_4_last_digits', true );
 		/* translators: 1) card brand 2) last 4 digits */
 		return sprintf( __( '%1$s card ending in %2$s', 'monei' ), $brand, $last_digits );
 	}
