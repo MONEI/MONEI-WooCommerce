@@ -124,7 +124,6 @@ class WC_Monei_IPN {
 			if ( 'completed' === monei_get_settings( 'orderdo' ) ) {
 				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 			}
-			return;
 		}
 	}
 

@@ -38,6 +38,7 @@
 		$order_pay_form: $( 'form#order_review' ),
 		$cardInput: null,
 		$container: null,
+		$payment_request_container: '#payment_request_container',
 		$errorContainer: null,
 		$paymentForm: null,
 		is_checkout: false,
@@ -116,6 +117,27 @@
 		is_monei_saved_cc_selected: function() {
 			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );
 		},
+		init_apple_google_pay: function() {
+			if ( ! wc_monei_params.apple_google_pay ) {
+				return;
+			}
+
+			// Create an instance of the Apple/Google Pay component.
+			var paymentRequest = monei.PaymentRequest({
+				accountId: wc_monei_params.account_id,
+				sessionId: wc_monei_params.session_id,
+				amount: parseInt( wc_monei_params.total ),
+				currency: wc_monei_params.currency,
+				onSubmit(result) {
+					wc_monei_form.apple_google_token_handler( result.token );
+				},
+				onError(error) {
+					console.log(error);
+				}
+			});
+			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
+			paymentRequest.render('#payment-request-container');
+		},
 		init_checkout_monei: function() {
 			// init monei just once, despite how many times this may be triggered.
 			if ( 0 !== this.init_counter ) {
@@ -130,6 +152,9 @@
 			if ( wc_monei_form.is_checkout ) {
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			}
+
+			// Init Apple/Google Pay.
+			wc_monei_form.init_apple_google_pay();
 
 			wc_monei_form.$container      = document.getElementById( 'card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
@@ -182,6 +207,10 @@
 			if ( $( '#monei_payment_token' ).length ) {
 				return true;
 			}
+			// If MONEI payment request token already created (apple/google), submit form.
+			if ( $( '#monei_payment_request_token' ).length ) {
+				return true;
+			}
 			if ( ! wc_monei_form.is_monei_selected() ) {
 				return true;
 			}
@@ -191,7 +220,6 @@
 			}
 			e.preventDefault();
 			// This will be trigger, when CC component is used and "Place order" has been clicked.
-			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			monei.createToken( wc_monei_form.$cardInput )
 				.then(
 					function ( result ) {
@@ -239,16 +267,24 @@
 			$( '.monei-error' ).remove();
 		},
 		monei_token_handler: function( token ) {
+			wc_monei_form.create_hidden_input( 'monei_payment_token', token );
+			// Once Token is created, submit form.
+			wc_monei_form.form.submit();
+		},
+		apple_google_token_handler: function (token ) {
+			wc_monei_form.create_hidden_input( 'monei_payment_request_token', token );
+			// Once Token is created, submit form.
+			wc_monei_form.form.submit();
+		},
+		create_hidden_input: function( id, token ) {
 			console.log( 'token', token );
 			var hiddenInput = document.createElement( 'input' );
 			hiddenInput.setAttribute( 'type', 'hidden' );
-			hiddenInput.setAttribute( 'name', 'monei_payment_token' );
-			hiddenInput.setAttribute( 'id', 'monei_payment_token' );
+			hiddenInput.setAttribute( 'name', id );
+			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
+			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
-
-			// Once Token is created, submit form.
-			wc_monei_form.form.submit();
 		},
 		get_form: function() {
 			return this.form;

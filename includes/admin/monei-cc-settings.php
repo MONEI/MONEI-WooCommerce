@@ -22,6 +22,13 @@ return apply_filters(
             'default'     => 'yes',
             'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
         ),
+		'apple_google_pay' => array(
+			'title'       => __( 'Apple Pay and Google Pay Integration', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Activate Apple Pay and Google Pay compatibility.', 'monei' ),
+			'default'     => 'no',
+			'description' => sprintf( __( 'Customers see a Google Pay or an Apple Pay button, depending on what their device and browser combination supports.', 'monei' ) ),
+		),
 		'testmode'       => array(
 			'title'       => __( 'Test mode', 'monei' ),
 			'type'        => 'checkbox',
