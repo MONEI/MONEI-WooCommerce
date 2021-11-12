@@ -265,6 +265,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                 box-sizing: border-box;
                 -webkit-transition: box-shadow 150ms ease;
                 transition: box-shadow 150ms ease;
+				max-width: 350px;
             }
 
             #card-input.is-focused {
