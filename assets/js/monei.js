@@ -15,7 +15,6 @@
 	$( 'form#add_payment_method' ).on(
 		'click payment_methods',
 		function() {
-			console.log('xxxxx');
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
 			}
@@ -23,7 +22,7 @@
 	);
 
 	// On Pay for order form.
-	$( 'form#order_review init_checkout' ).on(
+	$( 'form#order_review' ).on(
 		'click',
 		function() {
 			if ( wc_monei_form.is_monei_selected() ) {
