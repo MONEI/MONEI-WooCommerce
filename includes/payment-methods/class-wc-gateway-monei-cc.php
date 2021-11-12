@@ -213,14 +213,16 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
-		} else if ( $this->is_subscription_change_payment_page() ) {
+		} elseif ( $this->is_subscription_change_payment_page() ) {
 			// On subscription change payment page, we always use component CC.
 			echo esc_html( $this->description );
 			if ( $this->tokenization ) {
-				$this->tokenization_script();
 				$this->saved_payment_methods();
 			}
 			$this->render_monei_form();
+			if ( $this->tokenization ) {
+				$this->tokenization_script();
+			}
 		} else {
 			// Checkout screen.
 			// We show description, if tokenization available, we show saved cards and checkbox to save.

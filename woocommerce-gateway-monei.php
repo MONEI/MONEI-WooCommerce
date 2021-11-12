@@ -15,7 +15,7 @@
  * Author URI: https://www.monei.com/
  * Tested up to: 5.8
  * WC requires at least: 3.0
- * WC tested up to: 5.5.2
+ * WC tested up to: 5.9.0
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2021 MONEI.
