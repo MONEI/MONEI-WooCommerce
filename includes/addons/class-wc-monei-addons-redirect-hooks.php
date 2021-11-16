@@ -44,7 +44,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 		$verification_order_id = explode( '_', $order_id );
 		// Order ID will have a format like follows.
 		// orderId=453_verification1635257618
-		if ( ! isset( $verification_order_id[1] ) && false === strpos( $verification_order_id[1], 'verification' ) ) {
+		if ( ! isset( $verification_order_id[1] ) || false === strpos( $verification_order_id[1], 'verification' ) ) {
 			return;
 		}
 

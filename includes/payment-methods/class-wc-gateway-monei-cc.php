@@ -219,11 +219,21 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
-		} else {
-			// Checkout screen. We show description, if tokenization available, we show saved cards and checkbox to save.
-			echo $this->description;
+		} elseif ( $this->is_subscription_change_payment_page() ) {
+			// On subscription change payment page, we always use component CC.
+			echo esc_html( $this->description );
 			if ( $this->tokenization ) {
-
+				$this->saved_payment_methods();
+			}
+			$this->render_monei_form();
+			if ( $this->tokenization ) {
+				$this->tokenization_script();
+			}
+		} else {
+			// Checkout screen.
+			// We show description, if tokenization available, we show saved cards and checkbox to save.
+			echo esc_html( $this->description );
+			if ( $this->tokenization ) {
 				$this->saved_payment_methods();
 				// If Component CC
 				if ( ! $this->redirect_flow ) {
@@ -231,10 +241,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				} else {
 					$this->tokenization_script();
 				}
-				// On change payment page, we don't want to add checkbox to save tokenized card.
-				if ( ! $this->is_subscription_change_payment_page() ) {
-					$this->save_payment_method_checkbox();
-				}
+				$this->save_payment_method_checkbox();
 			} else {
 				// If Component CC
 				if ( ! $this->redirect_flow ) {
@@ -283,6 +290,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                 box-sizing: border-box;
                 -webkit-transition: box-shadow 150ms ease;
                 transition: box-shadow 150ms ease;
+				max-width: 350px;
             }
 
             #card-input.is-focused {
