@@ -157,5 +157,19 @@ class WC_Monei_API {
 		);
 	}
 
+	/**
+	 * https://docs.monei.com/api/#operation/payments_recurring
+	 *
+	 * @param string $sequence_id
+	 * @param array  $payload
+	 *
+	 * @return \OpenAPI\Client\Model\Payment
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function recurring_payment( $sequence_id, $payload ) {
+		$client = self::get_client();
+		return $client->payments->recurring( $sequence_id, $payload );
+	}
+
 }
 

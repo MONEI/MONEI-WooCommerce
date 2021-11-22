@@ -21,15 +21,27 @@
 		}
 	);
 
+	// On Pay for order form.
+	$( 'form#order_review' ).on(
+		'click',
+		function() {
+			if ( wc_monei_form.is_monei_selected() ) {
+				wc_monei_form.init_checkout_monei();
+			}
+		}
+	);
+
 	var wc_monei_form = {
 		$checkout_form: $( 'form.woocommerce-checkout' ),
 		$add_payment_form: $( 'form#add_payment_method' ),
+		$order_pay_form: $( 'form#order_review' ),
 		$cardInput: null,
 		$container: null,
 		$errorContainer: null,
 		$paymentForm: null,
 		is_checkout: false,
 		is_add_payment_method: false,
+		is_order_pay: false,
 		form: null,
 		submitted: false,
 		init_counter: 0,
@@ -45,6 +57,17 @@
 			if ( this.$add_payment_form.length ) {
 				this.is_add_payment_method = true;
 				this.form                  = this.$add_payment_form;
+				this.form.on( 'submit', this.place_order );
+			}
+
+			// Pay for order ( change_payment_method for subscriptions)
+			if ( this.$order_pay_form.length ) {
+				if ( wc_monei_form.is_monei_selected() ) {
+					wc_monei_form.init_checkout_monei();
+				}
+
+				this.is_order_pay = true;
+				this.form         = this.$order_pay_form;
 				this.form.on( 'submit', this.place_order );
 			}
 

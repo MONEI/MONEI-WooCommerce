@@ -23,12 +23,77 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
+		$order   = new WC_Order( $order_id );
+		$payload = ( $this->is_order_subscription( $order_id ) ) ? $this->create_subscription_payload( $order, $allowed_payment_method ) : $this->create_payload( $order, $allowed_payment_method );
 
-		$order         = new WC_Order( $order_id );
-		$amount        = monei_price_format( $order->get_total() );
-		$currency      = get_woocommerce_currency();
-		$user_email    = $order->get_billing_email();
-		$description   = $this->shop_name . ' - #' . $order_id;
+		/**
+		 * If payment is tokenized ( saved cc ) we just need to create_payment with token and everything will work fine.
+		 * If payment is normal cc, we will do 2 steps.
+		 * First Step: Create Payment witouth token
+		 * Second Step: Confirm Payment with Token and cardholderName.
+		 * Strong CustomerAuthentication and PSD2 normative requires cardholder name to be sent for each transaction.
+		 * See: https://docs.monei.com/docs/guides/send-cardholder-name/
+		 */
+		try {
+			$create_payment = WC_Monei_API::create_payment( $payload );
+			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
+
+			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
+			WC_Monei_Logger::log( $payload, 'debug' );
+			WC_Monei_Logger::log( $create_payment, 'debug' );
+
+			$confirm_payment = false;
+			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method.
+			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
+				// We do 2 steps, in order to confirm card holder Name in the second step.
+				$confirm_payload = [
+					'paymentToken'  => $this->get_frontend_generated_monei_token(),
+					'paymentMethod' => [
+						'card' => [
+							'cardholderName' => $order->get_formatted_billing_full_name(),
+						]
+					]
+				];
+				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
+				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
+
+				WC_Monei_Logger::log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
+				WC_Monei_Logger::log( $create_payment->getId(), 'debug' );
+				WC_Monei_Logger::log( $confirm_payload, 'debug' );
+				WC_Monei_Logger::log( $confirm_payment, 'debug' );
+			}
+
+			/**
+			 * Depends if we came in 1 step or 2.
+			 */
+			$next_action_redirect = ( $confirm_payment ) ? $confirm_payment->getNextAction()->getRedirectUrl() : $create_payment->getNextAction()->getRedirectUrl();
+			return array(
+				'result'   => 'success',
+				'redirect' => $next_action_redirect,
+			);
+
+		} catch ( Exception $e ) {
+			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
+			WC_Monei_Logger::log( $e, 'error' );
+			wc_add_notice( $e->getMessage(), 'error' );
+			return;
+		}
+	}
+
+	/**
+	 * Payload creation.
+	 *
+	 * @param $order
+	 * @param null|string $allowed_payment_method
+	 *
+	 * @return array
+	 */
+	public function create_payload( $order, $allowed_payment_method = null ) {
+		$order_id    = $order->get_id();
+		$amount      = monei_price_format( $order->get_total() );
+		$currency    = get_woocommerce_currency();
+		$user_email  = $order->get_billing_email();
+		$description = $this->shop_name . ' - #' . $order_id;
 
 		/**
 		 * The URL to which a payment result should be sent asynchronously.
@@ -37,7 +102,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		/**
 		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
 		 */
-		$fail_url     = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url = esc_url_raw( $order->get_cancel_order_url_raw() );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -78,64 +143,13 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$payload['generatePaymentToken'] = true;
 		}
 
-		$payment_token = '';
 		// If merchant is not using redirect flow (means component CC), there is a generated frontend token paymentToken
-		if ( ! $this->redirect_flow && MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
-			$payment_token        = $monei_token;
+		if ( ! $this->redirect_flow && MONEI_GATEWAY_ID === $this->id && $this->get_frontend_generated_monei_token() ) {
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 
-		/**
-		 * If payment is tokenized ( saved cc ) we just need to create_payment with token and everything will work fine.
-		 * If payment is normal cc, we will do 2 steps.
-		 * First Step: Create Payment witouth token
-		 * Second Step: Confirm Payment with Token and cardholderName.
-		 * Strong CustomerAuthentication and PSD2 normative requires cardholder name to be sent for each transaction.
-		 * See: https://docs.monei.com/docs/guides/send-cardholder-name/
-		 */
-		try {
-			$create_payment = WC_Monei_API::create_payment( $payload );
-			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
-
-			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
-			WC_Monei_Logger::log( $payload, 'debug' );
-			WC_Monei_Logger::log( $create_payment, 'debug' );
-
-			$confirm_payment = false;
-			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't chose any tokenised saved method.
-			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
-				// We do 2 steps, in order to confirm card holder Name in the second step.
-				$confirm_payload = [
-					'paymentToken'  => $payment_token,
-					'paymentMethod' => [
-						'card' => [
-							'cardholderName' => $order->get_formatted_billing_full_name(),
-						]
-					]
-				];
-				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
-				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
-
-				WC_Monei_Logger::log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
-				WC_Monei_Logger::log( $create_payment->getId(), 'debug' );
-				WC_Monei_Logger::log( $confirm_payload, 'debug' );
-				WC_Monei_Logger::log( $confirm_payment, 'debug' );
-			}
-
-			/**
-			 * Depends if we came in 1 step or 2.
-			 */
-			$next_action_redirect = ( $confirm_payment ) ? $confirm_payment->getNextAction()->getRedirectUrl() : $create_payment->getNextAction()->getRedirectUrl();
-			return array(
-				'result'   => 'success',
-				'redirect' => $next_action_redirect,
-			);
-		} catch ( Exception $e ) {
-			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			WC_Monei_Logger::log( $e, 'error' );
-			wc_add_notice( $e->getMessage(), 'error' );
-			return;
-		}
+		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
+		return $payload;
 	}
 
 	/**

@@ -104,6 +104,10 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 == Changelog ==
 
+== 5.5 ==
+* Adding Subscriptions Support.
+* Minor fixes.
+
 == 5.4 ==
 
 * Adding Cofidis Support.

@@ -106,8 +106,9 @@ class WC_Monei_IPN {
 
 			/**
 			 * If amounts don't match, we mark the order on-hold for manual validation.
+			 * 1 cent exception, for subscriptions when 0 sing ups are done.
 			 */
-			if ( ( int ) $amount !== monei_price_format( $order_total ) ) {
+			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
 				$order->update_status( 'on-hold', sprintf( __( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2&s).', 'monei' ), $amount, monei_price_format( $order_total ) ) );
 				exit;
 			}
