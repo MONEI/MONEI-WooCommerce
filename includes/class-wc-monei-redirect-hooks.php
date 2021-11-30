@@ -83,6 +83,7 @@ class WC_Monei_Redirect_Hooks {
 		$payment_id = filter_input( INPUT_GET, 'id' );
 		$order_id   = filter_input( INPUT_GET, 'orderId' );
 		try {
+			WC_Monei_API::set_order( $order_id );
 			$payment       = WC_Monei_API::get_payment( $payment_id );
 			$payment_token = $payment->getPaymentToken();
 

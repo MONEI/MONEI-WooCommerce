@@ -27,6 +27,12 @@ class WC_Monei_API {
 	protected static $client;
 
 	/**
+	 * Holds the order.
+	 * @var int|WC_Order|null
+	 */
+	protected static $order = null;
+
+	/**
 	 * Get API Key.
 	 * @return false|string
 	 */
@@ -35,7 +41,16 @@ class WC_Monei_API {
 			return self::$api_key;
 		}
 
-		return monei_get_settings( self::OPTION_API_KEY );
+		self::$api_key = monei_get_settings( self::OPTION_API_KEY, monei_get_option_key_from_order( self::$order ) );
+		return self::$api_key;
+	}
+
+	/**
+	 * @param int|WC_Order $order
+	 */
+	public static function set_order( $order ) {
+		$order       = is_int( $order ) ? wc_get_order( $order ) : $order;
+		self::$order = $order;
 	}
 
 	/**

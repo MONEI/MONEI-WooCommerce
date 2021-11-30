@@ -60,9 +60,9 @@ class WC_Monei_IPN {
 	 */
 	protected function handle_valid_ipn( $payload ) {
 
-		$order_id   = $payload['orderId'];
-		$monei_id   = $payload['id'];
-		$status     = $payload['status'];
+		$order_id       = $payload['orderId'];
+		$monei_id       = $payload['id'];
+		$status         = $payload['status'];
 		$status_code    = $payload['statusCode'];
 		$status_message = $payload['statusMessage'];
 		$amount         = $payload['amount'];
@@ -121,7 +121,7 @@ class WC_Monei_IPN {
 			$order->add_order_note( $order_note );
 
 			$order->payment_complete();
-			if ( 'completed' === monei_get_settings( 'orderdo' ) ) {
+			if ( 'completed' === monei_get_settings( 'orderdo', monei_get_option_key_from_order( $order ) ) ) {
 				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 			}
 		}
@@ -138,7 +138,11 @@ class WC_Monei_IPN {
 	 * @throws \OpenAPI\Client\ApiException
 	 */
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		return ( array ) WC_Monei_API::verify_signature( $request_body, $monei_signature );
+		$decoded_body = json_decode( $request_body );
+		if ( isset( $decoded_body->orderId ) ) {
+			WC_Monei_API::set_order( $decoded_body->orderId );
+		}
+		return (array) WC_Monei_API::verify_signature( $request_body, $monei_signature );
 	}
 
 	/**
