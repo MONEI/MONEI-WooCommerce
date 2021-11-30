@@ -1,4 +1,5 @@
 <?php
+
 /**
  * MONEI Payment Gateway API v1
  * MoneiClient
@@ -15,6 +16,8 @@ namespace Monei;
 use OpenAPI\Client\ApiException;
 use OpenAPI\Client\Configuration;
 use OpenAPI\Client\Api\PaymentsApi;
+use OpenAPI\Client\Api\SubscriptionsApi;
+use OpenAPI\Client\Api\ApplePayDomainApi;
 
 /**
  * PaymentsApi Class Doc Comment
@@ -29,7 +32,7 @@ class MoneiClient
     /**
      * SDK Version.
      */
-    const SDK_VERSION = '0.1.19';
+    const SDK_VERSION = '1.0.0';
 
     /**
      * @var Configuration
@@ -55,6 +58,8 @@ class MoneiClient
         $this->config->setUserAgent($userAgent);
 
         $this->payments = new PaymentsApi(null, $this->config);
+        $this->subscriptions = new SubscriptionsApi(null, $this->config);
+        $this->applePayDomain = new ApplePayDomainApi(null, $this->config);
     }
 
     /**
