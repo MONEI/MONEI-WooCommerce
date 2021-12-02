@@ -15,13 +15,34 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 	const DOMAIN_ASSOCIATION_DIR       = '.well-known';
 
 	public function __construct() {
-		/**
-		 * If not active, we don't expose file.
-		 */
-		if ( 'yes' !== monei_get_settings( 'apple_google_pay' ) ) {
+		add_action( 'parse_request', array( $this, 'expose_on_domain_association_request' ), 1 );
+		add_filter( 'woocommerce_update_options_payment_gateways_monei', array( $this, 'apple_domain_register' ) );
+	}
+
+	/**
+	 * Apple API Domain registration.
+	 */
+	public function apple_domain_register() {
+		if ( ! check_admin_referer( 'woocommerce-settings' ) ) {
 			return;
 		}
-		add_action( 'parse_request', array( $this, 'expose_on_domain_association_request' ), 1 );
+
+		if ( ! isset( $_POST['woocommerce_monei_apple_google_pay'] ) ) {
+			return;
+		}
+
+		if ( ! $_POST['woocommerce_monei_apple_google_pay'] ) {
+			return;
+		}
+
+		try {
+			$domain = isset( $_SERVER['HTTP_HOST'] ) ?? str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
+			WC_Monei_API::register_apple_domain( $domain );
+		} catch ( OpenAPI\Client\ApiException $e ) {
+			WC_Monei_Logger::log( $e, 'error' );
+			$response_body = json_decode( $e->getResponseBody() );
+			WC_Admin_Settings::add_error( __( 'Apple', 'monei' ) . ' ' . $response_body->message );
+		}
 	}
 
 	/**

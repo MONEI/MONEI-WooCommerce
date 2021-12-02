@@ -186,5 +186,17 @@ class WC_Monei_API {
 		return $client->payments->recurring( $sequence_id, $payload );
 	}
 
+
+	/**
+	 * @param $domain
+	 *
+	 * @return \OpenAPI\Client\Model\InlineResponse200
+	 * @throws \OpenAPI\Client\ApiException
+	 */
+	public static function register_apple_domain( $domain ) {
+		$client = self::get_client();
+		return $client->applePayDomain->register( [ 'domainName' => $domain ] );
+	}
+
 }
 
