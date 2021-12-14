@@ -23,11 +23,11 @@ return apply_filters(
             'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
         ),
 		'apple_google_pay' => array(
-			'title'       => __( 'Apple Pay and Google Pay Integration', 'monei' ),
+			'title'       => __( 'Apple Pay / Google Pay', 'monei' ),
 			'type'        => 'checkbox',
-			'label'       => __( 'Activate Apple Pay and Google Pay compatibility.', 'monei' ),
+			'label'       => __( 'Enable Apple Pay / Google Pay buttons.', 'monei' ),
 			'default'     => 'no',
-			'description' => sprintf( __( 'Customers see a Google Pay or an Apple Pay button, depending on what their device and browser combination supports.', 'monei' ) ),
+			'description' => sprintf( __( 'Customers see Google Pay or Apple Pay button, depending on what their device and browser combination supports. By using Apple Pay, you agree to <a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple\'s terms of service</a>. (Apple Pay domain verification is performed automatically in live mode)', 'monei' ) ),
 		),
 		'testmode'       => array(
 			'title'       => __( 'Test mode', 'monei' ),
