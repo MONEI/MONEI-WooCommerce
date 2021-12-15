@@ -5,7 +5,7 @@
  * @author   Manuel Rodriguez
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  5.5.0
+ * @version  5.6.0
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
