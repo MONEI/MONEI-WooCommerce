@@ -83,8 +83,15 @@ class WC_Monei_Redirect_Hooks {
 		$payment_id = filter_input( INPUT_GET, 'id' );
 		$order_id   = filter_input( INPUT_GET, 'orderId' );
 		try {
+			WC_Monei_API::set_order( $order_id );
 			$payment       = WC_Monei_API::get_payment( $payment_id );
 			$payment_token = $payment->getPaymentToken();
+
+			// A payment can come without token, user didn't check on save payment method.
+			// We just ignore it then and do nothing.
+			if ( ! $payment_token || empty( $payment_token ) ) {
+				return;
+			}
 
 			/**
 			 * If redirect is coming from an actual order, we will have the payment method available in order.
@@ -94,12 +101,6 @@ class WC_Monei_Redirect_Hooks {
 				$payment_method_woo_id = $order->get_payment_method();
 			} else {
 				$payment_method_woo_id = MONEI_GATEWAY_ID;
-			}
-
-			// A payment can come withouth token, user didn't check on save payment method.
-			// We just ignore it then and do nothing.
-			if ( ! $payment_token || empty( $payment_token ) ) {
-				return;
 			}
 
 			$payment_method = $payment->getPaymentMethod();

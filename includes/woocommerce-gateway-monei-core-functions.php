@@ -34,7 +34,38 @@ function monei_get_settings( $key = false, $option_key = 'woocommerce_monei_sett
 	}
 
 	$settings = get_option( $option_key );
-	return $settings[ $key ];
+	return ( isset( $settings[ $key ] ) ) ? $settings[ $key ] : false;
+}
+
+/**
+ * From an order id, we need to get its payment method and return what are the settings for it.
+ * If something goes wrong we return the default one.
+ *
+ * @param int|string|WC_Order|null $order
+ * @return string
+ */
+function monei_get_option_key_from_order( $order ) {
+	$option_key = 'woocommerce_monei_settings';
+	if ( is_null( $order ) ) {
+		return $option_key;
+	}
+
+	$order = is_numeric( $order ) ? new WC_Order( $order ) : $order;
+	if ( isset( $order ) && $order->get_payment_method() ) {
+		switch ( $order->get_payment_method() ) {
+			case 'monei_bizum':
+				$option_key = 'woocommerce_monei_bizum_settings';
+				break;
+			case 'monei_paypal':
+				$option_key = 'woocommerce_monei_paypal_settings';
+				break;
+			case 'monei_cofidis':
+				$option_key = 'woocommerce_monei_cofidis_settings';
+				break;
+		}
+	}
+
+	return $option_key;
 }
 
 /**

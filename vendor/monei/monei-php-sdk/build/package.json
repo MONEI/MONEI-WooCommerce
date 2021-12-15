@@ -1,10 +1,11 @@
 {
   "name": "monei-php-sdk",
-  "version": "0.1.19",
+  "version": "1.0.0",
   "description": "MONEI PHP SDK",
   "author": "monei",
   "scripts": {
     "build": "openapi-generator generate -i https://js.monei.com/api/v1/openapi.json -g php --remove-operation-id-prefix -c ./config.json -o ../",
+    "build:local": "openapi-generator generate -i ./openapi.json -g php --remove-operation-id-prefix -c ./config.json -o ../",
     "release": "release-it"
   },
   "license": "MIT",

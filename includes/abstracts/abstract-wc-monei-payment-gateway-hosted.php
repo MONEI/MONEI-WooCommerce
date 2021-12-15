@@ -79,7 +79,10 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		}
 
 		try {
+			// We set the order, so we can use the right api key configuration.
+			WC_Monei_API::set_order( $order );
 			$payment = WC_Monei_API::create_payment( $payload );
+
 			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
 			WC_Monei_Logger::log( $payload, 'debug' );
 			WC_Monei_Logger::log( $payment, 'debug' );

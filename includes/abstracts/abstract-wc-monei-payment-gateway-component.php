@@ -29,7 +29,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		/**
 		 * If payment is tokenized ( saved cc ) we just need to create_payment with token and everything will work fine.
 		 * If payment is normal cc, we will do 2 steps.
-		 * First Step: Create Payment witouth token
+		 * First Step: Create Payment without token.
 		 * Second Step: Confirm Payment with Token and cardholderName.
 		 * Strong CustomerAuthentication and PSD2 normative requires cardholder name to be sent for each transaction.
 		 * See: https://docs.monei.com/docs/guides/send-cardholder-name/
@@ -54,6 +54,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 						]
 					]
 				];
+
 				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
 
@@ -138,13 +139,19 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$payload['paymentToken'] = $wc_token->get_token();
 		}
 
+		// If user has paid using Apple or Google pay, we add paymentToken.
+		// This will overwrite previous token, in case one preselected token was checked in checkout, but we should ignore it.
+		if ( $token_id = $this->get_frontend_generated_monei_apple_google_token() ) {
+			$payload['paymentToken'] = $token_id;
+		}
+
 		// If customer has checkboxed "Save payment information to my account for future purchases."
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
 
-		// If merchant is not using redirect flow (means component CC), there is a generated frontend token paymentToken
-		if ( ! $this->redirect_flow && MONEI_GATEWAY_ID === $this->id && $this->get_frontend_generated_monei_token() ) {
+		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
+		if ( MONEI_GATEWAY_ID === $this->id && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 
@@ -159,6 +166,16 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 */
 	public function get_frontend_generated_monei_token() {
 		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+	}
+
+	/**
+	 * Frontend MONEI payment-request token generated when Apple or Google pay.
+	 * https://docs.monei.com/docs/monei-js/payment-request/
+	 *
+	 * @return false|string
+	 */
+	protected function get_frontend_generated_monei_apple_google_token() {
+		return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
 
     /**

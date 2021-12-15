@@ -243,17 +243,17 @@
         },
         {
             "name": "monei/monei-php-sdk",
-            "version": "0.1.19",
-            "version_normalized": "0.1.19.0",
+            "version": "1.0.0",
+            "version_normalized": "1.0.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MONEI/monei-php-sdk.git",
-                "reference": "b522213c4b34cb158c0247e31ed0e885d15aeb53"
+                "reference": "951acda016904e38bc6127e016fd121489936bbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/b522213c4b34cb158c0247e31ed0e885d15aeb53",
-                "reference": "b522213c4b34cb158c0247e31ed0e885d15aeb53",
+                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/951acda016904e38bc6127e016fd121489936bbc",
+                "reference": "951acda016904e38bc6127e016fd121489936bbc",
                 "shasum": ""
             },
             "require": {
@@ -268,7 +268,7 @@
                 "phpunit/phpunit": "^7.4",
                 "squizlabs/php_codesniffer": "~2.6"
             },
-            "time": "2021-10-06T13:59:37+00:00",
+            "time": "2021-11-29T18:44:11+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -302,7 +302,7 @@
             ],
             "support": {
                 "issues": "https://github.com/MONEI/monei-php-sdk/issues",
-                "source": "https://github.com/MONEI/monei-php-sdk/tree/0.1.19"
+                "source": "https://github.com/MONEI/monei-php-sdk/tree/1.0.0"
             },
             "install-path": "../monei/monei-php-sdk"
         },

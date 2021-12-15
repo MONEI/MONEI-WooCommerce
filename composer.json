@@ -1,5 +1,5 @@
 {
     "require": {
-        "monei/monei-php-sdk": "0.1.19"
+        "monei/monei-php-sdk": "1.0.0"
     }
 }

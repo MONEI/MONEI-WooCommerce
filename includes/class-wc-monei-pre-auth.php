@@ -36,6 +36,7 @@ class WC_Monei_Pre_Auth {
 		}
 
 		try {
+			WC_Monei_API::set_order( $order );
 			$result = WC_Monei_API::capture_payment( $payment_id, monei_price_format( $order->get_total() ) );
 			// Deleting pre-auth metadata, once the order is captured.
 			$order->delete_meta_data( '_payment_not_captured_monei' );
@@ -62,6 +63,7 @@ class WC_Monei_Pre_Auth {
 		}
 
 		try {
+			WC_Monei_API::set_order( $order );
 			$result = WC_Monei_API::cancel_payment( $payment_id );
 			WC_Monei_Logger::log( 'Cancel Payment Payment OK.', 'debug' );
 			WC_Monei_Logger::log( $result, 'debug' );

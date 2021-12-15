@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '5.5.0';
+		public $version = '5.6.0';
 
 		/**
 		 * The single instance of the class.
@@ -106,6 +106,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/class-wc-monei-logger.php';
 			include_once 'includes/addons/trait-wc-monei-addons-helper.php';
 			include_once 'includes/addons/trait-wc-monei-subscriptions.php';
+			include_once 'includes/addons/class-wc-monei-apple-pay-verification.php';
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
