@@ -29,7 +29,7 @@ Use MONEI’s payment gateway to accept debit and credit card payments from cust
 Let shoppers pay from the convenience of their smartphone with digital wallets like Apple Pay, Google Pay, and PayPal. And accept local payment methods such as Bizum (Spain) and SEPA Direct Debit (EU).
 
 
-Offering customers many payment methods leads to an increase in sales and customer satisfaction. 🚀
+Offering customers [many payment methods](https://monei.com/es/online-payment-methods/) leads to an increase in sales and customer satisfaction. 🚀
 
 = WHY TO USE MONEI’S PAYMENT GATEWAY PLUGIN FOR WOOCOMMERCE =
 
@@ -68,22 +68,14 @@ Please go to the 👉 [signup page](https://dashboard.monei.com/?action=signUp) 
 
 
 = GETTING STARTED WITH MONEI =
-
-1. How do I open my MONEI account so I can plug in with WooCommerce? 
-
+1. How do I open my MONEI account so I can plug in with WooCommerce?
 Learn how to [get started with MONEI here ››](https://support.monei.com/hc/en-us/articles/360017801677-Get-started-with-MONEI)
-
-2. What countries does MONEI support? 
-
-Currently, MONEI is available in Spain and Andorra, but our global expansion is happening fast. [Join our newsletter here](https://client.moonmail.io/ac8e391c-8cfb-46e3-aed9-e7a84d0fd830/forms/6bafcdbf-442a-4e3b-874f-7e2ed30ee001) to get notified once we support your country! 
-
+2. What countries does MONEI support?
+Currently, MONEI is available in Spain and Andorra, but our global expansion is happening fast. [Join our newsletter here](https://client.moonmail.io/ac8e391c-8cfb-46e3-aed9-e7a84d0fd830/forms/6bafcdbf-442a-4e3b-874f-7e2ed30ee001) to get notified once we support your country!
 3. I have different questions about this plugin.
-
 Please contact support@monei.com with your MONEI ID. Describe your problem in detail and include screenshots when necessary.
 
-
 == Installation ==
-
 * Go to wp-admin > Plugins
 * Click Add new
 * Search for MONEI
@@ -104,70 +96,26 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 == Changelog ==
 
-== 5.6 ==
+= 5.6.1 =
+* Readme Update.
+
+= 5.6 =
 * Apple / Google Pay Support.
 * Minor fixes.
 * API keys from different payment methods support.
 
-== 5.5 ==
+= 5.5 =
 * Adding Subscriptions Support.
 * Minor fixes.
 
-== 5.4 ==
-
+= 5.4 =
 * Adding Cofidis Support.
 * Adding Pre-Auth to Paypal.
 * Bug Fixing.
 
-== 5.2 ==
-
+= 5.2 =
 * Adding Component CC and Hosted CC Support.
 * Fixing Warnings.
 
-== 5.0 ==
-
+= 5.0 =
 * Major refactor.
-
-== 4.2.1 ==
-
-* FIXED refunds
-
-== 4.2.0 ==
-
-* Updated API URLs.
-
-== 4.1.1 ==
-
-* NEW: Added failUrl.
-* Added a check for try to avoid multiple order notes.
-
-== 4.1.0 ==
-
-* NEW: Added compatibility with WooCommerce Subscriptions.
-
-== 4.0.0 ==
-
-* NEW: Added tokenization.
-
-== 3.1.1 ==
-
-* Fixed customer email.
-
-== 3.1.0 ==
-
-* New: Added New API.
-* Temporarily Removed Onsite.
-
-== 3.0.0 ==
-
-* New: Added Pay On-Site.
-
-== 2.1.0 ==
-
-* New: Added refunds from WooCommerce order edit page.
-
-== 2.0.0 ==
-
-* New: Added compatibility with WordPress 5.4
-* New: Added compatibility with WooCommerce 4.0
-* New: Added new MONEI API
