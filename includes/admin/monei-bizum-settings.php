@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Money Bizum Gateway Settings.
+ * Monei Bizum Gateway Settings.
  */
 return apply_filters(
 	'wc_monei_bizum_settings',

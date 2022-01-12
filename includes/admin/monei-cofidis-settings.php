@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Money Cofidis Gateway Settings.
+ * Monei Cofidis Gateway Settings.
  */
 return apply_filters(
 	'wc_monei_cofidis_settings',

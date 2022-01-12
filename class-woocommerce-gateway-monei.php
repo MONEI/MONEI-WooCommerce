@@ -213,7 +213,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 
 		/**
-		 * We have more than a Monei payment provider, we will use by default the main money set up in case they don't set them up.
+		 * We have more than a Monei payment provider, we will use by default the main monei set up in case they don't set them up.
 		 *
 		 * @param $default_params
 		 *

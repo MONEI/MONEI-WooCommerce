@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Money Paypal Gateway Settings.
+ * Monei Paypal Gateway Settings.
  */
 return apply_filters(
 	'wc_monei_paypal_settings',
