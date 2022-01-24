@@ -30,14 +30,6 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		// Load the settings.
 		$this->init_settings();
 
-		// Cofidis Limits between 75 and 1000. If falling out of limits, disable payment method.
-		if ( is_checkout() ) {
-			$total = ( float ) WC()->cart->get_total( false );
-			if ( $total < 75 || $total > 1000 ) {
-				$this->enabled = false;
-			}
-		}
-
 		// Cofidis Hosted payment with redirect.
 		$this->has_fields = false;
 
@@ -68,9 +60,10 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
 		add_action( 'wp_enqueue_scripts', [ $this, 'cofidis_scripts' ] );
 
-		// Add total price info on update action js
-		// We are not gonna control limits in frontend for now.
-		//add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'add_cart_total' ) );
+		// Add new total on checkout updates (ex, selecting different shipping methods)
+		add_filter( 'woocommerce_update_order_review_fragments', function( $fragments ) {
+			return self::add_cart_total_fragments( $fragments );
+		} );
 	}
 
 
@@ -173,20 +166,5 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		wp_enqueue_script( 'woocommerce_monei_cofidis' );
 	}
 
-	/**
-	 * On updated_checkout, we need thew new total cart in order to update cofidis plugin.
-	 *
-	 * @param array $fragments
-	 *
-	 * @return array
-	 */
-	public function add_cart_total( $fragments ) {
-		if ( ! WC()->cart ) {
-			return $fragments;
-		}
-
-		$fragments['monei_new_total'] = monei_price_format( WC()->cart->get_total( false ) );
-		return $fragments;
-	}
 }
 

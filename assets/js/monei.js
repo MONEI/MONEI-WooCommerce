@@ -4,9 +4,17 @@
 	// Checkout form.
 	$( document.body ).on(
 		'updated_checkout',
-		function() {
+		function(e, data) {
+			// Update cofidis_widget.total on every updated_checkout event.
+			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
+				wc_monei_form.total = data.fragments[ 'monei_new_total' ];
+			}
+
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
+				// We need to re-init payment request with the new price.
+				wc_monei_form.init_apple_google_pay();
+
 			}
 		}
 	);
@@ -46,6 +54,7 @@
 		form: null,
 		submitted: false,
 		init_counter: 0,
+		total: wc_monei_params.total,
 		init: function() {
 			// Checkout Page
 			if ( this.$checkout_form.length ) {
@@ -120,24 +129,37 @@
 			if ( ! wc_monei_params.apple_google_pay ) {
 				return;
 			}
-
+			if ( window.paymentRequest ) {
+				window.paymentRequest.close();
+			}
+			wc_monei_form.instantiate_payment_request();
+		},
+		instantiate_payment_request: function() {
 			// Create an instance of the Apple/Google Pay component.
 			var paymentRequest = monei.PaymentRequest({
 				accountId: wc_monei_params.account_id,
 				sessionId: wc_monei_params.session_id,
-				amount: parseInt( wc_monei_params.total ),
+				amount: parseInt( wc_monei_form.total ),
 				currency: wc_monei_params.currency,
 				onSubmit(result) {
 					wc_monei_form.apple_google_token_handler( result.token );
 				},
 				onError(error) {
 					console.log(error);
-				}
+				},
 			});
 			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
 			paymentRequest.render('#payment-request-container');
+			// Assign a global variable to paymentRequest so it's accessible.
+			window.paymentRequest = paymentRequest;
 		},
 		init_checkout_monei: function() {
+			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
+			// and we need to reset the counter in order to initiate again the monei component.
+			if ( wc_monei_form.$container && 0 === wc_monei_form.$container.childElementCount ) {
+				wc_monei_form.init_counter = 0;
+			}
+
 			// init monei just once, despite how many times this may be triggered.
 			if ( 0 !== this.init_counter ) {
 				return;
