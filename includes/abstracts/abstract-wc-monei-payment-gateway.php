@@ -198,5 +198,21 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		return ( isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) );
 	}
 
+	/**
+	 * On updated_checkout, we need thew new total cart in order to update cofidis plugin.
+	 *
+	 * @param array $fragments
+	 *
+	 * @return array
+	 */
+	protected function add_cart_total_fragments( $fragments ) {
+		if ( ! WC()->cart ) {
+			return $fragments;
+		}
+
+		$fragments['monei_new_total'] = monei_price_format( WC()->cart->get_total( false ) );
+		return $fragments;
+	}
+
 }
 
