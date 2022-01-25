@@ -22,6 +22,13 @@ return apply_filters(
             'default'     => 'yes',
             'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
         ),
+		'cc_no_redirect'       => array(
+			'title'       => __( 'Use 3D authentication modal', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'User will pay on checkout screen without going to Monei.', 'monei' ),
+			'default'     => 'no',
+			'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
+		),
 		'apple_google_pay' => array(
 			'title'       => __( 'Apple Pay / Google Pay', 'monei' ),
 			'type'        => 'checkbox',
