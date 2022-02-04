@@ -120,6 +120,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			'customer' => [
 				'email' => $user_email,
 				'name'  => $order->get_formatted_billing_full_name(),
+				'phone' => ( $order->get_billing_phone() ) ?: null,
 			],
 			'callbackUrl' => $callback_url,
 			'completeUrl' => $complete_url,
@@ -129,6 +130,34 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			'sessionDetails'  => [
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
+			],
+			'billingDetails' => [
+				'name'  => ( $order->get_formatted_billing_full_name() ) ?: null,
+				'email' => ( $order->get_billing_email() ) ?: null,
+				'phone' => ( $order->get_billing_phone() ) ?: null,
+				'company' => ( $order->get_billing_company() ) ?: null,
+				'address' => [
+					'country' => ( $order->get_billing_country() ) ?: null,
+					'city'    => ( $order->get_billing_city() ) ?: null,
+					'line1'   => ( $order->get_billing_address_1() ) ?: null,
+					'line2'   => ( $order->get_billing_address_2() ) ?: null,
+					'zip'     => ( $order->get_billing_postcode() ) ?? null,
+					'state'   => ( $order->get_billing_state() ) ?: null,
+				],
+			],
+			'shippingDetails' => [
+				'name'  => ( $order->get_formatted_shipping_full_name() ) ?: null,
+				'email' => $user_email,
+				'phone' => ( $order->get_shipping_phone() ) ?: null,
+				'company' => ( $order->get_shipping_company() ) ?: null,
+				'address' => [
+					'country' => ( $order->get_shipping_country() ) ?: null,
+					'city'    => ( $order->get_shipping_city() ) ?: null,
+					'line1'   => ( $order->get_shipping_address_1() ) ?: null,
+					'line2'   => ( $order->get_shipping_address_2() ) ?: null,
+					'zip'     => ( $order->get_shipping_postcode() ) ?: null,
+					'state'   => ( $order->get_shipping_state() ) ?: null,
+				],
 			],
 			'allowedPaymentMethods' => [ $allowed_payment_method ],
 		];
