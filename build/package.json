@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@release-it/bumper": "^3.0.1",
-    "terser": "^5.9.0",
-    "release-it": "^14.10.1"
+    "release-it": "^14.12.4",
+    "terser": "^5.10.0"
   }
 }
