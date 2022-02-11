@@ -110,6 +110,15 @@
 				if ( wc_monei_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 				}
+
+				// If a tokenised card is checked, we hide google/apple request button.
+				if ( wc_monei_form.is_checkout && wc_monei_params.apple_google_pay ) {
+					if ( wc_monei_form.is_tokenized_cc_selected() ) {
+						wc_monei_form.hide_payment_request_container();
+					} else {
+						wc_monei_form.show_payment_request_container();
+					}
+				}
 			} else {
 				if ( wc_monei_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
@@ -152,6 +161,12 @@
 			paymentRequest.render('#payment-request-container');
 			// Assign a global variable to paymentRequest so it's accessible.
 			window.paymentRequest = paymentRequest;
+		},
+		hide_payment_request_container: function() {
+			$('#payment-request-container').hide();
+		},
+		show_payment_request_container: function() {
+			$('#payment-request-container').show();
 		},
 		init_checkout_monei: function() {
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.

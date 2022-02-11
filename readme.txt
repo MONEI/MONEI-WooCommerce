@@ -96,6 +96,9 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 
 == Changelog ==
 
+= 5.6.4 =
+* Hide/Show Payment request button on tokenised card selection
+
 = 5.6.3 =
 * Pass billing and shipping information when transaction is created
 
