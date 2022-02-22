@@ -117,7 +117,7 @@ class WC_Monei_API {
 	 */
 	public static function get_payment( $payment_id ) {
 		$client = self::get_client();
-		return $client->payments->get( $payment_id, );
+		return $client->payments->get( $payment_id );
 	}
 
 	/**
