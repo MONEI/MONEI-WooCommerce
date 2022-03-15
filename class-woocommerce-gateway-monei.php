@@ -5,7 +5,7 @@
  * @author   Manuel Rodriguez
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  5.6.5
+ * @version  5.6.6
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '5.6.5';
+		public $version = '5.6.6';
 
 		/**
 		 * The single instance of the class.
