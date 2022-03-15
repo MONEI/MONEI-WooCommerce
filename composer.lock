@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1b89d12ae80f8e2e5dfa546903713d9e",
+    "content-hash": "4dd57cb1c875a85ca707bac752312ad3",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -244,23 +244,23 @@
         },
         {
             "name": "monei/monei-php-sdk",
-            "version": "1.0.0",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MONEI/monei-php-sdk.git",
-                "reference": "951acda016904e38bc6127e016fd121489936bbc"
+                "reference": "e4e95aa4da8d9224338e54c8b2758b9b719cfe1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/951acda016904e38bc6127e016fd121489936bbc",
-                "reference": "951acda016904e38bc6127e016fd121489936bbc",
+                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/e4e95aa4da8d9224338e54c8b2758b9b719cfe1a",
+                "reference": "e4e95aa4da8d9224338e54c8b2758b9b719cfe1a",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
-                "guzzlehttp/guzzle": "^6.2",
+                "guzzlehttp/guzzle": "^6.5.5",
                 "php": ">=5.5"
             },
             "require-dev": {
@@ -271,8 +271,8 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "OpenAPI\\Client\\": "lib/",
-                    "Monei\\": "lib/"
+                    "Monei\\": "lib/",
+                    "OpenAPI\\Client\\": "lib/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -300,9 +300,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MONEI/monei-php-sdk/issues",
-                "source": "https://github.com/MONEI/monei-php-sdk/tree/1.0.0"
+                "source": "https://github.com/MONEI/monei-php-sdk/tree/1.0.2"
             },
-            "time": "2021-11-29T18:44:11+00:00"
+            "time": "2022-03-08T14:19:25+00:00"
         },
         {
             "name": "psr/http-message",
