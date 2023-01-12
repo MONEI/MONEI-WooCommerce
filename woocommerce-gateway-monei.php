@@ -13,10 +13,10 @@
  * Version: 5.6.6
  * Author: MONEI
  * Author URI: https://www.monei.com/
- * Tested up to: 5.8.3
+ * Tested up to: 6.1.1
  * WC requires at least: 3.0
- * WC tested up to: 6.3.1
- * Requires PHP: 7.0
+ * WC tested up to: 7.2.3
+ * Requires PHP: 7.2
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2021 MONEI.
