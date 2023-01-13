@@ -10,7 +10,7 @@
  * Plugin Name: WooCommerce MONEI Gateway
  * Plugin URI: https://wordpress.org/plugins/monei/
  * Description: Accept Credit Card / PayPal / Bizum / Cofidis payments through MONEI.
- * Version: 5.6.6
+ * Version: 5.6.7
  * Author: MONEI
  * Author URI: https://www.monei.com/
  * Tested up to: 6.1.1
