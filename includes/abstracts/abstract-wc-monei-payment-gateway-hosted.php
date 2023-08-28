@@ -106,6 +106,9 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
+		
+		// Filter to enable external changes on payload.
+		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
 
 		try {
 			// We set the order, so we can use the right api key configuration.
