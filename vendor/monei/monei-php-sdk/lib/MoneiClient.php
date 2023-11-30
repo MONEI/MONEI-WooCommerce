@@ -32,7 +32,7 @@ class MoneiClient
     /**
      * SDK Version.
      */
-    const SDK_VERSION = '1.0.2';
+    const SDK_VERSION = '2.3.0';
 
     /**
      * @var Configuration
@@ -43,6 +43,16 @@ class MoneiClient
      * @var PaymentsApi
      */
     public $payments;
+
+    /**
+     * @var SubscriptionsApi
+     */
+    public $subscriptions;
+
+    /**
+     * @var ApplePayDomainApi
+     */
+    public $applePayDomain;
 
     /**
      * @param string          $apiKey

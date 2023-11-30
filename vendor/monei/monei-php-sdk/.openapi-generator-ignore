@@ -17,6 +17,7 @@
 #!docs/README.md
 
 composer.json
+.gitignore
 README.md
 lib/MoneiClient.php
 docs/**

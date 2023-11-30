@@ -237,6 +237,7 @@ flycheck_*.el
 # SFTP configuration file
 sftp-config.json
 sftp-config-alt*.json
+# ref: https://github.com/github/gitignore/blob/master/Composer.gitignore
 
 # Package control specific files
 Package Control.last-run
@@ -470,11 +471,18 @@ composer.lock
 *.css.map
 *.sass.map
 *.scss.map
+# composer.lock
 
 ##### MONEI Custom
+# php-cs-fixer cache
+.php_cs.cache
+.php-cs-fixer.cache
 
 build/node_modules/
 build/openapi.json
 test.php
 
 .idea
+# PHPUnit cache
+.phpunit.result.cache
+

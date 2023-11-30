@@ -10,7 +10,7 @@ This library is intended to help you develop an integration around our API, by u
 
 ## Requirements
 
-PHP 5.5 and later
+PHP 7.2 and later
 
 ## Installation & Usage
 
@@ -27,7 +27,7 @@ Or add the following to `composer.json`:
 ```json
 {
   "require": {
-    "monei/monei-php-sdk": "^0.1.9"
+    "monei/monei-php-sdk": "^1.2.0"
   }
 }
 ```
