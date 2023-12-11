@@ -1,0 +1,47 @@
+{
+    "name": "monei/monei-php-sdk",
+    "description": "The MONEI SDK will allow you to interact with our API in an easy and predictable way.",
+    "keywords": [
+        "monei",
+        "monei pay",
+        "pay",
+        "payments",
+        "payment gateway",
+        "php",
+        "sdk",
+        "rest",
+        "api"
+    ],
+    "homepage": "https://monei.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "MONEI",
+            "homepage": "https://monei.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "guzzlehttp/guzzle": "^7.8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6.13",
+        "squizlabs/php_codesniffer": "~2.6",
+        "friendsofphp/php-cs-fixer": "~2.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenAPI\\Client\\": "lib/",
+            "Monei\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OpenAPI\\Client\\": "test/",
+            "Monei\\" : "lib/"
+        }
+    }
+}

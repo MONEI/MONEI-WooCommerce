@@ -1,0 +1,44 @@
+{
+  "name": "monei-php-sdk",
+  "version": "2.3.0",
+  "description": "MONEI PHP SDK",
+  "author": "monei",
+  "scripts": {
+    "build": "openapi-generator-cli generate -i https://js.monei.com/api/v1/openapi.json -g php --remove-operation-id-prefix -c ./config.json -o ../",
+    "build:local": "openapi-generator-cli generate -i ./openapi.json -g php --remove-operation-id-prefix -c ./config.json -o ../",
+    "release": "release-it"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.5.1",
+    "@release-it/bumper": "^4.0.0",
+    "release-it": "^15.1.1"
+  },
+  "release-it": {
+    "git": {
+      "tagName": "${version}",
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": false
+    },
+    "hooks": {
+      "after:bump": "yarn run build && git add -A"
+    },
+    "plugins": {
+      "@release-it/bumper": {
+        "out": [
+          {
+            "file": "config.json",
+            "path": "artifactVersion"
+          },
+          "../lib/MoneiClient.php"
+        ]
+      }
+    }
+  }
+}
