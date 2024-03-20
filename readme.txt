@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.4.3
-Stable tag: 5.7.1
+Stable tag: 5.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
@@ -95,16 +95,16 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
-= 5.7.1 =
+= 5.7.2 =
 * Monei PHP SDK upgrade. Guzzle 7.x
 
-= 5.7.1 =
+= 5.7.2 =
 * Hide/Show Payment request button on tokenised card selection
 
-= 5.7.1 =
+= 5.7.2 =
 * Pass billing and shipping information when transaction is created
 
-= 5.7.1 =
+= 5.7.2 =
 * Readme Update.
 
 = 5.6 =
