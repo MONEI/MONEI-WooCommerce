@@ -75,7 +75,7 @@ class WC_Monei_Redirect_Hooks {
 			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
 			$error_message = filter_input( INPUT_GET, 'message' );
 			if ( $error_message ) {
-				wc_add_notice( __( $error_message, 'monei' ), 'error' );
+				wc_add_notice( $error_message, 'error' );
 			}
 			return;
 		}
