@@ -89,6 +89,12 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 * Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
 * Click on "Create API Key"
 
+= Use of 3rd Party Services =
+This plugin is using [MONEI API](https://docs.monei.com/api/) to process payments as well as
+[MONEI UI Components](https://docs.monei.com/docs/monei-js/overview/) to securely collect sensitive payment information during checkout.
+
+By using this plugin you agree with MONEI [Terms of Service](https://monei.com/legal-notice/) and [Privacy Policy](https://monei.com/privacy-policy/)
+
 == Screenshots ==
 
 1. Apple Pay, Bizum, PayPal, credit Card
