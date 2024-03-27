@@ -2,7 +2,7 @@
 /**
  * Installation related functions and actions.
  *
- * @author   Manuel Rodriguez
+ * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
  * @version  5.7.2

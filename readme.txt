@@ -95,16 +95,19 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
-= 5.7.2 =
+= 5.7.0 =
+* Update dependencies
+
+= 5.6.6 =
 * Monei PHP SDK upgrade. Guzzle 7.x
 
-= 5.7.2 =
-* Hide/Show Payment request button on tokenised card selection
+= 5.6.4 =
+* Hide/Show Payment request button on tokenized card selection
 
-= 5.7.2 =
+= 5.6.3 =
 * Pass billing and shipping information when transaction is created
 
-= 5.7.2 =
+= 5.6.1 =
 * Readme Update.
 
 = 5.6 =

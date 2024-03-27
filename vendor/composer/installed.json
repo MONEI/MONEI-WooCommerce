@@ -336,17 +336,17 @@
         },
         {
             "name": "monei/monei-php-sdk",
-            "version": "2.3.0",
-            "version_normalized": "2.3.0.0",
+            "version": "2.3.2",
+            "version_normalized": "2.3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MONEI/monei-php-sdk.git",
-                "reference": "e8836e39b7856a867b8af1e008a94fd9a4cda681"
+                "reference": "2fba652882fc20fe18ef531a1ea1dff36e81c7ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/e8836e39b7856a867b8af1e008a94fd9a4cda681",
-                "reference": "e8836e39b7856a867b8af1e008a94fd9a4cda681",
+                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/2fba652882fc20fe18ef531a1ea1dff36e81c7ac",
+                "reference": "2fba652882fc20fe18ef531a1ea1dff36e81c7ac",
                 "shasum": ""
             },
             "require": {
@@ -361,7 +361,7 @@
                 "phpunit/phpunit": "^9.6.13",
                 "squizlabs/php_codesniffer": "~2.6"
             },
-            "time": "2023-11-30T17:48:04+00:00",
+            "time": "2024-03-27T10:59:29+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -395,7 +395,7 @@
             ],
             "support": {
                 "issues": "https://github.com/MONEI/monei-php-sdk/issues",
-                "source": "https://github.com/MONEI/monei-php-sdk/tree/2.3.0"
+                "source": "https://github.com/MONEI/monei-php-sdk/tree/2.3.2"
             },
             "install-path": "../monei/monei-php-sdk"
         },
@@ -617,27 +617,27 @@
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v2.5.2",
-            "version_normalized": "2.5.2.0",
+            "version": "v3.4.0",
+            "version_normalized": "3.4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "e8b495ea28c1d97b5e0c121748d6f9b53d075c66"
+                "reference": "7c3aff79d10325257a001fcf92d991f24fc967cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/e8b495ea28c1d97b5e0c121748d6f9b53d075c66",
-                "reference": "e8b495ea28c1d97b5e0c121748d6f9b53d075c66",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/7c3aff79d10325257a001fcf92d991f24fc967cf",
+                "reference": "7c3aff79d10325257a001fcf92d991f24fc967cf",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=8.1"
             },
-            "time": "2022-01-02T09:53:40+00:00",
+            "time": "2023-05-23T14:45:45+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "2.5-dev"
+                    "dev-main": "3.4-dev"
                 },
                 "thanks": {
                     "name": "symfony/contracts",
@@ -667,7 +667,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v2.5.2"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.4.0"
             },
             "funding": [
                 {

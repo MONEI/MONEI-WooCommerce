@@ -3,9 +3,9 @@
  * WooCommerce MONEI Gateway
  *
  * @package WooCommerce MONEI Gateway
- * @author Manuel Rodriguez
+ * @author MONEI
  * @copyright 2020-2020 MONEI
- * @license GPL-3.0+
+ * @license GPL-2.0+
  *
  * Plugin Name: WooCommerce MONEI Gateway
  * Plugin URI: https://wordpress.org/plugins/monei/
@@ -20,8 +20,8 @@
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2021 MONEI.
- * License: GNU General Public License v3.0
- * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ * License: GPLv2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  */
 
 // If this file is called directly, abort.
