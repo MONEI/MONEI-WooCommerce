@@ -221,7 +221,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	function payment_fields() {
 		ob_start();
 		if ( is_add_payment_method_page() ) {
-			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
+			esc_html_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
 		} elseif ( $this->is_subscription_change_payment_page() ) {

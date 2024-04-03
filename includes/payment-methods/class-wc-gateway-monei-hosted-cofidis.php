@@ -116,7 +116,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 	public function payment_fields() {
 		ob_start();
 		if ( is_checkout() ) {
-			echo $this->description;
+			echo esc_html( $this->description );
 			$this->render_cofidis_widget();
 		}
 		ob_end_flush();
