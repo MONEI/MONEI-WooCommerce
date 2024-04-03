@@ -137,7 +137,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			 * If Dismissed, we save the versions installed.
 			 */
 			if ( isset( $_GET['monei-hide-new-version'] ) && 'hide-new-version-monei' === $_GET['monei-hide-new-version'] ) {
-				if ( wp_verify_nonce( $_GET['_monei_hide_new_version_nonce'], 'monei_hide_new_version_nonce' ) ) {
+				if ( wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_monei_hide_new_version_nonce'] ) ), 'monei_hide_new_version_nonce' ) ) {
 					update_option( 'hide-new-version-monei-notice', MONEI_VERSION );
 				}
 				return;

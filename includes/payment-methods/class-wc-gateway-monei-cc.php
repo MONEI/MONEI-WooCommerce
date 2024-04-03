@@ -149,7 +149,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	public function add_payment_method() {
 
-		if ( ! wp_verify_nonce( $_POST['woocommerce-add-payment-method-nonce'], 'woocommerce-add-payment-method' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-add-payment-method-nonce'] ) ), 'woocommerce-add-payment-method' ) ) {
 			return array(
 				'result'   => 'failure',
 				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
