@@ -30,18 +30,18 @@ class WC_Monei_Redirect_Hooks {
 	 * @return void
 	 */
 	public function add_notice_monei_order_cancelled( $order_id ) {
-		if ( isset( $_GET['status'] ) && isset( $_GET['message'] ) && 'FAILED' === $_GET['status'] ) {
+		if ( isset( $_GET['status'] ) && isset( $_GET['message'] ) && 'FAILED' === sanitize_text_field( $_GET['status'] ) ) {
 			$order_id = absint( $_GET['order_id'] );
 			$order    = wc_get_order( $order_id );
 
-			$order->add_order_note( __( 'MONEI Status: ', 'monei' ) . esc_html( $_GET['status'] ) );
-			$order->add_order_note( __( 'MONEI message: ', 'monei' ) . esc_html( $_GET['message'] ) );
+			$order->add_order_note( __( 'MONEI Status: ', 'monei' ) . esc_html( sanitize_text_field($_GET['status'] ) ) );
+			$order->add_order_note( __( 'MONEI message: ', 'monei' ) . esc_html( sanitize_text_field($_GET['message'] ) ) );
 
 			wc_add_notice( esc_html( $_GET['message'] ), 'error' );
 
 			WC_Monei_Logger::log( __( 'Order Cancelled: ', 'monei' ) . $order_id );
-			WC_Monei_Logger::log( __( 'MONEI Status: ', 'monei' ) . esc_html( $_GET['status'] ) );
-			WC_Monei_Logger::log( __( 'MONEI message: ', 'monei' ) . esc_html( $_GET['message'] ) );
+			WC_Monei_Logger::log( __( 'MONEI Status: ', 'monei' ) . esc_html( sanitize_text_field($_GET['status'] ) ) );
+			WC_Monei_Logger::log( __( 'MONEI message: ', 'monei' ) . esc_html( sanitize_text_field($_GET['message'] ) ) );
 		}
 	}
 
@@ -70,7 +70,7 @@ class WC_Monei_Redirect_Hooks {
 		 * In the redirect back (from add payment method), the payment could have been failed, the only way to check is the url $_GET['status']
 		 * We should remove the "Payment method successfully added." notice and add a 'Unable to add payment method to your account.' manually.
 		 */
-		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== $_GET['status'] ) ) {
+		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== sanitize_text_field( $_GET['status'] ) ) ) {
 			wc_clear_notices();
 			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
 			$error_message = filter_input( INPUT_GET, 'message' );
