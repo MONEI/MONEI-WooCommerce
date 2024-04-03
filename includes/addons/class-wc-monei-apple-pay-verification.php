@@ -36,7 +36,7 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 		}
 
 		try {
-			$domain = isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
+			$domain = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
 			WC_Monei_API::register_apple_domain( $domain );
 		} catch ( OpenAPI\Client\ApiException $e ) {
 			WC_Monei_Logger::log( $e, 'error' );
