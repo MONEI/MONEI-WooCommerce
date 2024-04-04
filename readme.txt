@@ -1,4 +1,4 @@
-=== MONEI WooCommerce ===
+=== MONEI Gateway for WooCommerce ===
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
