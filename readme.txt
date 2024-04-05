@@ -1,4 +1,4 @@
-=== MONEI Gateway for WooCommerce ===
+=== MONEI Payments Gateway for WooCommerce ===
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
@@ -9,7 +9,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
 WC tested up to: 7.2.3
 
-Accept payments in your WooCommerce store using MONEI payment gateway
+Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment methods in your WooCommerce store using MONEI payment gateway.
 
 == Description ==
 
