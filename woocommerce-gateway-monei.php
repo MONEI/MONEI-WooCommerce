@@ -10,7 +10,7 @@
  * Plugin Name: MONEI Payments Gateway
  * Plugin URI: https://wordpress.org/plugins/monei/
  * Description: Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment methods in your store.
- * Version: 5.7.2
+ * Version: 5.8.0
  * Author: MONEI
  * Author URI: https://www.monei.com/
  * Tested up to: 6.1.1
