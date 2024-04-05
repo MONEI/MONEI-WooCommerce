@@ -27,7 +27,7 @@ class WC_Monei_IPN {
 	 */
 	public function check_ipn_request() {
 
-		if ( ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) ) {
+		if ( ( 'POST' !== sanitize_text_field( $_SERVER['REQUEST_METHOD'] ) ) ) {
 			return;
 		}
 
@@ -36,7 +36,7 @@ class WC_Monei_IPN {
 		$this->log_ipn_request( $headers, $raw_body );
 
 		try {
-			$payload = $this->verify_signature_get_payload( $raw_body, $_SERVER['HTTP_MONEI_SIGNATURE'] );
+			$payload = $this->verify_signature_get_payload( $raw_body, sanitize_text_field( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
 			WC_Monei_Logger::log( $payload, 'debug' );
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );

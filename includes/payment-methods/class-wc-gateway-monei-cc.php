@@ -149,7 +149,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	public function add_payment_method() {
 
-		if ( ! wp_verify_nonce( $_POST['woocommerce-add-payment-method-nonce'], 'woocommerce-add-payment-method' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-add-payment-method-nonce'] ) ), 'woocommerce-add-payment-method' ) ) {
 			return array(
 				'result'   => 'failure',
 				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
@@ -221,7 +221,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	function payment_fields() {
 		ob_start();
 		if ( is_add_payment_method_page() ) {
-			_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
+			esc_html_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
 		} elseif ( $this->is_subscription_change_payment_page() ) {

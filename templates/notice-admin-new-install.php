@@ -1,3 +1,7 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly 
+?>
+
 <div id="message" class="updated woocommerce-message woocommerce-monei-messages">
     <div class="contenido-monei-notice">
         <a class="woocommerce-message-close notice-dismiss" style="top:0;"
