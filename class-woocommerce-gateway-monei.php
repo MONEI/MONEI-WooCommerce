@@ -5,7 +5,7 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  5.8.1
+ * @version  5.8.2
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '5.8.1';
+		public $version = '5.8.2';
 
 		/**
 		 * The single instance of the class.
