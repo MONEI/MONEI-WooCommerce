@@ -19,7 +19,11 @@ jobs:
     - uses: php-actions/composer@v6
 
     - name: Archive Release
-      run: zip -r MONEI-WooCommerce.zip . -x '*.git*' -x '/build/*'
+      uses: thedoctor0/zip-release@0.7.5
+      with:
+        type: 'zip'
+        filename: 'MONEI-WooCommerce.zip'
+        exclusions: '*.git* /build/*'
 
     - name: Upload Release
       uses: ncipollo/release-action@v1.14.0
