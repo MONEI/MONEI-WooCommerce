@@ -18,6 +18,17 @@ jobs:
 
     - uses: php-actions/composer@v6
 
+    - name: Archive Release
+      run: zip -r MONEI-WooCommerce.zip . -x '*.git*' -x '/build/*'
+
+    - name: Upload Release
+      uses: ncipollo/release-action@v1.14.0
+      with:
+        allowUpdates: true
+        artifacts: 'MONEI-WooCommerce.zip'
+        artifactContentType: 'application/zip'
+        token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: WordPress Plugin Deploy
       id: deploy
       uses: 10up/action-wordpress-plugin-deploy@stable
