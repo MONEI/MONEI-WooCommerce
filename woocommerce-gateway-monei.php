@@ -1,13 +1,13 @@
 <?php
 /**
- * MONEI Payments Gateway
+ * MONEI Payments for WooCommerce
  *
  * @package MONEI Payments
  * @author MONEI
  * @copyright 2020-2020 MONEI
  * @license GPL-2.0+
  *
- * Plugin Name: MONEI Payments Gateway
+ * Plugin Name: MONEI Payments for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/monei/
  * Description: Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment methods in your store.
  * Version: 5.8.3

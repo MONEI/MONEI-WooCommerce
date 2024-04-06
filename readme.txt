@@ -1,4 +1,4 @@
-=== MONEI Payments Gateway for WooCommerce ===
+=== MONEI Payments for WooCommerce ===
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
@@ -31,7 +31,7 @@ Let shoppers pay from the convenience of their smartphone with digital wallets l
 
 Offering customers [many payment methods](https://monei.com/es/online-payment-methods/) leads to an increase in sales and customer satisfaction. 🚀
 
-= WHY TO USE MONEI’S PAYMENT GATEWAY PLUGIN FOR WOOCOMMERCE =
+= WHY TO USE MONEI’S PAYMENT PLUGIN FOR WOOCOMMERCE =
 
 MONEI’s serverless architecture allows you to scale and process a high volume of transactions. Its dynamic pricing model means as you sell more your transaction fees decrease. Once you’re an approved merchant, enjoy 1-day payment settlements.
 
