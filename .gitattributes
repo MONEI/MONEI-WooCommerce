@@ -7,3 +7,5 @@
 /output.log export-ignore
 /.gitattributes export-ignore
 /.gitignore export-ignore
+/DOCKER_ENV export-ignore
+/docker_tag export-ignore
