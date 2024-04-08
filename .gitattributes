@@ -1,6 +1,7 @@
 # Directories
 /build export-ignore
 /.github export-ignore
+/.git export-ignore
 
 # Files
 /output.log export-ignore

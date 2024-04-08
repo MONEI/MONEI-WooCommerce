@@ -1,5 +1,6 @@
 /build
 /.github
+/.git
 
 output.log
 .distignore
