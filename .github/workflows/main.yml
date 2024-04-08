@@ -18,25 +18,20 @@ jobs:
 
     - uses: php-actions/composer@v6
 
-    - name: Archive Release
-      uses: thedoctor0/zip-release@0.7.5
+    - name: WordPress Plugin Deploy
+      id: deploy
+      uses: 10up/action-wordpress-plugin-deploy@stable
       with:
-        type: 'zip'
-        filename: 'MONEI-WooCommerce.zip'
-        exclusions: '*.git* /build/*'
+        generate-zip: true
+      env:
+        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        SLUG: monei
 
     - name: Upload Release
       uses: ncipollo/release-action@v1.14.0
       with:
         allowUpdates: true
-        artifacts: 'MONEI-WooCommerce.zip'
+        artifacts: ${{ steps.deploy.outputs.zip-path }}
         artifactContentType: 'application/zip'
         token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: WordPress Plugin Deploy
-      id: deploy
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      env:
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        SLUG: monei

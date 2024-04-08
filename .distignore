@@ -1,0 +1,6 @@
+/build
+/.github
+
+output.log
+.distignore
+.gitignore
