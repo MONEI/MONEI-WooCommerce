@@ -101,6 +101,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+= 5.8.8 =
+* Fix partial refunds
+
+= 5.8.7 =
+* Update dependencies
+
 = 5.7.0 =
 * Update dependencies
 
