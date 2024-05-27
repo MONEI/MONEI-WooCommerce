@@ -2,7 +2,7 @@
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
-Tested up to: 6.5.2
+Tested up to: 6.5.3
 Stable tag: 5.8.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
