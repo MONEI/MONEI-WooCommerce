@@ -50,7 +50,10 @@ function monei_get_option_key_from_order( $order ) {
 		return $option_key;
 	}
 
-	$order = is_numeric( $order ) ? new WC_Order( $order ) : $order;
+    if ( is_numeric( $order ) || is_string( $order ) ) {
+        $order = new WC_Order( $order );
+    }
+
 	if ( isset( $order ) && $order->get_payment_method() ) {
 		switch ( $order->get_payment_method() ) {
 			case 'monei_bizum':
