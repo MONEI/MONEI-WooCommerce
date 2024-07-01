@@ -13,15 +13,16 @@
  * Version: 5.8.12
  * Author: MONEI
  * Author URI: https://www.monei.com/
- * Tested up to: 6.1.1
+ * Tested up to: 6.5.5
  * WC requires at least: 3.0
- * WC tested up to: 7.2.3
+ * WC tested up to: 9.0.2
  * Requires PHP: 7.2
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2021 MONEI.
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ * Requires Plugins: woocommerce 
  */
 
 // If this file is called directly, abort.
