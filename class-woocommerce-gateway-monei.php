@@ -58,7 +58,30 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			}
 
 			self::$_initialized = true;
+			
+			// Declare block compatibility
+			$this->block_compatiblity();
+
 			add_action( 'plugins_loaded', array( $this, 'continue_init' ), -1 );
+		}
+
+		public function block_compatiblity() {
+
+			// Load checkout block class
+			add_action( 'woocommerce_blocks_loaded', function() {
+
+				if( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+					return;
+				}
+
+				require_once 'includes/class-monei-cc-blocks.php';
+
+				add_action(	'woocommerce_blocks_payment_method_type_registration',
+					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+						$payment_method_registry->register( new WC_Gateway_Monei_CC_Blocks );
+				} );
+
+			} );
 		}
 
 		/**
