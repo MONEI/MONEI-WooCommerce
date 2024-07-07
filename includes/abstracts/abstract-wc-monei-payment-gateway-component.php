@@ -77,7 +77,9 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			WC_Monei_Logger::log( $e, 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
-			return;
+			return array(
+				'result'   => 'failure',
+			);
 		}
 	}
 

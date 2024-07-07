@@ -152,14 +152,20 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		}
 
 		$payment_id = $order->get_meta( '_payment_order_number_monei', true );
+
 		try {
+
 			$result = WC_Monei_API::refund_payment( $payment_id, monei_price_format( $amount ) );
+
 			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
-				WC_Monei_Logger::log( 'Refund approved.', 'debug' );
-				WC_Monei_Logger::log( $result, 'debug' );
-				$order->add_order_note( '<strong>Refund Approved</strong>: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
-				$order->update_status('refunded', 'Refunded issued by admin.');
+
+				WC_Monei_Logger::log( $amount . ' Refund approved.', 'debug' );
+				//WC_Monei_Logger::log( $result, 'debug' );
+
+				$order->add_order_note( '<strong>MONEI Refund Approved:</strong> ' . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+
 				return true;
+
 			}
 		} catch ( Exception $e ) {
 			WC_Monei_Logger::log( 'Refund error: ' . $e->getMessage(), 'error' );

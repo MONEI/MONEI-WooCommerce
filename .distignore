@@ -1,0 +1,9 @@
+/build
+/.github
+/.git
+
+output.log
+.distignore
+.gitignore
+DOCKER_ENV
+docker_tag

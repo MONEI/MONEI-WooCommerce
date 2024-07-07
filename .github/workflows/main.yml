@@ -8,11 +8,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: /tmp/composer-cache
+        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+
+    - uses: php-actions/composer@v6
+
     - name: WordPress Plugin Deploy
       id: deploy
       uses: 10up/action-wordpress-plugin-deploy@stable
+      with:
+        generate-zip: true
       env:
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SLUG: monei
+
+    - name: Upload Release
+      uses: ncipollo/release-action@v1.14.0
+      with:
+        allowUpdates: true
+        omitBodyDuringUpdate: true
+        artifacts: ${{ steps.deploy.outputs.zip-path }}
+        artifactContentType: 'application/zip'
+        token: ${{ secrets.GITHUB_TOKEN }}
