@@ -13,6 +13,8 @@
  		$this->settings = get_option( 'woocommerce_monei_settings', array() );
  		$this->gateway  = new WC_Gateway_Monei_CC();
 
+		add_filter( 'woocommerce_saved_payment_methods_list', [ $this, 'filter_saved_payment_methods_list' ], 10, 2 );
+
  	}
 
 
@@ -21,6 +23,22 @@
  		return 'yes' === $this->get_setting( 'enabled' );
 
  	}
+
+
+	/**
+	 * Removes all saved payment methods when the setting to save cards is disabled.
+	 *
+	 * @param  array $list         List of payment methods passed from wc_get_customer_saved_methods_list().
+	 * @param  int   $customer_id  The customer to fetch payment methods for.
+	 * @return array               Filtered list of customers payment methods.
+	 */
+	public function filter_saved_payment_methods_list( $list, $customer_id ) {
+		
+ 		if ( 'no' == $this->get_setting( 'tokenization' ) ) {
+			return [];
+		}
+		return $list;
+	}
 
 
  	public function get_payment_method_script_handles() {
