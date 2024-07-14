@@ -129,7 +129,7 @@
 		 */
 		print_errors: function (error_string ) {
 			jQuery( wc_monei_block_form.$errorContainer ).html( '<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>' );
-			jQuery( wc_monei_block_form.$errorContainer ).find( 'li' ).text( 'print_errors(monei) ' + error_string );
+			jQuery( wc_monei_block_form.$errorContainer ).find( 'li' ).text( error_string );
 			/**
 			 * Scroll to Monei Errors.
 			 */
