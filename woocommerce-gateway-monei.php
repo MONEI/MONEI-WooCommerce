@@ -15,7 +15,7 @@
  * Author URI: https://www.monei.com/
  * Tested up to: 6.5.5
  * WC requires at least: 3.0
- * WC tested up to: 9.0.2
+ * WC tested up to: 9.1.2
  * Requires PHP: 7.2
  * Text Domain: monei
  * Domain Path: /languages/
