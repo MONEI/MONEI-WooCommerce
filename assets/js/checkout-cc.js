@@ -33,7 +33,7 @@
 	},
 	k2=()=>{
 		if ( 'no' != c().tokenization ) {
-			return htmlToElem('<label> <input name="wc-monei-new-payment-method" type="checkbox" id="a" value="new"> ' + (0,r.__)('Save payment information to my account for future purchases.','monei') + '</label>');
+			return htmlToElem('<label> <input name="wc-monei-new-payment-method" type="checkbox" id="a" value="new" checked="checked" > ' + (0,r.__)('Save payment information to my account for future purchases.','monei') + '</label>');
 		}
 	},
 	k3=()=>{
