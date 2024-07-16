@@ -20,7 +20,14 @@
 
  	public function is_active() {
 
- 		return 'yes' === $this->get_setting( 'enabled' );
+		$id  = $this->get_setting( 'accountid' ) ?? 'false';
+		$key = $this->get_setting( 'apikey' ) ?? 'false';
+
+		if ( ! $id || ! $key ) {
+			return false;
+		}
+
+ 		return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
  	}
 
 
