@@ -5,6 +5,7 @@ build/node_modules
 vendor
 .php-version
 tests/node_modules/
+tests/test-results/
 
 # Yarn
 /build/.yarn/*
