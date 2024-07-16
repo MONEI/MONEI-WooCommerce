@@ -48,60 +48,63 @@
 		const
 			{onPaymentSetup:o}=a,
 			[s,setS,l]=(0,e.useState)('');
-			
-		(e.useEffect( ( ) => 
-			{
-				const validation = a.onCheckoutValidation( ( async ) => {
+				
+		if ( 'no' == c().redirect ) {
 
-					const createToken = async () => {
-						const moneiToken = await window.wc_monei_block_form.create_token();
-						setS( moneiToken );
-					}
+			(e.useEffect( ( ) => 
+				{
+						const validation = a.onCheckoutValidation( ( async ) => {
 
-					if ( ! jQuery('#monei_payment_token_created').length ) {
-						createToken();
-					}
+							const createToken = async () => {
+								const moneiToken = await window.wc_monei_block_form.create_token();
+								setS( moneiToken );
+							}
 
-				} );
+							if ( ! jQuery('#monei_payment_token_created').length ) {
+								createToken();
+							}
 
-				const unsubscribe = a.onPaymentSetup( ( async ) => {
+						} );
 
-					if ( ! jQuery('#monei_payment_token_created').length ) {
+						const unsubscribe = a.onPaymentSetup( ( async ) => {
 
-						//console.log( 'Missing token, stop this and wait for token creation which triggers click' );
-						throw new Error('but not an actual error. MONEI: just stop while waiting for remote token creation....');
-					}
+							if ( ! jQuery('#monei_payment_token_created').length ) {
 
-					const 
-						moneiToken = jQuery('#monei_payment_token_created').val(),
-						moneiDataIsValid= !! moneiToken.length;
+								//console.log( 'Missing token, stop this and wait for token creation which triggers click' );
+								throw new Error('but not an actual error. MONEI: just stop while waiting for remote token creation....');
+							}
 
-					if ( moneiDataIsValid ) {
-						
-						return {
-							type: n.responseTypes.SUCCESS,
-							meta: {
-								paymentMethodData: { monei_payment_token: moneiToken },
-							},
+							const 
+								moneiToken = jQuery('#monei_payment_token_created').val(),
+								moneiDataIsValid= !! moneiToken.length;
+
+							if ( moneiDataIsValid ) {
+								
+								return {
+									type: n.responseTypes.SUCCESS,
+									meta: {
+										paymentMethodData: { monei_payment_token: moneiToken },
+									},
+								};
+							}
+
+							return {
+								type: n.responseTypes.ERROR,
+								message: 'MONEI: There was an error with token creation.',
+							};
+
+						} );
+
+						// Unsubscribes when this component is unmounted.
+						return () => {
+							unsubscribe();
 						};
-					}
 
-					return {
-						type: n.responseTypes.ERROR,
-						message: 'MONEI: There was an error with token creation.',
-					};
+				}, 
+				[ n.responseTypes.ERROR, n.responseTypes.SUCCESS, a.onPaymentSetup, s ] 
+			));
 
-				} );
-
-				// Unsubscribes when this component is unmounted.
-				return () => {
-					unsubscribe();
-				};
-
-			}, 
-			[ n.responseTypes.ERROR, n.responseTypes.SUCCESS, a.onPaymentSetup, s ] 
-		));
-			
+		}
 
 		return(0,e.useEffect)((()=>o((()=>{
 
