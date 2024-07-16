@@ -21,7 +21,6 @@
  	public function is_active() {
 
  		return 'yes' === $this->get_setting( 'enabled' );
-
  	}
 
 
@@ -85,22 +84,22 @@
 
 		// yes: test mode.
  		// no:  live,
- 			'test_mode'=> $this->get_setting( 'testmode' ),
+ 			'test_mode'=> $this->get_setting( 'testmode' ) ?? 'no',
 
 		// yes: redirect the customer to the Hosted Payment Page.
  		// no:  credit card input will be rendered directly on the checkout page
- 			'redirect' => $this->get_setting( 'cc_mode' ),
+ 			'redirect' => $this->get_setting( 'cc_mode' ) ?? 'no',
 
 		// yes: Can save credit card and use saved cards.
  		// no:  Cannot save/use
- 			'tokenization' => $this->get_setting( 'tokenization' ),
+ 			'tokenization' => $this->get_setting( 'tokenization' ) ?? 'no',
 
 			'scriptUrl' => WC_Monei()->plugin_url() . '/assets/js/checkout-monei-cc.js',
 			'accountId' => $this->get_setting( 'accountid' ),
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
  		);
 
- 		if ( 'yes' === $this->get_setting( 'hide_logo' ) ) {
+ 		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
 
  			unset( $data['logo'] );
 
