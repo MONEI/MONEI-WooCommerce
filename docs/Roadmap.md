@@ -1,62 +1,123 @@
 # MONEI WooCommerce Plugin Roadmap
 
 ## 1. Bug Fixing
-  ### Bug: Log Transactions Only When Selected
-**Description:** Ensure that transactions are logged only when explicitly selected by the user. This should be handled in the logging mechanism of the plugin.
-**Subtasks:**
+
+### Description
+Update the plugin header to require PHP 7.4 instead of 7.2, and plan for phasing out older versions in line with WooCommerce and WordPress.
+
+### Subtasks
+  - Update the plugin header to require PHP 7.4.
+  - Plan for phasing out support for older PHP versions.
+
+### Acceptance Criteria
+  GIVEN the Monei plugin is onboarded
+  WHEN I check the plugin header requirements
+  THEN it should require PHP 7.4
+
+### Labels
+  bug, compatibility, php-version
+
+### Code Reference
+
+### Description
+Ensure all plugin settings are translated correctly when changing the WordPress language.
+
+### Subtasks
+  - Decide what languages to support.
+  - Review existing translations at WordPress.org.
+  - Add missing translations.
+  - Ensure all strings are translatable in the plugin.
+  - Add workflow to include translations in the pipeline: update pot file on push.
+  - Test the translations in different languages.
+
+### Acceptance Criteria
+  GIVEN the Monei plugin is onboarded
+  WHEN I change the WordPress language
+  THEN all plugin settings should be translated correctly
+
+### Labels
+  bug, translation, internationalization
+
+### Code Reference
+
+### Description
+Ensure that transactions are logged only when explicitly selected by the user. This should be handled in the logging mechanism of the plugin.
+
+### Subtasks
   - Update logging mechanism to check user selection before logging.
   - Ensure concise output for logs.
-**Acceptance Criteria:**
+
+### Acceptance Criteria
   GIVEN the Monei plugin is onboarded
   WHEN I enable logging for each payment method
   THEN the logs should include transactions in a compact way.
   WHEN I disable logging for transactions
   THEN there should not be logging
-**Labels:** bug, logging, user-experience
-**Code Reference:** 
 
-### Bug: Catch Errors and Display Consistent, User-Friendly Messages
-**Description:** Implement error handling to catch errors and display consistent, user-friendly messages across the plugin.
-**Subtasks:**
+### Labels
+  bug, logging, user-experience
+
+### Code Reference
+
+### Description
+Implement error handling to catch errors and display consistent, user-friendly messages across the plugin.
+
+### Subtasks
   - Implement error handling in all critical paths.
   - Ensure error messages are user-friendly and consistent.
-**Acceptance Criteria:**
+
+### Acceptance Criteria
   GIVEN the Monei plugin is onboarded
   WHEN an error occurs during a transaction
   THEN I should see a consistent, user-friendly error message
-**Labels:** bug, error-handling, user-experience
-**Code Reference:** 
 
-### Bug: Validate and Secure All Inputs
-**Description:** Validate and secure all user inputs to prevent security vulnerabilities.
-**Subtasks:**
+### Labels
+  bug, error-handling, user-experience
+
+### Code Reference
+
+### Description
+Validate and secure all user inputs to prevent security vulnerabilities.
+
+### Subtasks
   - Implement input validation.
   - Ensure inputs are sanitized and secured.
-**Acceptance Criteria:**
+
+### Acceptance Criteria
   GIVEN the Monei plugin is onboarded
   WHEN I run the CS and Psalm tool
   THEN no errors should be found regarding input validation
-**Labels:** bug, security, input-validation
-**Code Reference:** 
 
-### Bug: Avoid Checking Apple Authorization if Not Selected by the User
-**Description:** Ensure that Apple processes run only if selected by the user.
-**Subtasks:**
+### Labels
+  bug, security, input-validation
+
+### Code Reference
+
+### Description
+Ensure that Apple processes run only if selected by the user.
+
+### Subtasks
   - Update Apple authorization logic to check user selection before performing any process.
-**Acceptance Criteria:**
+
+### Acceptance Criteria
   GIVEN the Monei plugin is onboarded
   WHEN I do not select Apple Pay
   THEN the plugin should not check for Apple authorization
   AND no notice should be visible in the admin
-**Labels:** bug, performance, user-settings
-**Code Reference:** 
 
-### Bug: Centralize Account and ID Settings for Payment Methods
-**Description:** Centralize account and ID settings for Bizum, PayPal, credit card, and Cofidis to avoid confusion. Allow test mode to be set per payment method.
-**Subtasks:**
+### Labels
+  bug, performance, user-settings
+
+### Code Reference
+
+### Description
+Centralize account and ID settings for Bizum, PayPal, credit card, and Cofidis to avoid confusion. Allow test mode to be set per payment method.
+
+### Subtasks
   - Centralize account and key settings in a single page.
   - Allow test mode to be set individually for each payment method.
-**Acceptance Criteria:**
+
+### Acceptance Criteria
   GIVEN the Monei plugin is onboarded
   WHEN I navigate to the plugins settings page
   THEN I should see account and API key settings fields that will be used for all payment methods
@@ -66,47 +127,11 @@
   WHEN I navigate to the plugins settings page
   THEN I should see account and API key settings fields that will be used for all payment methods
   AND I should not see the payment methods listed in the WooCommerce Payment Methods Page
-**Labels:** bug, settings, configuration
-**Code Reference:** 
 
-### Bug: Fix Onboarding Links to Direct to the Correct Pages
-**Description:** Ensure that onboarding links direct users to the correct pages.
-**Subtasks:**
-  - Update onboarding links to point to the correct pages.
-**Acceptance Criteria:**
-  GIVEN the Monei plugin is not onboarded
-  WHEN I click on a link in the onboarding welcome message
-  THEN I should be directed to the correct page
-**Labels:** bug, onboarding, navigation
-**Code Reference:** 
+### Labels
+  bug, settings, configuration
 
-### Bug: Update Plugin Header to Require PHP 7.4
-**Description:** Update the plugin header to require PHP 7.4 instead of 7.2, and plan for phasing out older versions in line with WooCommerce and WordPress.
-**Subtasks:**
-  - Update the plugin header to require PHP 7.4.
-  - Plan for phasing out support for older PHP versions.
-**Acceptance Criteria:**
-  GIVEN the Monei plugin is onboarded
-  WHEN I check the plugin header requirements
-  THEN it should require PHP 7.4
-**Labels:** bug, compatibility, php-version
-**Code Reference:** 
-
-### Bug: Ensure All Plugin Settings are Translated Correctly
-**Description:** Ensure all plugin settings are translated correctly when changing the WordPress language.
-**Subtasks:**
-  - Decide what languages to support.
-  - Review existing translations at WordPress.org.
-  - Add missing translations.
-  - Ensure all strings are translatable in the plugin.
-  - Add workflow to include translations in the pipeline: update pot file on push.
-  - Test the translations in different languages.
-**Acceptance Criteria:**
-  GIVEN the Monei plugin is onboarded
-  WHEN I change the WordPress language
-  THEN all plugin settings should be translated correctly
-**Labels:** bug, translation, internationalization
-**Code Reference:** 
+### Code Reference
 
 ## 2. End-to-End Testing
 ### 2.1 Implement Playwright for E2E Tests
