@@ -141,13 +141,13 @@ Centralize account and ID settings for Bizum, PayPal, credit card, and Cofidis t
 
 ## 3. Continuous Integration (CI) Setup
 ### 3.1 Integrate Psalm for Static Analysis
-  - ~~Configure Psalm in the CI pipeline.~~
-  - ~~Set up a baseline for existing issues to be fixed incrementally.~~
+  - Configure Psalm in the CI pipeline.
+  - Set up a baseline for existing issues to be fixed incrementally.
 
 ### 3.2 Code Style and Linting
-  - ~~Configure PHP_CodeSniffer with WordPress coding standards.~~
-  - ~~Configure ESLint for JavaScript files.~~
-  - ~~Add linting checks to the CI pipeline.~~
+  - Configure PHP_CodeSniffer with WordPress coding standards.
+  - Configure ESLint for JavaScript files.
+  - Add linting checks to the CI pipeline.
 
 ## 4. Architectural Improvements
 ### 4.1 Implement PSR-4 Autoloading and Namespaces
