@@ -23,9 +23,10 @@
 - **Monei test mode**: The mode of the Monei plugin.
 - **Monei live mode**: The mode of the Monei plugin.
 - **Monei dashboard**: The dashboard of the Monei plugin at https://dashboard.monei.com/.
-- **Success magic number**: The number 1234567890123456.
-- **Failure magic number**: The number 1234567890123457.
-- **Pending magic number**: The number 1234567890123458.
+- **CC Success magic number**: The number 4444444444444422
+- **CC Failure magic number**: The number 1111222233334444
+- **CC Pending magic number**: The number 1234567890123458
+- **Bizum phone number**: The phone number +34500000000
 - **Monei payment method settings fields**: The fields in the settings page of the Monei payment method: 
             - **Enable/Disable**
             - **Use Redirect Flow**
