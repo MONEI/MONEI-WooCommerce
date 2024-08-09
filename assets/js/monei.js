@@ -272,7 +272,7 @@
 				.catch(
 					function (error) {
 						console.log( error );
-						wc_monei_form.print_errors( error );
+						wc_monei_form.print_errors( error.message );
 					}
 				);
 			return false;
