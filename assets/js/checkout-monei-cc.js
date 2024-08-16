@@ -1,17 +1,26 @@
-
+	/**
+	 * Get settings from monei_data.
+	 * @param id
+	 * @param token
+	 */
 	const
-		c=()=>{const e=(0,window.wc.wcSettings.getSetting)('monei_data',null);if(!e)throw new Error('MONEI initialization data is not available.');return e};
+		getSetting=()=>{
+			const settingValue=( 0, window.wc.wcSettings.getSetting )( 'monei_data',null );
+			if ( ! settingValue ) throw new Error( 'MONEI initialization data is not available.' );
+			return settingValue;
+		};
 
-	var wc_monei_block_form = {
+	/**
+	 * Our block form.
+	 */
+	let wc_monei_block_form = {
 		$cardInput: null,
 		$container: null,
 		$errorContainer: null,
 		$paymentForm: null,
 		form: jQuery( '.wc-block-checkout' ),
 		init_counter: 0,
-		is_monei_selected: function() {
-			return jQuery( '#radio-control-wc-payment-method-options-monei' ).is( ':checked' );
-		},	
+
 		init_checkout_monei: function() {
 
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
@@ -21,7 +30,7 @@
 				wc_monei_block_form.init_counter = 0;
 			}
 
-			// init monei just once, despite how many times this may be triggered.
+			// Init monei just once, despite how many times this may be triggered.
 			if ( 0 !== this.init_counter ) {
 				return;
 			}
@@ -29,7 +38,7 @@
 			wc_monei_block_form.$container      = document.getElementById( 'card-input' );
 			wc_monei_block_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
-			var style = {
+			let style = {
 				input: {
 					fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
 					fontSmoothing: "antialiased",
@@ -43,11 +52,12 @@
 				}
 			};
 
+			// Build our CardInput ( using `monei` from https://js.monei.com/v1/monei.js )
+
 			wc_monei_block_form.$cardInput = monei.CardInput(
 				{
-
-					accountId: c().accountId,
-					sessionId: c().sessionId,
+					accountId: getSetting().accountId,
+					sessionId: getSetting().sessionId,
 					style: style,
 					onChange: function (event) {
 						// Handle real-time validation errors.
@@ -74,14 +84,16 @@
 			// We already init CardInput.
 			this.init_counter++;
 		},
+
 		create_token: function() {
 
+			// This will be triggered when CC component is used and "Place order" has been clicked.
 			if ( jQuery( '#monei_payment_token_created' ).length ) {
-				// We already have the token.
+				// We already have the token, no need to create again.
 				return jQuery('#monei_payment_token_created').val();
 			}
 
-			// This will be triggered when CC component is used and "Place order" has been clicked.
+			// It is an async call using `monei` from https://js.monei.com/v1/monei.js )
 			monei.createToken( wc_monei_block_form.$cardInput )
 				.then(
 					function ( result ) {
@@ -111,25 +123,43 @@
 				);
 			return false;
 		},
+
+		/**
+		 * Handle creation of hidden input with token value.
+		 * @param id
+		 * @param token
+		 */
 		monei_token_handler: function( token ) {
 			wc_monei_block_form.create_hidden_input( 'monei_payment_token_created', token );
 		},
+
+		/**
+		 * Create hidden input with token.
+		 * @param id
+		 * @param token
+		 */
 		create_hidden_input: function( id, token ) {
-			var hiddenInput = document.createElement( 'input' );
+
+			let hiddenInput = document.createElement( 'input' );
+
 			hiddenInput.setAttribute( 'type', 'hidden' );
 			hiddenInput.setAttribute( 'name', id );
 			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
+
 			wc_monei_block_form.$paymentForm = document.getElementById( 'payment-form' );
 			wc_monei_block_form.$paymentForm.appendChild( hiddenInput );
 		},
+
 		/**
 		 * Printing errors into checkout form.
 		 * @param error_string
 		 */
 		print_errors: function (error_string ) {
+
 			jQuery( wc_monei_block_form.$errorContainer ).html( '<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>' );
 			jQuery( wc_monei_block_form.$errorContainer ).find( 'li' ).text( error_string );
+
 			/**
 			 * Scroll to Monei Errors.
 			 */
@@ -142,6 +172,7 @@
 				);
 			}
 		},
+
 		/**
 		 * Clearing form errors.
 		 */

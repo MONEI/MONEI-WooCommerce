@@ -70,7 +70,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Load checkout block class
 			add_action( 'woocommerce_blocks_loaded', function() {
 
-				if( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+				if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 					return;
 				}
 
