@@ -128,7 +128,9 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			return;
+			return array(
+				'result'   => 'failure',
+			);
 		}
 	}
 
