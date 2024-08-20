@@ -234,6 +234,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		public function plugins_loaded() {
 			$this->include_payment_methods();
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
+			add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_checkout' ), 2, 10 );
 		}
 
 		/**
@@ -330,6 +331,16 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function ajax_url() {
 			return admin_url( 'admin-ajax.php', 'relative' );
+		}
+
+		public function validate_checkout( $data, $errors ) {
+			//validate that the name and last name follow a pattern
+			if ( ! preg_match( '/^[A-Za-zÀ-ú- ]{5,50}$/', $data['billing_first_name'] ) ) {
+				$errors->add( 'validation', __( 'Please enter a valid name. Special characters are not allowed.', 'monei' ) );
+			}
+			if ( ! preg_match( '/^[A-Za-zÀ-ú- ]{5,50}$/', $data['billing_last_name'] ) ) {
+				$errors->add( 'validation', __( 'Please enter a valid last name. Special characters are not allowed.', 'monei' ) );
+			}
 		}
 	}
 
