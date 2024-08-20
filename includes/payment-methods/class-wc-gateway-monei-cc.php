@@ -76,7 +76,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();
-		new WC_Monei_IPN();
+		new WC_Monei_IPN($this->logging);
 
 		$this->supports = array(
 			'products',
@@ -160,9 +160,9 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		try {
 			$zero_payload = $this->create_zero_eur_payload();
 			$payment      = WC_Monei_API::create_payment( $zero_payload );
-			WC_Monei_Logger::log( 'WC_Monei_API::add_payment_method', 'debug' );
-			WC_Monei_Logger::log( $zero_payload, 'debug' );
-			WC_Monei_Logger::log( $payment, 'debug' );
+			$this->log( 'WC_Monei_API::add_payment_method', 'debug' );
+			$this->log( $zero_payload, 'debug' );
+			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_add_payment_method_success', $zero_payload, $payment );
 
 			return array(
@@ -170,7 +170,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
 		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( $e, 'error' );
+			$this->log( $e, 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			return array(
