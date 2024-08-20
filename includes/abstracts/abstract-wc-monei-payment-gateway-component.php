@@ -75,7 +75,14 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			WC_Monei_Logger::log( $e, 'error' );
+			// Extract and log the responseBody message
+			$response_body = json_decode($e->getResponseBody(), true);
+			if (isset($response_body['message'])) {
+				WC_Monei_Logger::log( $response_body['message'], 'error' );
+				wc_add_notice( $response_body['message'], 'error' );
+				return;
+			}
+			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			return;
 		}
