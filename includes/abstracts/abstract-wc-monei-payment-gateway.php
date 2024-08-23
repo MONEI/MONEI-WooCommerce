@@ -119,6 +119,18 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Override the get_icon method to add a custom class to the icon.
+	 *
+	 * @return string
+	 */
+	public function get_icon()
+    {
+        $output = $this->icon ?: '';
+        return apply_filters('woocommerce_gateway_icon', $output, $this->id);
+    }
+
+
+	/**
 	 * Admin Panel Options
 	 *
 	 * @access public
