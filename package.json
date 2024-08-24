@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@wordpress/scripts": "^28.6.0"
+  },
+  "scripts": {
+  "lint:js": "wp-scripts lint-js ./assets",
+  "lint:pkg-json": "wp-scripts lint-pkg-json .",
+  "lint:css": "wp-scripts lint-style ./assets",
+  "lint:md": "wp-scripts lint-md-js ."
+}
+}
