@@ -14,5 +14,10 @@
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/psalm",
+        "cs:check": "vendor/bin/phpcs --standard=phpcs.xml --extensions=php .",
+        "cs:fix": "vendor/bin/phpcbf --standard=phpcs.xml --extensions=php ."
     }
 }
