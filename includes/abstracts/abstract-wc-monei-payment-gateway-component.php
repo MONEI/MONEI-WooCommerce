@@ -101,9 +101,9 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		 */
 		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
 		/**
-		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
+		 * The URL the customer will be directed to if the payment failed.
 		 */
-		$fail_url = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url = esc_url_raw( $order->get_checkout_payment_url(false) );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -124,7 +124,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			],
 			'callbackUrl' => $callback_url,
 			'completeUrl' => $complete_url,
-			'cancelUrl'   => wc_get_checkout_url(),
+			'cancelUrl'   => $this->get_return_url( $order ),
 			'failUrl'     => $fail_url,
 			'transactionType' => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
 			'sessionDetails'  => [
