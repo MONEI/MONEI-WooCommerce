@@ -35,9 +35,9 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		 */
 		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
 		/**
-		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
+		 * The URL the customer will be directed to if the payment failed.
 		 */
-		$fail_url = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url = esc_url_raw( $order->get_checkout_payment_url(false) );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */

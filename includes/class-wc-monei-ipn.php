@@ -85,7 +85,14 @@ class WC_Monei_IPN {
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
 		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
 
-		if ( 'FAILED' === $status || 'CANCELED' === $status ) {
+		if ( 'FAILED' === $status ) {
+			// Order failed.
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Failed</strong>', 'monei' ) . $status );
+			$order->update_status( 'pending', 'Failed MONEI payment: ' . $status_message );
+			return;
+		}
+
+		if ( 'CANCELED' === $status ) {
 			// Order cancelled.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
 			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $status_message );
