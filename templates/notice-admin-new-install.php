@@ -15,13 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             <?php esc_html_e('The best payment gateway rates. The perfect solution to manage your digital payments.', 'monei'); ?>
         </p>
         <p class="submit">
-            <a href="<?php esc_url(MONEI_SIGNUP); ?>" class="button-primary"
+            <a href="<?php echo esc_url(MONEI_SIGNUP); ?>" class="button-primary"
                target="_blank"><?php esc_html_e('Signup', 'monei'); ?></a>
-            <a href="<?php esc_url(MONEI_WEB); ?>" class="button-primary"
+            <a href="<?php echo esc_url(MONEI_WEB); ?>" class="button-primary"
                target="_blank"><?php esc_html_e('MONEI website', 'monei'); ?></a>
-            <a href="<?php esc_url(MONEI_REVIEW); ?>" class="button-primary"
+            <a href="<?php echo esc_url(MONEI_REVIEW); ?>" class="button-primary"
                target="_blank"><?php esc_html_e('Leave a review', 'monei'); ?></a>
-            <a href="<?php esc_url(MONEI_SUPPORT); ?>" class="button-primary"
+            <a href="<?php echo esc_url(MONEI_SUPPORT); ?>" class="button-primary"
                target="_blank"><?php esc_html_e('Support', 'monei'); ?></a>
         </p>
     </div>
