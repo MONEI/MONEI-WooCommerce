@@ -46,7 +46,7 @@ class WC_Gateway_Monei_Paypal extends WC_Monei_Payment_Gateway_Hosted {
 
 		// IPN callbacks
 		$this->notify_url           = WC_Monei()->get_ipn_url();
-		new WC_Monei_IPN();
+		new WC_Monei_IPN($this->logging);
 
 		$this->supports             = array(
 			'products',

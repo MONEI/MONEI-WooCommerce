@@ -38,9 +38,9 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$create_payment = WC_Monei_API::create_payment( $payload );
 			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
 
-			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
-			WC_Monei_Logger::log( $payload, 'debug' );
-			WC_Monei_Logger::log( $create_payment, 'debug' );
+			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
+			$this->log( $payload, 'debug' );
+			$this->log( $create_payment, 'debug' );
 
 			$confirm_payment = false;
 			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method.
@@ -58,10 +58,10 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
 
-				WC_Monei_Logger::log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
-				WC_Monei_Logger::log( $create_payment->getId(), 'debug' );
-				WC_Monei_Logger::log( $confirm_payload, 'debug' );
-				WC_Monei_Logger::log( $confirm_payment, 'debug' );
+				$this->log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
+				$this->log( $create_payment->getId(), 'debug' );
+				$this->log( $confirm_payload, 'debug' );
+				$this->log( $confirm_payment, 'debug' );
 			}
 
 			/**
