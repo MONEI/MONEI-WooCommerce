@@ -210,6 +210,14 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
+			wp_register_style( 
+				'monei-icons', 
+				$this->plugin_url() . '/assets/css/monei-icons.css', 
+				[], 
+				filemtime( $this->plugin_path() . '/assets/css/monei-icons.css' ), 
+				'screen' 
+			);
+			wp_enqueue_style( 'monei-icons' );
 		}
 
 
