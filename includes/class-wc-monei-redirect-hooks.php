@@ -19,7 +19,25 @@ class WC_Monei_Redirect_Hooks {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_cancelled_order', array( $this, 'add_notice_monei_order_cancelled' ) );
+		add_action('template_redirect', [$this, 'add_notice_monei_order_failed']);
 		add_action( 'wp', array( $this, 'save_payment_token' ) );
+	}
+
+	/**
+	 * When MONEI send us back to orderFailed
+	 * We need to show message to the customer.
+	 *
+	 * @param $order_id
+	 * @return void
+	 */
+	public function add_notice_monei_order_failed() {
+		if ( !isset( $_GET['status'] )) {
+			return;
+		}
+		$status = wc_clean( $_GET['status'] );
+		if ( $status === 'FAILED' ) {
+			wc_add_notice(__('MONEI Message: the payment failed. Please try again', 'monei'), 'error');
+		}
 	}
 
 	/**

@@ -58,7 +58,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			],
 			'callbackUrl' => $callback_url,
 			'completeUrl' => $complete_url,
-			'cancelUrl'   => $this->get_return_url( $order ),
+			'cancelUrl'   => wc_get_checkout_url(),
 			'failUrl'     => $fail_url,
 			'transactionType' => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
 			'sessionDetails'  => [
