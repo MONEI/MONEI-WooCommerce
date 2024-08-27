@@ -5,7 +5,7 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  5.8.12
+ * @version  5.8.13
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '5.8.12';
+		public $version = '5.8.13';
 
 		/**
 		 * The single instance of the class.
@@ -343,10 +343,10 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 		public function validate_checkout( $data, $errors ) {
 			//validate that the name and last name follow a pattern
-			if ( ! preg_match( '/^[A-Za-zÀ-ú- ]{5,50}$/', $data['billing_first_name'] ) ) {
+			if ( ! preg_match( '/^[A-Za-zÀ-ÖØ-öø-ÿ ]{2,50}$/', $data['billing_first_name'] ) ) {
 				$errors->add( 'validation', __( 'Please enter a valid name. Special characters are not allowed.', 'monei' ) );
 			}
-			if ( ! preg_match( '/^[A-Za-zÀ-ú- ]{5,50}$/', $data['billing_last_name'] ) ) {
+			if ( ! preg_match( '/^[A-Za-zÀ-ÖØ-öø-ÿ ]{2,50}$/', $data['billing_last_name'] ) ) {
 				$errors->add( 'validation', __( 'Please enter a valid last name. Special characters are not allowed.', 'monei' ) );
 			}
 		}
