@@ -36,7 +36,7 @@ class WC_Monei_Redirect_Hooks {
 		}
 		$status = wc_clean( $_GET['status'] );
 		if ( $status === 'FAILED' ) {
-			wc_add_notice(__('MONEI Message: the payment failed. Please try again', 'monei'), 'error');
+			wc_add_notice(__('The payment failed. Please try again', 'monei'), 'error');
 		}
 	}
 
