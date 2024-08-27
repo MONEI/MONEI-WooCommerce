@@ -56,10 +56,11 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		// Hosted payment with redirect.
 		$this->has_fields = false;
-
+		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-logo.svg' ));
+		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-logo.svg' ) );
+		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
 		$this->testmode             = ( ! empty( $this->get_option( 'testmode' ) && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
@@ -76,7 +77,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();
-		new WC_Monei_IPN();
+		new WC_Monei_IPN($this->logging);
 
 		$this->supports = array(
 			'products',
@@ -101,15 +102,6 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		if ( ! $this->redirect_flow || is_add_payment_method_page() || $this->is_subscription_change_payment_page() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
 		}
-
-		// We want to add a width to MONEI logo.
-		add_filter( 'woocommerce_gateway_icon', function ( $icon_html, $id ) {
-			if ( $this->id !== $id ) {
-				return $icon_html;
-			}
-
-			return str_replace( '<img', '<img width="90px;"', $icon_html );
-		}, 10, 2 );
 
 		// Add new total on checkout updates (ex, selecting different shipping methods)
 		add_filter( 'woocommerce_update_order_review_fragments', function( $fragments ) {
@@ -160,9 +152,9 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		try {
 			$zero_payload = $this->create_zero_eur_payload();
 			$payment      = WC_Monei_API::create_payment( $zero_payload );
-			WC_Monei_Logger::log( 'WC_Monei_API::add_payment_method', 'debug' );
-			WC_Monei_Logger::log( $zero_payload, 'debug' );
-			WC_Monei_Logger::log( $payment, 'debug' );
+			$this->log( 'WC_Monei_API::add_payment_method', 'debug' );
+			$this->log( $zero_payload, 'debug' );
+			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_add_payment_method_success', $zero_payload, $payment );
 
 			return array(
@@ -170,7 +162,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
 		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( $e, 'error' );
+			$this->log( $e, 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			return array(

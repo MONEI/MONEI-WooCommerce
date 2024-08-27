@@ -1,0 +1,8 @@
+
+label .monei-icons{
+    float:right;
+    max-height: 24px !important;
+  }
+  .monei-icons svg{
+    float:right;
+  }

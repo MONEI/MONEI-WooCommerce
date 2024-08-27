@@ -11,10 +11,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Monei_IPN {
 
+	private $logging;
+
 	/**
 	 * Constructor.
 	 */
-	public function __construct() {
+	public function __construct(bool $logging = false) {
+		$this->logging = $logging;
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
 	}
@@ -37,14 +40,14 @@ class WC_Monei_IPN {
 
 		try {
 			$payload = $this->verify_signature_get_payload( $raw_body, sanitize_text_field( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
-			WC_Monei_Logger::log( $payload, 'debug' );
+			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
 			http_response_code( 200 );
 			exit();
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
-			WC_Monei_Logger::log( 'Failed IPN request: ' . $e->getMessage() );
+			$this->logging && WC_Monei_Logger::log( 'Failed IPN request: ' . $e->getMessage() );
 			// Invalid signature
 			http_response_code( 400 );
 			exit();
@@ -82,7 +85,14 @@ class WC_Monei_IPN {
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
 		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
 
-		if ( 'FAILED' === $status || 'CANCELED' === $status ) {
+		if ( 'FAILED' === $status ) {
+			// Order failed.
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Failed</strong>', 'monei' ) . $status );
+			$order->update_status( 'pending', 'Failed MONEI payment: ' . $status_message );
+			return;
+		}
+
+		if ( 'CANCELED' === $status ) {
 			// Order cancelled.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
 			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $status_message );
@@ -173,7 +183,7 @@ class WC_Monei_IPN {
 			$headers[ $key ] = $key . ': ' . $value;
 		}
 		$headers = implode( "\n", $headers );
-		WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
+		$this->logging &&WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
 	}
 
 }

@@ -35,9 +35,9 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		 */
 		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
 		/**
-		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
+		 * The URL the customer will be directed to if the payment failed.
 		 */
-		$fail_url = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url = esc_url_raw( $order->get_checkout_payment_url(false) );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -115,9 +115,9 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			WC_Monei_API::set_order( $order );
 			$payment = WC_Monei_API::create_payment( $payload );
 
-			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
-			WC_Monei_Logger::log( $payload, 'debug' );
-			WC_Monei_Logger::log( $payment, 'debug' );
+			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
+			$this->log( $payload, 'debug' );
+			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
 
 			return array(
@@ -125,7 +125,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
 		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			$this->log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			return;
