@@ -38,6 +38,7 @@ class WC_Monei_Redirect_Hooks {
 		if ( $status === 'FAILED' ) {
 			wc_add_notice(__('The payment failed. Please try again', 'monei'), 'error');
 		}
+		add_filter('woocommerce_payment_gateway_get_new_payment_method_option_html', '__return_empty_string');
 	}
 
 	/**
