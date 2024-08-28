@@ -39,6 +39,22 @@
 		}
 	);
 
+	var targetNode = document.getElementById('order_review');
+
+	if (targetNode) {
+		var observer = new MutationObserver(function(mutationsList, observer) {
+			for (var mutation of mutationsList) {
+				if (mutation.type === 'childList') {
+					if ( wc_monei_form.is_monei_selected() ) {
+						wc_monei_form.init_checkout_monei();
+					}
+				}
+			}
+		});
+
+		observer.observe(targetNode, { childList: true, subtree: true });
+	}
+
 	var wc_monei_form = {
 		$checkout_form: $( 'form.woocommerce-checkout' ),
 		$add_payment_form: $( 'form#add_payment_method' ),
