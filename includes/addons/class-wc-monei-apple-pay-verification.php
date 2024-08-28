@@ -51,7 +51,7 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 	 */
 	public function expose_on_domain_association_request( $wp ) {
 		if ( isset( $wp->request ) && ( self::DOMAIN_ASSOCIATION_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME ) === $wp->request ) {
-			$path = WC_Monei()->plugin_path() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
+			$path = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
             $args = array( 'headers' => array( 'Content-Type' => 'text/plain;charset=utf-8' ));
 			$response = wp_remote_get( $path, $args );
 			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
