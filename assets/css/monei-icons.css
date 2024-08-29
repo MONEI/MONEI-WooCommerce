@@ -6,3 +6,10 @@ label .monei-icons{
   .monei-icons svg{
     float:right;
   }
+
+/* Applies to the apple/google button in checkout*/
+#wc-monei-payment-request-form{
+    border:none;
+    padding:0 !important;
+    margin:0!important;
+}
