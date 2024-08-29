@@ -39,5 +39,5 @@
     "release-it": "^14.12.4",
     "terser": "^5.10.0"
   },
-  "packageManager": "yarn@4.2.1"
+  "packageManager": "yarn@4.4.1"
 }
