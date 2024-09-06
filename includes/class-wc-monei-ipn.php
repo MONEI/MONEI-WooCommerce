@@ -95,7 +95,7 @@ class WC_Monei_IPN {
 		if ( 'CANCELED' === $status ) {
 			// Order cancelled.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
-			$order->update_status( 'cancelled', 'Cancelled by MONEI: ' . $status_message );
+			$order->add_order_note( sprintf( __( 'Cancelled by MONEI: %s', 'monei' ),  $status_message ) );
 			return;
 		}
 
