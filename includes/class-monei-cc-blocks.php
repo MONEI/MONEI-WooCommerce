@@ -103,8 +103,6 @@
 		// yes: Can save credit card and use saved cards.
  		// no:  Cannot save/use
  			'tokenization' => $this->get_setting( 'tokenization' ) ?? 'no',
-
-			'scriptUrl' => WC_Monei()->plugin_url() . '/assets/js/checkout-monei-cc.js',
 			'accountId' => $this->get_setting( 'accountid' ),
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
  		);
