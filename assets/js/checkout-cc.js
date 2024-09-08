@@ -6,8 +6,10 @@
     const MoneiContent = (props) => {
         const {  responseTypes } = props.emitResponse;
         const moneiData = wc.wcSettings.getSetting('monei_data');
+        const isHostedWorkflow = moneiData.redirect === 'yes'
         const {onPaymentSetup, onCheckoutValidation} = props.eventRegistration;
         let cardInput = null;
+        console.log(isHostedWorkflow)
         /**
          * Printing errors into checkout form.
          * @param error_string
@@ -22,13 +24,19 @@
         const clear_errors = () => {
             document.getElementById( 'monei-card-error' ).innerHTML = ''
         }
-
-        useEffect( () => {
-                // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
-                if ( typeof monei !== 'undefined' && monei.CardInput ) {
-                    initMoneiCard();
-                } else {
-                    console.error('MONEI SDK is not available');
+        if (isHostedWorkflow) {
+            return (
+                <div className="wc-block-components-text-input wc-block-components-address-form__email">
+                    <p>{__('You will be redirected to the payment page', 'monei')}</p>
+                </div>
+            );
+        }
+        useEffect(() => {
+            // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
+            if (typeof monei !== 'undefined' && monei.CardInput) {
+                initMoneiCard();
+            } else {
+                console.error('MONEI SDK is not available');
                 }
             }, [] ); // Empty dependency array ensures this runs only once when the component mounts.
 
@@ -109,6 +117,7 @@
             const unsubscribePaymentSetup = onPaymentSetup(() => {
                 // Get the token from the hidden input field
                 let tokenValue = document.querySelector('#monei_payment_token').value;
+                let cardholderName = document.querySelector('#cardholder_name').value;
                 // If no token is available, create a fresh token
                 if (!tokenValue) {
                     return createMoneiToken().then(freshToken => {
@@ -117,7 +126,10 @@
                             return {
                                 type: responseTypes.SUCCESS,
                                 meta: {
-                                    paymentMethodData: { monei_payment_token: freshToken },  // Use freshToken here
+                                    paymentMethodData: {
+                                        monei_payment_token: freshToken,
+                                        monei_cardholder_name: cardholderName
+                                    },
                                 },
                             };
                         }
@@ -154,7 +166,7 @@
                     </div>
 
                         <div id="monei-card-input"/>
-                        <input type="hidden" id="monei_payment_token" name="monei_payment_token" value={token}/>
+                        <input type="hidden" id="monei_payment_token" name="monei_payment_token" value=''/>
                         <div id="monei-card-error"/>
                 </Fragment>
     );

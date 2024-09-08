@@ -50,7 +50,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 					'paymentToken'  => $this->get_frontend_generated_monei_token(),
 					'paymentMethod' => [
 						'card' => [
-							'cardholderName' => $order->get_formatted_billing_full_name(),
+							'cardholderName' => $this->get_frontend_generated_monei_cardholder($order),
 						]
 					]
 				];
@@ -205,6 +205,18 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	public function get_frontend_generated_monei_token() {
 		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
+
+    /**
+     * Frontend MONEI cardholderName.
+     *
+     * @return false|string
+     */
+    public function get_frontend_generated_monei_cardholder($order)
+    {
+        $defaultName = $order->get_formatted_billing_full_name();
+        return ( isset( $_POST['monei_cardholder_name'] ) ) ? filter_var( $_POST['monei_cardholder_name'], FILTER_SANITIZE_STRING ) : $defaultName; // WPCS: CSRF ok.
+
+    }
 
 	/**
 	 * Frontend MONEI payment-request token generated when Apple or Google pay.
