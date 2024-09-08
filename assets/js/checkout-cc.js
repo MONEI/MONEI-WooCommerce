@@ -1,217 +1,186 @@
-(()=>{
+( function() {
+    const { registerPaymentMethod } = wc.wcBlocksRegistry;
+    const { __ } = wp.i18n;
+    const { Fragment, useEffect, useState } = wp.element;
 
-	'use strict';
+    const MoneiContent = (props) => {
+        const {  responseTypes } = props.emitResponse;
+        const moneiData = wc.wcSettings.getSetting('monei_data');
+        const {onPaymentSetup, onCheckoutValidation} = props.eventRegistration;
+        let cardInput = null;
+        /**
+         * Printing errors into checkout form.
+         * @param error_string
+         */
+        const print_errors = (error_string ) => {
+            console.log( 'Card input error: ', error_string );
+            document.getElementById( 'monei-card-error' ).innerHTML = error_string
+        }
+        /**
+         * Clearing form errors.
+         */
+        const clear_errors = () => {
+            document.getElementById( 'monei-card-error' ).innerHTML = ''
+        }
 
-	const 
-		
-		wpElement        = window.wp.element,
-		wpEntities       = window.wp.htmlEntities,
-		wpi18n           = window.wp.i18n,
-		wcBlocksRegistry = window.wc.wcBlocksRegistry,
-		wcBlocksCheckout = window.wc.blocksCheckout,
-		wcSettings       = window.wc.wcSettings,
+        useEffect( () => {
+                // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
+                if ( typeof monei !== 'undefined' && monei.CardInput ) {
+                    initMoneiCard();
+                } else {
+                    console.error('MONEI SDK is not available');
+                }
+            }, [] ); // Empty dependency array ensures this runs only once when the component mounts.
 
-		// Create raw html element.
-		htmlToElem = ( html ) => wpElement.RawHTML( {children:html} ),
-		
-		// Get monei setting.
-		getSetting = () => {
-			const settingValue = ( 0, wcSettings.getSetting )( 'monei_data', null );
-			if (! settingValue ) throw new Error( 'MONEI initialization data is not available.' );
-			return settingValue;
-		},
+            /**
+             * Initialize MONEI card input and handle token creation.
+             */
+            const initMoneiCard = () => {
+                cardInput = monei.CardInput({
+                    accountId: moneiData.accountId,
+                    sessionId: moneiData.sessionId,
+                    onChange( event ) {
+                        if ( event.isTouched && event.error ) {
+                            print_errors(event.error)
+                        } else {
+                            clear_errors()
+                        }
+                    },
+                    onEnter() {
+                        // Handle form submission when card details are entered
+                        console.log('onEnter')
+                        createMoneiToken();
+                    },
+                });
+                cardInput.render( document.getElementById( 'monei-card-input' ) );
+            };
 
-		// Our very own monei script that deals with remote token creation at https://js.monei.com/v1/monei.js
-		moneiScript = getSetting().scriptUrl,
+            /**
+             * Handle MONEI token creation when form is submitted.
+             */
+            const createMoneiToken = () => {
+                // Create a token using the MONEI SDK
+                return monei.createToken(cardInput)
+                    .then(result => {
+                        if (result.error) {
+                            // Inform the user if there was an error
+                            print_errors(result.error);
+                            return null;  // Return null to indicate failure
+                        } else {
+                            // Set the token and attach it to the form
+                            document.querySelector('#monei_payment_token').value = result.token;
+                            return result.token;  // Return the token for further use
+                        }
+                    })
+                    .catch(error => {
+                        // Handle any error in the promise chain
+                        print_errors(error.message);
+                        return null;  // Return null in case of error
+                    });
+            };
 
-		// Description text with extra info according to settings.
-		getDescription = () => {
+        // Hook into the validation process
+        useEffect(() => {
+            const unsubscribeValidation = onCheckoutValidation( () => {
+                let tokenValue = document.querySelector( '#monei_payment_token' ).value
+                // If no token is available, create a fresh token
+                if (!tokenValue) {
+                    return createMoneiToken().then(freshToken => {
+                        if (!freshToken) {
+                            return {
+                                errorMessage: __('MONEI token could not be generated.', 'monei'),
+                            };
+                        }
 
-			const 
-				moneiTestMode = ' === <strong>' + wpi18n.__( 'Test mode enabled', 'monei' ) + '</strong> === ',
-				moneiExternal = '<br><strong>' + wpi18n.__( 'You will be redirected for payment.', 'monei' ) + '</strong>',
-				moneiTestCard = '<br>' + wpi18n.__('Use 4444444444444422 as CC number, 12/34 as an expiration date and 123 as CVC code.', 'monei' );
+                        return true;  // Validation passed
+                    });
+                }
 
-			let moneiAdditionalContent = '';
+                return true;  // Validation passed (token already exists)
+            });
 
-			if ( 'yes' == getSetting().test_mode ) {
-				 moneiAdditionalContent = moneiTestMode;
-			}
-			if ( 'yes' == getSetting().redirect ) {
-				moneiAdditionalContent += moneiExternal;
-			}
+            return () => {
+                unsubscribeValidation();
+            };
+        }, [onCheckoutValidation]);
 
-			if ( 'yes' == getSetting().test_mode ) {
-				moneiAdditionalContent += moneiTestCard;
-			}
-			
-			return ( getSetting()?.description || wpi18n.__('Pay with credit card.','monei') ) + moneiAdditionalContent;
-		},
+        // Hook into the payment setup
+        useEffect(() => {
+            const unsubscribePaymentSetup = onPaymentSetup(() => {
+                // Get the token from the hidden input field
+                let tokenValue = document.querySelector('#monei_payment_token').value;
+                // If no token is available, create a fresh token
+                if (!tokenValue) {
+                    return createMoneiToken().then(freshToken => {
+                        // If the token is generated successfully
+                        if (freshToken && freshToken.length) {
+                            return {
+                                type: responseTypes.SUCCESS,
+                                meta: {
+                                    paymentMethodData: { monei_payment_token: freshToken },  // Use freshToken here
+                                },
+                            };
+                        }
 
-		// Maybe show logo based on settings.
-		maybeShowLogo = () => {
-			if ( 'yes' == getSetting().hide_logo ) {
-				return '';
-			} else {
-				return ( 0, wpElement.createElement( 'img', { src: `${getSetting().logo}`, alt: getSetting().title } ));
-			}
-		},
+                        // If the token generation failed
+                        return {
+                            type: 'error',
+                            message: __('MONEI token could not be generated.', 'monei'),
+                        };
+                    });
+                }
 
-		// Maybe show offer to save payment info based on settings.
-		maybeShowSaveCard = () =>{
-			if ( 'no' != getSetting().tokenization ) {
-				return htmlToElem('<label> <input name="wc-monei-new-payment-method" type="checkbox" id="a" value="new" checked="checked" > ' + ( 0, wpi18n.__ )( 'Save payment information to my account for future purchases.', 'monei' ) + '</label>');
-			}
-		},
+                // Token is already available, proceed with setup
+                return {
+                    type: responseTypes.SUCCESS,
+                    meta: {
+                        paymentMethodData: { monei_payment_token: tokenValue },  // Use existing token
+                    },
+                };
+            });
 
-		// Same HTML code from protected function render_monei_form().
-		showMoneiForm = () => {
-			return htmlToElem( '<style>#payment-form{padding-bottom:15px}#card-input{border:1px solid transparent;border-radius:4px;background-color:#fff;box-shadow:0 1px 3px 0 #e6ebf1;height:38px;box-sizing:border-box;-webkit-transition:box-shadow 150ms ease;transition:box-shadow 150ms ease;max-width:350px}#card-input.is-focused{box-shadow:0 1px 3px 0 #cfd7df}</style><fieldset id="wc-monei-cc-form" class="wc-credit-card-form wc-payment-form" style="background:0 0"><div id="payment-form"><div class="card-field"><div id="card-input"></div><div id="monei-card-error"></div></div></div></fieldset>' );
-		},
+            return () => {
+                unsubscribePaymentSetup();
+            };
+        }, [onPaymentSetup]);
 
-		// Hidden field to store monei_payment_token.
-		hiddenField = wpEntities => {
+            return (
+                <Fragment>
+                    <div className="wc-block-components-text-input wc-block-components-address-form__email">
+                        <input type="text" id="cardholder_name"
+                               name="cardholder_name"
+                               placeholder={__('Cardholder Name', 'monei')} required/>
 
-			let {
-				id:wcBlocksRegistry,
-				value:wcSettings = "",
-				onChange:getSetting } = wpEntities;
-			return ( 0, wpElement.createElement )( wcBlocksCheckout.ValidatedTextInput, { id:wcBlocksRegistry, type:"hidden", value:wcSettings, onChange:getSetting })
-		},	
+                    </div>
 
-		// The content of our payment gateway block.
-		content = wpi18n => {
+                        <div id="monei-card-input"/>
+                        <input type="hidden" id="monei_payment_token" name="monei_payment_token" value={token}/>
+                        <div id="monei-card-error"/>
+                </Fragment>
+    );
+    }
+    /**
+    * MONEI Payment Method React Component
+    */
+    const MoneiPaymentMethod = {
+        name: 'monei',
+        label: <Fragment>
+                { __( 'Credit Card', 'monei' ) }
+            </Fragment>,
+        ariaLabel: __( 'MONEI Payment Gateway', 'monei' ),
 
-			let { eventRegistration:wcBlocksRegistry, emitResponse:wcBlocksCheckout } = wpi18n;
-	
-			const
+        // React content to render on the checkout page
+        content: <MoneiContent />,
 
-				{ onPaymentSetup: wcSettings } = wcBlocksRegistry,
-				[ tokenValue, setTokenValue, content ] = ( 0, wpElement.useState )( '' );
-				
-				if ( 'no' == getSetting().redirect ) {
+        // Optional edit mode for the block editor
+        edit:
+            <Fragment>
+                <div id="monei-card-input" />
+                { __( 'MONEI Payment Form (Edit Mode)', 'monei' ) }
+            </Fragment>,
 
-					// Get remote token based on the CC data informed by customer.
-					( wpElement.useEffect( ( ) => 
-						{
-								const validation = wcBlocksRegistry.onCheckoutValidation( ( async ) => {
-
-									const createToken = async () => {
-										const moneiToken = await window.wc_monei_block_form.create_token();
-										setTokenValue( moneiToken );
-									}
-
-									if ( ! jQuery('#monei_payment_token_created').length ) {
-										createToken();
-									}
-
-								} );
-
-								const unsubscribe = wcBlocksRegistry.onPaymentSetup( ( async ) => {
-
-									if ( ! jQuery('#monei_payment_token_created').length ) {
-
-										// We need to wait for remote token creation.
-										//console.log( 'Missing token, stop this and wait for token creation which triggers click' );
-										throw new Error('but not an actual error. MONEI: just stop while waiting for remote token creation....');
-									}
-
-									const 
-										moneiToken = jQuery('#monei_payment_token_created').val(),
-										moneiDataIsValid= !! moneiToken.length;
-
-									if ( moneiDataIsValid ) {
-										
-										return {
-											type: wcBlocksCheckout.responseTypes.SUCCESS,
-											meta: {
-												paymentMethodData: { monei_payment_token: moneiToken },
-											},
-										};
-									}
-
-									return {
-										type: wcBlocksCheckout.responseTypes.ERROR,
-										message: 'MONEI: There was an error with token creation.',
-									};
-
-								} );
-
-								// Unsubscribes when this component is unmounted.
-								return () => {
-									unsubscribe();
-								};
-
-						}, 
-						[ wcBlocksCheckout.responseTypes.ERROR, wcBlocksCheckout.responseTypes.SUCCESS, wcBlocksRegistry.onPaymentSetup, tokenValue ] 
-					));
-
-				}
-
-		return( 0, wpElement.useEffect)((() => wcSettings((() => {
-
-			return { type:wcBlocksCheckout.responseTypes.SUCCESS, meta:{ paymentMethodData:[content] } } }
-			))),
-			[ wcBlocksCheckout.responseTypes.SUCCESS, wcSettings ] ),
-
-				( 'yes' == getSetting().redirect ) ? 
-
-					// Form content for redirection to external payment page.
-
-					( 0, wpElement.createElement )
-						( wpElement.Fragment, null,
-							( 0, wpElement.createElement( wpElement.RawHTML, null, getDescription() )),
-							( 0, wpElement.createElement )( maybeShowSaveCard ),
-						)
-
-				:
-					// Form content for inline card input.
-
-					( 0, wpElement.createElement )
-						( wpElement.Fragment, null,
-							( 0, wpElement.createElement( wpElement.RawHTML, null, getDescription() )),
-							( 0, wpElement.createElement )( showMoneiForm ),
-							( 0, wpElement.createElement )( hiddenField, { id:'monei_payment_token', value:tokenValue, onChange: content }),
-							( 0, wpElement.createElement )( maybeShowSaveCard ),
-							wpElement.useEffect(
-								() => { 
-
-									// Load our credit card script.
-									const script = document.createElement("script");
-	
-									script.src = moneiScript;
-									script.async = true;
-									script.onload = () => { 
-										window.wc_monei_block_form.init_checkout_monei();
-									}
-
-									document.body.appendChild(script);
-
-								}, [] )  // <-- empty array means 'run once'
-						)
-		},
-
-		// Label for our payment method. Can be either image or text, depending on settings.
-		labelContent = wpEntities => {
-			const 
-				{PaymentMethodLabel:wcBlocksRegistry}=wpEntities.components,
-				name = getSetting().title?getSetting().title:( 0, wpi18n.__ )( 'MONEI','monei' );
-
-			return ( wpElement.Fragment, null, ( 0, wpElement.createElement )( wcBlocksRegistry, {text:name}), ( 0, wpElement.createElement )( maybeShowLogo ) )
-		};
-
-
-	let supportedFeatures;
-
-	// Register our payment method block.
-
-	( 0, wcBlocksRegistry.registerPaymentMethod )( {
-			name:           'monei',
-			label:          ( 0, wpElement.createElement )( labelContent ,null),
-			ariaLabel:      ( 0, wpi18n.__)( 'MONEI Payment Gateway','monei' ),
-			canMakePayment: () => true,
-			content:        ( 0, wpElement.createElement )( content, null ),
-			edit:           ( 0, wpElement.createElement )( content, null ),
-			supports:       { features:null!==(supportedFeatures=getSetting()?.supports)&&void 0!==supportedFeatures?supportedFeatures:[]}
-		} )
-})();
+        canMakePayment: () => true,
+        supports: wc.wcSettings.getSetting( 'monei_data' ).supports,
+    };
+    registerPaymentMethod( MoneiPaymentMethod );
+} )();
