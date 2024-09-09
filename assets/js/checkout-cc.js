@@ -7,9 +7,8 @@
         const {  responseTypes } = props.emitResponse;
         const moneiData = wc.wcSettings.getSetting('monei_data');
         const isHostedWorkflow = moneiData.redirect === 'yes'
-        const {onPaymentSetup, onCheckoutValidation} = props.eventRegistration;
+        const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
         let cardInput = null;
-        console.log(isHostedWorkflow)
         /**
          * Printing errors into checkout form.
          * @param error_string
@@ -67,6 +66,7 @@
              * Handle MONEI token creation when form is submitted.
              */
             const createMoneiToken = () => {
+                console.log('create token')
                 // Create a token using the MONEI SDK
                 return monei.createToken(cardInput)
                     .then(result => {
@@ -118,6 +118,7 @@
                 // Get the token from the hidden input field
                 let tokenValue = document.querySelector('#monei_payment_token').value;
                 let cardholderName = document.querySelector('#cardholder_name').value;
+                console.log('token', tokenValue)
                 // If no token is available, create a fresh token
                 if (!tokenValue) {
                     return createMoneiToken().then(freshToken => {
@@ -128,7 +129,8 @@
                                 meta: {
                                     paymentMethodData: {
                                         monei_payment_token: freshToken,
-                                        monei_cardholder_name: cardholderName
+                                        monei_cardholder_name: cardholderName,
+                                        monei_is_block_checkout: 'yes'
                                     },
                                 },
                             };
@@ -156,7 +158,51 @@
             };
         }, [onPaymentSetup]);
 
-            return (
+        useEffect(() => {
+            const unsubscribeSuccess = onCheckoutSuccess((props) => {
+                console.log('Payment result:', props);
+                return;
+                const { paymentDetails } = paymentResult;
+
+                // Ensure we have the paymentId from the server
+                if (paymentDetails && paymentDetails.paymentId) {
+                    const paymentId = paymentDetails.paymentId;
+
+                    // Retrieve the token from the hidden input field
+                    const tokenValue = document.querySelector('#monei_payment_token').value;
+
+                    // Call monei.confirmPayment to complete the payment (with 3D Secure)
+                    monei.confirmPayment({
+                        paymentId: paymentId,
+                        paymentToken: tokenValue,
+                        paymentMethod: {
+                            card: {
+                                cardholderName: document.querySelector('#cardholder_name').value,
+                            }
+                        }
+                    }).then(result => {
+                        console.log('Payment confirmed:', result);
+                        // Handle success (3D Secure completed, etc.)
+                        // You may also want to trigger further order processing here
+                    }).catch(error => {
+                        console.log('Error during payment confirmation:', error);
+                        // Handle failure (failed 3D Secure, etc.)
+                    });
+                } else {
+                    console.error('No paymentId found in paymentDetails');
+                }
+
+                // Return true to indicate that the checkout is successful
+                return true;
+            });
+
+            return () => {
+                unsubscribeSuccess();
+            };
+        }, [onCheckoutSuccess]);
+
+
+        return (
                 <Fragment>
                     <div className="wc-block-components-text-input wc-block-components-address-form__email">
                         <input type="text" id="cardholder_name"

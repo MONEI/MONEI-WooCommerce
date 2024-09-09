@@ -43,6 +43,21 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$this->log( $create_payment, 'debug' );
 
 			$confirm_payment = false;
+            // We need to return the payment ID to the frontend and confirm payment there if we arrive from block checkout
+            // and when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method
+            if ( $this->isBlockCheckout() && !$this->redirect_flow && !isset( $payload['paymentToken'] ) ) {
+                return array(
+                    'result'   => 'success',
+                    'redirect' => false,
+                    'payment_result' => [
+                        'paymentStatus' => 'pending', // Mark it as pending since client confirmation is required
+                        'paymentDetails' => [
+                            'paymentId' => $create_payment->getId(),  // Send the paymentId back to the client
+                        ],
+                    ],
+                );
+            }
+
 			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method.
 			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
 				// We do 2 steps, in order to confirm card holder Name in the second step.
@@ -205,6 +220,15 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	public function get_frontend_generated_monei_token() {
 		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
+
+    /**
+     * Frontend MONEI generated flag for block checkout processing.
+     *
+     * @return boolean
+     */
+    public function isBlockCheckout() {
+        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? filter_var( $_POST['monei_is_block_checkout'], FILTER_SANITIZE_STRING ) === 'yes' : false; // WPCS: CSRF ok.
+    }
 
     /**
      * Frontend MONEI cardholderName.
