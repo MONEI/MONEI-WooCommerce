@@ -49,12 +49,9 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
                 return array(
                     'result'   => 'success',
                     'redirect' => false,
-                    'payment_result' => [
-                        'paymentStatus' => 'pending', // Mark it as pending since client confirmation is required
-                        'paymentDetails' => [
-                            'paymentId' => $create_payment->getId(),  // Send the paymentId back to the client
-                        ],
-                    ],
+                    'paymentId' => $create_payment->getId(),// Send the paymentId back to the client
+                    'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
+                    'completeUrl' => $payload['completeUrl']
                 );
             }
 

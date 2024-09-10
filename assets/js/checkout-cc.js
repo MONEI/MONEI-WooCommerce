@@ -9,6 +9,7 @@
         const isHostedWorkflow = moneiData.redirect === 'yes'
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
         let cardInput = null;
+        let token = null;
         /**
          * Printing errors into checkout form.
          * @param error_string
@@ -66,7 +67,7 @@
              * Handle MONEI token creation when form is submitted.
              */
             const createMoneiToken = () => {
-                console.log('create token')
+
                 // Create a token using the MONEI SDK
                 return monei.createToken(cardInput)
                     .then(result => {
@@ -75,8 +76,10 @@
                             print_errors(result.error);
                             return null;  // Return null to indicate failure
                         } else {
+                            console.log('create token', result.token)
                             // Set the token and attach it to the form
                             document.querySelector('#monei_payment_token').value = result.token;
+                            token = result.token;
                             return result.token;  // Return the token for further use
                         }
                     })
@@ -90,16 +93,16 @@
         // Hook into the validation process
         useEffect(() => {
             const unsubscribeValidation = onCheckoutValidation( () => {
-                let tokenValue = document.querySelector( '#monei_payment_token' ).value
+                console.log('on validation')
                 // If no token is available, create a fresh token
-                if (!tokenValue) {
+                if (!token) {
                     return createMoneiToken().then(freshToken => {
                         if (!freshToken) {
                             return {
                                 errorMessage: __('MONEI token could not be generated.', 'monei'),
                             };
                         }
-
+                        console.log('token in var after validation', token)
                         return true;  // Validation passed
                     });
                 }
@@ -116,11 +119,10 @@
         useEffect(() => {
             const unsubscribePaymentSetup = onPaymentSetup(() => {
                 // Get the token from the hidden input field
-                let tokenValue = document.querySelector('#monei_payment_token').value;
                 let cardholderName = document.querySelector('#cardholder_name').value;
-                console.log('token', tokenValue)
+
                 // If no token is available, create a fresh token
-                if (!tokenValue) {
+                if (!token) {
                     return createMoneiToken().then(freshToken => {
                         // If the token is generated successfully
                         if (freshToken && freshToken.length) {
@@ -143,12 +145,16 @@
                         };
                     });
                 }
-
+                console.log('token in paymentsetup', token)
                 // Token is already available, proceed with setup
                 return {
                     type: responseTypes.SUCCESS,
                     meta: {
-                        paymentMethodData: { monei_payment_token: tokenValue },  // Use existing token
+                        paymentMethodData: {
+                            monei_payment_token: token,
+                            monei_cardholder_name: cardholderName,
+                            monei_is_block_checkout: 'yes'
+                        },
                     },
                 };
             });
@@ -159,18 +165,17 @@
         }, [onPaymentSetup]);
 
         useEffect(() => {
-            const unsubscribeSuccess = onCheckoutSuccess((props) => {
-                console.log('Payment result:', props);
-                return;
-                const { paymentDetails } = paymentResult;
-
+            const unsubscribeSuccess = onCheckoutSuccess(({processingResponse}) => {
+                const { paymentDetails } = processingResponse;
+console.log('processing response')
                 // Ensure we have the paymentId from the server
                 if (paymentDetails && paymentDetails.paymentId) {
                     const paymentId = paymentDetails.paymentId;
+                    console.log('payment id', paymentId)
 
                     // Retrieve the token from the hidden input field
-                    const tokenValue = document.querySelector('#monei_payment_token').value;
-
+                    const tokenValue = paymentDetails.token
+                    console.log('token', tokenValue)
                     // Call monei.confirmPayment to complete the payment (with 3D Secure)
                     monei.confirmPayment({
                         paymentId: paymentId,
@@ -182,6 +187,7 @@
                         }
                     }).then(result => {
                         console.log('Payment confirmed:', result);
+                        window.location.href = paymentDetails.completeUrl
                         // Handle success (3D Secure completed, etc.)
                         // You may also want to trigger further order processing here
                     }).catch(error => {
