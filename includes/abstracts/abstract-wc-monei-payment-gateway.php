@@ -119,6 +119,18 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Override the get_icon method to add a custom class to the icon.
+	 *
+	 * @return string
+	 */
+	public function get_icon()
+    {
+        $output = $this->icon ?: '';
+        return apply_filters('woocommerce_gateway_icon', $output, $this->id);
+    }
+
+
+	/**
 	 * Admin Panel Options
 	 *
 	 * @access public
@@ -159,7 +171,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
 
-				WC_Monei_Logger::log( $amount . ' Refund approved.', 'debug' );
+				$this->log( $amount . ' Refund approved.', 'debug' );
 				//WC_Monei_Logger::log( $result, 'debug' );
 
 				$order->add_order_note( '<strong>MONEI Refund Approved:</strong> ' . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
@@ -168,7 +180,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 			}
 		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( 'Refund error: ' . $e->getMessage(), 'error' );
+			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
 			$order->add_order_note( 'Refund error: ' . $e->getMessage() );
 		}
 		return false;
@@ -218,6 +230,12 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 		$fragments['monei_new_total'] = monei_price_format( WC()->cart->get_total( false ) );
 		return $fragments;
+	}
+
+	protected function log( $message, $level = 'debug' ) {
+		if ( 'yes' === $this->get_option( 'debug') || 'error' === $level ) {
+			WC_Monei_Logger::log( $message, $level );
+		}
 	}
 
 }

@@ -1,6 +1,7 @@
 /build
 /.github
 /.git
+composer.lock
 
 output.log
 .distignore

@@ -32,10 +32,11 @@ class WC_Gateway_Monei_Paypal extends WC_Monei_Payment_Gateway_Hosted {
 
 		// Bizum Hosted payment with redirect.
 		$this->has_fields = false;
-
+		$iconUrl = apply_filters( 'woocommerce_monei_paypal_icon', WC_Monei()->image_url( 'paypal-logo.svg' ));
+		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : apply_filters( 'woocommerce_monei_paypal_icon', WC_Monei()->image_url( 'paypal-logo.svg' ) );
+		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
@@ -46,7 +47,7 @@ class WC_Gateway_Monei_Paypal extends WC_Monei_Payment_Gateway_Hosted {
 
 		// IPN callbacks
 		$this->notify_url           = WC_Monei()->get_ipn_url();
-		new WC_Monei_IPN();
+		new WC_Monei_IPN($this->logging);
 
 		$this->supports             = array(
 			'products',

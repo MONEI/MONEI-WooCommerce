@@ -38,11 +38,23 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$create_payment = WC_Monei_API::create_payment( $payload );
 			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
 
-			WC_Monei_Logger::log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
-			WC_Monei_Logger::log( $payload, 'debug' );
-			WC_Monei_Logger::log( $create_payment, 'debug' );
+			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
+			$this->log( $payload, 'debug' );
+			$this->log( $create_payment, 'debug' );
 
 			$confirm_payment = false;
+            // We need to return the payment ID to the frontend and confirm payment there if we arrive from block checkout
+            // and when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method
+            if ( $this->isBlockCheckout() && !$this->redirect_flow && !isset( $payload['paymentToken'] ) ) {
+                return array(
+                    'result'   => 'success',
+                    'redirect' => false,
+                    'paymentId' => $create_payment->getId(),// Send the paymentId back to the client
+                    'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
+                    'completeUrl' => $payload['completeUrl']
+                );
+            }
+
 			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method.
 			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
 				// We do 2 steps, in order to confirm card holder Name in the second step.
@@ -50,7 +62,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 					'paymentToken'  => $this->get_frontend_generated_monei_token(),
 					'paymentMethod' => [
 						'card' => [
-							'cardholderName' => $order->get_formatted_billing_full_name(),
+							'cardholderName' => $this->get_frontend_generated_monei_cardholder($order),
 						]
 					]
 				];
@@ -58,10 +70,10 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
 
-				WC_Monei_Logger::log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
-				WC_Monei_Logger::log( $create_payment->getId(), 'debug' );
-				WC_Monei_Logger::log( $confirm_payload, 'debug' );
-				WC_Monei_Logger::log( $confirm_payment, 'debug' );
+				$this->log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
+				$this->log( $create_payment->getId(), 'debug' );
+				$this->log( $confirm_payload, 'debug' );
+				$this->log( $confirm_payment, 'debug' );
 			}
 
 			/**
@@ -75,9 +87,18 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			WC_Monei_Logger::log( $e, 'error' );
+			// Extract and log the responseBody message
+			$response_body = json_decode($e->getResponseBody(), true);
+			if (isset($response_body['message'])) {
+				WC_Monei_Logger::log( $response_body['message'], 'error' );
+				wc_add_notice( $response_body['message'], 'error' );
+				return;
+			}
+			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
-			return;
+			return array(
+				'result'   => 'failure',
+			);
 		}
 	}
 
@@ -101,9 +122,9 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		 */
 		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
 		/**
-		 * The URL the customer will be directed to if s/he decided to cancel the payment and return to your website.
+		 * The URL the customer will be directed to if the payment failed.
 		 */
-		$fail_url = esc_url_raw( $order->get_cancel_order_url_raw() );
+		$fail_url = esc_url_raw( $order->get_checkout_payment_url(false) );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -196,6 +217,27 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	public function get_frontend_generated_monei_token() {
 		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
+
+    /**
+     * Frontend MONEI generated flag for block checkout processing.
+     *
+     * @return boolean
+     */
+    public function isBlockCheckout() {
+        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? filter_var( $_POST['monei_is_block_checkout'], FILTER_SANITIZE_STRING ) === 'yes' : false; // WPCS: CSRF ok.
+    }
+
+    /**
+     * Frontend MONEI cardholderName.
+     *
+     * @return false|string
+     */
+    public function get_frontend_generated_monei_cardholder($order)
+    {
+        $defaultName = $order->get_formatted_billing_full_name();
+        return ( isset( $_POST['monei_cardholder_name'] ) ) ? filter_var( $_POST['monei_cardholder_name'], FILTER_SANITIZE_STRING ) : $defaultName; // WPCS: CSRF ok.
+
+    }
 
 	/**
 	 * Frontend MONEI payment-request token generated when Apple or Google pay.

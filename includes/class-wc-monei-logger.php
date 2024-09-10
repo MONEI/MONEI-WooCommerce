@@ -26,13 +26,6 @@ class WC_Monei_Logger {
 	 */
 	public static function log( $message, $error_level = 'debug' ) {
 
-		$logging = ( 'error' === $error_level ) ? 'yes' : false;
-		$logging = ( $logging ) ? $logging : monei_get_settings( 'debug' );
-
-		if ( empty( $logging ) || 'yes' !== $logging ) {
-			return;
-		}
-
 		if ( empty( self::$logger ) ) {
 			self::$logger = wc_get_logger();
 		}

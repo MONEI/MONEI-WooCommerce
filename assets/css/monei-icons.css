@@ -1,0 +1,15 @@
+
+label .monei-icons{
+    float:right;
+    max-height: 24px !important;
+  }
+  .monei-icons svg{
+    float:right;
+  }
+
+/* Applies to the apple/google button in checkout*/
+#wc-monei-payment-request-form{
+    border:none;
+    padding:0 !important;
+    margin:0!important;
+}
