@@ -22,6 +22,7 @@
  * Copyright: (C) 2021 MONEI.
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ * Requires Plugins: woocommerce
  */
 
 // If this file is called directly, abort.
@@ -33,11 +34,12 @@ define( 'MONEI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MONEI_PLUGIN_FILE', __FILE__ );
 
 /**
- * Add compatibility with WooCommerce HPOS.
+ * Add compatibility with WooCommerce HPOS and cart checkout blocks
  */
 add_action( 'before_woocommerce_init', function () {
     if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables',  __FILE__, true );
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
     }
 } );
 
