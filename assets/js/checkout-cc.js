@@ -61,6 +61,24 @@
                     },
                 });
                 cardInput.render( document.getElementById( 'monei-card-input' ) );
+                if (moneiData.appleGooglePay === 'yes') {
+                    if ( window.paymentRequest ) {
+                        window.paymentRequest.close();
+                    }
+                    let paymentRequest = monei.PaymentRequest({
+                        accountId: moneiData.accountId,
+                        sessionId: moneiData.sessionId,
+                        amount: parseInt(wc_monei_params.total),
+                        currency: moneiData.currency,
+                        onSubmit(result) {
+                            console.log('submitting')
+                        },
+                        onError(error) {
+                            console.log(error);
+                        },
+                    });
+                    paymentRequest.render('#payment-request-container');
+                }
             };
 
             /**
@@ -209,18 +227,21 @@ console.log('processing response')
 
 
         return (
-                <Fragment>
-                    <div className="wc-block-components-text-input wc-block-components-address-form__email">
-                        <input type="text" id="cardholder_name"
-                               name="cardholder_name"
-                               placeholder={__('Cardholder Name', 'monei')} required/>
+            <Fragment>
+                <div className="wc-block-components-text-input wc-block-components-address-form__email">
+                    <input type="text" id="cardholder_name"
+                           name="cardholder_name"
+                           placeholder={__('Cardholder Name', 'monei')} required/>
 
-                    </div>
+                </div>
 
-                        <div id="monei-card-input"/>
-                        <input type="hidden" id="monei_payment_token" name="monei_payment_token" value=''/>
-                        <div id="monei-card-error"/>
-                </Fragment>
+                <div id="monei-card-input"/>
+                {moneiData.appleGooglePay === 'yes' && (
+                    <div id="payment-request-container"></div>
+                )}
+                <input type="hidden" id="monei_payment_token" name="monei_payment_token" value=''/>
+                <div id="monei-card-error"/>
+            </Fragment>
     );
     }
     /**

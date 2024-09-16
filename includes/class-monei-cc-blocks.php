@@ -105,6 +105,8 @@
  			'tokenization' => $this->get_setting( 'tokenization' ) ?? 'no',
 			'accountId' => $this->get_setting( 'accountid' ),
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
+            'currency' => get_woocommerce_currency(),
+            'appleGooglePay' => $this->get_setting('apple_google_pay') ?? 'no',
  		);
 
  		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
