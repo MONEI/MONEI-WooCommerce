@@ -75,10 +75,12 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				}
 
 				require_once 'includes/class-monei-cc-blocks.php';
+                require_once 'includes/AppleGoogleBlocksSupport.php';
 
 				add_action(	'woocommerce_blocks_payment_method_type_registration',
 					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
 						$payment_method_registry->register( new WC_Gateway_Monei_CC_Blocks );
+                        $payment_method_registry->register( new AppleGoogleBlocksSupport );
 				} );
 
 			} );
@@ -279,7 +281,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-cc.php';
-			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
+            include_once 'includes/payment-methods/MoneiAppleGoogleGateway.php';
+            include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
 		}
@@ -293,6 +296,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_Monei_CC';
+            $methods[] = 'MoneiAppleGoogleGateway';
 			$methods[] = 'WC_Gateway_Monei_Cofidis';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';
