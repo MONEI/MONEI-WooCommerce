@@ -100,6 +100,7 @@
  		// no:  credit card input will be rendered directly on the checkout page
  			'redirect' => $this->get_setting( 'cc_mode' ) ?? 'no',
 
+
 		// yes: Can save credit card and use saved cards.
  		// no:  Cannot save/use
  			'tokenization' => $this->get_setting( 'tokenization' ) ?? 'no',
@@ -107,6 +108,7 @@
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
             'currency' => get_woocommerce_currency(),
             'appleGooglePay' => $this->get_setting('apple_google_pay') ?? 'no',
+            'language' => locale_iso_639_1_code()
  		);
 
  		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {

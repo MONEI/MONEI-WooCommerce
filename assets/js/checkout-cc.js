@@ -47,6 +47,7 @@
                 cardInput = monei.CardInput({
                     accountId: moneiData.accountId,
                     sessionId: moneiData.sessionId,
+                    language: moneiData.language,
                     onChange( event ) {
                         if ( event.isTouched && event.error ) {
                             print_errors(event.error)
@@ -262,6 +263,7 @@ console.log('processing response')
                 let paymentRequest = monei.PaymentRequest({
                     accountId: moneiData.accountId,
                     sessionId: moneiData.sessionId,
+                    language: moneiData.language,
                     amount: parseInt(wc_monei_params.total),
                     currency: moneiData.currency,
                     onSubmit(result) {
