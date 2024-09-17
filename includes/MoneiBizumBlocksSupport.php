@@ -1,0 +1,65 @@
+<?php
+
+ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+
+ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
+
+ 	private $gateway;
+ 	protected $name = 'monei_bizum';
+
+ 	public function initialize() {
+ 		$this->settings = get_option( 'woocommerce_monei_bizum_settings', array() );
+ 		$this->gateway  = new WC_Gateway_Monei_Bizum();
+ 	}
+ 	public function get_payment_method_script_handles() {
+
+        $script_name = 'wc-monei-bizum-blocks-integration';
+
+ 		wp_register_script(
+ 			$script_name,
+ 			WC_Monei()->plugin_url(). '/public/js/block-checkout-bizum.min.js',
+ 			array(
+				'wc-blocks-checkout',
+ 				'wc-blocks-registry',
+ 				'wc-settings',
+ 				'wp-element',
+ 				'wp-html-entities',
+ 				'wp-i18n'
+ 			),
+ 			WC_Monei()->version,
+ 			true
+ 		);
+
+ 		if ( function_exists( 'wp_set_script_translations' ) ) {
+ 			wp_set_script_translations( $script_name );
+ 		}
+
+ 		return array( $script_name );
+ 	}
+
+
+ 	public function get_payment_method_data() {
+
+ 		$data = array(
+
+ 			'title'       => $this->gateway->title,
+ 			'description' => $this->gateway->description,
+	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/monei-logo.svg',
+ 			'supports'    => $this->get_supported_features(),
+
+		// yes: test mode.
+ 		// no:  live,
+ 			'test_mode'=> $this->get_setting( 'testmode' ) ?? 'no',
+			'accountId' => $this->get_setting( 'accountid' ),
+			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
+ 		);
+
+ 		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
+
+ 			unset( $data['logo'] );
+
+ 		}
+
+ 		return $data;
+ 	}
+ }

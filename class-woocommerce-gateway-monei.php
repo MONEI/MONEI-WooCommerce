@@ -75,11 +75,13 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				}
 
 				require_once 'includes/class-monei-cc-blocks.php';
+                require_once 'includes/MoneiBizumBlocksSupport.php';
                 require_once 'includes/AppleGoogleBlocksSupport.php';
 
 				add_action(	'woocommerce_blocks_payment_method_type_registration',
 					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
 						$payment_method_registry->register( new WC_Gateway_Monei_CC_Blocks );
+                        $payment_method_registry->register( new MoneiBizumBlocksSupport );
                         $payment_method_registry->register( new AppleGoogleBlocksSupport );
 				} );
 
