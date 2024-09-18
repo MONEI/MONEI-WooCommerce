@@ -43,3 +43,18 @@
 [id^="zoid-monei-payment-request-"] {
     height: 50px !important;
 }
+
+.monei-label-container {
+    display: flex;
+    align-items: center; /* Vertically center the logo and text */
+}
+
+.monei-logo {
+    margin-right: 10px; /* Adds space between the logo and title */
+}
+
+.monei-logo img {
+    max-height: 30px; /* Adjusts the logo size */
+    width: auto; /* Ensures the logo maintains its aspect ratio */
+}
+

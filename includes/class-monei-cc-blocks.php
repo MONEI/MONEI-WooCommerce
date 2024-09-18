@@ -89,7 +89,8 @@
 
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description,
-	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/monei-logo.svg',
+	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/cards.svg',
+            'logo_apple_google' => WC_Monei()->plugin_url() . '/assets/images/apple-google-logo.svg',
  			'supports'    => $supports,
 
 		// yes: test mode.
@@ -114,6 +115,7 @@
  		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
 
  			unset( $data['logo'] );
+            unset( $data['logo_apple_google'] );
 
  		}
 

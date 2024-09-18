@@ -2,10 +2,9 @@
     const { registerPaymentMethod } = wc.wcBlocksRegistry;
     const { __ } = wp.i18n;
     const { Fragment, useEffect, useState } = wp.element;
-
+    const moneiData = wc.wcSettings.getSetting('monei_data');
     const MoneiContent = (props) => {
         const {  responseTypes } = props.emitResponse;
-        const moneiData = wc.wcSettings.getSetting('monei_data');
         const isHostedWorkflow = moneiData.redirect === 'yes'
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
         let cardInput = null;
@@ -267,7 +266,6 @@ console.log('processing response')
     }
     const MoneiAppleGoogleContent = (props) => {
         const {responseTypes} = props.emitResponse;
-        const moneiData = wc.wcSettings.getSetting('monei_data');
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
         let cardInput = null;
         let token = null;
@@ -429,14 +427,41 @@ console.log('processing response')
             </fieldset>
         );
     }
+
+    const ccLabel = () => {
+        return (
+
+            <div className="monei-label-container">
+                {moneiData?.logo && (
+                    <div className="monei-logo">
+                        <img src={moneiData.logo} alt="" />
+                    </div>
+                )}
+                <div>{__(moneiData.title, 'monei')}</div>
+            </div>
+        );
+    }
+
+    const appleGoogleLabel = () => {
+        return (
+
+            <div className="monei-label-container">
+                {moneiData?.logo_apple_google && (
+                    <div className="monei-logo">
+                        <img src={moneiData.logo_apple_google} alt="" />
+                    </div>
+                )}
+                <div>{__( 'Apple/Google pay', 'monei' )}</div>
+            </div>
+        );
+    }
+
     /**
      * MONEI Payment Method React Component
      */
     const MoneiPaymentMethod = {
         name: 'monei',
-        label: <Fragment>
-            {__('Credit Card', 'monei')}
-        </Fragment>,
+        label: <div> {ccLabel()} </div>,
         ariaLabel: __('MONEI Payment Gateway', 'monei'),
 
         // React content to render on the checkout page
@@ -454,9 +479,7 @@ console.log('processing response')
     };
     const AppleGooglePaymentMethod = {
         name: 'monei_apple_google',
-        label: <Fragment>
-            { __( 'Apple/Google pay', 'monei' ) }
-        </Fragment>,
+        label: <div> {appleGoogleLabel()} </div>,
         ariaLabel: __( 'Apple/Google Pay Payment Gateway', 'monei' ),
         content: <MoneiAppleGoogleContent/>,
         edit:  <Fragment>

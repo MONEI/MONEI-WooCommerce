@@ -44,7 +44,7 @@
 
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description,
-	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/monei-logo.svg',
+	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/bizum-logo.svg',
  			'supports'    => $this->get_supported_features(),
 
 		// yes: test mode.
