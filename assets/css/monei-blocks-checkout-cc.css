@@ -1,0 +1,45 @@
+.monei-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    overflow: visible;
+}
+
+.monei-input-container {
+    margin-bottom: 15px;
+}
+
+.monei-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.monei-card-input {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.monei-payment-request-container {
+    width: 100%;
+    min-height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    overflow: visible;
+}
+
+.monei-error {
+    margin-top: 10px;
+    color: red;
+}
+
+[id^="zoid-monei-payment-request-"] {
+    height: 50px !important;
+}

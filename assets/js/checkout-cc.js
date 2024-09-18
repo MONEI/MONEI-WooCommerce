@@ -210,21 +210,30 @@ console.log('processing response')
 
 
         return (
-            <Fragment>
-                <div className="wc-block-components-text-input wc-block-components-address-form__email">
-                    <input type="text" id="cardholder_name"
-                           name="cardholder_name"
-                           placeholder={__('Cardholder Name', 'monei')} required/>
+            <fieldset className="monei-fieldset monei-card-fieldset">
+                <div className="monei-input-container">
+                    <input
+                        type="text"
+                        id="cardholder_name"
+                        name="cardholder_name"
+                        placeholder={__('Cardholder Name', 'monei')}
+                        required
+                        className="monei-input"
+                    />
                 </div>
-
-                <div id="monei-card-input"/>
-                <input type="hidden" id="monei_payment_token" name="monei_payment_token" value=''/>
-                <div id="monei-card-error"/>
-            </Fragment>
-    );
+                <div id="monei-card-input" className="monei-card-input"/>
+                <input
+                    type="hidden"
+                    id="monei_payment_token"
+                    name="monei_payment_token"
+                    value=''
+                />
+                <div id="monei-card-error" className="monei-error"/>
+            </fieldset>
+        );
     }
     const MoneiAppleGoogleContent = (props) => {
-        const {  responseTypes } = props.emitResponse;
+        const {responseTypes} = props.emitResponse;
         const moneiData = wc.wcSettings.getSetting('monei_data');
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
         let cardInput = null;
@@ -233,15 +242,15 @@ console.log('processing response')
          * Printing errors into checkout form.
          * @param error_string
          */
-        const print_errors = (error_string ) => {
-            console.log( 'Card input error: ', error_string );
-            document.getElementById( 'monei-card-error' ).innerHTML = error_string
+        const print_errors = (error_string) => {
+            console.log('Card input error: ', error_string);
+            document.getElementById('monei-card-error').innerHTML = error_string
         }
         /**
          * Clearing form errors.
          */
         const clear_errors = () => {
-            document.getElementById( 'monei-card-error' ).innerHTML = ''
+            document.getElementById('monei-card-error').innerHTML = ''
         }
         useEffect(() => {
             // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
@@ -256,7 +265,6 @@ console.log('processing response')
          * Initialize MONEI card input and handle token creation.
          */
         const initMoneiCard = () => {
-
                 if ( window.paymentRequest ) {
                     window.paymentRequest.close();
                 }
@@ -374,35 +382,42 @@ console.log('processing response')
 
 
         return (
-            <Fragment>
-                <div id="payment-request-container"></div>
-                <input type="hidden" id="monei_payment_token" name="monei_payment_token" value=''/>
-                <div id="monei-card-error"/>
-            </Fragment>
+            <fieldset className="monei-fieldset monei-payment-request-fieldset">
+                <div id="payment-request-container" className="monei-payment-request-container">
+                    {/* Google Pay button will be inserted here */}
+                </div>
+                <input
+                    type="hidden"
+                    id="monei_payment_token"
+                    name="monei_payment_token"
+                    value=''
+                />
+                <div id="monei-card-error" className="monei-error"/>
+            </fieldset>
         );
     }
     /**
-    * MONEI Payment Method React Component
-    */
+     * MONEI Payment Method React Component
+     */
     const MoneiPaymentMethod = {
         name: 'monei',
         label: <Fragment>
-                { __( 'Credit Card', 'monei' ) }
-            </Fragment>,
-        ariaLabel: __( 'MONEI Payment Gateway', 'monei' ),
+            {__('Credit Card', 'monei')}
+        </Fragment>,
+        ariaLabel: __('MONEI Payment Gateway', 'monei'),
 
         // React content to render on the checkout page
-        content: <MoneiContent />,
+        content: <MoneiContent/>,
 
         // Optional edit mode for the block editor
         edit:
             <Fragment>
-                <div id="monei-card-input" />
-                { __( 'MONEI Payment Form (Edit Mode)', 'monei' ) }
+                <div id="monei-card-input"/>
+                {__('MONEI Payment Form (Edit Mode)', 'monei')}
             </Fragment>,
 
         canMakePayment: () => true,
-        supports: wc.wcSettings.getSetting( 'monei_data' ).supports,
+        supports: wc.wcSettings.getSetting('monei_data').supports,
     };
     const AppleGooglePaymentMethod = {
         name: 'monei_apple_google',

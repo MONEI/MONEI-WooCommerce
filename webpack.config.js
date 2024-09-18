@@ -6,6 +6,7 @@ module.exports = {
     entry: {
         'checkout-cc': path.resolve( __dirname, 'assets/js/checkout-cc.js' ),
         'block-checkout-bizum': path.resolve( __dirname, 'assets/js/block-checkout-bizum.js' ),
+        'monei-blocks-checkout-cc': path.resolve(__dirname, 'assets/css/monei-blocks-checkout-cc.css'),
     },
     output: {
         path: path.resolve( __dirname, 'public/js/' ), // Output directory
