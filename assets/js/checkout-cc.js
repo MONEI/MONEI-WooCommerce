@@ -10,6 +10,7 @@
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
         let cardInput = null;
         let token = null;
+        const cardholderNameRegex = /^[A-Za-zÀ-ú- ]{5,50}$/;
         /**
          * Printing errors into checkout form.
          * @param error_string
@@ -31,6 +32,34 @@
                 </div>
             );
         }
+
+        const validateCardholderName = () => {
+            const cardholderName = document.querySelector('#cardholder_name').value
+            if (!cardholderNameRegex.test(cardholderName)) {
+                print_errors(__('Please enter a valid name. Special characters are not allowed.', 'monei'));
+                return false;
+            } else {
+                clear_errors();
+                return true;
+            }
+        };
+
+        useEffect(() => {
+            // Attach the blur event for cardholder name validation
+            const cardholderNameInput = document.querySelector('#cardholder_name');
+
+            if (cardholderNameInput) {
+                cardholderNameInput.addEventListener('blur', validateCardholderName);
+            }
+
+            // Cleanup event listener on unmount
+            return () => {
+                if (cardholderNameInput) {
+                    cardholderNameInput.removeEventListener('blur', validateCardholderName);
+                }
+            };
+        }, []);
+
         useEffect(() => {
             // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
             if (typeof monei !== 'undefined' && monei.CardInput) {
@@ -94,7 +123,11 @@
         // Hook into the validation process
         useEffect(() => {
             const unsubscribeValidation = onCheckoutValidation( () => {
-                console.log('on validation')
+                if (!validateCardholderName()) {
+                    return {
+                        errorMessage: __('Please enter a valid name. Special characters are not allowed.', 'monei'),
+                    };
+                }
                 // If no token is available, create a fresh token
                 if (!token) {
                     return createMoneiToken().then(freshToken => {
