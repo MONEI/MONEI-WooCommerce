@@ -37,6 +37,17 @@
  		return array( $script_name );
  	}
 
+     public function is_active() {
+
+         $id  = $this->get_setting( 'accountid' ) ?? 'false';
+         $key = $this->get_setting( 'apikey' ) ?? 'false';
+
+         if ( ! $id || ! $key ) {
+             return false;
+         }
+
+         return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
+     }
 
  	public function get_payment_method_data() {
 
