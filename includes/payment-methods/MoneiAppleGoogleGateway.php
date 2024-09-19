@@ -35,7 +35,7 @@ class MoneiAppleGoogleGateway extends WC_Gateway_Monei_CC {
 		$this->id                 = 'monei_apple_google';
 		$this->method_title       = __( 'MONEI - Apple/Google', 'monei' );
         $this->settings = get_option( 'woocommerce_monei_settings', array() );
-        $this->enabled = ( ! empty( $this->settings['apple_google_pay'] && 'yes' ===$this->settings['apple_google_pay'] ) ) ? 'yes' : 'no';
+        $this->enabled = ( ! empty( isset($this->settings['apple_google_pay']) && 'yes' ===$this->settings['apple_google_pay'] ) ) ? 'yes' : 'no';
 
         add_filter(
             'woocommerce_available_payment_gateways',

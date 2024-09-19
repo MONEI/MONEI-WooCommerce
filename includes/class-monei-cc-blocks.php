@@ -108,6 +108,7 @@
 			'accountId' => $this->get_setting( 'accountid' ),
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
             'currency' => get_woocommerce_currency(),
+            'total' => monei_price_format( WC()->cart->get_total( false ) ),
             'appleGooglePay' => $this->get_setting('apple_google_pay') ?? 'no',
             'language' => locale_iso_639_1_code()
  		);

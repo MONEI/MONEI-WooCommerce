@@ -267,22 +267,8 @@ console.log('processing response')
     const MoneiAppleGoogleContent = (props) => {
         const {responseTypes} = props.emitResponse;
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
-        let cardInput = null;
-        let token = null;
-        /**
-         * Printing errors into checkout form.
-         * @param error_string
-         */
-        const print_errors = (error_string) => {
-            console.log('Card input error: ', error_string);
-            document.getElementById('monei-card-error').innerHTML = error_string
-        }
-        /**
-         * Clearing form errors.
-         */
-        const clear_errors = () => {
-            document.getElementById('monei-card-error').innerHTML = ''
-        }
+        let requestToken = null;
+
         useEffect(() => {
             // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
             if (typeof monei !== 'undefined' && monei.CardInput) {
@@ -303,104 +289,47 @@ console.log('processing response')
                     accountId: moneiData.accountId,
                     sessionId: moneiData.sessionId,
                     language: moneiData.language,
-                    amount: parseInt(wc_monei_params.total),
+                    amount: parseInt(moneiData.total),
                     currency: moneiData.currency,
                     onSubmit(result) {
-                        console.log('submitting')
+                        console.log('result', result)
+                        if (result.token) {
+                            requestToken = result.token;
+                            const placeOrderButton = document.querySelector(
+                                '.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+                            );
+                            if (placeOrderButton) {
+                                placeOrderButton.click();
+                            } else {
+                                console.error('Place Order button not found.');
+                            }
+                        }
                     },
                     onError(error) {
                         console.log(error);
                     },
                 });
-                paymentRequest.render('#payment-request-container');
-
+            paymentRequest.render('#payment-request-container');
         };
-
-        /**
-         * Handle MONEI token creation when form is submitted.
-         */
-        const createMoneiToken = () => {
-
-            // Create a token using the MONEI SDK
-            return monei.createToken(cardInput)
-                .then(result => {
-                    if (result.error) {
-                        // Inform the user if there was an error
-                        print_errors(result.error);
-                        return null;  // Return null to indicate failure
-                    } else {
-                        console.log('create token', result.token)
-                        token = result.token;
-                        return result.token;  // Return the token for further use
-                    }
-                })
-                .catch(error => {
-                    // Handle any error in the promise chain
-                    print_errors(error.message);
-                    return null;  // Return null in case of error
-                });
-        };
-
-        // Hook into the validation process
-        useEffect(() => {
-            const unsubscribeValidation = onCheckoutValidation( () => {
-                console.log('on validation')
-                // If no token is available, create a fresh token
-                if (!token) {
-                    return createMoneiToken().then(freshToken => {
-                        if (!freshToken) {
-                            return {
-                                errorMessage: __('MONEI token could not be generated.', 'monei'),
-                            };
-                        }
-                        console.log('token in var after validation', token)
-                        return true;  // Validation passed
-                    });
-                }
-
-                return true;  // Validation passed (token already exists)
-            });
-
-            return () => {
-                unsubscribeValidation();
-            };
-        }, [onCheckoutValidation]);
 
         // Hook into the payment setup
         useEffect(() => {
             const unsubscribePaymentSetup = onPaymentSetup(() => {
-                // Get the token from the hidden input field
-                let cardholderName = document.querySelector('#cardholder_name').value;
-
-                // If no token is available, create a fresh token
-                if (!token) {
-                    return createMoneiToken().then(freshToken => {
-                        // If the token is generated successfully
-                        if (freshToken && freshToken.length) {
-                            return {
-                                type: responseTypes.SUCCESS,
-                                meta: {
-                                    paymentMethodData: {
-                                        monei_payment_request_token: freshToken,
-                                    },
-                                },
-                            };
-                        }
-
-                        // If the token generation failed
-                        return {
-                            type: 'error',
-                            message: __('MONEI token could not be generated.', 'monei'),
-                        };
-                    });
+                // If no token was created, fail
+                if (!requestToken) {
+                    console.log('no token')
+                    return {
+                        type: 'error',
+                        message: __('MONEI token could not be generated.', 'monei'),
+                    };
                 }
-                console.log('token in paymentsetup', token)
-                // Token is already available, proceed with setup
+                console.log('about to send to backend')
+                console.log(requestToken)
                 return {
                     type: responseTypes.SUCCESS,
                     meta: {
                         paymentMethodData: {
-                            monei_payment_request_token: freshToken,
+                            monei_payment_request_token: requestToken,
                         },
                     },
                 };
@@ -479,6 +408,7 @@ console.log('processing response')
     };
     const AppleGooglePaymentMethod = {
         name: 'monei_apple_google',
+        paymentMethodId: 'monei',
         label: <div> {appleGoogleLabel()} </div>,
         ariaLabel: __( 'Apple/Google Pay Payment Gateway', 'monei' ),
         content: <MoneiAppleGoogleContent/>,
@@ -490,6 +420,5 @@ console.log('processing response')
         supports: wc.wcSettings.getSetting( 'monei_data' ).supports,
     };
     registerPaymentMethod( MoneiPaymentMethod );
-    console.log(wc.wcSettings.getSetting( 'monei_data' ).supports)
     registerPaymentMethod( AppleGooglePaymentMethod );
 } )();
