@@ -242,6 +242,13 @@ console.log('processing response')
 
         return (
             <fieldset className="monei-fieldset monei-card-fieldset">
+                {moneiData?.description && (
+                    <div>
+                        <div className="monei-logo">
+                            <p>{moneiData.description}</p>
+                        </div>
+                    </div>
+                )}
                 <div className="monei-input-container">
                     <input
                         type="text"
@@ -372,14 +379,10 @@ console.log('processing response')
 
     const appleGoogleLabel = () => {
         const isApple = window.ApplePaySession?.canMakePayments()
-        console.log('is apple', isApple)
-
         const logo = isApple ? moneiData.logo_apple : moneiData.logo_google;
-        console.log('monei data', moneiData.logo)
         const title = isApple ? __( 'Apple Pay', 'monei' ) : __( 'Google Pay', 'monei' );
         const shouldShowLogo = isApple && moneiData?.logo_apple || !isApple && moneiData?.logo_google;
         return (
-
             <div className="monei-label-container">
                 {shouldShowLogo && (
                     <div className="monei-logo">
