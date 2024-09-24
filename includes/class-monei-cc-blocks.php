@@ -90,7 +90,8 @@
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description,
 	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/cards.svg',
-            'logo_apple_google' => WC_Monei()->plugin_url() . '/assets/images/apple-google-logo.svg',
+            'logo_apple' => WC_Monei()->plugin_url() . '/assets/images/apple-logo.svg',
+            'logo_google' => WC_Monei()->plugin_url() . '/assets/images/google-logo.svg',
  			'supports'    => $supports,
 
 		// yes: test mode.

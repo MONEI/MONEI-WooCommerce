@@ -221,8 +221,7 @@ console.log('processing response')
                     }).then(result => {
                         console.log('Payment confirmed:', result);
                         window.location.href = paymentDetails.completeUrl
-                        // Handle success (3D Secure completed, etc.)
-                        // You may also want to trigger further order processing here
+
                     }).catch(error => {
                         console.log('Error during payment confirmation:', error);
                         // Handle failure (failed 3D Secure, etc.)
@@ -372,15 +371,22 @@ console.log('processing response')
     }
 
     const appleGoogleLabel = () => {
+        const isApple = window.ApplePaySession?.canMakePayments()
+        console.log('is apple', isApple)
+
+        const logo = isApple ? moneiData.logo_apple : moneiData.logo_google;
+        console.log('monei data', moneiData.logo)
+        const title = isApple ? __( 'Apple Pay', 'monei' ) : __( 'Google Pay', 'monei' );
+        const shouldShowLogo = isApple && moneiData?.logo_apple || !isApple && moneiData?.logo_google;
         return (
 
             <div className="monei-label-container">
-                {moneiData?.logo_apple_google && (
+                {shouldShowLogo && (
                     <div className="monei-logo">
-                        <img src={moneiData.logo_apple_google} alt="" />
+                        <img src={logo} alt="" />
                     </div>
                 )}
-                <div>{__( 'Apple/Google pay', 'monei' )}</div>
+                <div>{title}</div>
             </div>
         );
     }
