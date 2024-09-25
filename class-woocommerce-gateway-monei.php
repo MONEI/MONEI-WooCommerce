@@ -137,6 +137,11 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
+                add_filter('woocommerce_get_settings_pages', function ($settings) {
+                    include_once 'src/Settings/MoneiSettings.php';
+                    $settings[] = new MoneiSettings();
+                    return $settings;
+                });
 			}
 
 			if ( $this->is_request( 'frontend' ) ) {
