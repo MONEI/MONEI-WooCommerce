@@ -57,7 +57,12 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 			$this,
 			'process_admin_options'
 		) );
-		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+        add_filter(
+            'woocommerce_save_settings_checkout_' . $this->id,
+            function ($is_post) {
+                return $this->checks_before_save($is_post, 'woocommerce_monei_cofidis_enabled');
+            }
+        );
 		add_action( 'wp_enqueue_scripts', [ $this, 'cofidis_scripts' ] );
 
 		// Add new total on checkout updates (ex, selecting different shipping methods)
@@ -90,24 +95,6 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
-	}
-
-	/**
-	 * Setting checks when saving.
-	 *
-	 * @param $is_post
-	 *
-	 * @return bool
-	 */
-	public function checks_before_save( $is_post ) {
-		if ( $is_post ) {
-			if ( empty( $_POST['woocommerce_monei_cofidis_apikey'] ) ) {
-				WC_Admin_Settings::add_error( __( 'Please, MONEI needs API Key in order to work. Disabling the gateway.', 'monei' ) );
-				unset( $_POST['woocommerce_monei_cofidis_enabled'] );
-			}
-		}
-
-		return $is_post;
 	}
 
 	/**

@@ -67,13 +67,13 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
-		$this->account_id           = ( ! empty( $this->get_option( 'accountid' ) ) ) ? $this->get_option( 'accountid' ) : '';
-		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
+		$this->account_id           = ( ! empty(get_option( 'monei_accountid' ) ) ) ? get_option( 'monei_accountid' ) : '';
+		$this->api_key              = ( ! empty( get_option( 'monei_apikey' ) ) ) ? get_option( 'monei_apikey' ) : '';
 		$this->shop_name            = get_bloginfo( 'name' );
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
 		$this->pre_auth             = ( ! empty( $this->get_option( 'pre-authorize' ) && 'yes' === $this->get_option( 'pre-authorize' ) ) ) ? true : false;
-		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
+		$this->logging              = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();
@@ -96,7 +96,12 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			$this,
 			'process_admin_options'
 		) );
-		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+        add_filter(
+            'woocommerce_save_settings_checkout_' . $this->id,
+            function ($is_post) {
+                return $this->checks_before_save($is_post, 'woocommerce_monei_enabled');
+            }
+        );
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
 		if ( ! $this->redirect_flow || is_add_payment_method_page() || $this->is_subscription_change_payment_page() ) {

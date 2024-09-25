@@ -40,9 +40,9 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
-		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
+		$this->api_key              = ( ! empty( get_option( 'monei_apikey' ) ) ) ? get_option( 'monei_apikey' ) : '';
 		$this->shop_name            = get_bloginfo( 'name' );
-		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
+		$this->logging              = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
 
 		// IPN callbacks
 		$this->notify_url           = WC_Monei()->get_ipn_url();
@@ -54,7 +54,12 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-        add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+        add_filter(
+            'woocommerce_save_settings_checkout_' . $this->id,
+            function ($is_post) {
+                return $this->checks_before_save($is_post, 'woocommerce_monei_bizum_enabled');
+            }
+        );
     }
 
 	/**
@@ -79,22 +84,5 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
     public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
-
-    /**
-     * Setting checks when saving.
-     *
-     * @param $is_post
-     * @return bool
-     */
-    public function checks_before_save( $is_post ) {
-        if ( $is_post ) {
-            if ( empty( $_POST['woocommerce_monei_bizum_apikey'] ) ) {
-                WC_Admin_Settings::add_error( __( 'Please, MONEI needs API Key in order to work. Disabling the gateway.', 'monei' ) );
-                unset( $_POST['woocommerce_monei_bizum_enabled'] );
-            }
-        }
-        return $is_post;
-    }
-
 }
 
