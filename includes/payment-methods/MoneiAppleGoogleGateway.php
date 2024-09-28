@@ -39,23 +39,23 @@ class MoneiAppleGoogleGateway extends WC_Gateway_Monei_CC {
 
         add_filter(
             'woocommerce_available_payment_gateways',
-            [$this, 'disableAppleGoogleInCheckout'],
+            [$this, 'hideAppleGoogleInCheckout'],
             11,
             1
         );
 	}
 
     /**
-     * Disable Apple/Google Pay in WooCommerce Checkout
+     * Hide Apple/Google Pay in WooCommerce Checkout
      */
-    public function disableAppleGoogleInCheckout($available_gateways)
+    public function hideAppleGoogleInCheckout($available_gateways)
     {
         if (!has_block('woocommerce/checkout')) {
             unset($available_gateways['monei_apple_google']);
         }
+
         return $available_gateways;
     }
-
     public function isBlockCheckout(): bool
     {
         if (!is_checkout()) {

@@ -311,7 +311,9 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_Monei_CC';
-            $methods[] = 'MoneiAppleGoogleGateway';
+            if (has_block('woocommerce/checkout')) {
+                $methods[] = 'MoneiAppleGoogleGateway';
+            }
 			$methods[] = 'WC_Gateway_Monei_Cofidis';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';
