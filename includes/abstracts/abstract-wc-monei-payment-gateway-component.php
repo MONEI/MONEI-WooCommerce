@@ -51,7 +51,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
                     'redirect' => false,
                     'paymentId' => $create_payment->getId(),// Send the paymentId back to the client
                     'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
-                    'completeUrl' => $payload['completeUrl']
+                    'completeUrl' => $payload['completeUrl'],
+                    'failUrl'=> $payload['failUrl']
                 );
             }
 

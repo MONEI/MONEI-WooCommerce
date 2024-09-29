@@ -219,12 +219,14 @@ console.log('processing response')
                             }
                         }
                     }).then(result => {
-                        console.log('Payment confirmed:', result);
-                        window.location.href = paymentDetails.completeUrl
-
+                        if(result.status === 'FAILED') {
+                            window.location.href = paymentDetails.failUrl
+                        }else {
+                            window.location.href = paymentDetails.completeUrl
+                        }
                     }).catch(error => {
                         console.log('Error during payment confirmation:', error);
-                        // Handle failure (failed 3D Secure, etc.)
+                        window.location.href = paymentDetails.failUrl
                     });
                 } else {
                     console.error('No paymentId found in paymentDetails');
