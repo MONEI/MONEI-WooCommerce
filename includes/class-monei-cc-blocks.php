@@ -20,8 +20,8 @@
 
  	public function is_active() {
 
-		$id  = $this->get_setting( 'accountid' ) ?? 'false';
-		$key = $this->get_setting( 'apikey' ) ?? 'false';
+        $id  = get_option( 'monei_accountid' ) ?? 'false';
+        $key = get_option( 'monei_apikey' ) ?? 'false';
 
 		if ( ! $id || ! $key ) {
 			return false;
