@@ -99,7 +99,7 @@ class MoneiSettings extends WC_Settings_Page
             // Enqueue the admin CSS
             wp_enqueue_style(
                 'monei-admin-css',
-                $plugin_url . 'public/js/monei-admin.css',
+                $plugin_url . 'public/css/monei-admin.css',
                 array(),
                 '1.0.0'
             );

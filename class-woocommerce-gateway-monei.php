@@ -252,7 +252,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			wp_enqueue_style( 'monei-icons' );
             wp_register_style(
                 'monei-blocks-checkout-cc',
-                WC_Monei()->plugin_url(). '/public/js/monei-blocks-checkout-cc.css',
+                WC_Monei()->plugin_url(). '/public/css/monei-blocks-checkout-cc.css',
                 array(),
                 WC_Monei()->version,
                 'all'
