@@ -23,7 +23,9 @@
         ariaLabel: __(bizumData.title, 'monei'),
         content: <div></div>,
         edit: <div> {__(bizumData.title, 'monei')}</div>,
-        canMakePayment: () => true,
+        canMakePayment: ({billingData}) => {
+            return billingData.country === 'ES';
+        },
         supports: bizumData.supports,
     };
     registerPaymentMethod(MoneiBizumPaymentMethod );
