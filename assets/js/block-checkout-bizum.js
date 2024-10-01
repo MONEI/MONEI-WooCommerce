@@ -5,16 +5,15 @@
     const bizumLabel = () => {
         return (
             <div className="monei-label-container">
+                <span className="monei-text">{__(bizumData.title, 'monei')}</span>
                 {bizumData?.logo && (
                     <div className="monei-logo">
-                        <img src={bizumData.logo} alt="" />
+                        <img src={bizumData.logo} alt=""/>
                     </div>
                 )}
-                <div>{__(bizumData.title, 'monei')}</div>
             </div>
         );
     }
-
 
 
     const MoneiBizumPaymentMethod = {

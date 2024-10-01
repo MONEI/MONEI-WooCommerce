@@ -6,23 +6,42 @@
     overflow: visible;
 }
 
-.monei-input-container {
-    margin-bottom: 15px;
-}
-
 .monei-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    padding: 0 10px;
+    color: #2b2d2f;
+    border: 1px solid hsla(0,0%,7%,.8);
     border-radius: 4px;
+    background-color: #fff;
+    font-size: 1em;
+    text-align: start;
+    width: 100%;
+    height:50px;
+    line-height: 1.2;
     box-sizing: border-box;
+    position: relative;
+}
+.monei-card-input {
+    color: #2b2d2f;
+    border: 1px solid hsla(0,0%,7%,.8);
+    border-radius: 4px;
+    background-color: #fff;
+    height:50px;
+    display: flex;
+    align-items: center;
 }
 
-.monei-card-input {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px;
+.monei-card-input::placeholder,
+.monei-input::placeholder {
+    color: hsla(0, 0%, 7%, .7);
+}
+.monei-card-input::-webkit-input-placeholder,
+.monei-input::-webkit-input-placeholder {
+    color: hsla(0, 0%, 7%, .7);
+}
+.monei-card-input::-moz-placeholder,
+.monei-input::-moz-placeholder {
+    color: hsla(0, 0%, 7%, .7);
 }
 
 .monei-payment-request-container {
@@ -46,15 +65,20 @@
 
 .monei-label-container {
     display: flex;
-    align-items: center; /* Vertically center the logo and text */
+    align-items: center;
+}
+.monei-text {
+    flex-shrink: 0; /* The text will take up all available space */
 }
 
 .monei-logo {
-    margin-right: 10px; /* Adds space between the logo and title */
+    margin-left: 15px;
+    margin-right:0;
+    padding-right:0;
 }
 
 .monei-logo img {
-    max-height: 30px; /* Adjusts the logo size */
-    width: auto; /* Ensures the logo maintains its aspect ratio */
+    max-height: 30px;
+    width: auto;
 }
 

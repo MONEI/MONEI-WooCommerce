@@ -72,14 +72,41 @@
              * Initialize MONEI card input and handle token creation.
              */
             const initMoneiCard = () => {
+                const style = {
+                    input: {
+                        color: 'hsla(0,0%,7%,.8)',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: 'antialiased',
+                        fontSize: '16px',
+                        '::placeholder': {
+                            color: 'hsla(0,0%,7%,.8)'
+                        },
+                        '-webkit-autofill': {
+                            backgroundColor: '#FAFFBD'
+                        }
+                    },
+                    invalid: {
+                        color: '#fa755a'
+                    }
+                };
                 cardInput = monei.CardInput({
                     accountId: moneiData.accountId,
                     sessionId: moneiData.sessionId,
                     language: moneiData.language,
-                    onChange( event ) {
-                        if ( event.isTouched && event.error ) {
+                    style:style,
+                    onFocus: function () {
+                        container.classList.add('is-focused');
+                    },
+                    onBlur: function () {
+                        container.classList.remove('is-focused');
+                    },
+                    onChange: function (event) {
+                        // Handle real-time validation errors.
+                        if (event.isTouched && event.error) {
+                            container.classList.add('is-invalid');
                             print_errors(event.error)
                         } else {
+                            container.classList.remove('is-invalid');
                             clear_errors()
                         }
                     },
@@ -246,7 +273,7 @@ console.log('processing response')
             <fieldset className="monei-fieldset monei-card-fieldset">
                 {moneiData?.description && (
                     <div>
-                        <div className="monei-logo">
+                        <div>
                             <p>{moneiData.description}</p>
                         </div>
                     </div>
@@ -300,7 +327,6 @@ console.log('processing response')
                     amount: parseInt(moneiData.total),
                     currency: moneiData.currency,
                     onSubmit(result) {
-                        console.log('result', result)
                         if (result.token) {
                             requestToken = result.token;
                             const placeOrderButton = document.querySelector(
@@ -369,12 +395,12 @@ console.log('processing response')
         return (
 
             <div className="monei-label-container">
+                <span className="monei-text">{__(moneiData.title, 'monei')}</span>
                 {moneiData?.logo && (
                     <div className="monei-logo">
-                        <img src={moneiData.logo} alt="" />
+                        <img src={moneiData.logo} alt=""/>
                     </div>
                 )}
-                <div>{__(moneiData.title, 'monei')}</div>
             </div>
         );
     }
@@ -386,12 +412,12 @@ console.log('processing response')
         const shouldShowLogo = isApple && moneiData?.logo_apple || !isApple && moneiData?.logo_google;
         return (
             <div className="monei-label-container">
+                <span className="monei-text">{title}</span>
                 {shouldShowLogo && (
                     <div className="monei-logo">
-                        <img src={logo} alt="" />
+                        <img src={logo} alt=""/>
                     </div>
                 )}
-                <div>{title}</div>
             </div>
         );
     }
@@ -409,10 +435,9 @@ console.log('processing response')
 
         // Optional edit mode for the block editor
         edit:
-            <Fragment>
-                <div id="monei-card-input"/>
+            <div>
                 {__('MONEI Payment Form (Edit Mode)', 'monei')}
-            </Fragment>,
+            </div>,
 
         canMakePayment: () => true,
         supports: wc.wcSettings.getSetting('monei_data').supports,
