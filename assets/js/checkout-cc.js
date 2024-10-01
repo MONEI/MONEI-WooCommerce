@@ -302,8 +302,29 @@ console.log('processing response')
     const MoneiAppleGoogleContent = (props) => {
         const {responseTypes} = props.emitResponse;
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
-        let requestToken = null;
+        const {activePaymentMethod} = props
 
+        let requestToken = null;
+        useEffect(() => {
+            const placeOrderButton = document.querySelector(
+                '.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+            );
+            if (activePaymentMethod === 'monei_apple_google') {
+                if (placeOrderButton) {
+                    //on hover over the button the text should not change color to white
+                    placeOrderButton.style.color = 'black';
+                    placeOrderButton.style.backgroundColor = '#ccc';
+                    placeOrderButton.disabled = true;
+                }
+            }
+            return () => {
+                if (placeOrderButton) {
+                    placeOrderButton.style.color = '';
+                    placeOrderButton.style.backgroundColor = '';
+                    placeOrderButton.disabled = false;
+                }
+            };
+        }, [activePaymentMethod]);
         useEffect(() => {
             // We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
             if (typeof monei !== 'undefined' && monei.CardInput) {
@@ -448,10 +469,9 @@ console.log('processing response')
         label: <div> {appleGoogleLabel()} </div>,
         ariaLabel: __( 'Apple/Google Pay Payment Gateway', 'monei' ),
         content: <MoneiAppleGoogleContent/>,
-        edit:  <Fragment>
-            <div id="payment-request-container" />
+        edit:  <div>
             { __( 'MONEI Payment Form (Edit Mode)', 'monei' ) }
-        </Fragment>,
+        </div>,
         canMakePayment: () => true,
         supports: wc.wcSettings.getSetting( 'monei_data' ).supports,
     };
