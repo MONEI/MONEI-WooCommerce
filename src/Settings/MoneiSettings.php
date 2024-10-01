@@ -7,6 +7,7 @@ class MoneiSettings extends WC_Settings_Page
         $this->id = 'monei_settings';
         $this->label = __('Monei Settings', 'monei');
         parent::__construct();
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
     }
 
     public function get_settings()
@@ -58,6 +59,16 @@ class MoneiSettings extends WC_Settings_Page
 
     public function output()
     {
+        $moneiIconUrl = WC_Monei()->image_url( 'monei-logo.svg' );
+        $welcomeString =  __('Welcome to MONEI! Enhance your payment processing experience with our seamless integration.', 'monei');
+        $dashboardString = __('Go to Dashboard', 'monei');
+        $supportString = __('Support', 'monei');
+        $plugin_dir = WC_Monei()->plugin_path();
+        $template_path = $plugin_dir . '/templates/html-monei-settings-header.php';
+// Include the template file
+        if ( file_exists( $template_path ) ) {
+            include $template_path;
+        }
         $settings = $this->get_settings();
         WC_Admin_Settings::output_fields($settings);
     }
@@ -67,4 +78,32 @@ class MoneiSettings extends WC_Settings_Page
         $settings = $this->get_settings();
         WC_Admin_Settings::save_fields($settings);
     }
+
+    public function enqueue_admin_scripts( $hook ) {
+        if ( ! function_exists( 'get_current_screen' ) ) {
+            return;
+        }
+
+        $screen = get_current_screen();
+
+        // Ensure we're on the WooCommerce settings page
+        if ( $screen->id !== 'woocommerce_page_wc-settings' ) {
+            return;
+        }
+
+        // Check if our settings tab is active
+        if ( isset( $_GET['tab'] ) && $_GET['tab'] === $this->id ) {
+            // Get the plugin URL
+            $plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
+
+            // Enqueue the admin CSS
+            wp_enqueue_style(
+                'monei-admin-css',
+                $plugin_url . 'public/js/monei-admin.css',
+                array(),
+                '1.0.0'
+            );
+        }
+    }
+
 }
