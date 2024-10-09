@@ -82,9 +82,12 @@
  		if ( 'no' == $this->get_setting( 'tokenization' ) ) {
 			$supports = $this->get_supported_features();
  		} else {
- 			$supports = array_merge( [ 'showSavedCards', 'showSaveOption' ], $this->get_supported_features() );
- 		}
-
+            $supports = array(
+                'features' => $this->get_supported_features(),
+                'showSavedCards' => true,
+                'showSaveOption' => true,
+            ); 		}
+        $total = isset(WC()->cart) ? WC()->cart->get_total( false ) : 0;
  		$data = array(
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description,
@@ -105,10 +108,10 @@
 		// yes: Can save credit card and use saved cards.
  		// no:  Cannot save/use
  			'tokenization' => $this->get_setting( 'tokenization' ) ?? 'no',
-			'accountId' => $this->get_setting( 'accountid' ),
+			'accountId' => get_option( 'monei_accountid' ),
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
             'currency' => get_woocommerce_currency(),
-            'total' => monei_price_format( WC()->cart->get_total( false ) ),
+            'total' => $total,
             'appleGooglePay' => $this->get_setting('apple_google_pay') ?? 'no',
             'language' => locale_iso_639_1_code()
  		);
