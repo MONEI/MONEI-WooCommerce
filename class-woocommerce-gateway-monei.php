@@ -270,8 +270,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function monei_settings_by_default( $default_params ) {
 			$default_params['testmode'] = ( empty( $default_params['testmode'] ) ) ? monei_get_settings( 'testmode' ) : $default_params['testmode'];
-			$default_params['apikey']   = ( empty( $default_params['apikey'] ) )   ? monei_get_settings( 'apikey' )   : $default_params['apikey'];
-			$default_params['debug']    = ( empty( $default_params['debug'] ) )    ? monei_get_settings( 'debug' )    : $default_params['debug'];
+			$default_params['apikey']   = ( empty( $default_params['apikey'] ) )   ? get_option( 'monei_apikey' )   : $default_params['apikey'];
+			$default_params['debug']    = ( empty( $default_params['debug'] ) )    ? get_option( 'monei_debug' )    : $default_params['debug'];
 			$default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
 			return $default_params;
 		}
@@ -311,7 +311,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_Monei_CC';
-            if (has_block('woocommerce/checkout')) {
+            if (has_block('woocommerce/checkout') && !is_wc_endpoint_url( 'order-pay' )) {
                 $methods[] = 'MoneiAppleGoogleGateway';
             }
 			$methods[] = 'WC_Gateway_Monei_Cofidis';

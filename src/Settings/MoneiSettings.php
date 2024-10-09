@@ -65,7 +65,7 @@ class MoneiSettings extends WC_Settings_Page
         $supportString = __('Support', 'monei');
         $plugin_dir = WC_Monei()->plugin_path();
         $template_path = $plugin_dir . '/templates/html-monei-settings-header.php';
-// Include the template file
+
         if ( file_exists( $template_path ) ) {
             include $template_path;
         }
@@ -93,10 +93,7 @@ class MoneiSettings extends WC_Settings_Page
 
         // Check if our settings tab is active
         if ( isset( $_GET['tab'] ) && $_GET['tab'] === $this->id ) {
-            // Get the plugin URL
             $plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
-
-            // Enqueue the admin CSS
             wp_enqueue_style(
                 'monei-admin-css',
                 $plugin_url . 'public/css/monei-admin.css',

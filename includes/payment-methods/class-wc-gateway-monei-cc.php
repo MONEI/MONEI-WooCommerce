@@ -357,7 +357,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			'woocommerce_monei',
 			'wc_monei_params',
 			[
-				'account_id'       => monei_get_settings( 'accountid' ),
+				'account_id'       => monei_get_settings( false, 'monei_accountid' ),
 				'session_id'       => WC()->session->get_customer_id(),
 				'apple_google_pay' => $this->apple_google_pay,
 				'total'            => monei_price_format( WC()->cart->get_total( false ) ),

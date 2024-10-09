@@ -145,7 +145,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 			'woocommerce_monei_cofidis',
 			'wc_monei_cofidis_params',
 			[
-				'account_id' => monei_get_settings( 'accountid', 'woocommerce_monei_cofidis_settings' ),
+				'account_id' => monei_get_settings( false, 'monei_accountid' ),
 				'lang'       => ( 0 === strpos( get_locale(), 'en' ) ) ? 'en' : 'es',
 				'total'      => monei_price_format( WC()->cart->get_total( false ) ),
 			]

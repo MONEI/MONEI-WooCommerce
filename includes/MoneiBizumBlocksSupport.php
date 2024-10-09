@@ -61,7 +61,7 @@
 		// yes: test mode.
  		// no:  live,
  			'test_mode'=> $this->get_setting( 'testmode' ) ?? 'no',
-			'accountId' => $this->get_setting( 'accountid' ),
+			'accountId' => get_option( 'monei_accountid' ),
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
  		);
 
