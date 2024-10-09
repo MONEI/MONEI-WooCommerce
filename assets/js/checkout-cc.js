@@ -10,6 +10,7 @@
         let cardInput = null;
         let token = null;
         const cardholderNameRegex = /^[A-Za-zÀ-ú- ]{5,50}$/;
+        let shouldSavePayment = props.shouldSavePayment
         /**
          * Printing errors into checkout form.
          * @param error_string
@@ -77,7 +78,7 @@
             const initMoneiCard = () => {
                 const style = {
                     input: {
-                        color: 'red',
+                        color: 'hsla(0,0%,7%,.8)',
                         fontSize: '16px',
                         'box-sizing': 'border-box',
                         '::placeholder': {
@@ -115,7 +116,6 @@
                     },
                     onEnter() {
                         // Handle form submission when card details are entered
-                        console.log('onEnter')
                         createMoneiToken();
                     },
                 });
@@ -132,7 +132,7 @@
                     .then(result => {
                         if (result.error) {
                             print_errors(result.error, 'monei-card-error');
-                            return null;  // Return null to indicate failure
+                            return null;
                         } else {
                             document.querySelector('#monei_payment_token').value = result.token;
                             token = result.token;
@@ -161,7 +161,6 @@
                                 errorMessage: __('MONEI token could not be generated.', 'monei'),
                             };
                         }
-                        console.log('token in var after validation', token)
                         return true;  // Validation passed
                     });
                 }
@@ -231,9 +230,7 @@
                     const paymentId = paymentDetails.paymentId;
                     console.log('payment id', paymentId)
 
-                    // Retrieve the token from the hidden input field
                     const tokenValue = paymentDetails.token
-                    console.log('token', tokenValue)
                     // Call monei.confirmPayment to complete the payment (with 3D Secure)
                     monei.confirmPayment({
                         paymentId: paymentId,
@@ -245,10 +242,14 @@
                         }
                     }).then(result => {
                         if(result.status === 'FAILED') {
-                            const failUrlWithStatus = `${paymentDetails.failUrl}&status=FAILED`;
-                            window.location.href = failUrlWithStatus;
+                            window.location.href = `${paymentDetails.failUrl}&status=FAILED`;
                         }else {
-                            window.location.href = paymentDetails.completeUrl
+                            let redirectUrl = paymentDetails.completeUrl
+                            const orderId = paymentDetails.orderId
+                            if(shouldSavePayment === true) {
+                                redirectUrl = `${paymentDetails.completeUrl}&id=${paymentId}&orderId=${orderId}`
+                            }
+                            window.location.href = redirectUrl
                         }
                     }).catch(error => {
                         console.log('Error during payment confirmation:', error);
@@ -265,7 +266,7 @@
             return () => {
                 unsubscribeSuccess();
             };
-        }, [onCheckoutSuccess]);
+        }, [onCheckoutSuccess, shouldSavePayment]);
 
 
         return (
@@ -368,14 +369,11 @@
             const unsubscribePaymentSetup = onPaymentSetup(() => {
                 // If no token was created, fail
                 if (!requestToken) {
-                    console.log('no token')
                     return {
                         type: 'error',
                         message: __('MONEI token could not be generated.', 'monei'),
                     };
                 }
-                console.log('about to send to backend')
-                console.log(requestToken)
                 return {
                     type: responseTypes.SUCCESS,
                     meta: {
