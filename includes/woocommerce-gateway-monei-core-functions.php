@@ -22,6 +22,12 @@ function monei_price_format( $amount ) {
 	return (int) (string) ( (float) preg_replace( '/[^0-9.]/', '', $amount ) * 100 );
 }
 
+function locale_iso_639_1_code() {
+	$locale = get_locale();
+	$locale = explode( '_', $locale );
+	return $locale[0];
+}
+
 /**
  * @param false|string $key
  * @param string $option_key

@@ -1,7 +1,8 @@
 
 label .monei-icons{
     float:right;
-    max-height: 24px !important;
+    max-height: 28px !important;
+    max-width: 80px !important;
   }
   .monei-icons svg{
     float:right;

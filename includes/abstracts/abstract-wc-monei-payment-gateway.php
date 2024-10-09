@@ -238,5 +238,25 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		}
 	}
 
+    /**
+     * Setting checks when saving.
+     *
+     * @param $is_post
+     * @param $option string name of the option to enable/disable the method
+     * @return bool
+     */
+    public function checks_before_save( $is_post, $option ) {
+        if ( $is_post ) {
+            // Check if API key is saved in general settings
+            $api_key = get_option( 'monei_apikey', false );
+            $account_id = get_option( 'monei_accountid', false );
+            if ( !$api_key || !$account_id) {
+                WC_Admin_Settings::add_error(__('MONEI needs an API Key in order to work. Disabling the gateway.', 'monei'));
+                unset( $_POST[$option] );
+            }
+        }
+        return $is_post;
+    }
+
 }
 
