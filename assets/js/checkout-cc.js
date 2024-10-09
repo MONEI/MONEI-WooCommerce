@@ -247,7 +247,8 @@ console.log('processing response')
                         }
                     }).then(result => {
                         if(result.status === 'FAILED') {
-                            window.location.href = paymentDetails.failUrl
+                            const failUrlWithStatus = `${paymentDetails.failUrl}&status=FAILED`;
+                            window.location.href = failUrlWithStatus;
                         }else {
                             window.location.href = paymentDetails.completeUrl
                         }
@@ -473,7 +474,7 @@ console.log('processing response')
             { __( 'MONEI Payment Form (Edit Mode)', 'monei' ) }
         </div>,
         canMakePayment: () => true,
-        supports: wc.wcSettings.getSetting( 'monei_data' ).supports,
+        supports: {features: ['products']},
     };
     registerPaymentMethod( MoneiPaymentMethod );
     registerPaymentMethod( AppleGooglePaymentMethod );
