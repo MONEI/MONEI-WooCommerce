@@ -13,16 +13,18 @@
         /**
          * Printing errors into checkout form.
          * @param error_string
+         * @param error_container_id
          */
-        const print_errors = (error_string ) => {
-            console.log( 'Card input error: ', error_string );
-            document.getElementById( 'monei-card-error' ).innerHTML = error_string
+        const print_errors = (error_string, error_container_id ) => {
+            console.log(error_container_id)
+            cardInput = document.getElementById( error_container_id );
+            cardInput.innerHTML = error_string;
         }
         /**
          * Clearing form errors.
          */
-        const clear_errors = () => {
-            document.getElementById( 'monei-card-error' ).innerHTML = ''
+        const clear_errors = (id) => {
+            document.getElementById( id ).innerHTML = ''
         }
         if (isHostedWorkflow) {
             return (
@@ -33,12 +35,13 @@
         }
 
         const validateCardholderName = () => {
+            const errorContainerId = 'monei-cardholder-name-error'
             const cardholderName = document.querySelector('#cardholder_name').value
             if (!cardholderNameRegex.test(cardholderName)) {
-                print_errors(__('Please enter a valid name. Special characters are not allowed.', 'monei'));
+                print_errors(__('Please enter a valid name. Special characters are not allowed.', 'monei'), errorContainerId);
                 return false;
             } else {
-                clear_errors();
+                clear_errors(errorContainerId);
                 return true;
             }
         };
@@ -74,10 +77,9 @@
             const initMoneiCard = () => {
                 const style = {
                     input: {
-                        color: 'hsla(0,0%,7%,.8)',
-                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                        fontSmoothing: 'antialiased',
+                        color: 'red',
                         fontSize: '16px',
+                        'box-sizing': 'border-box',
                         '::placeholder': {
                             color: 'hsla(0,0%,7%,.8)'
                         },
@@ -89,6 +91,7 @@
                         color: '#fa755a'
                     }
                 };
+                const container = document.getElementById( 'monei-card-input' )
                 cardInput = monei.CardInput({
                     accountId: moneiData.accountId,
                     sessionId: moneiData.sessionId,
@@ -104,10 +107,10 @@
                         // Handle real-time validation errors.
                         if (event.isTouched && event.error) {
                             container.classList.add('is-invalid');
-                            print_errors(event.error)
+                            print_errors(event.error, 'monei-card-error')
                         } else {
                             container.classList.remove('is-invalid');
-                            clear_errors()
+                            clear_errors('monei-card-error')
                         }
                     },
                     onEnter() {
@@ -116,7 +119,7 @@
                         createMoneiToken();
                     },
                 });
-                cardInput.render( document.getElementById( 'monei-card-input' ) );
+                cardInput.render( container );
             };
 
             /**
@@ -128,21 +131,17 @@
                 return monei.createToken(cardInput)
                     .then(result => {
                         if (result.error) {
-                            // Inform the user if there was an error
-                            print_errors(result.error);
+                            print_errors(result.error, 'monei-card-error');
                             return null;  // Return null to indicate failure
                         } else {
-                            console.log('create token', result.token)
-                            // Set the token and attach it to the form
                             document.querySelector('#monei_payment_token').value = result.token;
                             token = result.token;
-                            return result.token;  // Return the token for further use
+                            return result.token;
                         }
                     })
                     .catch(error => {
-                        // Handle any error in the promise chain
-                        print_errors(error.message);
-                        return null;  // Return null in case of error
+                        print_errors(error.message, 'monei-card-error');
+                        return null;
                     });
             };
 
@@ -227,7 +226,6 @@
         useEffect(() => {
             const unsubscribeSuccess = onCheckoutSuccess(({processingResponse}) => {
                 const { paymentDetails } = processingResponse;
-console.log('processing response')
                 // Ensure we have the paymentId from the server
                 if (paymentDetails && paymentDetails.paymentId) {
                     const paymentId = paymentDetails.paymentId;
@@ -273,11 +271,7 @@ console.log('processing response')
         return (
             <fieldset className="monei-fieldset monei-card-fieldset">
                 {moneiData?.description && (
-                    <div>
-                        <div>
-                            <p>{moneiData.description}</p>
-                        </div>
-                    </div>
+                    <p>{moneiData.description}</p>
                 )}
                 <div className="monei-input-container">
                     <input
@@ -288,6 +282,7 @@ console.log('processing response')
                         required
                         className="monei-input"
                     />
+                    <div id="monei-cardholder-name-error" className="wc-block-components-validation-error"></div>
                 </div>
                 <div id="monei-card-input" className="monei-card-input"/>
                 <input
@@ -296,7 +291,7 @@ console.log('processing response')
                     name="monei_payment_token"
                     value=''
                 />
-                <div id="monei-card-error" className="monei-error"/>
+                <div id="monei-card-error" className="wc-block-components-validation-error"/>
             </fieldset>
         );
     }
