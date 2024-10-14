@@ -203,7 +203,6 @@
                         };
                     });
                 }
-                console.log('token in paymentsetup', token)
                 // Token is already available, proceed with setup
                 return {
                     type: responseTypes.SUCCESS,
@@ -228,7 +227,6 @@
                 // Ensure we have the paymentId from the server
                 if (paymentDetails && paymentDetails.paymentId) {
                     const paymentId = paymentDetails.paymentId;
-                    console.log('payment id', paymentId)
 
                     const tokenValue = paymentDetails.token
                     // Call monei.confirmPayment to complete the payment (with 3D Secure)
