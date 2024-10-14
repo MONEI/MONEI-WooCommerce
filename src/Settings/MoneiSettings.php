@@ -5,7 +5,7 @@ class MoneiSettings extends WC_Settings_Page
     public function __construct()
     {
         $this->id = 'monei_settings';
-        $this->label = __('Monei Settings', 'monei');
+        $this->label = __('MONEI Settings', 'monei');
         parent::__construct();
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
     }
@@ -14,14 +14,14 @@ class MoneiSettings extends WC_Settings_Page
     {
         $settings = array(
             array(
-                'title' => __('Monei Settings', 'monei'),
+                'title' => __('MONEI Settings', 'monei'),
                 'type' => 'title',
                 'id' => 'monei_settings_title'
             ),
             array(
                 'title' => __('Account ID *', 'monei'),
                 'type' => 'text',
-                'desc' => __('Enter your Monei Account ID here.', 'monei'),
+                'desc' => __('Enter your MONEI Account ID here.', 'monei'),
                 'desc_tip' => true,
                 'id' => 'monei_accountid',
                 'default' => '',
@@ -31,11 +31,11 @@ class MoneiSettings extends WC_Settings_Page
                 'type' => 'text',
                 'desc' => wp_kses_post(
                     __(
-                        'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">Monei Dashboard</a>.<br/>Account ID and API key for the test mode are different from the live mode and can only be used for testing purposes.',
+                        'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/>Account ID and API key for the test mode are different from the live mode and can only be used for testing purposes.',
                         'monei'
                     )
                 ),
-                'desc_tip' => __('Your Monei API Key. It can be found in your Monei Dashboard.', 'monei'),
+                'desc_tip' => __('Your MONEI API Key. It can be found in your MONEI Dashboard.', 'monei'),
                 'id' => 'monei_apikey',
                 'default' => '',
             ),
@@ -52,7 +52,7 @@ class MoneiSettings extends WC_Settings_Page
                 'type' => 'checkbox',
                 'label' => __('Enable logging', 'monei'),
                 'default' => 'no',
-                'desc' => __('Log Monei events inside WooCommerce > Status > Logs > Select Monei Logs.', 'monei'),
+                'desc' => __('Log MONEI events inside WooCommerce > Status > Logs > Select MONEI Logs.', 'monei'),
                 'desc_tip' => __('Enable logging to track events such as notifications requests.', 'monei'),
                 'id' => 'monei_debug',
             ),
