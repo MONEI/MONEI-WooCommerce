@@ -20,13 +20,12 @@
 
  	public function is_active() {
 
-        $id  = get_option( 'monei_accountid' ) ?? 'false';
-        $key = get_option( 'monei_apikey' ) ?? 'false';
+        $id  = $this->gateway->getAccountId() ?? false;
+        $key = $this->gateway->getApiKey() ?? false;
 
 		if ( ! $id || ! $key ) {
 			return false;
 		}
-
  		return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
  	}
 
@@ -98,7 +97,7 @@
 
 		// yes: test mode.
  		// no:  live,
- 			'test_mode'=> $this->get_setting( 'testmode' ) ?? 'no',
+ 			'test_mode'=> $this->gateway->getTestmode(),
 
 		// yes: redirect the customer to the Hosted Payment Page.
  		// no:  credit card input will be rendered directly on the checkout page
@@ -108,7 +107,7 @@
 		// yes: Can save credit card and use saved cards.
  		// no:  Cannot save/use
  			'tokenization' => $this->get_setting( 'tokenization' ) ?? 'no',
-			'accountId' => get_option( 'monei_accountid' ),
+			'accountId' => $this->gateway->getAccountId() ?? false,
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
             'currency' => get_woocommerce_currency(),
             'total' => $total,

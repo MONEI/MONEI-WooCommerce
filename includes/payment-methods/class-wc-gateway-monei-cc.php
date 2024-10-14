@@ -63,12 +63,12 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
-		$this->testmode             = ( ! empty( $this->get_option( 'testmode' ) && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
+		$this->testmode             = ( ! empty( $this->getTestmode() && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
-		$this->account_id           = ( ! empty(get_option( 'monei_accountid' ) ) ) ? get_option( 'monei_accountid' ) : '';
-		$this->api_key              = ( ! empty( get_option( 'monei_apikey' ) ) ) ? get_option( 'monei_apikey' ) : '';
+		$this->account_id           = $this->getAccountId();
+		$this->api_key              = $this->getApiKey();
 		$this->shop_name            = get_bloginfo( 'name' );
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;

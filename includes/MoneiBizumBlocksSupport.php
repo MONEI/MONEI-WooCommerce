@@ -39,8 +39,8 @@
 
      public function is_active() {
 
-         $id  = get_option( 'monei_accountid' ) ?? 'false';
-         $key = get_option( 'monei_apikey' ) ?? 'false';
+         $id  = $this->gateway->getAccountId() ?? false;;
+         $key = $this->gateway->getApiKey() ?? false;
 
          if ( ! $id || ! $key ) {
              return false;
@@ -50,8 +50,7 @@
      }
 
  	public function get_payment_method_data() {
-
- 		$data = array(
+         $data = array(
 
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description,
@@ -60,8 +59,8 @@
 
 		// yes: test mode.
  		// no:  live,
- 			'test_mode'=> $this->get_setting( 'testmode' ) ?? 'no',
-			'accountId' => get_option( 'monei_accountid' ),
+ 			'test_mode'=> $this->gateway->getTestmode() ?? false,
+			'accountId' => $this->gateway->getAccountId() ?? false,
 			'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
  		);
 
