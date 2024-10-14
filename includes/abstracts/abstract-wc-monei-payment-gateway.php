@@ -180,14 +180,14 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
-				$order->add_order_note( '<strong>MONEI Refund Approved:</strong> ' . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				$order->add_order_note( __('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
 
 			}
 		} catch ( Exception $e ) {
 			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
-			$order->add_order_note( 'Refund error: ' . $e->getMessage() );
+			$order->add_order_note( __('Refund error: ', 'monei') . $e->getMessage() );
 		}
 		return false;
 	}
