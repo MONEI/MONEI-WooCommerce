@@ -111,6 +111,9 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	protected function is_valid_for_use() {
+        if (empty($this->getAccountId()) || empty($this->getApiKey())) {
+            return false;
+        }
 		if ( ! in_array( get_woocommerce_currency(), array( 'EUR', 'USD', 'GBP' ), true ) ) {
 			return false;
 		} else {
@@ -141,6 +144,10 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		if ( $this->is_valid_for_use() ) {
             parent::admin_options();
 		} else {
+            if  ( ! $this->getAccountId() || ! $this->getApiKey() ) {
+                woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available-api.php' );
+                return;
+            }
 			woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available.php' );
 		}
 	}
@@ -172,7 +179,6 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
-				//WC_Monei_Logger::log( $result, 'debug' );
 
 				$order->add_order_note( '<strong>MONEI Refund Approved:</strong> ' . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
@@ -256,6 +262,33 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
             }
         }
         return $is_post;
+    }
+
+    public  function getApiKey()
+    {
+        return !empty( get_option( 'monei_apikey', false ) )
+            ? get_option( 'monei_apikey' )
+            : ( !empty( $this->get_option( 'apikey' ) )
+                ? $this->get_option( 'apikey' )
+                : '' );
+    }
+
+    public function getAccountId()
+    {
+        return !empty( get_option( 'monei_accountid' , false) )
+            ? get_option( 'monei_accountid' )
+            : ( !empty( $this->get_option( 'accountid' ) )
+                ? $this->get_option( 'accountid' )
+                : '' );
+    }
+
+    public function getTestmode()
+    {
+        return !empty( get_option( 'monei_testmode', false ) )
+            ? get_option( 'monei_testmode' )
+            : ( !empty( $this->get_option( 'testmode' ) )
+                ? $this->get_option( 'testmode' )
+                : 'no' );
     }
 
 }
