@@ -29,13 +29,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => sprintf( __( 'Customers see Google Pay or Apple Pay button, depending on what their device and browser combination supports. By using Apple Pay, you agree to <a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple\'s terms of service</a>. (Apple Pay domain verification is performed automatically in live mode)', 'monei' ) ),
 		),
-		'testmode'       => array(
-			'title'       => __( 'Test mode', 'monei' ),
-			'type'        => 'checkbox',
-			'label'       => __( 'Enable test mode', 'monei' ),
-			'default'     => 'yes',
-			'description' => sprintf( __( 'Place the payment gateway in test mode using test API key.', 'monei' ) ),
-		),
 		'title'          => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',

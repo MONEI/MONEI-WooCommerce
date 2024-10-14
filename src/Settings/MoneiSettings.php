@@ -40,6 +40,14 @@ class MoneiSettings extends WC_Settings_Page
                 'default' => '',
             ),
             array(
+                'title' => __('Test mode', 'monei'),
+                'type' => 'checkbox',
+                'label' => __('Enable test mode', 'monei'),
+                'desc' => __( 'Place the payment gateway in test mode using test API key.', 'monei' ),
+                'id' => 'monei_testmode',
+                'default'     => 'no',
+            ),
+            array(
                 'title' => __('Debug Log', 'monei'),
                 'type' => 'checkbox',
                 'label' => __('Enable logging', 'monei'),
