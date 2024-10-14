@@ -3,12 +3,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$settings_link = esc_url( admin_url( add_query_arg( array(
+    'page' => 'wc-settings',
+    'tab'  => 'monei_settings',
+), 'admin.php' ) ) );
+
 /**
  * Monei Cofidis Gateway Settings.
  */
 return apply_filters(
 	'wc_monei_cofidis_settings',
 	array(
+        'top_link' => array(
+            'title'       => '',
+            'type'        => 'title',
+            'description' => '<a href="' . $settings_link . '" class="button">' . __( 'Go to MONEI Api key Settings', 'monei' ) . '</a>',
+            'id'          => 'cofidis_monei_top_link',
+        ),
 		'enabled'        => array(
 			'title'   => __( 'Enable/Disable', 'monei' ),
 			'type'    => 'checkbox',
