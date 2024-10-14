@@ -239,6 +239,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			add_filter( 'option_woocommerce_monei_bizum_settings',  array( $this, 'monei_settings_by_default' ), 1 );
 			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
+            add_filter( 'option_woocommerce_monei_settings', array( $this, 'copyKeysToCentralSettings' ), 1 );
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
@@ -260,6 +261,26 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
             wp_enqueue_style( 'monei-blocks-checkout-cc' );
 		}
 
+        public function copyKeysToCentralSettings($default_params)
+        {
+            $centralApiKey = get_option('monei_apikey');
+            $centralAccountId = get_option('monei_accountid');
+            $ccApiKey = $default_params['apikey'];
+            $ccAccountId = $default_params['accountid'];
+
+            // Update API key if centralApiKey is empty
+            if ( empty( $centralApiKey ) ) {
+                update_option( 'monei_apikey', !empty( $ccApiKey ) ? $ccApiKey : $centralApiKey );
+            }
+
+            // Update Account ID if centralAccountId is empty
+            if ( empty( $centralAccountId ) ) {
+                update_option( 'monei_accountid', !empty( $ccAccountId ) ? $ccAccountId : $centralAccountId );
+            }
+
+            return $default_params;
+        }
+
 
 		/**
 		 * We have more than a Monei payment provider, we will use by default the main monei set up in case they don't set them up.
@@ -269,9 +290,27 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return array
 		 */
 		public function monei_settings_by_default( $default_params ) {
-			$default_params['testmode'] = ( empty( $default_params['testmode'] ) ) ? monei_get_settings( 'testmode' ) : $default_params['testmode'];
-			$default_params['apikey']   = ( empty( $default_params['apikey'] ) )   ? get_option( 'monei_apikey' )   : $default_params['apikey'];
-			$default_params['debug']    = ( empty( $default_params['debug'] ) )    ? get_option( 'monei_debug' )    : $default_params['debug'];
+			$default_params['testmode'] = empty( $default_params['testmode'] )
+                ? ( !empty( get_option( 'monei_testmode' ) )
+                    ? get_option( 'monei_testmode' )
+                    : ( !empty( monei_get_settings( 'testmode' ) )
+                        ? monei_get_settings( 'testmode' )
+                        : $default_params['testmode'] ) )
+                : $default_params['testmode'];
+			$default_params['apikey']   = empty( $default_params['apikey'] )
+                ? ( !empty( get_option( 'monei_apikey' ) )
+                    ? get_option( 'monei_apikey' )
+                    : ( !empty( monei_get_settings( 'apikey' ) )
+                        ? monei_get_settings( 'apikey' )
+                        : $default_params['apikey'] ) )
+                : $default_params['apikey'];
+			$default_params['debug']    = empty( $default_params['debug'] )
+                ? ( !empty( get_option( 'monei_debug' ) )
+                    ? get_option( 'monei_debug' )
+                    : ( !empty( monei_get_settings( 'debug' ) )
+                        ? monei_get_settings( 'debug' )
+                        : $default_params['debug'] ) )
+                : $default_params['apikey'];
 			$default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
 			return $default_params;
 		}
