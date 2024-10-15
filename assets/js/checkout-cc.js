@@ -349,6 +349,9 @@
                                 '.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
                             );
                             if (placeOrderButton) {
+                                placeOrderButton.style.color = '';
+                                placeOrderButton.style.backgroundColor = '';
+                                placeOrderButton.disabled = false;
                                 placeOrderButton.click();
                             } else {
                                 console.error('Place Order button not found.');
@@ -359,7 +362,9 @@
                         console.log(error);
                     },
                 });
-            paymentRequest.render('#payment-request-container');
+
+            const container = document.getElementById( 'payment-request-container' )
+            paymentRequest.render(container);
         };
 
         // Hook into the payment setup
