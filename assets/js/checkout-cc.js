@@ -1,12 +1,14 @@
 ( function() {
     const { registerPaymentMethod } = wc.wcBlocksRegistry;
     const { __ } = wp.i18n;
-    const { Fragment, useEffect, useState } = wp.element;
+    const { Fragment, useEffect } = wp.element;
     const moneiData = wc.wcSettings.getSetting('monei_data');
+
     const MoneiContent = (props) => {
         const {  responseTypes } = props.emitResponse;
         const isHostedWorkflow = moneiData.redirect === 'yes'
         const {onPaymentSetup, onCheckoutValidation, onCheckoutSuccess} = props.eventRegistration;
+        let cardInputError = true;
         let cardInput = null;
         let token = null;
         const cardholderNameRegex = /^[A-Za-zÀ-ú- ]{5,50}$/;
@@ -17,7 +19,6 @@
          * @param error_container_id
          */
         const print_errors = (error_string, error_container_id ) => {
-            console.log(error_container_id)
             cardInput = document.getElementById( error_container_id );
             cardInput.innerHTML = error_string;
         }
@@ -71,7 +72,6 @@
                 console.error('MONEI SDK is not available');
                 }
             }, [] ); // Empty dependency array ensures this runs only once when the component mounts.
-
             /**
              * Initialize MONEI card input and handle token creation.
              */
@@ -109,9 +109,13 @@
                         if (event.isTouched && event.error) {
                             container.classList.add('is-invalid');
                             print_errors(event.error, 'monei-card-error')
+                            cardInputError = true;
                         } else {
                             container.classList.remove('is-invalid');
                             clear_errors('monei-card-error')
+                            if(event.isTouched) {
+                                cardInputError = false;
+                            }
                         }
                     },
                     onEnter() {
@@ -153,35 +157,40 @@
                         errorMessage: __('Please enter a valid name. Special characters are not allowed.', 'monei'),
                     };
                 }
-                // If no token is available, create a fresh token
+
+                if (cardInputError !== false) {
+                    return {
+                        errorMessage: __('Please check your card details.', 'monei'),
+                    }
+                }
+
+
+                // If no token is available, create a fresh token or fail validation, the card input will show its errors
                 if (!token) {
                     return createMoneiToken().then(freshToken => {
                         if (!freshToken) {
-                            return {
-                                errorMessage: __('MONEI token could not be generated.', 'monei'),
-                            };
+                            return false;
                         }
                         return true;  // Validation passed
                     });
                 }
-
                 return true;  // Validation passed (token already exists)
             });
 
             return () => {
                 unsubscribeValidation();
             };
-        }, [onCheckoutValidation]);
+        }, [onCheckoutValidation, cardInputError]);
 
         // Hook into the payment setup
         useEffect(() => {
             const unsubscribePaymentSetup = onPaymentSetup(() => {
                 // Get the token from the hidden input field
                 let cardholderName = document.querySelector('#cardholder_name').value;
-
                 // If no token is available, create a fresh token
                 if (!token) {
                     return createMoneiToken().then(freshToken => {
+
                         // If the token is generated successfully
                         if (freshToken && freshToken.length) {
                             return {
