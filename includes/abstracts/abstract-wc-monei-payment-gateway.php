@@ -111,6 +111,9 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	protected function is_valid_for_use() {
+        if (empty($this->getAccountId()) || empty($this->getApiKey())) {
+            return false;
+        }
 		if ( ! in_array( get_woocommerce_currency(), array( 'EUR', 'USD', 'GBP' ), true ) ) {
 			return false;
 		} else {
@@ -141,6 +144,10 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		if ( $this->is_valid_for_use() ) {
             parent::admin_options();
 		} else {
+            if  ( ! $this->getAccountId() || ! $this->getApiKey() ) {
+                woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available-api.php' );
+                return;
+            }
 			woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available.php' );
 		}
 	}
@@ -172,16 +179,15 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
-				//WC_Monei_Logger::log( $result, 'debug' );
 
-				$order->add_order_note( '<strong>MONEI Refund Approved:</strong> ' . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				$order->add_order_note( __('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
 
 			}
 		} catch ( Exception $e ) {
 			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
-			$order->add_order_note( 'Refund error: ' . $e->getMessage() );
+			$order->add_order_note( __('Refund error: ', 'monei') . $e->getMessage() );
 		}
 		return false;
 	}
@@ -233,10 +239,75 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	}
 
 	protected function log( $message, $level = 'debug' ) {
-		if ( 'yes' === $this->get_option( 'debug') || 'error' === $level ) {
+		if ( 'yes' === get_option( 'monei_debug') || 'error' === $level ) {
 			WC_Monei_Logger::log( $message, $level );
 		}
 	}
+
+    /**
+     * Setting checks when saving.
+     *
+     * @param $is_post
+     * @param $option string name of the option to enable/disable the method
+     * @return bool
+     */
+    public function checks_before_save( $is_post, $option ) {
+        if ( $is_post ) {
+            // Check if API key is saved in general settings
+            $api_key = get_option( 'monei_apikey', false );
+            $account_id = get_option( 'monei_accountid', false );
+            if ( !$api_key || !$account_id) {
+                WC_Admin_Settings::add_error(__('MONEI needs an API Key in order to work. Disabling the gateway.', 'monei'));
+                unset( $_POST[$option] );
+            }
+        }
+        return $is_post;
+    }
+
+    public  function getApiKey()
+    {
+        return !empty( get_option( 'monei_apikey', false ) )
+            ? get_option( 'monei_apikey' )
+            : ( !empty( $this->get_option( 'apikey' ) )
+                ? $this->get_option( 'apikey' )
+                : '' );
+    }
+
+    public function getAccountId()
+    {
+        return !empty( get_option( 'monei_accountid' , false) )
+            ? get_option( 'monei_accountid' )
+            : ( !empty( $this->get_option( 'accountid' ) )
+                ? $this->get_option( 'accountid' )
+                : '' );
+    }
+
+    public function getTestmode()
+    {
+        return !empty( get_option( 'monei_testmode', false ) )
+            ? get_option( 'monei_testmode' )
+            : ( !empty( $this->get_option( 'testmode' ) )
+                ? $this->get_option( 'testmode' )
+                : 'no' );
+    }
+
+    /**
+     * Frontend MONEI generated flag for block checkout processing.
+     *
+     * @return boolean
+     */
+    public function isBlockCheckout() {
+        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? filter_var( $_POST['monei_is_block_checkout'], FILTER_SANITIZE_STRING ) === 'yes' : false; // WPCS: CSRF ok.
+    }
+
+    /**
+     * Frontend MONEI generated token.
+     *
+     * @return false|string
+     */
+    public function get_frontend_generated_monei_token() {
+        return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+    }
 
 }
 

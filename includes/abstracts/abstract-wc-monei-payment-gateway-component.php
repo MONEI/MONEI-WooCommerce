@@ -43,6 +43,20 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			$this->log( $create_payment, 'debug' );
 
 			$confirm_payment = false;
+            // We need to return the payment ID to the frontend and confirm payment there if we arrive from block checkout
+            // and when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method
+            if ( $this->isBlockCheckout() && !$this->redirect_flow && !isset( $payload['paymentToken'] ) ) {
+                return array(
+                    'result'   => 'success',
+                    'redirect' => false,
+                    'paymentId' => $create_payment->getId(),// Send the paymentId back to the client
+                    'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
+                    'completeUrl' => $payload['completeUrl'],
+                    'failUrl'=> $payload['failUrl'],
+                    'orderId'=> $order_id
+                );
+            }
+
 			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method.
 			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
 				// We do 2 steps, in order to confirm card holder Name in the second step.
@@ -50,7 +64,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 					'paymentToken'  => $this->get_frontend_generated_monei_token(),
 					'paymentMethod' => [
 						'card' => [
-							'cardholderName' => $order->get_formatted_billing_full_name(),
+							'cardholderName' => $this->get_frontend_generated_monei_cardholder($order),
 						]
 					]
 				];
@@ -80,11 +94,15 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 			if (isset($response_body['message'])) {
 				WC_Monei_Logger::log( $response_body['message'], 'error' );
 				wc_add_notice( $response_body['message'], 'error' );
-				return;
+                return array(
+                    'result'   => 'failure',
+                );
 			}
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
-			return;
+			return array(
+				'result'   => 'failure',
+			);
 		}
 	}
 
@@ -204,6 +222,27 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
 
+    /**
+     * Frontend MONEI generated flag for block checkout processing.
+     *
+     * @return boolean
+     */
+    public function isBlockCheckout() {
+        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? filter_var( $_POST['monei_is_block_checkout'], FILTER_SANITIZE_STRING ) === 'yes' : false; // WPCS: CSRF ok.
+    }
+
+    /**
+     * Frontend MONEI cardholderName.
+     *
+     * @return false|string
+     */
+    public function get_frontend_generated_monei_cardholder($order)
+    {
+        $defaultName = $order->get_formatted_billing_full_name();
+        return ( isset( $_POST['monei_cardholder_name'] ) ) ? filter_var( $_POST['monei_cardholder_name'], FILTER_SANITIZE_STRING ) : $defaultName; // WPCS: CSRF ok.
+
+    }
+
 	/**
 	 * Frontend MONEI payment-request token generated when Apple or Google pay.
 	 * https://docs.monei.com/docs/monei-js/payment-request/
@@ -213,22 +252,6 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	protected function get_frontend_generated_monei_apple_google_token() {
 		return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
 	}
-
-    /**
-     * Setting checks when saving.
-     *
-     * @param $is_post
-     * @return bool
-     */
-    public function checks_before_save( $is_post ) {
-        if ( $is_post ) {
-            if ( empty( $_POST['woocommerce_monei_accountid']) || empty( $_POST['woocommerce_monei_apikey'] ) ) {
-                WC_Admin_Settings::add_error( __( 'Please, MONEI needs Account ID and API Key in order to work. Disabling the gateway.', 'monei' ) );
-                unset( $_POST['woocommerce_monei_enabled'] );
-            }
-        }
-        return $is_post;
-    }
 
 }
 

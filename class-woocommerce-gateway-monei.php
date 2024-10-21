@@ -58,7 +58,34 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			}
 
 			self::$_initialized = true;
+			
+			// Declare block compatibility
+			$this->block_compatiblity();
+
 			add_action( 'plugins_loaded', array( $this, 'continue_init' ), -1 );
+		}
+
+		public function block_compatiblity() {
+
+			// Load checkout block class
+			add_action( 'woocommerce_blocks_loaded', function() {
+
+				if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+					return;
+				}
+
+				require_once 'includes/class-monei-cc-blocks.php';
+                require_once 'includes/MoneiBizumBlocksSupport.php';
+                require_once 'includes/AppleGoogleBlocksSupport.php';
+
+				add_action(	'woocommerce_blocks_payment_method_type_registration',
+					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+						$payment_method_registry->register( new WC_Gateway_Monei_CC_Blocks );
+                        $payment_method_registry->register( new MoneiBizumBlocksSupport );
+                        $payment_method_registry->register( new AppleGoogleBlocksSupport );
+				} );
+
+			} );
 		}
 
 		/**
@@ -110,6 +137,11 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
+                add_filter('woocommerce_get_settings_pages', function ($settings) {
+                    include_once 'src/Settings/MoneiSettings.php';
+                    $settings[] = new MoneiSettings();
+                    return $settings;
+                });
 			}
 
 			if ( $this->is_request( 'frontend' ) ) {
@@ -207,6 +239,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			add_filter( 'option_woocommerce_monei_bizum_settings',  array( $this, 'monei_settings_by_default' ), 1 );
 			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
+            add_filter( 'option_woocommerce_monei_settings', array( $this, 'copyKeysToCentralSettings' ), 1 );
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
@@ -218,7 +251,35 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				'screen' 
 			);
 			wp_enqueue_style( 'monei-icons' );
+            wp_register_style(
+                'monei-blocks-checkout-cc',
+                WC_Monei()->plugin_url(). '/public/css/monei-blocks-checkout-cc.css',
+                array(),
+                WC_Monei()->version,
+                'all'
+            );
+            wp_enqueue_style( 'monei-blocks-checkout-cc' );
 		}
+
+        public function copyKeysToCentralSettings($default_params)
+        {
+            $centralApiKey = get_option('monei_apikey');
+            $centralAccountId = get_option('monei_accountid');
+            $ccApiKey = $default_params['apikey'];
+            $ccAccountId = $default_params['accountid'];
+
+            // Update API key if centralApiKey is empty
+            if ( empty( $centralApiKey ) ) {
+                update_option( 'monei_apikey', !empty( $ccApiKey ) ? $ccApiKey : $centralApiKey );
+            }
+
+            // Update Account ID if centralAccountId is empty
+            if ( empty( $centralAccountId ) ) {
+                update_option( 'monei_accountid', !empty( $ccAccountId ) ? $ccAccountId : $centralAccountId );
+            }
+
+            return $default_params;
+        }
 
 
 		/**
@@ -229,9 +290,27 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return array
 		 */
 		public function monei_settings_by_default( $default_params ) {
-			$default_params['testmode'] = ( empty( $default_params['testmode'] ) ) ? monei_get_settings( 'testmode' ) : $default_params['testmode'];
-			$default_params['apikey']   = ( empty( $default_params['apikey'] ) )   ? monei_get_settings( 'apikey' )   : $default_params['apikey'];
-			$default_params['debug']    = ( empty( $default_params['debug'] ) )    ? monei_get_settings( 'debug' )    : $default_params['debug'];
+			$default_params['testmode'] = empty( $default_params['testmode'] )
+                ? ( !empty( get_option( 'monei_testmode' ) )
+                    ? get_option( 'monei_testmode' )
+                    : ( !empty( monei_get_settings( 'testmode' ) )
+                        ? monei_get_settings( 'testmode' )
+                        : $default_params['testmode'] ) )
+                : $default_params['testmode'];
+			$default_params['apikey']   = empty( $default_params['apikey'] )
+                ? ( !empty( get_option( 'monei_apikey' ) )
+                    ? get_option( 'monei_apikey' )
+                    : ( !empty( monei_get_settings( 'apikey' ) )
+                        ? monei_get_settings( 'apikey' )
+                        : $default_params['apikey'] ) )
+                : $default_params['apikey'];
+			$default_params['debug']    = empty( $default_params['debug'] )
+                ? ( !empty( get_option( 'monei_debug' ) )
+                    ? get_option( 'monei_debug' )
+                    : ( !empty( monei_get_settings( 'debug' ) )
+                        ? monei_get_settings( 'debug' )
+                        : $default_params['debug'] ) )
+                : $default_params['apikey'];
 			$default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
 			return $default_params;
 		}
@@ -256,7 +335,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			// Including hosted payments.
 			include_once 'includes/payment-methods/class-wc-gateway-monei-cc.php';
-			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
+            include_once 'includes/payment-methods/MoneiAppleGoogleGateway.php';
+            include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
 		}
@@ -270,6 +350,9 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function add_gateways( $methods ) {
 			$methods[] = 'WC_Gateway_Monei_CC';
+            if (has_block('woocommerce/checkout') && !is_wc_endpoint_url( 'order-pay' )) {
+                $methods[] = 'MoneiAppleGoogleGateway';
+            }
 			$methods[] = 'WC_Gateway_Monei_Cofidis';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';

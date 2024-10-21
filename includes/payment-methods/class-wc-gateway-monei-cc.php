@@ -56,24 +56,24 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		// Hosted payment with redirect.
 		$this->has_fields = false;
-		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-logo.svg' ));
+		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ));
 		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
-		$this->testmode             = ( ! empty( $this->get_option( 'testmode' ) && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
+		$this->testmode             = ( ! empty( $this->getTestmode() && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
-		$this->account_id           = ( ! empty( $this->get_option( 'accountid' ) ) ) ? $this->get_option( 'accountid' ) : '';
-		$this->api_key              = ( ! empty( $this->get_option( 'apikey' ) ) ) ? $this->get_option( 'apikey' ) : '';
+		$this->account_id           = $this->getAccountId();
+		$this->api_key              = $this->getApiKey();
 		$this->shop_name            = get_bloginfo( 'name' );
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
 		$this->pre_auth             = ( ! empty( $this->get_option( 'pre-authorize' ) && 'yes' === $this->get_option( 'pre-authorize' ) ) ) ? true : false;
-		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
+		$this->logging              = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();
@@ -96,7 +96,12 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			$this,
 			'process_admin_options'
 		) );
-		add_filter( 'woocommerce_save_settings_checkout_' . $this->id, array( $this, 'checks_before_save' ) );
+        add_filter(
+            'woocommerce_save_settings_checkout_' . $this->id,
+            function ($is_post) {
+                return $this->checks_before_save($is_post, 'woocommerce_monei_enabled');
+            }
+        );
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
 		if ( ! $this->redirect_flow || is_add_payment_method_page() || $this->is_subscription_change_payment_page() ) {
@@ -108,6 +113,25 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			return self::add_cart_total_fragments( $fragments );
 		} );
 	}
+
+	/**
+	 * Return whether or not this gateway still requires setup to function.
+	 *
+	 * When this gateway is toggled on via AJAX, if this returns true a
+	 * redirect will occur to the settings page instead.
+	 *
+	 * @since 3.4.0
+	 * @return bool
+	 */
+	public function needs_setup() {
+
+		if ( ! $this->account_id || ! $this->api_key ) {
+			return true;
+		}
+
+		return false;
+	}
+
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -333,7 +357,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			'woocommerce_monei',
 			'wc_monei_params',
 			[
-				'account_id'       => monei_get_settings( 'accountid' ),
+				'account_id'       => monei_get_settings( false, 'monei_accountid' ),
 				'session_id'       => WC()->session->get_customer_id(),
 				'apple_google_pay' => $this->apple_google_pay,
 				'total'            => monei_price_format( WC()->cart->get_total( false ) ),

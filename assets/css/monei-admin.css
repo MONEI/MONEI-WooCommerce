@@ -1,0 +1,17 @@
+/* assets/css/admin.css */
+
+.monei-settings-header-logo,
+.monei-settings-header-welcome,
+.monei-settings-header-buttons {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.monei-settings-header-logo img {
+    max-width: 200px;
+    height: auto;
+}
+
+.monei-settings-header-welcome p {
+    font-size: 16px;
+}

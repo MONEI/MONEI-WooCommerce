@@ -3,12 +3,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$settings_link = esc_url( admin_url( add_query_arg( array(
+    'page' => 'wc-settings',
+    'tab'  => 'monei_settings',
+), 'admin.php' ) ) );
+
 /**
  * Monei Paypal Gateway Settings.
  */
 return apply_filters(
 	'wc_monei_paypal_settings',
 	array(
+        'top_link' => array(
+            'title'       => '',
+            'type'        => 'title',
+            'description' => '<a href="' . $settings_link . '" class="button">' . __( 'Go to MONEI Api key Settings', 'monei' ) . '</a>',
+            'id'          => 'paypal_monei_top_link',
+        ),
 		'enabled'        => array(
 			'title'   => __( 'Enable/Disable', 'monei' ),
 			'type'    => 'checkbox',
@@ -36,12 +47,6 @@ return apply_filters(
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'apikey'       => array(
-			'title'       => __( 'API Key', 'monei' ),
-			'type'        => 'text',
-			'description' => __( 'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/> Account ID and API key in the test mode are different from the live<br/> (production) mode and can only be used for testing purposes.', 'monei' ),
-			'desc_tip'    => 'no',
-		),
 		'pre-authorize'        => array(
 			'title'   => __( 'Pre-Authorize', 'monei' ),
 			'type'    => 'checkbox',
@@ -58,13 +63,6 @@ return apply_filters(
 				'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
 				'completed'  => __( 'Mark as Complete', 'monei' ),
 			),
-		),
-		'debug'          => array(
-			'title'       => __( 'Debug Log', 'monei' ),
-			'type'        => 'checkbox',
-			'label'       => __( 'Enable logging', 'monei' ),
-			'default'     => 'no',
-			'description' => __( 'Log MONEI events, such as notifications requests, inside <code>WooCommerce > Status > Logs > Select MONEI Logs</code>', 'monei' ),
 		),
 	)
 );

@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Monei_API {
 
-	const OPTION_API_KEY = 'apikey';
+	const OPTION_API_KEY = 'monei_apikey';
 
 	/**
 	 * @var string
@@ -41,7 +41,7 @@ class WC_Monei_API {
 			return self::$api_key;
 		}
 
-		self::$api_key = monei_get_settings( self::OPTION_API_KEY, monei_get_option_key_from_order( self::$order ) );
+		self::$api_key = monei_get_settings( false, self::OPTION_API_KEY  );
 		return self::$api_key;
 	}
 
