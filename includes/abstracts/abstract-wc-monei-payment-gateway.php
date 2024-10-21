@@ -239,7 +239,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	}
 
 	protected function log( $message, $level = 'debug' ) {
-		if ( 'yes' === $this->get_option( 'debug') || 'error' === $level ) {
+		if ( 'yes' === get_option( 'monei_debug') || 'error' === $level ) {
 			WC_Monei_Logger::log( $message, $level );
 		}
 	}
@@ -289,6 +289,24 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
             : ( !empty( $this->get_option( 'testmode' ) )
                 ? $this->get_option( 'testmode' )
                 : 'no' );
+    }
+
+    /**
+     * Frontend MONEI generated flag for block checkout processing.
+     *
+     * @return boolean
+     */
+    public function isBlockCheckout() {
+        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? filter_var( $_POST['monei_is_block_checkout'], FILTER_SANITIZE_STRING ) === 'yes' : false; // WPCS: CSRF ok.
+    }
+
+    /**
+     * Frontend MONEI generated token.
+     *
+     * @return false|string
+     */
+    public function get_frontend_generated_monei_token() {
+        return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
     }
 
 }
