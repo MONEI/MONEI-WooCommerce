@@ -120,6 +120,17 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
 
+            if ( $this->isBlockCheckout() ) {
+                return array(
+                    'result'   => 'success',
+                    'redirect' => false,
+                    'paymentId' => $payment->getId(),// Send the paymentId back to the client
+                    'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
+                    'completeUrl' => $payload['completeUrl'],
+                    'failUrl'=> $payload['failUrl'],
+                    'orderId'=> $order_id
+                );
+            }
 			return array(
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
@@ -133,6 +144,5 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			);
 		}
 	}
-
 }
 
