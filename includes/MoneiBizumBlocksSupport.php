@@ -50,12 +50,16 @@
      }
 
  	public function get_payment_method_data() {
+        $total = isset(WC()->cart) ? WC()->cart->get_total( false ) : 0;
          $data = array(
 
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description,
 	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/bizum-logo.svg',
  			'supports'    => $this->get_supported_features(),
+             'currency' => get_woocommerce_currency(),
+             'total' => $total,
+             'language' => locale_iso_639_1_code(),
 
 		// yes: test mode.
  		// no:  live,
