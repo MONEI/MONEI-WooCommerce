@@ -71,6 +71,7 @@
 		submitted: false,
 		init_counter: 0,
 		total: wc_monei_params.total,
+		cardholderNameRegex: /^[A-Za-zÀ-ú- ]{5,50}$/,
 		init: function() {
 			// Checkout Page
 			if ( this.$checkout_form.length ) {
@@ -126,6 +127,11 @@
 				if ( wc_monei_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 				}
+				if ( wc_monei_form.is_tokenized_cc_selected() ) {
+					$('.monei-input-container, .monei-card-input').hide();
+				} else {
+					$('.monei-input-container, .monei-card-input').show();
+				}
 
 				// If a tokenised card is checked, we hide google/apple request button.
 				if ( wc_monei_form.is_checkout && wc_monei_params.apple_google_pay ) {
@@ -139,6 +145,18 @@
 				if ( wc_monei_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
 				}
+			}
+		},
+		validate_cardholder_name: function() {
+			var value = $('#monei_cardholder_name').val();
+			if (!wc_monei_form.cardholderNameRegex.test(value)) {
+				// Show error
+				wc_monei_form.print_errors('Invalid cardholder name', '#monei-cardholder-name-error');
+				return false;
+			} else {
+				// Clear error
+				wc_monei_form.clear_errors('#monei-cardholder-name-error');
+				return true;
 			}
 		},
 		is_monei_selected: function() {
@@ -205,10 +223,13 @@
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			}
 
+			$('#monei_cardholder_name').on('blur', function() {
+				wc_monei_form.validate_cardholder_name();
+			});
 			// Init Apple/Google Pay.
 			wc_monei_form.init_apple_google_pay();
 
-			wc_monei_form.$container      = document.getElementById( 'card-input' );
+			wc_monei_form.$container      = document.getElementById( 'monei-card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
 
 			var style = {
@@ -255,6 +276,9 @@
 			this.init_counter++;
 		},
 		place_order: function( e ) {
+			if (!wc_monei_form.validate_cardholder_name()) {
+				return false;
+			}
 			// If MONEI token already created, submit form.
 			if ( $( '#monei_payment_token' ).length ) {
 				return true;
@@ -296,27 +320,30 @@
 		/**
 		 * Printing errors into checkout form.
 		 * @param error_string
+		 * @param errorContainer
 		 */
-		print_errors: function (error_string ) {
-			$( wc_monei_form.$errorContainer ).html( '<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>' );
-			$( wc_monei_form.$errorContainer ).find( 'li' ).text( error_string );
-			/**
-			 * Scroll to Monei Errors.
-			 */
-			if ( $( '.monei-error' ).length ) {
-				$( 'html, body' ).animate(
-					{
-						scrollTop: ( $( '.monei-error' ).offset().top - 200 )
-					},
-					200
-				);
+		print_errors: function(error_string, errorContainer) {
+			if (!errorContainer) {
+				errorContainer = wc_monei_form.$errorContainer;
+			}
+			$(errorContainer).html('<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>');
+			$(errorContainer).find('li').text(error_string);
+			// Scroll to error
+			if ($(errorContainer).find('.monei-error').length) {
+				$('html, body').animate({
+					scrollTop: ($(errorContainer).offset().top - 200)
+				}, 200);
 			}
 		},
 		/**
 		 * Clearing form errors.
 		 */
-		clear_errors: function() {
-			$( '.monei-error' ).remove();
+		clear_errors: function(errorContainer) {
+			if (!errorContainer) {
+				errorContainer = wc_monei_form.$errorContainer;
+			}
+			// Clear all content from the error container
+			$(errorContainer).html('');
 		},
 		monei_token_handler: function( token ) {
 			wc_monei_form.create_hidden_input( 'monei_payment_token', token );
@@ -329,13 +356,12 @@
 			wc_monei_form.form.submit();
 		},
 		create_hidden_input: function( id, token ) {
-			console.log( 'token', token );
 			var hiddenInput = document.createElement( 'input' );
 			hiddenInput.setAttribute( 'type', 'hidden' );
 			hiddenInput.setAttribute( 'name', id );
 			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
-			wc_monei_form.$paymentForm = document.getElementById( 'payment-form' );
+			wc_monei_form.$paymentForm = document.getElementById( 'monei-cc-form' );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
 		},
 		get_form: function() {

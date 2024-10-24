@@ -297,39 +297,40 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	protected function render_monei_form() {
 		?>
-        <style>
-            #payment-form {
-                padding-bottom: 15px;
-            }
+        <fieldset class="monei-fieldset monei-card-fieldset" id="wc-<?php echo esc_attr($this->id); ?>-cc-form">
+            <!-- Cardholder Name Input -->
+            <div class="monei-input-container">
+                <input
+                        type="text"
+                        id="monei_cardholder_name"
+                        name="monei_cardholder_name"
+                        placeholder="<?php echo __('Cardholder Name', 'monei'); ?>"
+                        required
+                        class="monei-input">
+                <div
+                        id="monei-cardholder-name-error"
+                        class="wc-block-components-validation-error"
+                ></div>
+            </div>
+            <!-- Card Input Container -->
+            <div class="monei-input-container">
+                <div id="monei-card-input" class="monei-card-input">
+                    <!-- Card input will be rendered here -->
+                </div>
+                <div
+                        id="monei-card-error"
+                        class="wc-block-components-validation-error"
+                ></div>
+                <input
+                        type="hidden"
+                        id="monei_payment_token"
+                        name="monei_payment_token"
+                        value=""
+                />
+            </div>
+        </fieldset>
 
-            #card-input {
-                border: 1px solid transparent;
-                border-radius: 4px;
-                background-color: white;
-                box-shadow: 0 1px 3px 0 #e6ebf1;
-                height: 38px;
-                box-sizing: border-box;
-                -webkit-transition: box-shadow 150ms ease;
-                transition: box-shadow 150ms ease;
-				max-width: 350px;
-            }
-
-            #card-input.is-focused {
-                box-shadow: 0 1px 3px 0 #cfd7df;
-            }
-		</style>
-		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
-			<div id="payment-form">
-				<div class="card-field">
-					<div id="card-input">
-						<!-- A MONEI Card Input Component will be inserted here. -->
-					</div>
-					<!-- Used to display card errors. -->
-					<div id="monei-card-error"></div>
-				</div>
-			</div>
-		</fieldset>
-		<?php
+        <?php
 	}
 
 	/**
