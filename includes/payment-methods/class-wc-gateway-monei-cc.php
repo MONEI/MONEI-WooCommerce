@@ -269,28 +269,11 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 					$this->render_monei_form();
 				}
 			}
-			if ( $this->apple_google_pay ) {
-				$this->render_google_pay_form();
-			}
 		}
 		ob_end_flush();
 	}
 
-	/**
-	 * Form where Google or Apple Pay button will be rendered.
-	 * https://docs.monei.com/docs/monei-js/payment-request/#2-add-payment-request-component-to-your-payment-page-client-side
-	 */
-	protected function render_google_pay_form() {
-		?>
-		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-payment-request-form" class="wc-payment-request-form" style="background:transparent;">
-			<div id="payment-request-form">
-				<div id="payment-request-container">
-					<!-- Payment Request Component will be inserted here. -->
-				</div>
-			</div>
-		</fieldset>
-		<?php
-	}
+
 
 	/**
 	 * Form where MONEI JS will render CC Component.
@@ -313,20 +296,13 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                 ></div>
             </div>
             <!-- Card Input Container -->
-            <div class="monei-input-container">
+            <div id="payment-form" class="monei-input-container">
                 <div id="monei-card-input" class="monei-card-input">
-                    <!-- Card input will be rendered here -->
                 </div>
                 <div
                         id="monei-card-error"
                         class="wc-block-components-validation-error"
                 ></div>
-                <input
-                        type="hidden"
-                        id="monei_payment_token"
-                        name="monei_payment_token"
-                        value=""
-                />
             </div>
         </fieldset>
 
@@ -347,8 +323,11 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		}
 
 		$script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.min.js';
-		wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
-		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [
+        if(!wp_script_is('monei', 'registered')){
+            wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
+
+        }
+        wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [
 			'jquery',
 			'monei'
 		], MONEI_VERSION, true );
@@ -363,6 +342,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				'apple_google_pay' => $this->apple_google_pay,
 				'total'            => monei_price_format( WC()->cart->get_total( false ) ),
 				'currency'         => get_woocommerce_currency(),
+                'apple_logo' => WC_Monei()->image_url( 'apple-logo.svg' )
 			]
 		);
 

@@ -34,6 +34,12 @@ class MoneiAppleGoogleGateway extends WC_Gateway_Monei_CC {
         parent::__construct();
 		$this->id                 = 'monei_apple_google';
 		$this->method_title       = __( 'MONEI - Apple/Google', 'monei' );
+        $this->title = __( 'Google Pay', 'monei' );
+        $this->description = __('Pay with', 'monei');
+        $iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ));
+        $iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+
+        $this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
         $this->settings = get_option( 'woocommerce_monei_settings', array() );
         $this->enabled = ( ! empty( isset($this->settings['apple_google_pay']) && 'yes' ===$this->settings['apple_google_pay'] ) ) ? 'yes' : 'no';
 
@@ -50,10 +56,6 @@ class MoneiAppleGoogleGateway extends WC_Gateway_Monei_CC {
      */
     public function hideAppleGoogleInCheckout($available_gateways)
     {
-        if (!has_block('woocommerce/checkout')) {
-            unset($available_gateways['monei_apple_google']);
-        }
-
         return $available_gateways;
     }
     public function isBlockCheckout(): bool
@@ -87,5 +89,36 @@ class MoneiAppleGoogleGateway extends WC_Gateway_Monei_CC {
 	public function process_payment($order_id, $allowed_payment_method = null) {
 		return parent::process_payment($order_id, self::PAYMENT_METHOD);
 	}
+
+    /**
+     * Payments fields, shown on checkout or payment method page (add payment method).
+     */
+    function payment_fields() {
+        ob_start();
+
+            // Checkout screen.
+            // We show description, if tokenization available, we show saved cards and checkbox to save.
+            echo esc_html( $this->description );
+            if ( $this->apple_google_pay ) {
+                $this->render_google_pay_form();
+            }
+
+        ob_end_flush();
+    }
+
+    /**
+     * Form where Google or Apple Pay button will be rendered.
+     * https://docs.monei.com/docs/monei-js/payment-request/#2-add-payment-request-component-to-your-payment-page-client-side
+     */
+    protected function render_google_pay_form() {
+        ?>
+        <fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-payment-request-form" class="wc-payment-request-form" style="background:transparent; border:none;">
+            <div id="payment-request-form">
+                <div id="payment-request-container">
+                </div>
+            </div>
+        </fieldset>
+        <?php
+    }
 }
 
