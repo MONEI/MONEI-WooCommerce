@@ -41,7 +41,6 @@
 		 * Initialize MONEI card input and handle token creation.
 		 */
 		const initMoneiCard = () => {
-			console.log( parseInt( bizumData.total * 100 ) );
 			const bizum = monei.Bizum( {
 				accountId: bizumData.accountId,
 				sessionId: bizumData.sessionId,

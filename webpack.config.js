@@ -14,6 +14,10 @@ module.exports = () => {
 					__dirname,
 					'assets/js/block-checkout-bizum.js'
 				),
+				'bizum-shortcode-checkout': path.resolve(
+					__dirname,
+					'assets/js/bizum-shortcode-checkout.js'
+				)
 			},
 			output: {
 				path: path.resolve( __dirname, 'public/js/' ), // Output directory
