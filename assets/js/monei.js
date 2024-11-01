@@ -5,16 +5,18 @@
 	$( document.body ).on(
 		'updated_checkout',
 		function(e, data) {
+			wc_monei_form.update_apple_google_label();
 			// Update cofidis_widget.total on every updated_checkout event.
 			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
 				wc_monei_form.total = data.fragments[ 'monei_new_total' ];
 			}
 
+			if (wc_monei_form.is_apple_selected()) {
+				wc_monei_form.init_apple_google_pay();
+			}
+
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
-				// We need to re-init payment request with the new price.
-				wc_monei_form.init_apple_google_pay();
-
 			}
 		}
 	);
@@ -33,6 +35,9 @@
 	$( 'form#order_review' ).on(
 		'click',
 		function() {
+			if (wc_monei_form.is_apple_selected()) {
+				wc_monei_form.init_apple_google_pay();
+			}
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
 			}
@@ -47,6 +52,9 @@
 				if (mutation.type === 'childList') {
 					if ( wc_monei_form.is_monei_selected() ) {
 						wc_monei_form.init_checkout_monei();
+					}
+					if(wc_monei_form.is_apple_selected()) {
+						wc_monei_form.init_apple_google_pay();
 					}
 				}
 			}
@@ -70,6 +78,7 @@
 		form: null,
 		submitted: false,
 		init_counter: 0,
+		init_apple_counter: 0,
 		total: wc_monei_params.total,
 		cardholderNameRegex: /^[A-Za-zÀ-ú- ]{5,50}$/,
 		init: function() {
@@ -122,8 +131,14 @@
 			);
 		},
 		on_payment_selected() {
-			if ( wc_monei_form.is_monei_selected() ) {
+			if (wc_monei_form.is_checkout && wc_monei_params.apple_google_pay && wc_monei_form.is_apple_selected()) {
+				wc_monei_form.init_apple_google_pay();
+				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+				$('#place_order').prop('disabled', true);
+				return;
+			} else if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
+				$('#place_order').prop('disabled', false);
 				if ( wc_monei_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 				}
@@ -132,17 +147,9 @@
 				} else {
 					$('.monei-input-container, .monei-card-input').show();
 				}
-
-				// If a tokenised card is checked, we hide google/apple request button.
-				if ( wc_monei_form.is_checkout && wc_monei_params.apple_google_pay ) {
-					if ( wc_monei_form.is_tokenized_cc_selected() ) {
-						wc_monei_form.hide_payment_request_container();
-					} else {
-						wc_monei_form.show_payment_request_container();
-					}
-				}
 			} else {
 				if ( wc_monei_form.is_checkout ) {
+					$('#place_order').prop('disabled', false);
 					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
 				}
 			}
@@ -162,6 +169,9 @@
 		is_monei_selected: function() {
 			return $( '#payment_method_monei' ).is( ':checked' );
 		},
+		is_apple_selected: function() {
+			return $( '#payment_method_monei_apple_google' ).is( ':checked' );
+		},
 		is_tokenized_cc_selected: function() {
 			return ( $( 'input[name="wc-monei-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei-payment-token"]:checked' ).val() );
 		},
@@ -169,13 +179,36 @@
 			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );
 		},
 		init_apple_google_pay: function() {
+			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
+			// and we need to reset the counter in order to initiate again the monei component.
+			if ( wc_monei_form.$payment_request_container && 0 === wc_monei_form.$payment_request_container.childElementCount ) {
+				wc_monei_form.init_apple_counter = 0;
+			}
+
+			// init monei just once, despite how many times this may be triggered.
+			if ( 0 !== this.init_apple_counter ) {
+				return;
+			}
+
+
+			if ( wc_monei_form.is_checkout ) {
+				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+			}
+
+			// Init Apple/Google Pay.
 			if ( ! wc_monei_params.apple_google_pay ) {
 				return;
 			}
+
 			if ( window.paymentRequest ) {
-				window.paymentRequest.close();
+				window.paymentRequest.close()
 			}
 			wc_monei_form.instantiate_payment_request();
+
+
+			// We already init the button.
+			this.init_apple_counter++;
+
 		},
 		instantiate_payment_request: function() {
 			// Create an instance of the Apple/Google Pay component.
@@ -226,8 +259,6 @@
 			$('#monei_cardholder_name').on('blur', function() {
 				wc_monei_form.validate_cardholder_name();
 			});
-			// Init Apple/Google Pay.
-			wc_monei_form.init_apple_google_pay();
 
 			wc_monei_form.$container      = document.getElementById( 'monei-card-input' );
 			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
@@ -346,32 +377,55 @@
 			$(errorContainer).html('');
 		},
 		monei_token_handler: function( token ) {
-			wc_monei_form.create_hidden_input( 'monei_payment_token', token );
+			wc_monei_form.create_hidden_input( 'monei_payment_token', 'payment-form' , token );
 			// Once Token is created, submit form.
 			wc_monei_form.form.submit();
 		},
 		apple_google_token_handler: function (token ) {
-			wc_monei_form.create_hidden_input( 'monei_payment_request_token', token );
+			$('#place_order').prop('disabled', false);
+			wc_monei_form.create_hidden_input( 'monei_payment_request_token', 'payment-request-form', token );
 			// Once Token is created, submit form.
 			wc_monei_form.form.submit();
 		},
-		create_hidden_input: function( id, token ) {
+		create_hidden_input: function( id, form,  token ) {
 			var hiddenInput = document.createElement( 'input' );
 			hiddenInput.setAttribute( 'type', 'hidden' );
 			hiddenInput.setAttribute( 'name', id );
 			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
-			wc_monei_form.$paymentForm = document.getElementById( 'monei-cc-form' );
+			wc_monei_form.$paymentForm = document.getElementById( form );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
 		},
-		get_form: function() {
-			return this.form;
+		/**
+		 * If Apple can make payments then we need to show the apple logo and title instead of Google
+		 */
+		update_apple_google_label: function () {
+			//if apple google is selected and Apple can make payment
+			if ( ! wc_monei_params.apple_google_pay ) {
+				return;
+			}
+			const isApple = window.ApplePaySession?.canMakePayments();
+			if (isApple) {
+				const label = document.querySelector('label[for="payment_method_monei_apple_google"]');
+				if (label) {
+					// Change the label text to "Apple Pay"
+					label.childNodes[0].nodeValue = "Apple Pay ";
+
+					// Select the image within the label and change its source
+					const icon = label.querySelector('img');
+					if (icon) {
+						icon.src = "https://mollie-payments-for-woocommerce.ddev.site/wp-content/plugins/monei-woocommerce-do-not-delete/assets/images/apple-logo.svg";
+						icon.alt = "Apple Pay"; // Optional: update alt text as well
+					}
+				}
+			}
 		}
 	};
 
 	$(
 		function() {
 			wc_monei_form.init();
+			wc_monei_form.update_apple_google_label();
 		}
 	);
 
