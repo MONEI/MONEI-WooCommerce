@@ -1,3 +1,6 @@
+[class*="payment_method_monei"] label {
+    align-items: center;
+}
 
 label .monei-icons{
     margin-left: 15px;
