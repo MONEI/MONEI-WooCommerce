@@ -54,7 +54,7 @@
 
  		wp_register_script(
  			$script_name,
- 			WC_Monei()->plugin_url(). '/public/js/checkout-cc.min.js',
+ 			WC_Monei()->plugin_url(). '/public/js/monei-block-checkout-cc.min.js',
  			array(
 				'wc-blocks-checkout',
  				'wc-blocks-registry',

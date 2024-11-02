@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "terser ../assets/js/monei.js --compress --mangle --output ../assets/js/monei.min.js",
+    "build": "terser ../assets/js/monei-cc-classic.js --compress --mangle --output ../public/js/monei-cc-classic.min.js",
     "release": "release-it"
   },
   "release-it": {

@@ -111,7 +111,7 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
         if(!wp_script_is('monei', 'enqueued')) {
             wp_enqueue_script( 'monei' );
         }
-        wp_register_script( 'woocommerce_monei-bizum', plugins_url( 'public/js/bizum-shortcode-checkout.min.js', MONEI_MAIN_FILE ), [
+        wp_register_script( 'woocommerce_monei-bizum', plugins_url( 'public/js/monei-bizum-classic.min.js', MONEI_MAIN_FILE ), [
             'jquery',
             'monei'
         ], MONEI_VERSION, true );

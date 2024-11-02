@@ -17,7 +17,7 @@
 
  		wp_register_script(
  			$script_name,
- 			WC_Monei()->plugin_url(). '/public/js/block-checkout-bizum.min.js',
+ 			WC_Monei()->plugin_url(). '/public/js/monei-block-checkout-bizum.min.js',
  			array(
 				'wc-blocks-checkout',
  				'wc-blocks-registry',

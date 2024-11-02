@@ -245,15 +245,15 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			do_action( 'woocommerce_gateway_monei_init' );
 			wp_register_style( 
 				'monei-icons', 
-				$this->plugin_url() . '/assets/css/monei-icons.css', 
+				$this->plugin_url() . '/public/css/monei-icons-classic.css',
 				[], 
-				filemtime( $this->plugin_path() . '/assets/css/monei-icons.css' ), 
+				filemtime( $this->plugin_path() . '/public/css/monei-icons-classic.css' ),
 				'screen' 
 			);
 			wp_enqueue_style( 'monei-icons' );
             wp_register_style(
                 'monei-blocks-checkout-cc',
-                WC_Monei()->plugin_url(). '/public/css/monei-blocks-checkout-cc.css',
+                WC_Monei()->plugin_url(). '/public/css/monei-blocks-checkout.css',
                 array(),
                 WC_Monei()->version,
                 'all'
