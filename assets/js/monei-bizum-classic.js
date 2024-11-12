@@ -12,9 +12,6 @@
 
 			if ( wc_bizum_form.is_bizum_selected() ) {
 				wc_bizum_form.init_checkout_bizum();
-				// We need to re-init payment request with the new price.
-				wc_bizum_form.init_bizum_component();
-
 			}
 		}
 	);
@@ -46,7 +43,7 @@
 			for (var mutation of mutationsList) {
 				if (mutation.type === 'childList') {
 					if ( wc_bizum_form.is_bizum_selected() ) {
-						wc_bizum_form.init_checkout_bizum();
+						wc_bizum_form.on_payment_selected();
 					}
 				}
 			}
@@ -59,10 +56,7 @@
 		$checkout_form: $( 'form.woocommerce-checkout' ),
 		$add_payment_form: $( 'form#add_payment_method' ),
 		$order_pay_form: $( 'form#order_review' ),
-		$cardInput: null,
 		$container: null,
-		$payment_request_container: '#payment_request_container',
-		$errorContainer: null,
 		$paymentForm: null,
 		is_checkout: false,
 		is_add_payment_method: false,
@@ -76,14 +70,12 @@
 			if ( this.$checkout_form.length ) {
 				this.is_checkout = true;
 				this.form        = this.$checkout_form;
-				this.form.on( 'checkout_place_order', this.place_order );
 			}
 
 			// Add payment method Page
 			if ( this.$add_payment_form.length ) {
 				this.is_add_payment_method = true;
 				this.form                  = this.$add_payment_form;
-				this.form.on( 'submit', this.place_order );
 			}
 
 			// Pay for order ( change_payment_method for subscriptions)
@@ -91,26 +83,18 @@
 				if ( wc_bizum_form.is_bizum_selected() ) {
 					wc_bizum_form.init_checkout_bizum();
 				}
-
 				this.is_order_pay = true;
 				this.form         = this.$order_pay_form;
-				this.form.on( 'submit', this.place_order );
+				console.log('TOTAL',this.form)
 			}
 
 			if ( this.form ) {
 				this.form.on( 'change', this.on_change );
 			}
-		},
+	 	},
 		on_change: function() {
 			// Triggers on payment method selection.
 			$( "[name='payment_method']" ).on(
-				'change',
-				function() {
-					wc_bizum_form.on_payment_selected();
-				}
-			);
-			// Triggers on saved card selection.
-			$( "[name='wc-monei-payment-token']" ).on(
 				'change',
 				function() {
 					wc_bizum_form.on_payment_selected();
@@ -128,11 +112,17 @@
 				if ( wc_bizum_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'bizum-data-monei' );
 				}
-				$('#place_order').prop('disabled', false);
+				//todo central state. If Apple is selected we dont want to mess with the disable after it
+				if(!wc_bizum_form.is_apple_selected()){
+					$('#place_order').prop('disabled', false);
+				}
 			}
 		},
 		is_bizum_selected: function() {
 			return $( '#payment_method_monei_bizum' ).is( ':checked' );
+		},
+		is_apple_selected: function() {
+			return $( '#payment_method_monei_apple_google' ).is( ':checked' );
 		},
 		init_bizum_component: function() {
 			if ( window.bizumRequest ) {
@@ -151,7 +141,7 @@
 					wc_bizum_form.request_token_handler( result.token );
 				},
 				onError(error) {
-					console.log(error);
+					console.error(error);
 				},
 			});
 			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
@@ -181,21 +171,10 @@
 			// We already init Bizum.
 			this.init_counter++;
 		},
-		place_order: function( e ) {
-			// If MONEI payment request token already created (apple/google), submit form.
-			if ( $( '#monei_payment_request_token' ).length ) {
-				return true;
-			}
-			if ( ! wc_bizum_form.is_bizum_selected() ) {
-				return true;
-			}
-			e.preventDefault();
-			// This will be trigger, when CC component is used and "Place order" has been clicked.
-			return false;
-		},
 		request_token_handler: function (token ) {
 			wc_bizum_form.create_hidden_input( 'monei_payment_request_token', token );
 			// Once Token is created, submit form.
+			$('#place_order').prop('disabled', false);
 			wc_bizum_form.form.submit();
 		},
 		create_hidden_input: function( id, token ) {

@@ -295,7 +295,7 @@
 								}
 							} )
 							.catch( ( error ) => {
-								console.log(
+								console.error(
 									'Error during payment confirmation:',
 									error
 								);
@@ -412,7 +412,8 @@
 					}
 				},
 				onError( error ) {
-					console.log( error );
+					console.error( error );
+					console.error( error );
 				},
 			} );
 

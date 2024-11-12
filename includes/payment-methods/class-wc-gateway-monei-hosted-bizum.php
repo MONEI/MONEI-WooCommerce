@@ -38,7 +38,7 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->api_key              = $this->getApiKey();
         $this->account_id           = $this->getAccountId();
@@ -64,7 +64,23 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
 
         add_action('wp_enqueue_scripts', [$this, 'bizum_scripts']);
     }
+    /**
+     * Return whether or not this gateway still requires setup to function.
+     *
+     * When this gateway is toggled on via AJAX, if this returns true a
+     * redirect will occur to the settings page instead.
+     *
+     * @since 3.4.0
+     * @return bool
+     */
+    public function needs_setup() {
 
+        if ( ! $this->account_id || ! $this->api_key ) {
+            return true;
+        }
+
+        return false;
+    }
 	/**
 	 * Initialise Gateway Settings Form Fields
 	 *
@@ -116,13 +132,17 @@ class WC_Gateway_Monei_Bizum extends WC_Monei_Payment_Gateway_Hosted {
             'monei'
         ], MONEI_VERSION, true );
         wp_enqueue_script('woocommerce_monei-bizum');
+
+        // Determine the total amount to be passed
+        $total = $this->determineTheTotalAmountToBePassed();
+
         wp_localize_script(
             'woocommerce_monei-bizum',
             'wc_bizum_params',
             [
                 'account_id'       => monei_get_settings( false, 'monei_accountid' ),
                 'session_id'       => WC()->session->get_customer_id(),
-                'total'            => monei_price_format( WC()->cart->get_total( false ) ),
+                'total'            => monei_price_format( $total ),
                 'currency'         => get_woocommerce_currency(),
                 'language' => locale_iso_639_1_code(),
             ]

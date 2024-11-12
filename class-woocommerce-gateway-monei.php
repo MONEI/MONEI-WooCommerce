@@ -289,31 +289,32 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @return array
 		 */
-		public function monei_settings_by_default( $default_params ) {
-			$default_params['testmode'] = empty( $default_params['testmode'] )
-                ? ( !empty( get_option( 'monei_testmode' ) )
-                    ? get_option( 'monei_testmode' )
-                    : ( !empty( monei_get_settings( 'testmode' ) )
-                        ? monei_get_settings( 'testmode' )
-                        : $default_params['testmode'] ) )
-                : $default_params['testmode'];
-			$default_params['apikey']   = empty( $default_params['apikey'] )
-                ? ( !empty( get_option( 'monei_apikey' ) )
-                    ? get_option( 'monei_apikey' )
-                    : ( !empty( monei_get_settings( 'apikey' ) )
-                        ? monei_get_settings( 'apikey' )
-                        : $default_params['apikey'] ) )
-                : $default_params['apikey'];
-			$default_params['debug']    = empty( $default_params['debug'] )
-                ? ( !empty( get_option( 'monei_debug' ) )
-                    ? get_option( 'monei_debug' )
-                    : ( !empty( monei_get_settings( 'debug' ) )
-                        ? monei_get_settings( 'debug' )
-                        : $default_params['debug'] ) )
-                : $default_params['apikey'];
-			$default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
-			return $default_params;
-		}
+        public function monei_settings_by_default( $default_params ) {
+            $default_params['testmode'] = $this->get_setting_with_default( 'testmode', $default_params );
+            $default_params['apikey'] = $this->get_setting_with_default( 'apikey', $default_params );
+            $default_params['debug'] = $this->get_setting_with_default( 'debug', $default_params );
+            $default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
+
+            return $default_params;
+        }
+
+        private function get_setting_with_default( $key, $params ) {
+            if ( ! empty( $params[ $key ] ) ) {
+                return $params[ $key ];
+            }
+
+            $option_value = get_option( "monei_$key" );
+            if ( ! empty( $option_value ) ) {
+                return $option_value;
+            }
+
+            $monei_setting_value = monei_get_settings( $key );
+            if ( ! empty( $monei_setting_value ) ) {
+                return $monei_setting_value;
+            }
+
+            return '';
+        }
 
 		/**
 		 * Hooks when plugin_loaded

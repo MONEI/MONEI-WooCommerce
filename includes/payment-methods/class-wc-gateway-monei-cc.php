@@ -46,7 +46,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		$this->id                 = MONEI_GATEWAY_ID;
 		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
-		$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
+		//$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
 		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
@@ -54,7 +54,12 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		// Load the settings.
 		$this->init_settings();
 
-		// Hosted payment with redirect.
+        $description = ! empty( $this->get_option( 'description' ) )
+            ? $this->get_option( 'description' )
+            : '&nbsp;';  // Non-breaking space if description is empty
+
+
+        // Hosted payment with redirect.
 		$this->has_fields = false;
 		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ));
 		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
@@ -65,7 +70,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
 		$this->testmode             = ( ! empty( $this->getTestmode() && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->account_id           = $this->getAccountId();
 		$this->api_key              = $this->getApiKey();
@@ -331,7 +336,8 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			'monei'
 		], MONEI_VERSION, true );
 		wp_enqueue_script( 'monei' );
-
+        // Determine the total amount to be passed
+        $total = $this->determineTheTotalAmountToBePassed();
 		wp_localize_script(
 			'woocommerce_monei',
 			'wc_monei_params',
@@ -339,7 +345,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				'account_id'       => monei_get_settings( false, 'monei_accountid' ),
 				'session_id'       => WC()->session->get_customer_id(),
 				'apple_google_pay' => $this->apple_google_pay,
-				'total'            => monei_price_format( WC()->cart->get_total( false ) ),
+				'total'            => monei_price_format( $total ),
 				'currency'         => get_woocommerce_currency(),
                 'apple_logo' => WC_Monei()->image_url( 'apple-logo.svg' )
 			]

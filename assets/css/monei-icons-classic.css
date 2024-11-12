@@ -1,6 +1,5 @@
 [class*="payment_method_monei"] label {
-    display:flex;
-    align-items: center;
+
 }
 
 label .monei-icons{

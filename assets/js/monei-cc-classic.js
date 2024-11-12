@@ -44,32 +44,13 @@
 		}
 	);
 
-	var targetNode = document.getElementById('order_review');
-
-	if (targetNode) {
-		var observer = new MutationObserver(function(mutationsList, observer) {
-			for (var mutation of mutationsList) {
-				if (mutation.type === 'childList') {
-					if ( wc_monei_form.is_monei_selected() ) {
-						wc_monei_form.init_checkout_monei();
-					}
-					if(wc_monei_form.is_apple_selected()) {
-						wc_monei_form.init_apple_google_pay();
-					}
-				}
-			}
-		});
-
-		observer.observe(targetNode, { childList: true, subtree: true });
-	}
-
 	var wc_monei_form = {
 		$checkout_form: $( 'form.woocommerce-checkout' ),
 		$add_payment_form: $( 'form#add_payment_method' ),
 		$order_pay_form: $( 'form#order_review' ),
 		$cardInput: null,
 		$container: null,
-		$payment_request_container: '#payment_request_container',
+		$payment_request_container: null,
 		$errorContainer: null,
 		$paymentForm: null,
 		is_checkout: false,
@@ -99,20 +80,32 @@
 			// Pay for order ( change_payment_method for subscriptions)
 			if ( this.$order_pay_form.length ) {
 				if ( wc_monei_form.is_monei_selected() ) {
-					wc_monei_form.init_checkout_monei();
+					wc_monei_form.on_payment_selected()
+				}
+				if(wc_monei_form.is_apple_selected()) {
+					wc_monei_form.init_apple_google_pay()
 				}
 
 				this.is_order_pay = true;
 				this.form         = this.$order_pay_form;
-				this.form.on( 'submit', this.place_order );
+				this.form.on( 'submit', this.place_order_page );
+
+				$('input[name="payment_method"]').on('change', function() {
+					console.log('radio changed')
+					// Check if the apple google pay method is selected
+					if (wc_monei_form.is_apple_selected()) {
+						wc_monei_form.init_apple_google_pay();
+					}
+					// Check if the monei method is selected
+					if (wc_monei_form.is_monei_selected()) {
+						wc_monei_form.init_checkout_monei();
+					}
+				});
 			}
 
 			if ( this.form ) {
 				this.form.on( 'change', this.on_change );
 			}
-		},
-		submit_form: function() {
-			wc_monei_form.form.submit();
 		},
 		on_change: function() {
 			// Triggers on payment method selection.
@@ -131,11 +124,13 @@
 			);
 		},
 		on_payment_selected() {
-			if (wc_monei_form.is_checkout && wc_monei_params.apple_google_pay && wc_monei_form.is_apple_selected()) {
+			if ( wc_monei_form.is_apple_selected()) {
 				wc_monei_form.init_apple_google_pay();
-				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+				if ( wc_monei_form.is_checkout ) {
+					$("[name='woocommerce_checkout_place_order']").attr('data-monei', 'submit');
+				}
 				$('#place_order').prop('disabled', true);
-				return;
+				return false;
 			} else if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
 				$('#place_order').prop('disabled', false);
@@ -190,7 +185,6 @@
 				return;
 			}
 
-
 			if ( wc_monei_form.is_checkout ) {
 				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
 			}
@@ -200,11 +194,8 @@
 				return;
 			}
 
-			if ( window.paymentRequest ) {
-				window.paymentRequest.close()
-			}
 			wc_monei_form.instantiate_payment_request();
-
+			wc_monei_form.$payment_request_container = document.getElementById('payment-request-container')
 
 			// We already init the button.
 			this.init_apple_counter++;
@@ -221,21 +212,20 @@
 					wc_monei_form.apple_google_token_handler( result.token );
 				},
 				onError(error) {
-					console.log(error);
+					console.error(error);
 				},
 			});
 			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
+			console.log('rendering')
 			paymentRequest.render('#payment-request-container');
 			// Assign a global variable to paymentRequest so it's accessible.
 			window.paymentRequest = paymentRequest;
 		},
-		hide_payment_request_container: function() {
-			$('#payment-request-container').hide();
-		},
-		show_payment_request_container: function() {
-			$('#payment-request-container').show();
-		},
 		init_checkout_monei: function() {
+			let container = document.getElementById('monei-card-input')
+			if(container === null) {
+				return;
+			}
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
 			// and we need to reset the counter in order to initiate again the monei component.
 			if ( wc_monei_form.$container && 0 === wc_monei_form.$container.childElementCount ) {
@@ -307,46 +297,72 @@
 			this.init_counter++;
 		},
 		place_order: function( e ) {
-			if (!wc_monei_form.validate_cardholder_name()) {
+			const token = document.getElementById('monei_payment_token')
+			if(token) {
+				return true;
+			}
+			if ( wc_monei_form.is_monei_selected() && ! wc_monei_form.is_monei_saved_cc_selected()) {
+				if (!wc_monei_form.validate_cardholder_name()) {
+					return false;
+				}
+				//e.preventDefault();
+				// This will be trigger, when CC component is used and "Place order" has been clicked.
+				monei.createToken( wc_monei_form.$cardInput )
+					.then(
+						function ( result ) {
+							if ( result.error ) {
+								console.error('error', result.error);
+								// Inform the user if there was an error.
+								wc_monei_form.print_errors( result.error );
+							} else {
+								console.log('token')
+								// Create monei token and append it to Dconsole.logOM
+								wc_monei_form.monei_token_handler( result.token );
+							}
+						}
+					)
+					.catch(
+						function (error) {
+							console.error( error );
+							wc_monei_form.print_errors( error.message );
+						}
+					);
 				return false;
 			}
-			// If MONEI token already created, submit form.
-			if ( $( '#monei_payment_token' ).length ) {
+		},
+		place_order_page: function( e ) {
+			const token = document.getElementById('monei_payment_token')
+			if(token) {
 				return true;
 			}
-			// If MONEI payment request token already created (apple/google), submit form.
-			if ( $( '#monei_payment_request_token' ).length ) {
-				return true;
-			}
-			if ( ! wc_monei_form.is_monei_selected() ) {
-				return true;
-			}
-			// If user has selected any tokenized CC, we just submit the form normally.
-			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
-				return true;
-			}
-			e.preventDefault();
-			// This will be trigger, when CC component is used and "Place order" has been clicked.
-			monei.createToken( wc_monei_form.$cardInput )
-				.then(
-					function ( result ) {
-						if ( result.error ) {
-							console.log('error', result.error);
-							// Inform the user if there was an error.
-							wc_monei_form.print_errors( result.error );
-						} else {
-							// Create monei token and append it to Dconsole.logOM
-							wc_monei_form.monei_token_handler( result.token );
+			if ( wc_monei_form.is_monei_selected() && ! wc_monei_form.is_monei_saved_cc_selected()) {
+				if (!wc_monei_form.validate_cardholder_name()) {
+					return false;
+				}
+				e.preventDefault();
+				// This will be trigger, when CC component is used and "Place order" has been clicked.
+				monei.createToken( wc_monei_form.$cardInput )
+					.then(
+						function ( result ) {
+							if ( result.error ) {
+								console.error('error', result.error);
+								// Inform the user if there was an error.
+								wc_monei_form.print_errors( result.error );
+							} else {
+								console.log('token', result.token)
+								// Create monei token and append it to Dconsole.logOM
+								wc_monei_form.monei_token_handler( result.token );
+							}
 						}
-					}
-				)
-				.catch(
-					function (error) {
-						console.log( error );
-						wc_monei_form.print_errors( error.message );
-					}
-				);
-			return false;
+					)
+					.catch(
+						function (error) {
+							console.error( error );
+							wc_monei_form.print_errors( error.message );
+						}
+					);
+				return false;
+			}
 		},
 		/**
 		 * Printing errors into checkout form.

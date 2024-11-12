@@ -64,7 +64,7 @@
 					}
 				},
 				onError( error ) {
-					console.log( error );
+					console.error( error );
 				},
 			} );
 
@@ -116,7 +116,6 @@
 								tokenValue,
 							} )
 							.then( ( result ) => {
-								console.log( 'confirmed', result );
 								if (
 									result.nextAction &&
 									result.nextAction.mustRedirect
@@ -133,7 +132,7 @@
 								}
 							} )
 							.catch( ( error ) => {
-								console.log(
+								console.error(
 									'Error during payment confirmation:',
 									error
 								);

@@ -35,7 +35,7 @@ class MoneiAppleGoogleGateway extends WC_Gateway_Monei_CC {
 		$this->id                 = 'monei_apple_google';
 		$this->method_title       = __( 'MONEI - Apple/Google', 'monei' );
         $this->title = __( 'Google Pay', 'monei' );
-        $this->description = __('Pay with', 'monei');
+        $this->description = __('&nbsp;', 'monei');
         $iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ));
         $iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 
