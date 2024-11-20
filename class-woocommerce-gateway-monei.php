@@ -265,17 +265,17 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
         {
             $centralApiKey = get_option('monei_apikey');
             $centralAccountId = get_option('monei_accountid');
-            $ccApiKey = $default_params['apikey'];
-            $ccAccountId = $default_params['accountid'];
+            $ccApiKey = $default_params['apikey'] ?? false;
+            $ccAccountId = $default_params['accountid'] ?? false;
 
             // Update API key if centralApiKey is empty
-            if ( empty( $centralApiKey ) ) {
-                update_option( 'monei_apikey', !empty( $ccApiKey ) ? $ccApiKey : $centralApiKey );
+            if ( empty( $centralApiKey ) && !empty( $ccApiKey ) ) {
+                update_option( 'monei_apikey',  $ccApiKey );
             }
 
             // Update Account ID if centralAccountId is empty
-            if ( empty( $centralAccountId ) ) {
-                update_option( 'monei_accountid', !empty( $ccAccountId ) ? $ccAccountId : $centralAccountId );
+            if ( empty( $centralAccountId ) && !empty( $ccAccountId ) ) {
+                update_option( 'monei_accountid',  $ccAccountId );
             }
 
             return $default_params;
