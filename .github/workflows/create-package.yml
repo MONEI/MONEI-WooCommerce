@@ -1,4 +1,4 @@
-name: Deploy to WordPress.org
+name: Create package
 on:
   workflow_dispatch:
     inputs:
