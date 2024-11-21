@@ -10,7 +10,6 @@ output.log
 DOCKER_ENV
 docker_tag
 /node_modules
-/filtered
 package.json
 package-lock.json
 webpack.config.js
