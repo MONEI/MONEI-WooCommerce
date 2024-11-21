@@ -2,9 +2,14 @@
 /.github
 /.git
 composer.lock
-
+/docs
+/tests
 output.log
 .distignore
 .gitignore
 DOCKER_ENV
 docker_tag
+/node-modules
+package.json
+package-lock.json
+webpack.config.js
