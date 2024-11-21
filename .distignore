@@ -9,7 +9,8 @@ output.log
 .gitignore
 DOCKER_ENV
 docker_tag
-/node-modules
+/node_modules
+/filtered
 package.json
 package-lock.json
 webpack.config.js
