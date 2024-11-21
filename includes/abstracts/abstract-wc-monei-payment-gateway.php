@@ -309,5 +309,24 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
         return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
     }
 
+    /**
+     * @return float|int|string|null
+     */
+    public function determineTheTotalAmountToBePassed()
+    {
+        $total = null;
+        if (is_wc_endpoint_url('order-pay') && isset($_GET['key'])) {
+            // If on the pay for order page, get the order total
+            $order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
+            if ($order_id) {
+                $order = wc_get_order($order_id);
+                $total = $order ? $order->get_total() : 0;
+            }
+        } else {
+            // Otherwise, use the cart total
+            $total = WC()->cart->get_total(false);
+        }
+        return $total;
+    }
 }
 

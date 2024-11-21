@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 5.0
  */
 abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gateway {
-
+    const APPLE_GOOGLE_ID = 'monei_apple_google';
 	/**
 	 * Process the payment and return the result
 	 *
@@ -203,9 +203,9 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
-
+        $componentGateways = [MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID];
 		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
-		if ( MONEI_GATEWAY_ID === $this->id && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
+		if ( in_array($this->id, $componentGateways) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 

@@ -71,6 +71,23 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 		} );
 	}
 
+    /**
+     * Return whether or not this gateway still requires setup to function.
+     *
+     * When this gateway is toggled on via AJAX, if this returns true a
+     * redirect will occur to the settings page instead.
+     *
+     * @since 3.4.0
+     * @return bool
+     */
+    public function needs_setup() {
+
+        if ( ! $this->account_id || ! $this->api_key ) {
+            return true;
+        }
+
+        return false;
+    }
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -139,8 +156,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 			wp_enqueue_script( 'monei' );
 		}
 
-		$script_version_name = ( $this->testmode ) ? 'cofidis.js' : 'cofidis.min.js';
-		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
+		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'public/js/monei-cofidis.min.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
 		wp_localize_script(
 			'woocommerce_monei_cofidis',
 			'wc_monei_cofidis_params',

@@ -41,7 +41,6 @@
 		 * Initialize MONEI card input and handle token creation.
 		 */
 		const initMoneiCard = () => {
-			console.log( parseInt( bizumData.total * 100 ) );
 			const bizum = monei.Bizum( {
 				accountId: bizumData.accountId,
 				sessionId: bizumData.sessionId,
@@ -65,7 +64,7 @@
 					}
 				},
 				onError( error ) {
-					console.log( error );
+					console.error( error );
 				},
 			} );
 
@@ -90,7 +89,7 @@
 					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
-							monei_payment_token: requestToken,
+							monei_payment_request_token: requestToken,
 							monei_is_block_checkout: 'yes',
 						},
 					},
@@ -105,19 +104,17 @@
 			const unsubscribeSuccess = onCheckoutSuccess(
 				( { processingResponse } ) => {
 					const { paymentDetails } = processingResponse;
-					// Ensure we have the paymentId from the server
 					if ( paymentDetails && paymentDetails.paymentId ) {
 						const paymentId = paymentDetails.paymentId;
-
 						const tokenValue = paymentDetails.token;
-						// Call monei.confirmPayment to complete the payment (with 3D Secure)
-						monei
-							.confirmPayment( {
+						console.log(typeof paymentId)
+						console.log({
+							paymentId,
+							paymentToken: tokenValue})
+						monei.confirmPayment( {
 								paymentId,
-								tokenValue,
-							} )
+								paymentToken: tokenValue} )
 							.then( ( result ) => {
-								console.log( 'confirmed', result );
 								if (
 									result.nextAction &&
 									result.nextAction.mustRedirect
@@ -134,7 +131,7 @@
 								}
 							} )
 							.catch( ( error ) => {
-								console.log(
+								console.error(
 									'Error during payment confirmation:',
 									error
 								);
@@ -197,5 +194,6 @@
 		},
 		supports: bizumData.supports,
 	};
+	console.log('hola bizum 6')
 	registerPaymentMethod( MoneiBizumPaymentMethod );
 } )();

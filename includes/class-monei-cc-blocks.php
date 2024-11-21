@@ -54,7 +54,7 @@
 
  		wp_register_script(
  			$script_name,
- 			WC_Monei()->plugin_url(). '/public/js/checkout-cc.min.js',
+ 			WC_Monei()->plugin_url(). '/public/js/monei-block-checkout-cc.min.js',
  			array(
 				'wc-blocks-checkout',
  				'wc-blocks-registry',
@@ -89,7 +89,7 @@
         $total = isset(WC()->cart) ? WC()->cart->get_total( false ) : 0;
  		$data = array(
  			'title'       => $this->gateway->title,
- 			'description' => $this->gateway->description,
+ 			'description' => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
 	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/monei-cards.svg',
             'logo_apple' => WC_Monei()->plugin_url() . '/assets/images/apple-logo.svg',
             'logo_google' => WC_Monei()->plugin_url() . '/assets/images/google-logo.svg',

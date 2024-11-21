@@ -1,11 +1,16 @@
+[class*="payment_method_monei"] label {
+
+}
 
 label .monei-icons{
-    float:right;
+    margin-left: 15px;
+    margin-right:0;
+    padding-right:0;
     max-height: 28px !important;
     max-width: 80px !important;
   }
   .monei-icons svg{
-    float:right;
+      width: auto;
   }
 
 /* Applies to the apple/google button in checkout*/

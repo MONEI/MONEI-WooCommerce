@@ -46,7 +46,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		$this->id                 = MONEI_GATEWAY_ID;
 		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
-		$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
+		//$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
 		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
@@ -54,7 +54,12 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		// Load the settings.
 		$this->init_settings();
 
-		// Hosted payment with redirect.
+        $description = ! empty( $this->get_option( 'description' ) )
+            ? $this->get_option( 'description' )
+            : '&nbsp;';  // Non-breaking space if description is empty
+
+
+        // Hosted payment with redirect.
 		$this->has_fields = false;
 		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ));
 		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
@@ -65,7 +70,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
 		$this->testmode             = ( ! empty( $this->getTestmode() && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->account_id           = $this->getAccountId();
 		$this->api_key              = $this->getApiKey();
@@ -269,67 +274,44 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 					$this->render_monei_form();
 				}
 			}
-			if ( $this->apple_google_pay ) {
-				$this->render_google_pay_form();
-			}
 		}
 		ob_end_flush();
 	}
 
-	/**
-	 * Form where Google or Apple Pay button will be rendered.
-	 * https://docs.monei.com/docs/monei-js/payment-request/#2-add-payment-request-component-to-your-payment-page-client-side
-	 */
-	protected function render_google_pay_form() {
-		?>
-		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-payment-request-form" class="wc-payment-request-form" style="background:transparent;">
-			<div id="payment-request-form">
-				<div id="payment-request-container">
-					<!-- Payment Request Component will be inserted here. -->
-				</div>
-			</div>
-		</fieldset>
-		<?php
-	}
+
 
 	/**
 	 * Form where MONEI JS will render CC Component.
 	 */
 	protected function render_monei_form() {
 		?>
-        <style>
-            #payment-form {
-                padding-bottom: 15px;
-            }
+        <fieldset class="monei-fieldset monei-card-fieldset" id="wc-<?php echo esc_attr($this->id); ?>-cc-form">
+            <!-- Cardholder Name Input -->
+            <div class="monei-input-container">
+                <input
+                        type="text"
+                        id="monei_cardholder_name"
+                        name="monei_cardholder_name"
+                        placeholder="<?php echo __('Cardholder Name', 'monei'); ?>"
+                        required
+                        class="monei-input">
+                <div
+                        id="monei-cardholder-name-error"
+                        class="wc-block-components-validation-error"
+                ></div>
+            </div>
+            <!-- Card Input Container -->
+            <div id="payment-form" class="monei-input-container">
+                <div id="monei-card-input" class="monei-card-input">
+                </div>
+                <div
+                        id="monei-card-error"
+                        class="wc-block-components-validation-error"
+                ></div>
+            </div>
+        </fieldset>
 
-            #card-input {
-                border: 1px solid transparent;
-                border-radius: 4px;
-                background-color: white;
-                box-shadow: 0 1px 3px 0 #e6ebf1;
-                height: 38px;
-                box-sizing: border-box;
-                -webkit-transition: box-shadow 150ms ease;
-                transition: box-shadow 150ms ease;
-				max-width: 350px;
-            }
-
-            #card-input.is-focused {
-                box-shadow: 0 1px 3px 0 #cfd7df;
-            }
-		</style>
-		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">
-			<div id="payment-form">
-				<div class="card-field">
-					<div id="card-input">
-						<!-- A MONEI Card Input Component will be inserted here. -->
-					</div>
-					<!-- Used to display card errors. -->
-					<div id="monei-card-error"></div>
-				</div>
-			</div>
-		</fieldset>
-		<?php
+        <?php
 	}
 
 	/**
@@ -345,14 +327,17 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			return;
 		}
 
-		$script_version_name = ( $this->testmode ) ? 'monei.js' : 'monei.min.js';
-		wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
-		wp_register_script( 'woocommerce_monei', plugins_url( 'assets/js/' . $script_version_name, MONEI_MAIN_FILE ), [
+        if(!wp_script_is('monei', 'registered')){
+            wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
+
+        }
+        wp_register_script( 'woocommerce_monei', plugins_url( 'public/js/monei-cc-classic.min.js', MONEI_MAIN_FILE ), [
 			'jquery',
 			'monei'
 		], MONEI_VERSION, true );
 		wp_enqueue_script( 'monei' );
-
+        // Determine the total amount to be passed
+        $total = $this->determineTheTotalAmountToBePassed();
 		wp_localize_script(
 			'woocommerce_monei',
 			'wc_monei_params',
@@ -360,8 +345,9 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				'account_id'       => monei_get_settings( false, 'monei_accountid' ),
 				'session_id'       => WC()->session->get_customer_id(),
 				'apple_google_pay' => $this->apple_google_pay,
-				'total'            => monei_price_format( WC()->cart->get_total( false ) ),
+				'total'            => monei_price_format( $total ),
 				'currency'         => get_woocommerce_currency(),
+                'apple_logo' => WC_Monei()->image_url( 'apple-logo.svg' )
 			]
 		);
 

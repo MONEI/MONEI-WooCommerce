@@ -106,6 +106,13 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
+
+        if ( $token_id = $this->get_frontend_generated_bizum_token() ) {
+            if(! $this->isBlockCheckout()) {
+                $payload['paymentToken'] = $token_id;
+            }
+            $payload['sessionId'] = (string) WC()->session->get_customer_id();
+        }
 		
 		// Filter to enable external changes on payload.
 		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
@@ -125,7 +132,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
                     'result'   => 'success',
                     'redirect' => false,
                     'paymentId' => $payment->getId(),// Send the paymentId back to the client
-                    'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
+                    'token' => $this->get_frontend_generated_bizum_token(),// Send the token back to the client
                     'completeUrl' => $payload['completeUrl'],
                     'failUrl'=> $payload['failUrl'],
                     'orderId'=> $order_id
@@ -144,5 +151,18 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			);
 		}
 	}
+
+    /**
+     * Frontend MONEI payment-request token generated when Bizum.
+     *
+     * @return false|string
+     */
+    protected function get_frontend_generated_bizum_token()
+    {
+        if ($this->id !== 'monei_bizum'){
+            return false;
+        }
+        return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+    }
 }
 

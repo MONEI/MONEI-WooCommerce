@@ -63,6 +63,24 @@ class WC_Gateway_Monei_Paypal extends WC_Monei_Payment_Gateway_Hosted {
         );
     }
 
+    /**
+     * Return whether or not this gateway still requires setup to function.
+     *
+     * When this gateway is toggled on via AJAX, if this returns true a
+     * redirect will occur to the settings page instead.
+     *
+     * @since 3.4.0
+     * @return bool
+     */
+    public function needs_setup() {
+
+        if ( ! $this->account_id || ! $this->api_key ) {
+            return true;
+        }
+
+        return false;
+    }
+
 	/**
 	 * Initialise Gateway Settings Form Fields
 	 *
