@@ -41,7 +41,7 @@ jobs:
       - name: Create zip archive
         run: |
           cd filtered
-          zip -r ../package-${{ github.event.inputs.PACKAGE_VERSION }}.zip .
+          zip -r ../monei-${{ github.event.inputs.PACKAGE_VERSION }}.zip .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
