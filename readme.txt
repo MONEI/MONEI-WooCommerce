@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 5.8.13
+Stable tag: 6.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
@@ -101,6 +101,9 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+= 6.0.0 =
+* Fix - Bump release number to 6.0.0
 
 = 5.9.0 =
 * Add - Credit card to block checkout
