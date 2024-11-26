@@ -5,7 +5,7 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  6.0.0
+ * @version  6.1.0
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '6.0.0';
+		public $version = '6.1.0';
 
 		/**
 		 * The single instance of the class.
@@ -77,12 +77,16 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				require_once 'includes/class-monei-cc-blocks.php';
                 require_once 'includes/MoneiBizumBlocksSupport.php';
                 require_once 'includes/AppleGoogleBlocksSupport.php';
+                require_once 'includes/MoneiMultibancoBlocksSupport.php';
+                require_once 'includes/MoneiMBWayBlocksSupport.php';
 
 				add_action(	'woocommerce_blocks_payment_method_type_registration',
 					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
 						$payment_method_registry->register( new WC_Gateway_Monei_CC_Blocks );
                         $payment_method_registry->register( new MoneiBizumBlocksSupport );
                         $payment_method_registry->register( new AppleGoogleBlocksSupport );
+                        $payment_method_registry->register( new MoneiMultibancoBlocksSupport );
+                        $payment_method_registry->register( new MoneiMBWayBlocksSupport );
 				} );
 
 			} );
@@ -239,6 +243,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			add_filter( 'option_woocommerce_monei_bizum_settings',  array( $this, 'monei_settings_by_default' ), 1 );
 			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
+            add_filter( 'option_woocommerce_monei_multibanco_settings', array( $this, 'monei_settings_by_default' ), 1 );
+            add_filter( 'option_woocommerce_monei_mbway_settings', array( $this, 'monei_settings_by_default' ), 1 );
             add_filter( 'option_woocommerce_monei_settings', array( $this, 'copyKeysToCentralSettings' ), 1 );
 
 			// Init action.
@@ -322,7 +328,6 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		public function plugins_loaded() {
 			$this->include_payment_methods();
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
-			add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_checkout' ), 2, 10 );
 		}
 
 		/**
@@ -340,7 +345,9 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
             include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
 			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
-		}
+            include_once 'includes/payment-methods/MoneiMultibanco.php';
+            include_once 'includes/payment-methods/MoneiMBWay.php';
+        }
 
 		/**
 		 * Add Monei Gateways.
@@ -357,6 +364,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$methods[] = 'WC_Gateway_Monei_Cofidis';
 			$methods[] = 'WC_Gateway_Monei_Bizum';
 			$methods[] = 'WC_Gateway_Monei_Paypal';
+            $methods[] = 'MoneiMultibanco';
+            $methods[] = 'MoneiMBWay';
 			return $methods;
 		}
 
@@ -423,16 +432,6 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 */
 		public function ajax_url() {
 			return admin_url( 'admin-ajax.php', 'relative' );
-		}
-
-		public function validate_checkout( $data, $errors ) {
-			//validate that the name and last name follow a pattern
-			if ( ! preg_match( '/^[A-Za-zÀ-ÖØ-öø-ÿ ]{2,50}$/', $data['billing_first_name'] ) ) {
-				$errors->add( 'validation', __( 'Please enter a valid name. Special characters are not allowed.', 'monei' ) );
-			}
-			if ( ! preg_match( '/^[A-Za-zÀ-ÖØ-öø-ÿ ]{2,50}$/', $data['billing_last_name'] ) ) {
-				$errors->add( 'validation', __( 'Please enter a valid last name. Special characters are not allowed.', 'monei' ) );
-			}
 		}
 	}
 

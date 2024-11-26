@@ -105,7 +105,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 	/**
 	 * Check if this gateway is enabled and available in the user's country
-	 * todo: define this better.
+	 * todo: check if the gateway is enabled in the user account
 	 *
 	 * @access public
 	 * @return bool
