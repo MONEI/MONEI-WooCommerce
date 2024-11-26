@@ -1,7 +1,20 @@
 [class*="payment_method_monei"] label {
 
 }
-
+label .monei-icons-cc{
+    margin-left: 15px;
+    margin-right:0;
+    padding-right:0;
+    max-height: 28px !important;
+    max-width: 258px !important;
+}
+label .monei-icons-multi{
+    margin-left: 15px;
+    margin-right:0;
+    padding-right:0;
+    max-height: 28px !important;
+    max-width: 128px !important;
+}
 label .monei-icons{
     margin-left: 15px;
     margin-right:0;

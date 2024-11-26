@@ -194,6 +194,5 @@
 		},
 		supports: bizumData.supports,
 	};
-	console.log('hola bizum 6')
 	registerPaymentMethod( MoneiBizumPaymentMethod );
 } )();

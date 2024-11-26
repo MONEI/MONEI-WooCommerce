@@ -62,7 +62,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
         // Hosted payment with redirect.
 		$this->has_fields = false;
 		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ));
-		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons-cc" />';
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
@@ -285,7 +285,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	protected function render_monei_form() {
 		?>
-        <fieldset class="monei-fieldset monei-card-fieldset" id="wc-<?php echo esc_attr($this->id); ?>-cc-form">
+        <fieldset class="monei-fieldset monei-card-fieldset wc-block-components-form" id="wc-<?php echo esc_attr($this->id); ?>-cc-form">
             <!-- Cardholder Name Input -->
             <div class="monei-input-container">
                 <input
@@ -294,7 +294,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                         name="monei_cardholder_name"
                         placeholder="<?php echo __('Cardholder Name', 'monei'); ?>"
                         required
-                        class="monei-input">
+                        class="monei-input wc-block-components-text-input">
                 <div
                         id="monei-cardholder-name-error"
                         class="wc-block-components-validation-error"
@@ -302,7 +302,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
             </div>
             <!-- Card Input Container -->
             <div id="payment-form" class="monei-input-container">
-                <div id="monei-card-input" class="monei-card-input">
+                <div id="monei-card-input" class="monei-card-input wc-block-components-text-input">
                 </div>
                 <div
                         id="monei-card-error"

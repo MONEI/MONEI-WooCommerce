@@ -316,7 +316,7 @@
 		}, [ onCheckoutSuccess, shouldSavePayment ] );
 
 		return (
-			<fieldset className="monei-fieldset monei-card-fieldset">
+			<fieldset className="monei-fieldset monei-card-fieldset wc-block-components-form">
 				{ moneiData?.description && <p>{ moneiData.description }</p> }
 				<div className="monei-input-container">
 					<input
@@ -325,14 +325,14 @@
 						name="cardholder_name"
 						placeholder={ __( 'Cardholder Name', 'monei' ) }
 						required
-						className="monei-input"
+						className="monei-input wc-block-components-text-input"
 					/>
 					<div
 						id="monei-cardholder-name-error"
 						className="wc-block-components-validation-error"
 					></div>
 				</div>
-				<div id="monei-card-input" className="monei-card-input" />
+				<div id="monei-card-input" className="monei-card-input wc-block-components-text-input" />
 				<input
 					type="hidden"
 					id="monei_payment_token"
