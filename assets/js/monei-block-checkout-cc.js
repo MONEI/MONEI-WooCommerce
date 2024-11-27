@@ -318,21 +318,21 @@
 		return (
 			<fieldset className="monei-fieldset monei-card-fieldset wc-block-components-form">
 				{ moneiData?.description && <p>{ moneiData.description }</p> }
-				<div className="monei-input-container">
+				<div className="monei-input-container  wc-block-components-text-input">
 					<input
 						type="text"
 						id="cardholder_name"
 						name="cardholder_name"
 						placeholder={ __( 'Cardholder Name', 'monei' ) }
 						required
-						className="monei-input wc-block-components-text-input"
+						className="monei-input"
 					/>
 					<div
 						id="monei-cardholder-name-error"
 						className="wc-block-components-validation-error"
 					></div>
 				</div>
-				<div id="monei-card-input" className="monei-card-input wc-block-components-text-input" />
+				<div id="monei-card-input" className="monei-card-input" />
 				<input
 					type="hidden"
 					id="monei_payment_token"

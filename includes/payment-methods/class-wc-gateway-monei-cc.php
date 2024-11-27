@@ -287,22 +287,22 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		?>
         <fieldset class="monei-fieldset monei-card-fieldset wc-block-components-form" id="wc-<?php echo esc_attr($this->id); ?>-cc-form">
             <!-- Cardholder Name Input -->
-            <div class="monei-input-container">
+            <div class="monei-input-container wc-block-components-text-input">
                 <input
                         type="text"
                         id="monei_cardholder_name"
                         name="monei_cardholder_name"
                         placeholder="<?php echo __('Cardholder Name', 'monei'); ?>"
                         required
-                        class="monei-input wc-block-components-text-input">
+                        class="monei-input">
                 <div
                         id="monei-cardholder-name-error"
                         class="wc-block-components-validation-error"
                 ></div>
             </div>
             <!-- Card Input Container -->
-            <div id="payment-form" class="monei-input-container">
-                <div id="monei-card-input" class="monei-card-input wc-block-components-text-input">
+            <div id="payment-form" class="monei-input-container wc-block-components-text-input">
+                <div id="monei-card-input" class="monei-card-input">
                 </div>
                 <div
                         id="monei-card-error"
