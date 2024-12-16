@@ -7,6 +7,16 @@
  * @package  Woocommerce_Gateway_Monei
  * @version  6.1.1
  */
+
+use Monei\Core\ContainerProvider;
+use Monei\Gateways\Blocks\MoneiAppleGoogleBlocksSupport;
+use Monei\Gateways\Blocks\MoneiBizumBlocksSupport;
+use Monei\Gateways\Blocks\MoneiMBWayBlocksSupport;
+use Monei\Gateways\Blocks\MoneiMultibancoBlocksSupport;
+use Monei\Gateways\Blocks\MoneiCCBlocksSupport;
+use Monei\Services\BlockSupportService;
+use Monei\Settings\MoneiSettings;
+
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 	final class Woocommerce_Gateway_Monei {
@@ -66,27 +76,21 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		}
 
 		public function block_compatiblity() {
-
 			// Load checkout block class
 			add_action( 'woocommerce_blocks_loaded', function() {
-
 				if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 					return;
 				}
-
-				require_once 'includes/class-monei-cc-blocks.php';
-                require_once 'includes/MoneiBizumBlocksSupport.php';
-                require_once 'includes/AppleGoogleBlocksSupport.php';
-                require_once 'includes/MoneiMultibancoBlocksSupport.php';
-                require_once 'includes/MoneiMBWayBlocksSupport.php';
-
+                $container = ContainerProvider::getContainer();
+                $blockSupportService = $container->get(BlockSupportService::class);
+                $blockSupportClasses = $blockSupportService->getBlockSupportClasses();
 				add_action(	'woocommerce_blocks_payment_method_type_registration',
-					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-						$payment_method_registry->register( new WC_Gateway_Monei_CC_Blocks );
-                        $payment_method_registry->register( new MoneiBizumBlocksSupport );
-                        $payment_method_registry->register( new AppleGoogleBlocksSupport );
-                        $payment_method_registry->register( new MoneiMultibancoBlocksSupport );
-                        $payment_method_registry->register( new MoneiMBWayBlocksSupport );
+					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) use($blockSupportClasses, $container){
+                        foreach ($blockSupportClasses as $className) {
+                            if ($container->has($className)) {
+                                $payment_method_registry->register($container->get($className));
+                            }
+                        }
 				} );
 
 			} );
@@ -142,7 +146,6 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
                 add_filter('woocommerce_get_settings_pages', function ($settings) {
-                    include_once 'src/Settings/MoneiSettings.php';
                     $settings[] = new MoneiSettings();
                     return $settings;
                 });
@@ -326,28 +329,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * Hooks when plugin_loaded
 		 */
 		public function plugins_loaded() {
-			$this->include_payment_methods();
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
 		}
-
-		/**
-		 * Include Payment Methods.
-		 */
-		private function include_payment_methods() {
-			// Including abstract.
-			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway.php';
-			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-hosted.php';
-			include_once 'includes/abstracts/abstract-wc-monei-payment-gateway-component.php';
-
-			// Including hosted payments.
-			include_once 'includes/payment-methods/class-wc-gateway-monei-cc.php';
-            include_once 'includes/payment-methods/MoneiAppleGoogleGateway.php';
-            include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-cofidis.php';
-			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-bizum.php';
-			include_once 'includes/payment-methods/class-wc-gateway-monei-hosted-paypal.php';
-            include_once 'includes/payment-methods/MoneiMultibanco.php';
-            include_once 'includes/payment-methods/MoneiMBWay.php';
-        }
 
 		/**
 		 * Add Monei Gateways.
@@ -357,15 +340,17 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return array
 		 */
 		public function add_gateways( $methods ) {
-			$methods[] = 'WC_Gateway_Monei_CC';
+            $container = \Monei\Core\ContainerProvider::getContainer();
+
+            $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiCC');
             if (!is_admin()) {
-                $methods[] = 'MoneiAppleGoogleGateway';
+                $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle');
             }
-			$methods[] = 'WC_Gateway_Monei_Cofidis';
-			$methods[] = 'WC_Gateway_Monei_Bizum';
-			$methods[] = 'WC_Gateway_Monei_Paypal';
-            $methods[] = 'MoneiMultibanco';
-            $methods[] = 'MoneiMBWay';
+			$methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiCofidis');
+			$methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiBizum');
+			$methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal');
+            $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiMultibanco');
+            $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiMBWay');
 			return $methods;
 		}
 
