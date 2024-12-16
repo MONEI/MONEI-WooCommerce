@@ -1,6 +1,10 @@
 <?php
 
-class MoneiSettings extends WC_Settings_Page
+namespace Monei\Settings;
+
+use \WC_Admin_Settings;
+
+class MoneiSettings extends \WC_Settings_Page
 {
     public function __construct()
     {
