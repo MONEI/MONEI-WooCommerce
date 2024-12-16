@@ -1,5 +1,9 @@
 <?php
 
+namespace Monei\Gateways\Abstracts;
+
+
+use Monei\Services\PaymentMethodsService;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -9,11 +13,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Abstract class that will be inherited by all integrated components payment methods.
  * Class WC_Monei_Payment_Gateway_Component
  *
- * @extends WC_Monei_Payment_Gateway
+ * @extends WCMoneiPaymentGateway
  * @since 5.0
  */
-abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gateway {
+abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
     const APPLE_GOOGLE_ID = 'monei_apple_google';
+
+    public function __construct(PaymentMethodsService $paymentMethodsService) {
+        parent::__construct($paymentMethodsService);
+    }
 	/**
 	 * Process the payment and return the result
 	 *

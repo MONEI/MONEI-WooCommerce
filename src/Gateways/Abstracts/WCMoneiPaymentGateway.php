@@ -1,5 +1,9 @@
 <?php
 
+namespace Monei\Gateways\Abstracts;
+
+use Monei\Services\PaymentMethodsService;
+use \WC_Payment_Gateway;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -12,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 5.0
  */
-abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
+abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	const SALE_TRANSACTION_TYPE = 'SALE';
 	const PRE_AUTH_TRANSACTION_TYPE = 'AUTH';
@@ -103,6 +107,10 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public $form_fields = array();
 
+    public function __construct(PaymentMethodsService $paymentMethodsService) {
+        $this->paymentMethodsService = $paymentMethodsService;
+    }
+
 	/**
 	 * Check if this gateway is enabled and available in the user's country
 	 * todo: check if the gateway is enabled in the user account
@@ -114,12 +122,29 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
         if (empty($this->getAccountId()) || empty($this->getApiKey())) {
             return false;
         }
-		if ( ! in_array( get_woocommerce_currency(), array( 'EUR', 'USD', 'GBP' ), true ) ) {
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id, $this->getAccountId());
+		if(!$methodAvailability) {
+            return false;
+        }
+        if ( ! in_array( get_woocommerce_currency(), array( 'EUR', 'USD', 'GBP' ), true ) ) {
 			return false;
 		} else {
 			return true;
 		}
 	}
+
+    public function is_available()
+    {
+        $isEnabled = $this->enabled === 'yes' && $this->is_valid_for_use();
+        $billingCountry = WC()->customer && !empty(WC()->customer->get_billing_country())
+            ? WC()->customer->get_billing_country()
+            : wc_get_base_location()['country'];
+
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id, $this->getAccountId());
+
+        return $isEnabled &&
+            (empty($methodAvailability['countries']) || in_array($billingCountry, $methodAvailability['countries'], true));
+    }
 
 	/**
 	 * Override the get_icon method to add a custom class to the icon.
@@ -146,6 +171,11 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 		} else {
             if  ( ! $this->getAccountId() || ! $this->getApiKey() ) {
                 woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available-api.php' );
+                return;
+            }
+            $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id, $this->getAccountId());
+            if(!$methodAvailability) {
+                woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-enabled-monei.php' );
                 return;
             }
 			woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available.php' );
@@ -180,14 +210,14 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
-				$order->add_order_note( __('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				$order->add_order_note( -wc - monei - payment - gateway . php__('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price($amount) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
 
 			}
 		} catch ( Exception $e ) {
 			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
-			$order->add_order_note( __('Refund error: ', 'monei') . $e->getMessage() );
+			$order->add_order_note(-wc - monei - payment - gateway . php__('Refund error: ', 'monei') . $e->getMessage());
 		}
 		return false;
 	}
