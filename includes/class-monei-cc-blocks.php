@@ -94,6 +94,11 @@
             'logo_apple' => WC_Monei()->plugin_url() . '/assets/images/apple-logo.svg',
             'logo_google' => WC_Monei()->plugin_url() . '/assets/images/google-logo.svg',
  			'supports'    => $supports,
+            'cardholderName' => esc_attr__('Cardholder Name', 'monei'),
+            'nameErrorString' => esc_html('Please enter a valid name. Special characters are not allowed.', 'monei'),
+            'cardErrorString' => esc_html('Please check your card details.', 'monei'),
+            'tokenErrorString' => esc_html('MONEI token could not be generated.', 'monei'),
+            'redirected' => esc_html__('You will be redirected to the payment page', 'monei'),
 
 		// yes: test mode.
  		// no:  live,

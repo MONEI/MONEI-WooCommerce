@@ -34,10 +34,7 @@
 			return (
 				<div className="wc-block-components-text-input wc-block-components-address-form__email">
 					<p>
-						{ __(
-							'You will be redirected to the payment page',
-							'monei'
-						) }
+						{moneiData.redirect}
 					</p>
 				</div>
 			);
@@ -48,13 +45,7 @@
 			const cardholderName =
 				document.querySelector( '#cardholder_name' ).value;
 			if ( ! cardholderNameRegex.test( cardholderName ) ) {
-				print_errors(
-					__(
-						'Please enter a valid name. Special characters are not allowed.',
-						'monei'
-					),
-					errorContainerId
-				);
+				print_errors( moneiData.nameErrorString, errorContainerId);
 				return false;
 			}
 			clear_errors( errorContainerId );
@@ -174,19 +165,13 @@
 			const unsubscribeValidation = onCheckoutValidation( () => {
 				if ( ! validateCardholderName() ) {
 					return {
-						errorMessage: __(
-							'Please enter a valid name. Special characters are not allowed.',
-							'monei'
-						),
+						errorMessage: moneiData.nameErrorString,
 					};
 				}
 
 				if ( cardInputError !== false ) {
 					return {
-						errorMessage: __(
-							'Please check your card details.',
-							'monei'
-						),
+						errorMessage: moneiData.cardErrorString,
 					};
 				}
 
@@ -233,10 +218,7 @@
 						// If the token generation failed
 						return {
 							type: 'error',
-							message: __(
-								'MONEI token could not be generated.',
-								'monei'
-							),
+							message: moneiData.tokenErrorString,
 						};
 					} );
 				}
@@ -323,7 +305,7 @@
 						type="text"
 						id="cardholder_name"
 						name="cardholder_name"
-						placeholder={ __( 'Cardholder Name', 'monei' ) }
+						placeholder={ moneiData.cardholderName }
 						required
 						className="monei-input"
 					/>
@@ -430,10 +412,7 @@
 				if ( ! requestToken ) {
 					return {
 						type: 'error',
-						message: __(
-							'MONEI token could not be generated.',
-							'monei'
-						),
+						message: moneiData.tokenErrorString
 					};
 				}
 				return {
@@ -474,7 +453,7 @@
 		return (
 			<div className="monei-label-container">
 				<span className="monei-text">
-					{ __( moneiData.title, 'monei' ) }
+					{ moneiData.title }
 				</span>
 				{ moneiData?.logo && (
 					<div className="monei-logo">
@@ -489,8 +468,8 @@
 		const isApple = window.ApplePaySession?.canMakePayments();
 		const logo = isApple ? moneiData.logo_apple : moneiData.logo_google;
 		const title = isApple
-			? __( 'Apple Pay', 'monei' )
-			: __( 'Google Pay', 'monei' );
+			?  'Apple Pay'
+			: 'Google Pay';
 		const shouldShowLogo =
 			( isApple && moneiData?.logo_apple ) ||
 			( ! isApple && moneiData?.logo_google );
