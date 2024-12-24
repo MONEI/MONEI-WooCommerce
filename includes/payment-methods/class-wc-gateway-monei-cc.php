@@ -292,7 +292,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                         type="text"
                         id="monei_cardholder_name"
                         name="monei_cardholder_name"
-                        placeholder="<?php echo __('Cardholder Name', 'monei'); ?>"
+                        placeholder="<?php echo esc_attr__('Cardholder Name', 'monei'); ?>"
                         required
                         class="monei-input">
                 <div
