@@ -423,7 +423,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return string
 		 */
 		public function image_url( $image = '' ) {
-			return $this->plugin_url() . '/assets/images/' . $image;
+			return $this->plugin_url() . '/public/images/' . $image;
 		}
 
 		/**

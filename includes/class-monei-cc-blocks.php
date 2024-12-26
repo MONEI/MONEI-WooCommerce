@@ -90,9 +90,9 @@
  		$data = array(
  			'title'       => $this->gateway->title,
  			'description' => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
-	 		'logo'        => WC_Monei()->plugin_url() . '/assets/images/monei-cards.svg',
-            'logo_apple' => WC_Monei()->plugin_url() . '/assets/images/apple-logo.svg',
-            'logo_google' => WC_Monei()->plugin_url() . '/assets/images/google-logo.svg',
+	 		'logo'        => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
+            'logo_apple' => WC_Monei()->plugin_url() . '/public/images/apple-logo.svg',
+            'logo_google' => WC_Monei()->plugin_url() . '/public/images/google-logo.svg',
  			'supports'    => $supports,
             'cardholderName' => esc_attr__('Cardholder Name', 'monei'),
             'nameErrorString' => esc_html('Please enter a valid name. Special characters are not allowed.', 'monei'),
