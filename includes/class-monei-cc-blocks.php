@@ -95,9 +95,9 @@
             'logo_google' => WC_Monei()->plugin_url() . '/public/images/google-logo.svg',
  			'supports'    => $supports,
             'cardholderName' => esc_attr__('Cardholder Name', 'monei'),
-            'nameErrorString' => esc_html('Please enter a valid name. Special characters are not allowed.', 'monei'),
-            'cardErrorString' => esc_html('Please check your card details.', 'monei'),
-            'tokenErrorString' => esc_html('MONEI token could not be generated.', 'monei'),
+            'nameErrorString' => esc_html__('Please enter a valid name. Special characters are not allowed.', 'monei'),
+            'cardErrorString' => esc_html__('Please check your card details.', 'monei'),
+            'tokenErrorString' => esc_html__('MONEI token could not be generated.', 'monei'),
             'redirected' => esc_html__('You will be redirected to the payment page', 'monei'),
 
 		// yes: test mode.

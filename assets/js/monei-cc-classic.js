@@ -152,8 +152,9 @@
 		validate_cardholder_name: function() {
 			var value = $('#monei_cardholder_name').val();
 			if (!wc_monei_form.cardholderNameRegex.test(value)) {
+				const errorString = wc_monei_params.nameErrorString
 				// Show error
-				wc_monei_form.print_errors('Invalid cardholder name', '#monei-cardholder-name-error');
+				wc_monei_form.print_errors(errorString, '#monei-cardholder-name-error');
 				return false;
 			} else {
 				// Clear error
