@@ -105,6 +105,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2024-12-26 = 6.1.2 =
 * Fix - Cardholder Name not translated in block checkout
 * Fix - Plugin check issues
+* Fix - Move images to public folder
 
 2024-11-27 - version 6.1.1
 * Fix - Default css class in container
