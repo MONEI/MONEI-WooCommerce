@@ -19,19 +19,29 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $default_path
  */
 function woocommerce_gateway_monei_get_template( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
-	if ( $args && is_array( $args ) ) {
-		extract( $args );
-	}
+    if ( $args && is_array( $args ) ) {
+        extract( $args, EXTR_SKIP ); // Avoid overriding existing variables
+    }
 
-	$located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
-	if ( ! file_exists( $located ) ) {
-		_doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> does not exist.', $located ), '1.0.0' );
-		return;
-	}
+    // Locate the template
+    $located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
 
-	do_action( 'woocommerce_gateway_monei_before_template', $template_name, $template_path, $located, $args );
-	include( $located );
-	do_action( 'woocommerce_gateway_monei_after_template', $template_name, $template_path, $located, $args );
+    // Validate the located template
+    // Validate that the located file exists and is within the plugin's template directory
+    $template_directory = trailingslashit( WP_PLUGIN_DIR . '/templates' );
+    if ( ! $located || ! file_exists( $located ) || strpos( realpath( $located ), realpath( $template_directory ) ) !== 0 ) {
+        _doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> is not a valid or existing template.', esc_html( $template_name ) ), '1.0.0' );
+        return;
+    }
+
+    // Trigger actions before including the template
+    do_action( 'woocommerce_gateway_monei_before_template', $template_name, $template_path, $located, $args );
+
+    // Include the validated template file
+    include $located;
+
+    // Trigger actions after including the template
+    do_action( 'woocommerce_gateway_monei_after_template', $template_name, $template_path, $located, $args );
 }
 
 /**

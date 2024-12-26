@@ -5,7 +5,7 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  6.1.1
+ * @version  6.1.2
  */
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -16,7 +16,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '6.1.1';
+		public $version = '6.1.2';
 
 		/**
 		 * The single instance of the class.
@@ -423,7 +423,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return string
 		 */
 		public function image_url( $image = '' ) {
-			return $this->plugin_url() . '/assets/images/' . $image;
+			return $this->plugin_url() . '/public/images/' . $image;
 		}
 
 		/**

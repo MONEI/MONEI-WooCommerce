@@ -292,7 +292,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
                         type="text"
                         id="monei_cardholder_name"
                         name="monei_cardholder_name"
-                        placeholder="<?php echo __('Cardholder Name', 'monei'); ?>"
+                        placeholder="<?php echo esc_attr__('Cardholder Name', 'monei'); ?>"
                         required
                         class="monei-input">
                 <div
@@ -347,7 +347,8 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 				'apple_google_pay' => $this->apple_google_pay,
 				'total'            => monei_price_format( $total ),
 				'currency'         => get_woocommerce_currency(),
-                'apple_logo' => WC_Monei()->image_url( 'apple-logo.svg' )
+                'apple_logo' => WC_Monei()->image_url( 'apple-logo.svg' ),
+                'nameErrorString' => esc_html__('Please enter a valid name. Special characters are not allowed.', 'monei'),
 			]
 		);
 
