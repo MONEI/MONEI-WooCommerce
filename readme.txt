@@ -102,19 +102,23 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= 6.1.1 =
+2024-12-26 = 6.1.2 =
+* Fix - Cardholder Name not translated in block checkout
+* Fix - Plugin check issues
+
+2024-11-27 - version 6.1.1
 * Fix - Default css class in container
 
-= 6.1.0 =
+2024-11-26 - version 6.1.0
 * Add - Multibanco payment method
 * Add - MBWay payment method
 * Fix - Add default css class for checkout inputs
 * Fix - Add credit card icons with more cards
 
-= 6.0.0 =
+2024-11-22 - version 6.0.0
 * Fix - Bump release number to 6.0.0
 
-= 5.9.0 =
+2024-11-21 - version 5.9.0
 * Add - Credit card to block checkout
 * Add - Bizum button to block checkout without redirect
 * Add - Bizum button to short-code checkout
@@ -127,7 +131,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Fix - Credit card fields follows WooCommerce styles
 * Fix - Gateway disappear if no description provided
 
-= 5.8.13 =
+2024-8-29 - version 5.8.13
 * Fix - Apple Validation file error
 * Fix - Remove checkout Apple/Google buttons border
 * Fix - Redirect to cart on fail - now we redirect to retry
@@ -137,41 +141,41 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Fix - Log disabled if credit card logs disabled - now are independent
 * Fix - Button render issues
 
-= 5.8.12 =
+2024-6-10 - version 5.8.12
 * Update dependencies
 
-= 5.7.0 =
+2023-11-30 - version 5.7.0
 * Update dependencies
 
-= 5.6.6 =
+2022-5-15 - version 5.6.6
 * Monei PHP SDK upgrade. Guzzle 7.x
 
-= 5.6.4 =
+2022-2-11 - version 5.6.4
 * Hide/Show Payment request button on tokenized card selection
 
-= 5.6.3 =
+2022-2-4 - version 5.6.3
 * Pass billing and shipping information when transaction is created
 
-= 5.6.1 =
+2022-1-12 - version 5.6.1
 * Readme Update.
 
-= 5.6 =
+2021-12-15 - version 5.6
 * Apple / Google Pay Support.
 * Minor fixes.
 * API keys from different payment methods support.
 
-= 5.5 =
+2021-11-22 - version 5.5
 * Adding Subscriptions Support.
 * Minor fixes.
 
-= 5.4 =
+2021-10-13- version 5.4
 * Adding Cofidis Support.
 * Adding Pre-Auth to Paypal.
 * Bug Fixing.
 
-= 5.2 =
+2021-10-4 - version 5.2
 * Adding Component CC and Hosted CC Support.
 * Fixing Warnings.
 
-= 5.0 =
+2021-7-27 - version 5.0
 * Major refactor.
