@@ -31,7 +31,7 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 			return;
 		}
 
-		if ( ! $_POST['woocommerce_monei_apple_google_pay'] ) {
+		if ( ! sanitize_text_field($_POST['woocommerce_monei_apple_google_pay'] )) {
 			return;
 		}
 
