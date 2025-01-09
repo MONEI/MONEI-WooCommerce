@@ -67,7 +67,7 @@ final class MoneiMultibancoBlocksSupport extends AbstractPaymentMethodType
 
             'title' => $this->gateway->title,
             'description' => $this->gateway->description,
-            'logo' => WC_Monei()->plugin_url() . '/assets/images/multibanco-logo.svg',
+            'logo' => WC_Monei()->plugin_url() . '/public/images/multibanco-logo.svg',
             'supports' => $this->get_supported_features(),
             'currency' => get_woocommerce_currency(),
             'total' => $total,

@@ -9,11 +9,6 @@
  */
 
 use Monei\Core\ContainerProvider;
-use Monei\Gateways\Blocks\MoneiAppleGoogleBlocksSupport;
-use Monei\Gateways\Blocks\MoneiBizumBlocksSupport;
-use Monei\Gateways\Blocks\MoneiMBWayBlocksSupport;
-use Monei\Gateways\Blocks\MoneiMultibancoBlocksSupport;
-use Monei\Gateways\Blocks\MoneiCCBlocksSupport;
 use Monei\Services\BlockSupportService;
 use Monei\Settings\MoneiSettings;
 

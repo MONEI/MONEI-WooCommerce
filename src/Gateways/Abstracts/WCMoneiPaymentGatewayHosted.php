@@ -2,7 +2,12 @@
 
 namespace Monei\Gateways\Abstracts;
 
+use Exception;
 use Monei\Services\PaymentMethodsService;
+use WC_Geolocation;
+use WC_Monei_API;
+use WC_Order;
+use WC_Payment_Tokens;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -113,7 +118,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			$payload['generatePaymentToken'] = true;
 		}
 
-        if ( $token_id = $this->get_frontend_generated_bizum_token() ) {
+        if ( $token_id = $this->get_frontend_generated_token() ) {
             if(! $this->isBlockCheckout()) {
                 $payload['paymentToken'] = $token_id;
             }
@@ -138,7 +143,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
                     'result'   => 'success',
                     'redirect' => false,
                     'paymentId' => $payment->getId(),// Send the paymentId back to the client
-                    'token' => $this->get_frontend_generated_bizum_token(),// Send the token back to the client
+                    'token' => $this->get_frontend_generated_token(),// Send the token back to the client
                     'completeUrl' => $payload['completeUrl'],
                     'failUrl'=> $payload['failUrl'],
                     'orderId'=> $order_id
@@ -157,18 +162,5 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			);
 		}
 	}
-
-    /**
-     * Frontend MONEI payment-request token generated when Bizum.
-     *
-     * @return false|string
-     */
-    protected function get_frontend_generated_bizum_token()
-    {
-        if ($this->id !== 'monei_bizum'){
-            return false;
-        }
-        return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
-    }
 }
 

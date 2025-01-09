@@ -115,5 +115,15 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted
     {
         return parent::process_payment($order_id, self::PAYMENT_METHOD);
     }
+
+    /**
+     * Frontend MONEI payment-request token generated when Bizum.
+     *
+     * @return false|string
+     */
+    protected function get_frontend_generated_token()
+    {
+        return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+    }
 }
 

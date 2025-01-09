@@ -4,17 +4,20 @@ namespace Monei\Services;
 
 use Monei\Repositories\PaymentMethodsRepositoryInterface;
 
-class PaymentMethodsService {
+class PaymentMethodsService
+{
     private $repository;
 
-    public function __construct(PaymentMethodsRepositoryInterface $repository) {
+    public function __construct(PaymentMethodsRepositoryInterface $repository)
+    {
         $this->repository = $repository;
     }
 
     /**
      * Parse and return enabled payment methods.
      */
-    public function getEnabledPaymentMethods(): array {
+    public function getEnabledPaymentMethods(): array
+    {
         $data = $this->repository->getPaymentMethods();
 
         $enabledMethods = [];
@@ -37,22 +40,33 @@ class PaymentMethodsService {
      * @return array|null Availability details or null if the method is not enabled.
      */
     public function getMethodAvailability(string $methodId): ?array {
-        $data = $this->repository->getPaymentMethods();
-        //todo rename methods as in api
-        if($methodId === 'monei'){
-            $methodId = 'card';
-        } else {
-            $methodId = explode('_', $methodId)[1];
-        }
-        if (in_array($methodId, $data['paymentMethods'] ?? [], true)) {
-            $metadata = $data['metadata'][$methodId] ?? [];
-            return [
-                'enabled' => true,
-                'countries' => $metadata['countries'] ?? null,
-                'details' => $metadata
-            ];
-        }
+        $paymentData = $this->repository->getPaymentMethods();
+        $methodIdToApiMap = [
+            'monei'               => 'card',
+            'monei_apple_google'  => 'applePay',
+            'monei_google'        => 'googlePay',
+            'monei_bizum'         => 'bizum',
+            'monei_mbway'         => 'mbway',
+            'monei_multibanco'    => 'multibanco',
+            'monei_paypal'        => 'paypal'
+        ];
 
-        return null; // Method not available
+        if (isset($methodIdToApiMap[$methodId])) {
+            $apiName = $methodIdToApiMap[$methodId];
+            if (in_array($apiName, $paymentData['paymentMethods'] ?? [], true)) {
+                $metadata = $paymentData['metadata'][$apiName] ?? [];
+                $data = [
+                    'enabled'   => true,
+                    'countries' => $metadata['countries'] ?? null,
+                    'details'   => $metadata,
+                ];
+                if($methodId === 'monei_apple_google') {
+                    $data['googlePay'] = in_array('googlePay', $paymentData['paymentMethods']);
+                    $data['applePay'] = in_array('applePay', $paymentData['paymentMethods']);
+                }
+                return $data;
+            }
+        }
+        return null;
     }
 }

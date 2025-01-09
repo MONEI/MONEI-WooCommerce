@@ -2,8 +2,13 @@
 
 namespace Monei\Gateways\Abstracts;
 
+use Exception;
 use Monei\Services\PaymentMethodsService;
+use WC_Admin_Settings;
+use WC_Monei_API;
+use WC_Monei_Logger;
 use \WC_Payment_Gateway;
+use WC_Payment_Gateway_CC;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -122,10 +127,12 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
         if (empty($this->getAccountId()) || empty($this->getApiKey())) {
             return false;
         }
-        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id, $this->getAccountId());
-		if(!$methodAvailability) {
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
+
+        if(!$methodAvailability) {
             return false;
         }
+
         if ( ! in_array( get_woocommerce_currency(), array( 'EUR', 'USD', 'GBP' ), true ) ) {
 			return false;
 		} else {
@@ -140,7 +147,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
             ? WC()->customer->get_billing_country()
             : wc_get_base_location()['country'];
 
-        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id, $this->getAccountId());
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
 
         return $isEnabled &&
             (empty($methodAvailability['countries']) || in_array($billingCountry, $methodAvailability['countries'], true));
@@ -210,14 +217,14 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
-				$order->add_order_note( -wc - monei - payment - gateway . php__('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price($amount) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				$order->add_order_note( __('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price($amount) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
 
 			}
 		} catch ( Exception $e ) {
 			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
-			$order->add_order_note(-wc - monei - payment - gateway . php__('Refund error: ', 'monei') . $e->getMessage());
+			$order->add_order_note(__('Refund error: ', 'monei') . $e->getMessage());
 		}
 		return false;
 	}
