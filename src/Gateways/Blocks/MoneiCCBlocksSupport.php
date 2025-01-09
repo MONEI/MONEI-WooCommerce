@@ -101,12 +101,16 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType
             );
         }
         $total = isset(WC()->cart) ? WC()->cart->get_total(false) : 0;
+        $isGoogleEnabled = $this->gateway->isGoogleAvailable();
+        $isAppleEnabled = $this->gateway->isAppleAvailable();
+        $logoApple = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
+        $logoGoogle = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
         $data = array(
             'title' => $this->gateway->title,
             'description' => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
-            'logo' => WC_Monei()->plugin_url() . '/assets/images/monei-cards.svg',
-            'logo_apple' => WC_Monei()->plugin_url() . '/assets/images/apple-logo.svg',
-            'logo_google' => WC_Monei()->plugin_url() . '/assets/images/google-logo.svg',
+            'logo' => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
+            'logo_apple' => $isGoogleEnabled ? $logoGoogle: false,
+            'logo_google' => $isAppleEnabled ? $logoApple : false,
             'supports' => $supports,
 
             // yes: test mode.

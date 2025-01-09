@@ -431,8 +431,8 @@
 					// Select the image within the label and change its source
 					const icon = label.querySelector('img');
 					if (icon) {
-						icon.src = "https://mollie-payments-for-woocommerce.ddev.site/wp-content/plugins/monei-woocommerce-do-not-delete/assets/images/apple-logo.svg";
-						icon.alt = "Apple Pay"; // Optional: update alt text as well
+						icon.src = "public/images/apple-logo.svg";
+						icon.alt = "Apple Pay";
 					}
 				}
 			}

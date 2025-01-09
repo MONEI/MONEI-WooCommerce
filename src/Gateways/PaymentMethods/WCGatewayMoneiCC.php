@@ -373,6 +373,15 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent
         wp_enqueue_script('woocommerce_monei');
         $this->tokenization_script();
     }
+    public function isGoogleAvailable(){
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
+        return $methodAvailability['enabled'] === true && $methodAvailability['googlePay'] === true;
+    }
+
+    public function isAppleAvailable(){
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
+        return $methodAvailability['enabled'] === true && $methodAvailability['applePay'] === true;
+    }
 
 }
 
