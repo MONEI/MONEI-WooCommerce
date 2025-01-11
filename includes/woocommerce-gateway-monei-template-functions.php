@@ -23,33 +23,29 @@ function woocommerce_gateway_monei_get_template( $template_name, $args = array()
         extract( $args, EXTR_SKIP ); // Avoid overriding existing variables
     }
 
-    // Locate the template
     $located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
 
-    // Validate the located template
     $template_directory = trailingslashit( WP_PLUGIN_DIR . '/templates' );
+    $template_directory_realpath = realpath( $template_directory );
     $located_realpath = realpath( $located );
-    if ( ! $located || ! file_exists( $located ) || strpos( $located_realpath, realpath( $template_directory ) ) !== 0 ) {
+
+    if ( ! $template_directory_realpath || ! $located_realpath || ! file_exists( $located ) || strpos( $located_realpath, $template_directory_realpath ) !== 0 ) {
         _doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> is not a valid or existing template.', esc_html( $template_name ) ), '1.0.0' );
         return;
     }
 
-    // Trigger actions before loading the template
     do_action( 'woocommerce_gateway_monei_before_template', $template_name, $template_path, $located, $args );
 
-    // Read and output the contents of the validated template file
     $template_content = file_get_contents( $located_realpath );
     if ( $template_content === false ) {
         _doing_it_wrong( __FUNCTION__, sprintf( 'Failed to load template: <code>%s</code>.', esc_html( $template_name ) ), '1.0.0' );
         return;
     }
 
-    // Use output buffering to safely handle template output
     ob_start();
     eval( '?>' . $template_content ); // Use eval to parse PHP in the template
     echo ob_get_clean();
 
-    // Trigger actions after loading the template
     do_action( 'woocommerce_gateway_monei_after_template', $template_name, $template_path, $located, $args );
 }
 
