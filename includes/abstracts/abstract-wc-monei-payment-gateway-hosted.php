@@ -162,7 +162,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
         if ($this->id !== 'monei_bizum'){
             return false;
         }
-        return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+        return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_request_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
     }
 }
 
