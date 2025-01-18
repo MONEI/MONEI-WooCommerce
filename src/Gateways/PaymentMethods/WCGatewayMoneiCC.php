@@ -375,12 +375,12 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent
     }
     public function isGoogleAvailable(){
         $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
-        return $methodAvailability['enabled'] === true && $methodAvailability['googlePay'] === true;
+        return $methodAvailability['enabled'] === true && isset($methodAvailability['googlePay']) && $methodAvailability['googlePay'] === true;
     }
 
     public function isAppleAvailable(){
         $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
-        return $methodAvailability['enabled'] === true && $methodAvailability['applePay'] === true;
+        return $methodAvailability['enabled'] === true && isset($methodAvailability['applePay']) && $methodAvailability['applePay'] === true;
     }
 
 }
