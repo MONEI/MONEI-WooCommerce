@@ -11,7 +11,7 @@
 		let requestToken = null;
 		useEffect( () => {
 			const placeOrderButton = document.querySelector(
-				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 			);
 			if ( activePaymentMethod === 'monei_bizum' ) {
 				if ( placeOrderButton ) {
@@ -51,7 +51,7 @@
 					if ( result.token ) {
 						requestToken = result.token;
 						const placeOrderButton = document.querySelector(
-							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 						);
 						if ( placeOrderButton ) {
 							placeOrderButton.style.color = '';
@@ -107,10 +107,6 @@
 					if ( paymentDetails && paymentDetails.paymentId ) {
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
-						console.log(typeof paymentId)
-						console.log({
-							paymentId,
-							paymentToken: tokenValue})
 						monei.confirmPayment( {
 								paymentId,
 								paymentToken: tokenValue} )

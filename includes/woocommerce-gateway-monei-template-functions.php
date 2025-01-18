@@ -25,7 +25,7 @@ function woocommerce_gateway_monei_get_template( $template_name, $args = array()
 
     $located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
 
-    $template_directory = trailingslashit( WP_PLUGIN_DIR . '/templates' );
+    $template_directory = trailingslashit( plugin_dir_path( MONEI_PLUGIN_FILE ) . 'templates' );
     $template_directory_realpath = realpath( $template_directory );
     $located_realpath = realpath( $located );
 
