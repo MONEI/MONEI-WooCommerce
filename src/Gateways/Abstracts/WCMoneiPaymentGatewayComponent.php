@@ -227,7 +227,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	public function get_frontend_generated_monei_token() {
-		return ( isset( $_POST['monei_payment_token'] ) ) ? filter_var( $_POST['monei_payment_token'], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+		return ( isset( $_POST['monei_payment_token'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
 	}
 
     /**
@@ -236,7 +236,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
      * @return boolean
      */
     public function isBlockCheckout() {
-        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? filter_var( $_POST['monei_is_block_checkout'], FILTER_SANITIZE_STRING ) === 'yes' : false; // WPCS: CSRF ok.
+        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_is_block_checkout']), ENT_QUOTES, 'UTF-8') === 'yes' : false; // WPCS: CSRF ok.
     }
 
     /**
@@ -247,7 +247,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
     public function get_frontend_generated_monei_cardholder($order)
     {
         $defaultName = $order->get_formatted_billing_full_name();
-        return ( isset( $_POST['monei_cardholder_name'] ) ) ? filter_var( $_POST['monei_cardholder_name'], FILTER_SANITIZE_STRING ) : $defaultName; // WPCS: CSRF ok.
+        return ( isset( $_POST['monei_cardholder_name'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_cardholder_name']), ENT_QUOTES, 'UTF-8') : $defaultName; // WPCS: CSRF ok.
 
     }
 
@@ -258,7 +258,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_monei_apple_google_token() {
-		return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? filter_var( $_POST[ 'monei_payment_request_token' ], FILTER_SANITIZE_STRING ) : false; // WPCS: CSRF ok.
+		return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_request_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
 	}
 
 }
