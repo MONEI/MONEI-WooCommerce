@@ -178,10 +178,8 @@
 				// If no token is available, create a fresh token or fail validation, the card input will show its errors
 				if ( ! token ) {
 					return createMoneiToken().then( ( freshToken ) => {
-						if ( ! freshToken ) {
-							return false;
-						}
-						return true; // Validation passed
+						return freshToken;
+						 // Validation passed
 					} );
 				}
 				return true; // Validation passed (token already exists)
@@ -330,14 +328,14 @@
 	};
 	const MoneiAppleGoogleContent = ( props ) => {
 		const { responseTypes } = props.emitResponse;
-		const { onPaymentSetup, onCheckoutValidation, onCheckoutSuccess } =
+		const { onPaymentSetup } =
 			props.eventRegistration;
 		const { activePaymentMethod } = props;
 
 		let requestToken = null;
 		useEffect( () => {
 			const placeOrderButton = document.querySelector(
-				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 			);
 			if ( activePaymentMethod === 'monei_apple_google' ) {
 				if ( placeOrderButton ) {
@@ -381,7 +379,7 @@
 					if ( result.token ) {
 						requestToken = result.token;
 						const placeOrderButton = document.querySelector(
-							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 						);
 						if ( placeOrderButton ) {
 							placeOrderButton.style.color = '';
