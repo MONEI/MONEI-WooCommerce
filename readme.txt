@@ -102,6 +102,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
+2025-01-20 = 6.1.3 =
+* Fix - Plugin check warning issues
+* Fix - Bizum and CC blocks script could not locate the “Place Order” button
+
 2024-12-26 = 6.1.2 =
 * Fix - Cardholder Name not translated in block checkout
 * Fix - Plugin check issues
