@@ -109,8 +109,8 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType
             'title' => $this->gateway->title,
             'description' => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
             'logo' => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
-            'logo_apple' => $isGoogleEnabled ? $logoGoogle: false,
-            'logo_google' => $isAppleEnabled ? $logoApple : false,
+            'logo_google' => $isGoogleEnabled ? $logoGoogle: false,
+            'logo_apple' => $isAppleEnabled ? $logoApple : false,
             'supports' => $supports,
 
             // yes: test mode.
