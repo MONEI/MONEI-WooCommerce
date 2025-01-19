@@ -6,6 +6,8 @@ use Monei\Repositories\PaymentMethodsRepositoryInterface;
 
 class PaymentMethodsService
 {
+    public const GOOGLE_API = 'googlePay';
+    public const APPLE_API = 'applePay';
     private $repository;
 
     public function __construct(PaymentMethodsRepositoryInterface $repository)
@@ -30,6 +32,18 @@ class PaymentMethodsService
         }
 
         return $enabledMethods;
+    }
+
+    public function isGoogleEnabled():bool
+    {
+        $enabledMethods = $this->getEnabledPaymentMethods();
+        return isset($enabledMethods[self::GOOGLE_API]);
+    }
+
+    public function isAppleEnabled():bool
+    {
+        $enabledMethods = $this->getEnabledPaymentMethods();
+        return isset($enabledMethods[self::APPLE_API]);
     }
 
     /**
