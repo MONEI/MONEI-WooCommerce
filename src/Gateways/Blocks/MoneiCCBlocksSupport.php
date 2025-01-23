@@ -59,7 +59,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType
 
     public function get_payment_method_script_handles()
     {
-        wp_register_script('monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true);
+        wp_register_script('monei', 'https://js.monei.com/v2/monei.js', '', '2.0', true);
         wp_enqueue_script('monei');
 
         $script_name = 'wc-monei-cc-blocks-integration';

@@ -1,17 +1,20 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect } = wp.element;
+	const { useEffect} = wp.element;
 	const paypalData = wc.wcSettings.getSetting( 'monei_paypal_data' );
 
 	const MoneiPayPalContent = ( props ) => {
+		let counter = 0;
 		const { responseTypes } = props.emitResponse;
 		const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 		const { activePaymentMethod } = props;
 		let requestToken = null;
+		let paypalInstance = null;
+		let paypalContainer = null;
 		useEffect( () => {
 			const placeOrderButton = document.querySelector(
-				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 			);
 			if ( activePaymentMethod === 'monei_paypal' ) {
 				if ( placeOrderButton ) {
@@ -22,17 +25,25 @@
 				}
 			}
 			return () => {
+				if ( paypalInstance ) {
+					paypalInstance.close();
+					paypalInstance = null;
+					paypalContainer.innerHtml = ''
+				}
 				if ( placeOrderButton ) {
 					placeOrderButton.style.color = '';
 					placeOrderButton.style.backgroundColor = '';
 					placeOrderButton.disabled = false;
 				}
+
 			};
 		}, [ activePaymentMethod ] );
 		useEffect( () => {
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
 			if ( typeof monei !== 'undefined' && monei.PayPal ) {
-				initMoneiCard();
+				if(counter === 0) {
+					initMoneiCard();
+				}
 			} else {
 				console.error( 'MONEI SDK is not available' );
 			}
@@ -41,7 +52,10 @@
 		 * Initialize MONEI card input and handle token creation.
 		 */
 		const initMoneiCard = () => {
-			const paypal = monei.PayPal( {
+			paypalContainer = document.getElementById( 'paypal-container' );
+
+			// Render the PayPal button
+			paypalInstance = monei.PayPal( {
 				accountId: paypalData.accountId,
 				sessionId: paypalData.sessionId,
 				language: paypalData.language,
@@ -67,9 +81,9 @@
 					console.error( error );
 				},
 			} );
+			paypalInstance.render( paypalContainer );
 
-			const container = document.getElementById( 'paypal-container' );
-			paypal.render( container );
+			counter += 1
 		};
 
 		// Hook into the payment setup
@@ -107,10 +121,6 @@
 					if ( paymentDetails && paymentDetails.paymentId ) {
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
-						console.log(typeof paymentId)
-						console.log({
-							paymentId,
-							paymentToken: tokenValue})
 						monei.confirmPayment( {
 							paymentId,
 							paymentToken: tokenValue} )
@@ -140,7 +150,6 @@
 					} else {
 						console.error( 'No paymentId found in paymentDetails' );
 					}
-
 					// Return true to indicate that the checkout is successful
 					return true;
 				}
@@ -153,15 +162,7 @@
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
 				<div id="paypal-container">
-					{ /* PayPal button will be inserted here */ }
 				</div>
-				<input
-					type="hidden"
-					id="monei_payment_token"
-					name="monei_payment_token"
-					value=""
-				/>
-				<div id="monei-card-error" className="monei-error" />
 			</fieldset>
 		);
 	};
@@ -189,5 +190,6 @@
 		canMakePayment: ( ) => true,
 		supports: paypalData.supports,
 	};
+
 	registerPaymentMethod( MoneiPayPalPaymentMethod );
 } )();
