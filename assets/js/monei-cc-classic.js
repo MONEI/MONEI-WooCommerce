@@ -417,7 +417,6 @@
 		 * If Apple can make payments then we need to show the apple logo and title instead of Google
 		 */
 		update_apple_google_label: function () {
-			//if apple google is selected and Apple can make payment
 			if ( ! wc_monei_params.apple_google_pay ) {
 				return;
 			}
@@ -425,14 +424,11 @@
 			if (isApple) {
 				const label = document.querySelector('label[for="payment_method_monei_apple_google"]');
 				if (label) {
-					// Change the label text to "Apple Pay"
 					label.childNodes[0].nodeValue = "Apple Pay ";
-
-					// Select the image within the label and change its source
 					const icon = label.querySelector('img');
 					if (icon) {
-						icon.src = "https://mollie-payments-for-woocommerce.ddev.site/wp-content/plugins/monei-woocommerce-do-not-delete/assets/images/apple-logo.svg";
-						icon.alt = "Apple Pay"; // Optional: update alt text as well
+						icon.src = wc_monei_params.apple_logo;
+						icon.alt = "Apple Pay";
 					}
 				}
 			}
