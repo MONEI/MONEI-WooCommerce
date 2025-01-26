@@ -18,7 +18,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 	 * Process the payment and return the result
 	 *
 	 * @access public
-	 * @param int $order_id
+	 * @param int    $order_id
 	 * @param string $allowed_payment_method
 	 * @return array
 	 */
@@ -28,7 +28,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		$amount      = monei_price_format( $order->get_total() );
 		$currency    = get_woocommerce_currency();
 		$user_email  = $order->get_billing_email();
-		$description   = $this->shop_name . ' - #' . $order_id;
+		$description = $this->shop_name . ' - #' . $order_id;
 
 		/**
 		 * The URL to which a payment result should be sent asynchronously.
@@ -37,7 +37,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		/**
 		 * The URL the customer will be directed to if the payment failed.
 		 */
-		$fail_url = esc_url_raw( $order->get_checkout_payment_url(false) );
+		$fail_url = esc_url_raw( $order->get_checkout_payment_url( false ) );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -46,59 +46,59 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		/**
 		 * Create Payment Payload
 		 */
-		$payload = [
-			'amount'      => $amount,
-			'currency'    => $currency,
-			'orderId'     => (string) $order_id,
-			'description' => $description,
-			'customer' => [
+		$payload = array(
+			'amount'                => $amount,
+			'currency'              => $currency,
+			'orderId'               => (string) $order_id,
+			'description'           => $description,
+			'customer'              => array(
 				'email' => $user_email,
 				'name'  => $order->get_formatted_billing_full_name(),
 				'phone' => ( $order->get_billing_phone() ) ?: null,
-			],
-			'callbackUrl' => $callback_url,
-			'completeUrl' => $complete_url,
-			'cancelUrl'   => wc_get_checkout_url(),
-			'failUrl'     => $fail_url,
-			'transactionType' => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
-			'sessionDetails'  => [
+			),
+			'callbackUrl'           => $callback_url,
+			'completeUrl'           => $complete_url,
+			'cancelUrl'             => wc_get_checkout_url(),
+			'failUrl'               => $fail_url,
+			'transactionType'       => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
+			'sessionDetails'        => array(
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
-			],
-			'billingDetails' => [
-				'name'  => ( $order->get_formatted_billing_full_name() ) ?: null,
-				'email' => ( $order->get_billing_email() ) ?: null,
-				'phone' => ( $order->get_billing_phone() ) ?: null,
+			),
+			'billingDetails'        => array(
+				'name'    => ( $order->get_formatted_billing_full_name() ) ?: null,
+				'email'   => ( $order->get_billing_email() ) ?: null,
+				'phone'   => ( $order->get_billing_phone() ) ?: null,
 				'company' => ( $order->get_billing_company() ) ?: null,
-				'address' => [
+				'address' => array(
 					'country' => ( $order->get_billing_country() ) ?: null,
 					'city'    => ( $order->get_billing_city() ) ?: null,
 					'line1'   => ( $order->get_billing_address_1() ) ?: null,
 					'line2'   => ( $order->get_billing_address_2() ) ?: null,
 					'zip'     => ( $order->get_billing_postcode() ) ?? null,
 					'state'   => ( $order->get_billing_state() ) ?: null,
-				],
-			],
-			'shippingDetails' => [
-				'name'  => ( $order->get_formatted_shipping_full_name() ) ?: null,
-				'email' => $user_email,
-				'phone' => ( $order->get_shipping_phone() ) ?: null,
+				),
+			),
+			'shippingDetails'       => array(
+				'name'    => ( $order->get_formatted_shipping_full_name() ) ?: null,
+				'email'   => $user_email,
+				'phone'   => ( $order->get_shipping_phone() ) ?: null,
 				'company' => ( $order->get_shipping_company() ) ?: null,
-				'address' => [
+				'address' => array(
 					'country' => ( $order->get_shipping_country() ) ?: null,
 					'city'    => ( $order->get_shipping_city() ) ?: null,
 					'line1'   => ( $order->get_shipping_address_1() ) ?: null,
 					'line2'   => ( $order->get_shipping_address_2() ) ?: null,
 					'zip'     => ( $order->get_shipping_postcode() ) ?: null,
 					'state'   => ( $order->get_shipping_state() ) ?: null,
-				],
-			],
-			'allowedPaymentMethods' => [ $allowed_payment_method ],
-		];
+				),
+			),
+			'allowedPaymentMethods' => array( $allowed_payment_method ),
+		);
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
 		if ( $token_id = $this->get_payment_token_id_if_selected() ) {
-			$wc_token = WC_Payment_Tokens::get( $token_id );
+			$wc_token                = WC_Payment_Tokens::get( $token_id );
 			$payload['paymentToken'] = $wc_token->get_token();
 		}
 
@@ -107,13 +107,13 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			$payload['generatePaymentToken'] = true;
 		}
 
-        if ( $token_id = $this->get_frontend_generated_bizum_token() ) {
-            if(! $this->isBlockCheckout()) {
-                $payload['paymentToken'] = $token_id;
-            }
-            $payload['sessionId'] = (string) WC()->session->get_customer_id();
-        }
-		
+		if ( $token_id = $this->get_frontend_generated_bizum_token() ) {
+			if ( ! $this->isBlockCheckout() ) {
+				$payload['paymentToken'] = $token_id;
+			}
+			$payload['sessionId'] = (string) WC()->session->get_customer_id();
+		}
+
 		// Filter to enable external changes on payload.
 		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
 
@@ -127,17 +127,17 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
 
-            if ( $this->isBlockCheckout() ) {
-                return array(
-                    'result'   => 'success',
-                    'redirect' => false,
-                    'paymentId' => $payment->getId(),// Send the paymentId back to the client
-                    'token' => $this->get_frontend_generated_bizum_token(),// Send the token back to the client
-                    'completeUrl' => $payload['completeUrl'],
-                    'failUrl'=> $payload['failUrl'],
-                    'orderId'=> $order_id
-                );
-            }
+			if ( $this->isBlockCheckout() ) {
+				return array(
+					'result'      => 'success',
+					'redirect'    => false,
+					'paymentId'   => $payment->getId(), // Send the paymentId back to the client
+					'token'       => $this->get_frontend_generated_bizum_token(), // Send the token back to the client
+					'completeUrl' => $payload['completeUrl'],
+					'failUrl'     => $payload['failUrl'],
+					'orderId'     => $order_id,
+				);
+			}
 			return array(
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
@@ -147,22 +147,20 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 			wc_add_notice( $e->getMessage(), 'error' );
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			return array(
-				'result'   => 'failure',
+				'result' => 'failure',
 			);
 		}
 	}
 
-    /**
-     * Frontend MONEI payment-request token generated when Bizum.
-     *
-     * @return false|string
-     */
-    protected function get_frontend_generated_bizum_token()
-    {
-        if ($this->id !== 'monei_bizum'){
-            return false;
-        }
-        return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_request_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
-    }
+	/**
+	 * Frontend MONEI payment-request token generated when Bizum.
+	 *
+	 * @return false|string
+	 */
+	protected function get_frontend_generated_bizum_token() {
+		if ( $this->id !== 'monei_bizum' ) {
+			return false;
+		}
+		return ( isset( $_POST['monei_payment_request_token'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_payment_request_token'] ), ENT_QUOTES, 'UTF-8' ) : false; // WPCS: CSRF ok.
+	}
 }
-

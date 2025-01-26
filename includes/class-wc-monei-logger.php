@@ -19,7 +19,7 @@ class WC_Monei_Logger {
 	 * Always log errors, debug only when on settings.
 	 *
 	 * @param string|array $message
-	 * @param string $error_level
+	 * @param string       $error_level
 	 *
 	 * @since 5.0
 	 * @version 5.0
@@ -32,10 +32,10 @@ class WC_Monei_Logger {
 
 		switch ( $message ) {
 			case is_object( $message ):
-				$message = print_r( (array) $message, true );
+				$message = print_r( (array) $message, true );//phpcs:ignore
 				break;
 			case is_array( $message ):
-				$message = print_r( $message, true );
+				$message = print_r( $message, true );//phpcs:ignore
 				break;
 			default:
 				break;
@@ -44,8 +44,6 @@ class WC_Monei_Logger {
 		$log_entry  = "\n" . '==== MONEI Version: ' . WC_Monei()->version . '====' . "\n";
 		$log_entry .= '====Start Log====' . "\n" . $message . "\n" . '====End Log====' . "\n";
 
-		self::$logger->log( $error_level, $log_entry, [ 'source' => self::WC_LOG_FILENAME ] );
+		self::$logger->log( $error_level, $log_entry, array( 'source' => self::WC_LOG_FILENAME ) );
 	}
-
 }
-

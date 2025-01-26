@@ -28,12 +28,14 @@ class WC_Monei_API {
 
 	/**
 	 * Holds the order.
+	 *
 	 * @var int|WC_Order|null
 	 */
 	protected static $order = null;
 
 	/**
 	 * Get API Key.
+	 *
 	 * @return false|string
 	 */
 	protected static function get_api_key() {
@@ -41,7 +43,7 @@ class WC_Monei_API {
 			return self::$api_key;
 		}
 
-		self::$api_key = monei_get_settings( false, self::OPTION_API_KEY  );
+		self::$api_key = monei_get_settings( false, self::OPTION_API_KEY );
 		return self::$api_key;
 	}
 
@@ -82,6 +84,7 @@ class WC_Monei_API {
 
 	/**
 	 * https://docs.monei.com/api/#operation/payments_create
+	 *
 	 * @param array $payload
 	 *
 	 * @return \OpenAPI\Client\Model\Payment
@@ -96,7 +99,7 @@ class WC_Monei_API {
 	 * https://docs.monei.com/api/#operation/payments_confirm
 	 *
 	 * @param string $id The payment ID (required)
-	 * @param array $payload
+	 * @param array  $payload
 	 *
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
@@ -133,7 +136,7 @@ class WC_Monei_API {
 	 */
 	public static function capture_payment( $payment_id, $amount ) {
 		$client = self::get_client();
-		return $client->payments->capture( $payment_id, [ 'amount' => $amount ] );
+		return $client->payments->capture( $payment_id, array( 'amount' => $amount ) );
 	}
 
 	/**
@@ -148,7 +151,7 @@ class WC_Monei_API {
 	 */
 	public static function cancel_payment( $payment_id ) {
 		$client = self::get_client();
-		return $client->payments->cancel( $payment_id, [ 'cancellationReason' => 'requested_by_customer' ] );
+		return $client->payments->cancel( $payment_id, array( 'cancellationReason' => 'requested_by_customer' ) );
 	}
 
 	/**
@@ -156,7 +159,7 @@ class WC_Monei_API {
 	 *
 	 * @param $payment_id
 	 * @param $amount
-	 * @param string $refund_reason
+	 * @param string     $refund_reason
 	 *
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
@@ -165,10 +168,10 @@ class WC_Monei_API {
 		$client = self::get_client();
 		return $client->payments->refund(
 			$payment_id,
-			[
-				'amount' => (int) $amount,
+			array(
+				'amount'       => (int) $amount,
 				'refundReason' => $refund_reason,
-			]
+			)
 		);
 	}
 
@@ -195,8 +198,6 @@ class WC_Monei_API {
 	 */
 	public static function register_apple_domain( $domain ) {
 		$client = self::get_client();
-		return $client->applePayDomain->register( [ 'domainName' => $domain ] );
+		return $client->applePayDomain->register( array( 'domainName' => $domain ) );
 	}
-
 }
-

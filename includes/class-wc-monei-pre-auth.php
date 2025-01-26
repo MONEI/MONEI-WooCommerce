@@ -108,8 +108,6 @@ class WC_Monei_Pre_Auth {
 
 		return $payment_id;
 	}
-
 }
 
 new WC_Monei_Pre_Auth();
-

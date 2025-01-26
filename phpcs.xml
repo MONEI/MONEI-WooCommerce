@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="MyProject">
+    <description>Monei custom rules</description>
+    <arg value="sp"/><!-- Show sniff and progress -->
+    <arg name="extensions" value="php"/>
+    <arg name="parallel" value="10"/><!-- Enables parallel processing when available for faster results. -->
+    <arg name="cache" value=".phpcs.cache"/>
+    <rule ref="WordPress">
+        <exclude name="Squiz.Commenting" />
+        <exclude name="WordPress.PHP.YodaConditions.NotYoda" />
+        <exclude name="WordPress.Files.FileName.InvalidClassFileName" />
+        <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase" />
+        <exclude name="WordPress.NamingConventions" />
+        <exclude name="Generic.Arrays.DisallowShortArraySyntax" />
+        <exclude name="Universal.Operators.DisallowShortTernary.Found" />
+        <exclude name="Generic.PHP.DisallowShortOpenTag.EchoFound" />
+        <exclude name="Generic.Commenting.DocComment" />
+    </rule>
+</ruleset>

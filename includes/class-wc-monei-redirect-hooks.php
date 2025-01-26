@@ -19,7 +19,7 @@ class WC_Monei_Redirect_Hooks {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_cancelled_order', array( $this, 'add_notice_monei_order_cancelled' ) );
-		add_action('template_redirect', [$this, 'add_notice_monei_order_failed']);
+		add_action( 'template_redirect', array( $this, 'add_notice_monei_order_failed' ) );
 		add_action( 'wp', array( $this, 'save_payment_token' ) );
 	}
 
@@ -31,14 +31,14 @@ class WC_Monei_Redirect_Hooks {
 	 * @return void
 	 */
 	public function add_notice_monei_order_failed() {
-		if ( !isset( $_GET['status'] )) {
+		if ( ! isset( $_GET['status'] ) ) {
 			return;
 		}
 		$status = wc_clean( $_GET['status'] );
 		if ( $status === 'FAILED' ) {
-			wc_add_notice(__('The payment failed. Please try again', 'monei'), 'error');
+			wc_add_notice( __( 'The payment failed. Please try again', 'monei' ), 'error' );
 		}
-		add_filter('woocommerce_payment_gateway_get_new_payment_method_option_html', '__return_empty_string');
+		add_filter( 'woocommerce_payment_gateway_get_new_payment_method_option_html', '__return_empty_string' );
 	}
 
 	/**
@@ -92,15 +92,15 @@ class WC_Monei_Redirect_Hooks {
 		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== sanitize_text_field( $_GET['status'] ) ) ) {
 			wc_clear_notices();
 			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
-			$error_message = filter_input( INPUT_GET, 'message', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
+			$error_message = filter_input( INPUT_GET, 'message', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 			if ( $error_message ) {
 				wc_add_notice( $error_message, 'error' );
 			}
 			return;
 		}
 
-		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
-		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
+		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
+		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 		try {
 			WC_Monei_API::set_order( $order_id );
 			$payment       = WC_Monei_API::get_payment( $payment_id );
@@ -149,8 +149,6 @@ class WC_Monei_Redirect_Hooks {
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 		}
 	}
-
 }
 
 new WC_Monei_Redirect_Hooks();
-

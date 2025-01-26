@@ -19,7 +19,7 @@ trait WC_Monei_Subscriptions_Trait {
 	public function init_subscriptions() {
 		$this->supports = array_merge(
 			$this->supports,
-			[
+			array(
 				'subscriptions',
 				'subscription_cancellation',
 				'subscription_suspension',
@@ -29,21 +29,20 @@ trait WC_Monei_Subscriptions_Trait {
 				'subscription_payment_method_change',
 				'subscription_payment_method_change_customer',
 				'multiple_subscriptions',
-			]
+			)
 		);
 
-		add_action( 'wc_gateway_monei_create_payment_success', [ $this, 'subscription_after_payment_success' ], 1, 3 );
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 1, 3 );
+		add_action( 'wc_gateway_monei_create_payment_success', array( $this, 'subscription_after_payment_success' ), 1, 3 );
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'scheduled_subscription_payment' ), 1, 3 );
 
 		// Add Payment information to Payment method name in "Subscription" Tab.
-		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'add_extra_info_to_subscriptions_payment_method_title' ], 10, 2 );
-
+		add_filter( 'woocommerce_my_subscriptions_payment_method', array( $this, 'add_extra_info_to_subscriptions_payment_method_title' ), 10, 2 );
 	}
 
 	/**
 	 * Enrich Payment method name on "Subscriptions" Tab.
 	 *
-	 * @param string $payment_method_to_display
+	 * @param string          $payment_method_to_display
 	 * @param WC_Subscription $subscription
 	 *
 	 * @return string
@@ -60,17 +59,17 @@ trait WC_Monei_Subscriptions_Trait {
 	 * Process payment on renewal. Woo automatically triggers this hooks once subscription needs to be renewed.
 	 *
 	 * @param $amount_to_charge
-	 * @param WC_Order $renewal_order
+	 * @param WC_Order         $renewal_order
 	 */
 	public function scheduled_subscription_payment( $amount_to_charge, $renewal_order ) {
 		$sequence_id = $this->get_sequence_id_from_renewal_order( $renewal_order );
 		$description = $this->shop_name . ' - #' . (string) $renewal_order->get_id() . ' - Subscription Renewal';
 
-		$payload = [
+		$payload = array(
 			'orderId'     => (string) $renewal_order->get_id(),
 			'amount'      => monei_price_format( $amount_to_charge ),
 			'description' => $description,
-		];
+		);
 
 		try {
 			$payment = WC_Monei_API::recurring_payment( $sequence_id, $payload );
@@ -161,13 +160,13 @@ trait WC_Monei_Subscriptions_Trait {
 	public function create_subscription_payload( WC_Order $order_id, $payment_method ) {
 		$order               = new WC_Order( $order_id );
 		$payload             = parent::create_payload( $order, $payment_method );
-		$payload['sequence'] = [
-			'type' => 'recurring',
-			'recurring' => [
-				//'frequency' => $this->get_cart_subscription_interval_in_days() // The minimum number of days between the different recurring payments.
-				'frequency' => 1 // Testing with 1 to know if we can modify subscription dates.
-			]
-		];
+		$payload['sequence'] = array(
+			'type'      => 'recurring',
+			'recurring' => array(
+				// 'frequency' => $this->get_cart_subscription_interval_in_days() // The minimum number of days between the different recurring payments.
+				'frequency' => 1, // Testing with 1 to know if we can modify subscription dates.
+			),
+		);
 
 		/**
 		 * If there is a free trial, (first payment for free) and user has selected a tokenized card,
@@ -199,4 +198,3 @@ trait WC_Monei_Subscriptions_Trait {
 		return $payload;
 	}
 }
-

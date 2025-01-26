@@ -44,25 +44,24 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	public function __construct() {
 
-		$this->id                 = MONEI_GATEWAY_ID;
-		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
-		//$this->method_description = __( 'Accept Credit Card payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->id           = MONEI_GATEWAY_ID;
+		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
+		// $this->method_description = __( 'Accept Credit Card payments.', 'monei' );
+		$this->enabled = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
 		// Load the settings.
 		$this->init_settings();
 
-        $description = ! empty( $this->get_option( 'description' ) )
-            ? $this->get_option( 'description' )
-            : '&nbsp;';  // Non-breaking space if description is empty
+		$description = ! empty( $this->get_option( 'description' ) )
+			? $this->get_option( 'description' )
+			: '&nbsp;';  // Non-breaking space if description is empty
 
-
-        // Hosted payment with redirect.
+		// Hosted payment with redirect.
 		$this->has_fields = false;
-		$iconUrl = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ));
-		$iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons-cc" />';
+		$iconUrl          = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ) );
+		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons-cc" />';
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
@@ -82,7 +81,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();
-		new WC_Monei_IPN($this->logging);
+		new WC_Monei_IPN( $this->logging );
 
 		$this->supports = array(
 			'products',
@@ -97,26 +96,32 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			$this->init_subscriptions();
 		}
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
-			$this,
-			'process_admin_options'
-		) );
-        add_filter(
-            'woocommerce_save_settings_checkout_' . $this->id,
-            function ($is_post) {
-                return $this->checks_before_save($is_post, 'woocommerce_monei_enabled');
-            }
-        );
+		add_action(
+			'woocommerce_update_options_payment_gateways_' . $this->id,
+			array(
+				$this,
+				'process_admin_options',
+			)
+		);
+		add_filter(
+			'woocommerce_save_settings_checkout_' . $this->id,
+			function ( $is_post ) {
+				return $this->checks_before_save( $is_post, 'woocommerce_monei_enabled' );
+			}
+		);
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
 		if ( ! $this->redirect_flow || is_add_payment_method_page() || $this->is_subscription_change_payment_page() ) {
-			add_action( 'wp_enqueue_scripts', [ $this, 'monei_scripts' ] );
+			add_action( 'wp_enqueue_scripts', array( $this, 'monei_scripts' ) );
 		}
 
 		// Add new total on checkout updates (ex, selecting different shipping methods)
-		add_filter( 'woocommerce_update_order_review_fragments', function( $fragments ) {
-			return self::add_cart_total_fragments( $fragments );
-		} );
+		add_filter(
+			'woocommerce_update_order_review_fragments',
+			function ( $fragments ) {
+				return self::add_cart_total_fragments( $fragments );
+			}
+		);
 	}
 
 	/**
@@ -154,7 +159,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 *
 	 * @access public
 	 *
-	 * @param int $order_id
+	 * @param int  $order_id
 	 * @param null $allowed_payment_method
 	 *
 	 * @return array
@@ -209,7 +214,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		/**
 		 * Create 0 EUR Payment Payload
 		 */
-		$payload = [
+		$payload = array(
 			'amount'                => 0,
 			'currency'              => get_woocommerce_currency(),
 			'orderId'               => $current_user_id . 'generatetoken' . wp_rand( 0, 1000000 ),
@@ -219,13 +224,13 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			'cancelUrl'             => wc_get_endpoint_url( 'payment-methods' ),
 			'failUrl'               => wc_get_endpoint_url( 'payment-methods' ),
 			'transactionType'       => self::SALE_TRANSACTION_TYPE,
-			'sessionDetails'        => [
+			'sessionDetails'        => array(
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
-			],
+			),
 			'generatePaymentToken'  => true,
-			'allowedPaymentMethods' => [ self::PAYMENT_METHOD ],
-		];
+			'allowedPaymentMethods' => array( self::PAYMENT_METHOD ),
+		);
 
 		// All Zero payloads ( add payment method ) will use component CC.
 		if ( MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
@@ -285,33 +290,33 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 */
 	protected function render_monei_form() {
 		?>
-        <fieldset class="monei-fieldset monei-card-fieldset wc-block-components-form" id="wc-<?php echo esc_attr($this->id); ?>-cc-form">
-            <!-- Cardholder Name Input -->
-            <div class="monei-input-container wc-block-components-text-input">
-                <input
-                        type="text"
-                        id="monei_cardholder_name"
-                        name="monei_cardholder_name"
-                        placeholder="<?php echo esc_attr__('Cardholder Name', 'monei'); ?>"
-                        required
-                        class="monei-input">
-                <div
-                        id="monei-cardholder-name-error"
-                        class="wc-block-components-validation-error"
-                ></div>
-            </div>
-            <!-- Card Input Container -->
-            <div id="payment-form" class="monei-input-container wc-block-components-text-input">
-                <div id="monei-card-input" class="monei-card-input">
-                </div>
-                <div
-                        id="monei-card-error"
-                        class="wc-block-components-validation-error"
-                ></div>
-            </div>
-        </fieldset>
+		<fieldset class="monei-fieldset monei-card-fieldset wc-block-components-form" id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form">
+			<!-- Cardholder Name Input -->
+			<div class="monei-input-container wc-block-components-text-input">
+				<input
+						type="text"
+						id="monei_cardholder_name"
+						name="monei_cardholder_name"
+						placeholder="<?php echo esc_attr__( 'Cardholder Name', 'monei' ); ?>"
+						required
+						class="monei-input">
+				<div
+						id="monei-cardholder-name-error"
+						class="wc-block-components-validation-error"
+				></div>
+			</div>
+			<!-- Card Input Container -->
+			<div id="payment-form" class="monei-input-container wc-block-components-text-input">
+				<div id="monei-card-input" class="monei-card-input">
+				</div>
+				<div
+						id="monei-card-error"
+						class="wc-block-components-validation-error"
+				></div>
+			</div>
+		</fieldset>
 
-        <?php
+		<?php
 	}
 
 	/**
@@ -327,34 +332,39 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 			return;
 		}
 
-        if(!wp_script_is('monei', 'registered')){
-            wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
+		if ( ! wp_script_is( 'monei', 'registered' ) ) {
+			wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
 
-        }
-        wp_register_script( 'woocommerce_monei', plugins_url( 'public/js/monei-cc-classic.min.js', MONEI_MAIN_FILE ), [
-			'jquery',
-			'monei'
-		], MONEI_VERSION, true );
+		}
+		wp_register_script(
+			'woocommerce_monei',
+			plugins_url( 'public/js/monei-cc-classic.min.js', MONEI_MAIN_FILE ),
+			array(
+				'jquery',
+				'monei',
+			),
+			MONEI_VERSION,
+			true
+		);
 		wp_enqueue_script( 'monei' );
-        // Determine the total amount to be passed
-        $total = $this->determineTheTotalAmountToBePassed();
+		// Determine the total amount to be passed
+		$total = $this->determineTheTotalAmountToBePassed();
 		wp_localize_script(
 			'woocommerce_monei',
 			'wc_monei_params',
-			[
+			array(
 				'account_id'       => monei_get_settings( false, 'monei_accountid' ),
 				'session_id'       => WC()->session->get_customer_id(),
 				'apple_google_pay' => $this->apple_google_pay,
 				'total'            => monei_price_format( $total ),
 				'currency'         => get_woocommerce_currency(),
-                'apple_logo' => WC_Monei()->image_url( 'apple-logo.svg' ),
-                'nameErrorString' => esc_html__('Please enter a valid name. Special characters are not allowed.', 'monei'),
-			]
+				'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'nameErrorString'  => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
+			)
 		);
 
 		wp_enqueue_script( 'woocommerce_monei' );
 		$this->tokenization_script();
 	}
-
 }
 

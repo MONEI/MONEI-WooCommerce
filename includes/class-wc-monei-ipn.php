@@ -16,7 +16,7 @@ class WC_Monei_IPN {
 	/**
 	 * Constructor.
 	 */
-	public function __construct(bool $logging = false) {
+	public function __construct( bool $logging = false ) {
 		$this->logging = $logging;
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
@@ -95,7 +95,7 @@ class WC_Monei_IPN {
 		if ( 'CANCELED' === $status ) {
 			// Order cancelled.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
-			$order->add_order_note( sprintf( __( 'Cancelled by MONEI: %s', 'monei' ),  $status_message ) );
+			$order->add_order_note( sprintf( __( 'Cancelled by MONEI: %s', 'monei' ), $status_message ) );
 			return;
 		}
 
@@ -158,6 +158,7 @@ class WC_Monei_IPN {
 	/**
 	 * getallheaders is only available for apache, we need a fallback in case of nginx or others,
 	 * http://php.net/manual/es/function.getallheaders.php
+	 *
 	 * @return array|false
 	 */
 	private function get_all_headers() {
@@ -183,8 +184,6 @@ class WC_Monei_IPN {
 			$headers[ $key ] = $key . ': ' . $value;
 		}
 		$headers = implode( "\n", $headers );
-		$this->logging &&WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
+		$this->logging && WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
 	}
-
 }
-
