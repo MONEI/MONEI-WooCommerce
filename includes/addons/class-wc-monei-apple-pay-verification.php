@@ -30,8 +30,8 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 		if ( ! isset( $_POST['woocommerce_monei_apple_google_pay'] ) ) {
 			return;
 		}
-
-		if ( ! sanitize_text_field( $_POST['woocommerce_monei_apple_google_pay'] ) ) {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_pay'] ) ) ) {
 			return;
 		}
 

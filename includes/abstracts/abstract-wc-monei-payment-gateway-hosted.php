@@ -97,7 +97,8 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		);
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
-		if ( $token_id = $this->get_payment_token_id_if_selected() ) {
+		$token_id = $this->get_payment_token_id_if_selected();
+		if ( $token_id ) {
 			$wc_token                = WC_Payment_Tokens::get( $token_id );
 			$payload['paymentToken'] = $wc_token->get_token();
 		}
@@ -106,8 +107,8 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
-
-		if ( $token_id = $this->get_frontend_generated_bizum_token() ) {
+		$token_id = $this->get_frontend_generated_bizum_token();
+		if ( $token_id ) {
 			if ( ! $this->isBlockCheckout() ) {
 				$payload['paymentToken'] = $token_id;
 			}
@@ -161,6 +162,7 @@ abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway 
 		if ( $this->id !== 'monei_bizum' ) {
 			return false;
 		}
-		return ( isset( $_POST['monei_payment_request_token'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_payment_request_token'] ), ENT_QUOTES, 'UTF-8' ) : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
 	}
 }

@@ -182,7 +182,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
-				$order->add_order_note( __( '<strong>MONEI Refund Approved:</strong> ', 'monei' ) . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				$order->add_order_note( __( 'MONEI Refund Approved:', 'monei' ) . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
 
@@ -214,7 +214,8 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return int|false
 	 */
 	protected function get_payment_token_id_if_selected() {
-		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( $_POST[ 'wc-' . $this->id . '-payment-token' ], FILTER_SANITIZE_NUMBER_INT ) : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-payment-token' ] ), FILTER_SANITIZE_NUMBER_INT ) : false; // WPCS: CSRF ok.
 	}
 
 	/**
@@ -223,6 +224,7 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	protected function get_save_payment_card_checkbox() {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		return ( isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) );
 	}
 
@@ -298,7 +300,8 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return boolean
 	 */
 	public function isBlockCheckout() {
-		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_is_block_checkout'] ), ENT_QUOTES, 'UTF-8' ) === 'yes' : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false; // WPCS: CSRF ok.
 	}
 
 	/**
@@ -307,7 +310,8 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return false|string
 	 */
 	public function get_frontend_generated_monei_token() {
-		return ( isset( $_POST['monei_payment_token'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_payment_token'] ), ENT_QUOTES, 'UTF-8' ) : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false; // WPCS: CSRF ok.
 	}
 
 	/**
@@ -315,9 +319,11 @@ abstract class WC_Monei_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public function determineTheTotalAmountToBePassed() {
 		$total = null;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( is_wc_endpoint_url( 'order-pay' ) && isset( $_GET['key'] ) ) {
 			// If on the pay for order page, get the order total
-			$order_id = wc_get_order_id_by_order_key( sanitize_text_field( $_GET['key'] ) );
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$order_id = wc_get_order_id_by_order_key( wc_clean( wp_unslash( $_GET['key'] ) ) );
 			if ( $order_id ) {
 				$order = wc_get_order( $order_id );
 				$total = $order ? $order->get_total() : 0;

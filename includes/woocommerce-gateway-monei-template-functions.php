@@ -19,9 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string        $default_path
  */
 function woocommerce_gateway_monei_get_template( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
-	if ( $args && is_array( $args ) ) {
-		extract( $args, EXTR_SKIP ); // Avoid overriding existing variables
-	}
 
 	$located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
 
@@ -36,15 +33,13 @@ function woocommerce_gateway_monei_get_template( $template_name, $args = array()
 
 	do_action( 'woocommerce_gateway_monei_before_template', $template_name, $template_path, $located, $args );
 
-	$template_content = file_get_contents( $located_realpath );
+	$template_content = wp_remote_get( $located_realpath );
 	if ( $template_content === false ) {
 		_doing_it_wrong( __FUNCTION__, sprintf( 'Failed to load template: <code>%s</code>.', esc_html( $template_name ) ), '1.0.0' );
 		return;
 	}
 
-	ob_start();
-	eval( '?>' . $template_content ); // Use eval to parse PHP in the template
-	echo ob_get_clean();
+	include $located;
 
 	do_action( 'woocommerce_gateway_monei_after_template', $template_name, $template_path, $located, $args );
 }

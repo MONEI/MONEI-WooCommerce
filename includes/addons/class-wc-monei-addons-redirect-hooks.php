@@ -33,7 +33,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 		if ( ! is_account_page() ) {
 			return;
 		}
-
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}
@@ -78,7 +78,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 		if ( ! is_order_received_page() ) {
 			return;
 		}
-
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}

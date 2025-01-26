@@ -32,16 +32,16 @@ final class WC_Gateway_Monei_CC_Blocks extends AbstractPaymentMethodType {
 	/**
 	 * Removes all saved payment methods when the setting to save cards is disabled.
 	 *
-	 * @param  array $list         List of payment methods passed from wc_get_customer_saved_methods_list().
+	 * @param  array $paymentMethods         List of payment methods passed from wc_get_customer_saved_methods_list().
 	 * @param  int   $customer_id  The customer to fetch payment methods for.
 	 * @return array               Filtered list of customers payment methods.
 	 */
-	public function filter_saved_payment_methods_list( $list, $customer_id ) {
+	public function filter_saved_payment_methods_list( $paymentMethods, $customer_id ) {
 
-		if ( 'no' == $this->get_setting( 'tokenization' ) ) {
+		if ( 'no' === $this->get_setting( 'tokenization' ) ) {
 			return array();
 		}
-		return $list;
+		return $paymentMethods;
 	}
 
 
@@ -77,7 +77,7 @@ final class WC_Gateway_Monei_CC_Blocks extends AbstractPaymentMethodType {
 
 	public function get_payment_method_data() {
 
-		if ( 'no' == $this->get_setting( 'tokenization' ) ) {
+		if ( 'no' === $this->get_setting( 'tokenization' ) ) {
 			$supports = $this->get_supported_features();
 		} else {
 			$supports = array(

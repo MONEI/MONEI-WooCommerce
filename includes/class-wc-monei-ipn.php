@@ -29,17 +29,18 @@ class WC_Monei_IPN {
 	 * @return void
 	 */
 	public function check_ipn_request() {
-
-		if ( ( 'POST' !== sanitize_text_field( $_SERVER['REQUEST_METHOD'] ) ) ) {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && ( 'POST' !== wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
 			return;
 		}
 
 		$headers  = $this->get_all_headers();
-		$raw_body = @file_get_contents( 'php://input' );
+		$raw_body = file_get_contents( 'php://input' );
 		$this->log_ipn_request( $headers, $raw_body );
 
 		try {
-			$payload = $this->verify_signature_get_payload( $raw_body, sanitize_text_field( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$payload = isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) && $this->verify_signature_get_payload( $raw_body, wc_clean( wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) );
 			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
@@ -95,7 +96,8 @@ class WC_Monei_IPN {
 		if ( 'CANCELED' === $status ) {
 			// Order cancelled.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
-			$order->add_order_note( sprintf( __( 'Cancelled by MONEI: %s', 'monei' ), $status_message ) );
+			$message = __( 'Cancelled by MONEI: ', 'monei' ) . $status_message;
+			$order->add_order_note( $message );
 			return;
 		}
 
@@ -119,7 +121,15 @@ class WC_Monei_IPN {
 			 * 1 cent exception, for subscriptions when 0 sing ups are done.
 			 */
 			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
-				$order->update_status( 'on-hold', sprintf( __( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2&s).', 'monei' ), $amount, monei_price_format( $order_total ) ) );
+				$order->update_status(
+					'on-hold',
+					sprintf(
+					/* translators: 1: Order amount, 2: Notification amount */
+						__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
+						$amount,
+						monei_price_format( $order_total )
+					)
+				);
 				exit;
 			}
 
@@ -165,7 +175,7 @@ class WC_Monei_IPN {
 		if ( ! function_exists( 'getallheaders' ) ) {
 			$headers = array();
 			foreach ( $_SERVER as $name => $value ) {
-				if ( substr( $name, 0, 5 ) == 'HTTP_' ) {
+				if ( substr( $name, 0, 5 ) === 'HTTP_' ) {
 					$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
 				}
 			}

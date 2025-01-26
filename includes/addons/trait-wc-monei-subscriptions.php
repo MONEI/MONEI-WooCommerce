@@ -163,7 +163,6 @@ trait WC_Monei_Subscriptions_Trait {
 		$payload['sequence'] = array(
 			'type'      => 'recurring',
 			'recurring' => array(
-				// 'frequency' => $this->get_cart_subscription_interval_in_days() // The minimum number of days between the different recurring payments.
 				'frequency' => 1, // Testing with 1 to know if we can modify subscription dates.
 			),
 		);

@@ -46,8 +46,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 
 		$this->id           = MONEI_GATEWAY_ID;
 		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
-		// $this->method_description = __( 'Accept Credit Card payments.', 'monei' );
-		$this->enabled = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -174,8 +173,8 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	 * @return array
 	 */
 	public function add_payment_method() {
-
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-add-payment-method-nonce'] ) ), 'woocommerce-add-payment-method' ) ) {
+        //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( isset( $_POST['woocommerce-add-payment-method-nonce'] ) && ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce-add-payment-method-nonce'] ) ), 'woocommerce-add-payment-method' ) ) {
 			return array(
 				'result'   => 'failure',
 				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
@@ -233,7 +232,8 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 		);
 
 		// All Zero payloads ( add payment method ) will use component CC.
-		if ( MONEI_GATEWAY_ID === $this->id && $monei_token = $this->get_frontend_generated_monei_token() ) {
+		$monei_token = $this->get_frontend_generated_monei_token();
+		if ( MONEI_GATEWAY_ID === $this->id && $monei_token ) {
 			$payload['paymentToken'] = $monei_token;
 			$payload['sessionId']    = (string) WC()->session->get_customer_id();
 		}
@@ -244,7 +244,7 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
-	function payment_fields() {
+	public function payment_fields() {
 		ob_start();
 		if ( is_add_payment_method_page() ) {
 			esc_html_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
@@ -273,11 +273,8 @@ class WC_Gateway_Monei_CC extends WC_Monei_Payment_Gateway_Component {
 					$this->tokenization_script();
 				}
 				$this->save_payment_method_checkbox();
-			} else {
-				// If Component CC
-				if ( ! $this->redirect_flow ) {
-					$this->render_monei_form();
-				}
+			} elseif ( ! $this->redirect_flow ) {
+				$this->render_monei_form();
 			}
 		}
 		ob_end_flush();

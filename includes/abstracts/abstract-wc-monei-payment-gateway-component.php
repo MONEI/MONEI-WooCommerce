@@ -188,14 +188,16 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		);
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
-		if ( $token_id = $this->get_payment_token_id_if_selected() ) {
+		$token_id = $this->get_payment_token_id_if_selected();
+		if ( $token_id ) {
 			$wc_token                = WC_Payment_Tokens::get( $token_id );
 			$payload['paymentToken'] = $wc_token->get_token();
 		}
 
 		// If user has paid using Apple or Google pay, we add paymentToken.
 		// This will overwrite previous token, in case one preselected token was checked in checkout, but we should ignore it.
-		if ( $token_id = $this->get_frontend_generated_monei_apple_google_token() ) {
+		$token_id = $this->get_frontend_generated_monei_apple_google_token();
+		if ( $token_id ) {
 			$payload['paymentToken'] = $token_id;
 		}
 
@@ -205,7 +207,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 		}
 		$componentGateways = array( MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID );
 		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
-		if ( in_array( $this->id, $componentGateways ) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
+		if ( in_array( $this->id, $componentGateways, true ) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 
@@ -219,7 +221,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 * @return false|string
 	 */
 	public function get_frontend_generated_monei_token() {
-		return ( isset( $_POST['monei_payment_token'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_payment_token'] ), ENT_QUOTES, 'UTF-8' ) : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false; // WPCS: CSRF ok.
 	}
 
 	/**
@@ -228,7 +231,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 * @return boolean
 	 */
 	public function isBlockCheckout() {
-		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_is_block_checkout'] ), ENT_QUOTES, 'UTF-8' ) === 'yes' : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false; // WPCS: CSRF ok.
 	}
 
 	/**
@@ -238,7 +242,8 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 */
 	public function get_frontend_generated_monei_cardholder( $order ) {
 		$defaultName = $order->get_formatted_billing_full_name();
-		return ( isset( $_POST['monei_cardholder_name'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_cardholder_name'] ), ENT_QUOTES, 'UTF-8' ) : $defaultName; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_cardholder_name'] ) ) ? wc_clean( wp_unslash( $_POST['monei_cardholder_name'] ) ) : $defaultName; // WPCS: CSRF ok.
 	}
 
 	/**
@@ -248,6 +253,7 @@ abstract class WC_Monei_Payment_Gateway_Component extends WC_Monei_Payment_Gatew
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_monei_apple_google_token() {
-		return ( isset( $_POST['monei_payment_request_token'] ) ) ? htmlspecialchars( strip_tags( $_POST['monei_payment_request_token'] ), ENT_QUOTES, 'UTF-8' ) : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
 	}
 }
