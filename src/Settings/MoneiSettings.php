@@ -2,17 +2,16 @@
 
 namespace Monei\Settings;
 
-use \WC_Admin_Settings;
+use WC_Admin_Settings;
 
-class MoneiSettings extends \WC_Settings_Page
-{
-    public function __construct()
-    {
-        $this->id = 'monei_settings';
-        $this->label = __('MONEI Settings', 'monei');
-        parent::__construct();
-        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
-    }
+class MoneiSettings extends \WC_Settings_Page {
+
+	public function __construct() {
+		$this->id    = 'monei_settings';
+		$this->label = __( 'MONEI Settings', 'monei' );
+		parent::__construct();
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+	}
 
 	public function get_settings() {
 		$settings = array(

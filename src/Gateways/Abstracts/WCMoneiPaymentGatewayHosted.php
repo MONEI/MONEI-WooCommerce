@@ -22,9 +22,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 
-    public function __construct(PaymentMethodsService $paymentMethodsService) {
-        parent::__construct($paymentMethodsService);
-    }
 	/**
 	 * Process the payment and return the result
 	 *

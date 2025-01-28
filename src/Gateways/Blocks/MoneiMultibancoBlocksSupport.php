@@ -6,86 +6,83 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiMultibanco;
 
-final class MoneiMultibancoBlocksSupport extends AbstractPaymentMethodType
-{
+final class MoneiMultibancoBlocksSupport extends AbstractPaymentMethodType {
 
-    private $gateway;
-    protected $name = 'monei_multibanco';
 
-    public function __construct(WCMoneiPaymentGateway $gateway) {
-        $this->gateway = $gateway;
-    }
-    public function initialize()
-    {
-        $this->settings = get_option('woocommerce_monei_multibanco_settings', array());
-    }
+	private $gateway;
+	protected $name = 'monei_multibanco';
 
-    public function get_payment_method_script_handles()
-    {
+	public function __construct( WCMoneiPaymentGateway $gateway ) {
+		$this->gateway = $gateway;
+	}
+	public function initialize() {
+		$this->settings = get_option( 'woocommerce_monei_multibanco_settings', array() );
+	}
 
-        $script_name = 'wc-monei-multibanco-blocks-integration';
+	public function get_payment_method_script_handles() {
 
-        wp_register_script(
-            $script_name,
-            WC_Monei()->plugin_url() . '/public/js/monei-block-checkout-multibanco.min.js',
-            array(
-                'wc-blocks-checkout',
-                'wc-blocks-registry',
-                'wc-settings',
-                'wp-element',
-                'wp-html-entities',
-                'wp-i18n'
-            ),
-            WC_Monei()->version,
-            true
-        );
+		$script_name = 'wc-monei-multibanco-blocks-integration';
 
-        if (function_exists('wp_set_script_translations')) {
-            wp_set_script_translations($script_name);
-        }
+		wp_register_script(
+			$script_name,
+			WC_Monei()->plugin_url() . '/public/js/monei-block-checkout-multibanco.min.js',
+			array(
+				'wc-blocks-checkout',
+				'wc-blocks-registry',
+				'wc-settings',
+				'wp-element',
+				'wp-html-entities',
+				'wp-i18n',
+			),
+			WC_Monei()->version,
+			true
+		);
 
-        return array($script_name);
-    }
+		if ( function_exists( 'wp_set_script_translations' ) ) {
+			wp_set_script_translations( $script_name );
+		}
 
-    public function is_active()
-    {
+		return array( $script_name );
+	}
 
-        $id = $this->gateway->getAccountId() ?? false;;
-        $key = $this->gateway->getApiKey() ?? false;
+	public function is_active() {
 
-        if (!$id || !$key) {
-            return false;
-        }
+		$id = $this->gateway->getAccountId() ?? false;
 
-        return 'yes' === ($this->get_setting('enabled') ?? 'no');
-    }
+		$key = $this->gateway->getApiKey() ?? false;
 
-    public function get_payment_method_data()
-    {
-        $total = isset(WC()->cart) ? WC()->cart->get_total(false) : 0;
-        $data = array(
+		if ( ! $id || ! $key ) {
+			return false;
+		}
 
-            'title' => $this->gateway->title,
-            'description' => $this->gateway->description,
-            'logo' => WC_Monei()->plugin_url() . '/public/images/multibanco-logo.svg',
-            'supports' => $this->get_supported_features(),
-            'currency' => get_woocommerce_currency(),
-            'total' => $total,
-            'language' => locale_iso_639_1_code(),
+		return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
+	}
 
-            // yes: test mode.
-            // no:  live,
-            'test_mode' => $this->gateway->getTestmode() ?? false,
-            'accountId' => $this->gateway->getAccountId() ?? false,
-            'sessionId' => (wc()->session) ? wc()->session->get_customer_id() : '',
-        );
+	public function get_payment_method_data() {
+		$total = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+		$data  = array(
 
-        if ('yes' === $this->get_setting('hide_logo') ?? 'no') {
+			'title'       => $this->gateway->title,
+			'description' => $this->gateway->description,
+			'logo'        => WC_Monei()->plugin_url() . '/public/images/multibanco-logo.svg',
+			'supports'    => $this->get_supported_features(),
+			'currency'    => get_woocommerce_currency(),
+			'total'       => $total,
+			'language'    => locale_iso_639_1_code(),
 
-            unset($data['logo']);
+			// yes: test mode.
+			// no:  live,
+			'test_mode'   => $this->gateway->getTestmode() ?? false,
+			'accountId'   => $this->gateway->getAccountId() ?? false,
+			'sessionId'   => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+		);
 
-        }
+		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
 
-        return $data;
-    }
+			unset( $data['logo'] );
+
+		}
+
+		return $data;
+	}
 }

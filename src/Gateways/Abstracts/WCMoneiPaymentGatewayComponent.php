@@ -2,7 +2,6 @@
 
 namespace Monei\Gateways\Abstracts;
 
-
 use Monei\Services\PaymentMethodsService;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,11 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 5.0
  */
 abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
-    const APPLE_GOOGLE_ID = 'monei_apple_google';
+	const APPLE_GOOGLE_ID = 'monei_apple_google';
 
-    public function __construct(PaymentMethodsService $paymentMethodsService) {
-        parent::__construct($paymentMethodsService);
-    }
 	/**
 	 * Process the payment and return the result
 	 *

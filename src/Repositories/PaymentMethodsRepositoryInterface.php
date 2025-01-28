@@ -3,5 +3,5 @@
 namespace Monei\Repositories;
 
 interface PaymentMethodsRepositoryInterface {
-    public function getPaymentMethods(): array;
+	public function getPaymentMethods(): array;
 }

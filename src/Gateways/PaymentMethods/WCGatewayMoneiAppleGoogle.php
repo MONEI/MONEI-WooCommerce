@@ -6,8 +6,8 @@ use Monei\Services\PaymentMethodsService;
 use WC_Blocks_Utils;
 use WC_Monei_Subscriptions_Trait;
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 /**
@@ -15,124 +15,118 @@ if (!defined('ABSPATH')) {
  *
  * Class MoneiAppleGoogleGateway
  */
-class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC
-{
+class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC {
 
-    use WC_Monei_Subscriptions_Trait;
 
-    const PAYMENT_METHOD = 'card';
+	use WC_Monei_Subscriptions_Trait;
 
-    /**
-     * @var bool
-     */
-    protected $redirect_flow;
+	const PAYMENT_METHOD = 'card';
 
-    /**
-     * @var bool
-     */
-    protected $apple_google_pay;
+	/**
+	 * @var bool
+	 */
+	protected $redirect_flow;
 
-    /**
-     * Constructor for the gateway.
-     *
-     * @access public
-     * @return void
-     */
-    public function __construct(PaymentMethodsService $paymentMethodsService)
-    {
-        parent::__construct($paymentMethodsService);
-        $this->id = 'monei_apple_google';
-        $this->method_title = __('MONEI - Apple/Google', 'monei');
-        $this->title = __('Google Pay', 'monei');
-        $this->description = __('&nbsp;', 'monei');
-        $iconUrl = apply_filters('woocommerce_monei_icon', WC_Monei()->image_url('google-logo.svg'));
-        $iconMarkup = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+	/**
+	 * @var bool
+	 */
+	protected $apple_google_pay;
 
-        $this->icon = ($this->hide_logo) ? '' : $iconMarkup;
-        $this->settings = get_option('woocommerce_monei_settings', array());
-        $this->enabled = (!empty(isset($this->settings['apple_google_pay']) && 'yes' === $this->settings['apple_google_pay'])) ? 'yes' : 'no';
+	/**
+	 * Constructor for the gateway.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function __construct( PaymentMethodsService $paymentMethodsService ) {
+		parent::__construct( $paymentMethodsService );
+		$this->id           = 'monei_apple_google';
+		$this->method_title = __( 'MONEI - Apple/Google', 'monei' );
+		$this->title        = __( 'Google Pay', 'monei' );
+		$this->description  = __( '&nbsp;', 'monei' );
+		$iconUrl            = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
+		$iconMarkup         = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 
-        add_filter(
-            'woocommerce_available_payment_gateways',
-            [$this, 'hideAppleGoogleInCheckout'],
-            11,
-            1
-        );
-    }
+		$this->icon     = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->settings = get_option( 'woocommerce_monei_settings', array() );
+		$this->enabled  = ( ! empty( isset( $this->settings['apple_google_pay'] ) && 'yes' === $this->settings['apple_google_pay'] ) ) ? 'yes' : 'no';
 
-    /**
-     * Hide Apple/Google Pay in WooCommerce Checkout
-     */
-    public function hideAppleGoogleInCheckout($available_gateways)
-    {
-        return $available_gateways;
-    }
+		add_filter(
+			'woocommerce_available_payment_gateways',
+			array( $this, 'hideAppleGoogleInCheckout' ),
+			11,
+			1
+		);
+	}
 
-    public function isBlockCheckout(): bool
-    {
-        if (!is_checkout()) {
-            return false;
-        }
-        if (!class_exists('WC_Blocks_Utils')) {
-            return false;
-        }
-        // Check if the checkout block is present
-        $has_block = WC_Blocks_Utils::has_block_in_page(wc_get_page_id('checkout'), 'woocommerce/checkout');
+	/**
+	 * Hide Apple/Google Pay in WooCommerce Checkout
+	 */
+	public function hideAppleGoogleInCheckout( $available_gateways ) {
+		return $available_gateways;
+	}
 
-        // Additional check: see if the traditional checkout shortcode is present
-        $has_shortcode = has_shortcode(get_post(wc_get_page_id('checkout'))->post_content, 'woocommerce_checkout');
+	public function isBlockCheckout(): bool {
+		if ( ! is_checkout() ) {
+			return false;
+		}
+		if ( ! class_exists( 'WC_Blocks_Utils' ) ) {
+			return false;
+		}
+		// Check if the checkout block is present
+		$has_block = WC_Blocks_Utils::has_block_in_page( wc_get_page_id( 'checkout' ), 'woocommerce/checkout' );
 
-        // If the block is present and the shortcode is not, we can be more confident it's a block checkout
-        return $has_block && !$has_shortcode;
-    }
+		// Additional check: see if the traditional checkout shortcode is present
+		$has_shortcode = has_shortcode( get_post( wc_get_page_id( 'checkout' ) )->post_content, 'woocommerce_checkout' );
 
-    /**
-     * Process the payment and return the result
-     *
-     * @access public
-     *
-     * @param int $order_id
-     * @param null $allowed_payment_method
-     *
-     * @return array
-     */
-    public function process_payment($order_id, $allowed_payment_method = null)
-    {
-        return parent::process_payment($order_id, self::PAYMENT_METHOD);
-    }
+		// If the block is present and the shortcode is not, we can be more confident it's a block checkout
+		return $has_block && ! $has_shortcode;
+	}
 
-    /**
-     * Payments fields, shown on checkout or payment method page (add payment method).
-     */
-    function payment_fields()
-    {
-        ob_start();
+	/**
+	 * Process the payment and return the result
+	 *
+	 * @access public
+	 *
+	 * @param int $order_id
+	 * @param null $allowed_payment_method
+	 *
+	 * @return array
+	 */
+	public function process_payment( $order_id, $allowed_payment_method = null ) {
+		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
+	}
 
-        // Checkout screen.
-        // We show description, if tokenization available, we show saved cards and checkbox to save.
-        echo esc_html($this->description);
-        if ($this->apple_google_pay) {
-            $this->render_google_pay_form();
-        }
+	/**
+	 * Payments fields, shown on checkout or payment method page (add payment method).
+	 */
+	public function payment_fields() {
+		ob_start();
 
-        ob_end_flush();
-    }
+		// Checkout screen.
+		// We show description, if tokenization available, we show saved cards and checkbox to save.
+		echo esc_html( $this->description );
+		if ( $this->apple_google_pay ) {
+			$this->render_google_pay_form();
+		}
 
-    /**
-     * Form where Google or Apple Pay button will be rendered.
-     * https://docs.monei.com/docs/monei-js/payment-request/#2-add-payment-request-component-to-your-payment-page-client-side
-     */
-    protected function render_google_pay_form()
-    {
-        ?>
-        <fieldset id="wc-<?php echo esc_attr($this->id); ?>-payment-request-form" class="wc-payment-request-form"
-                  style="background:transparent; border:none;">
-            <div id="payment-request-form">
-                <div id="payment-request-container">
-                </div>
-            </div>
-        </fieldset>
-        <?php
-    }
+		ob_end_flush();
+	}
+
+	/**
+	 * Form where Google or Apple Pay button will be rendered.
+	 * https://docs.monei.com/docs/monei-js/payment-request/#2-add-payment-request-component-to-your-payment-page-client-side
+	 */
+	protected function render_google_pay_form() {
+		?>
+		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-payment-request-form" class="wc-payment-request-form"
+					style="background:transparent; border:none;">
+			<div id="payment-request-form">
+				<div id="payment-request-container">
+				</div>
+			</div>
+		</fieldset>
+		<?php
+	}
 }
 
