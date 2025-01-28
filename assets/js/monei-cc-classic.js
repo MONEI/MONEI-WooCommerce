@@ -427,7 +427,7 @@
 					label.childNodes[0].nodeValue = "Apple Pay ";
 					const icon = label.querySelector('img');
 					if (icon) {
-						icon.src = wc_monei_params.apple_logo;
+                        icon.src = wc_monei_params.apple_logo;
 						icon.alt = "Apple Pay";
 					}
 				}

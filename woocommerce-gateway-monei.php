@@ -32,7 +32,7 @@ if ( !defined( 'ABSPATH' ) ) {
 
 define( 'MONEI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MONEI_PLUGIN_FILE', __FILE__ );
-
+require_once __DIR__ . '/vendor/autoload.php';
 /**
  * Add compatibility with WooCommerce HPOS and cart checkout blocks
  */

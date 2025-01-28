@@ -1,5 +1,13 @@
 <?php
 
+namespace Monei\Gateways\Abstracts;
+
+use Exception;
+use Monei\Services\PaymentMethodsService;
+use WC_Geolocation;
+use WC_Monei_API;
+use WC_Order;
+use WC_Payment_Tokens;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -9,11 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Abstract class that will be inherited by all Hosted payment methods.
  * Class WC_Monei_Payment_Gateway_Hosted
  *
- * @extends WC_Monei_Payment_Gateway
+ * @extends WCMoneiPaymentGateway
  * @since 5.0
  */
-abstract class WC_Monei_Payment_Gateway_Hosted extends WC_Monei_Payment_Gateway {
+abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 
+    public function __construct(PaymentMethodsService $paymentMethodsService) {
+        parent::__construct($paymentMethodsService);
+    }
 	/**
 	 * Process the payment and return the result
 	 *
