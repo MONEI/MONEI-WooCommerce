@@ -14,39 +14,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * @param $template_name
- * @param array $args
- * @param string $template_path
- * @param string $default_path
+ * @param array         $args
+ * @param string        $template_path
+ * @param string        $default_path
  */
 function woocommerce_gateway_monei_get_template( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
-    if ( $args && is_array( $args ) ) {
-        extract( $args, EXTR_SKIP ); // Avoid overriding existing variables
-    }
 
-    $located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
+	$located = woocommerce_gateway_monei_locate_template( $template_name, $template_path, $default_path );
 
-    $template_directory = trailingslashit( plugin_dir_path( MONEI_PLUGIN_FILE ) . 'templates' );
-    $template_directory_realpath = realpath( $template_directory );
-    $located_realpath = realpath( $located );
+	$template_directory          = trailingslashit( plugin_dir_path( MONEI_PLUGIN_FILE ) . 'templates' );
+	$template_directory_realpath = realpath( $template_directory );
+	$located_realpath            = realpath( $located );
 
-    if ( ! $template_directory_realpath || ! $located_realpath || ! file_exists( $located ) || strpos( $located_realpath, $template_directory_realpath ) !== 0 ) {
-        _doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> is not a valid or existing template.', esc_html( $template_name ) ), '1.0.0' );
-        return;
-    }
+	if ( ! $template_directory_realpath || ! $located_realpath || ! file_exists( $located ) || strpos( $located_realpath, $template_directory_realpath ) !== 0 ) {
+		_doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> is not a valid or existing template.', esc_html( $template_name ) ), '1.0.0' );
+		return;
+	}
 
-    do_action( 'woocommerce_gateway_monei_before_template', $template_name, $template_path, $located, $args );
+	do_action( 'woocommerce_gateway_monei_before_template', $template_name, $template_path, $located, $args );
 
-    $template_content = file_get_contents( $located_realpath );
-    if ( $template_content === false ) {
-        _doing_it_wrong( __FUNCTION__, sprintf( 'Failed to load template: <code>%s</code>.', esc_html( $template_name ) ), '1.0.0' );
-        return;
-    }
+	$template_content = wp_remote_get( $located_realpath );
+	if ( $template_content === false ) {
+		_doing_it_wrong( __FUNCTION__, sprintf( 'Failed to load template: <code>%s</code>.', esc_html( $template_name ) ), '1.0.0' );
+		return;
+	}
 
-    ob_start();
-    eval( '?>' . $template_content ); // Use eval to parse PHP in the template
-    echo ob_get_clean();
+	include $located;
 
-    do_action( 'woocommerce_gateway_monei_after_template', $template_name, $template_path, $located, $args );
+	do_action( 'woocommerce_gateway_monei_after_template', $template_name, $template_path, $located, $args );
 }
 
 
@@ -54,8 +49,8 @@ function woocommerce_gateway_monei_get_template( $template_name, $args = array()
  * Locate a template and return the path for inclusion.
  *
  * @param $template_name
- * @param string $template_path
- * @param string $default_path
+ * @param string        $template_path
+ * @param string        $default_path
  *
  * @return mixed|void|null
  */
@@ -88,9 +83,9 @@ function woocommerce_gateway_monei_locate_template( $template_name, $template_pa
 /**
  *
  * @param $template_name
- * @param array $args
- * @param string $template_path
- * @param string $default_path
+ * @param array         $args
+ * @param string        $template_path
+ * @param string        $default_path
  *
  * @return false|string
  */
@@ -99,4 +94,3 @@ function woocommerce_gateway_monei_get_template_html( $template_name, $args = ar
 	woocommerce_gateway_monei_get_template( $template_name, $args, $template_path, $default_path );
 	return ob_get_clean();
 }
-

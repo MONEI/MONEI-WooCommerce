@@ -4,6 +4,7 @@ Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.7
 Stable tag: 6.1.2
+Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
@@ -102,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-2024-12-26 = 6.1.2 =
+2024-12-26 - version 6.1.2
 * Fix - Cardholder Name not translated in block checkout
 * Fix - Plugin check issues
 * Fix - Move images to public folder

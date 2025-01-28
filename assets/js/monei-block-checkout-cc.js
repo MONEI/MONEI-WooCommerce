@@ -34,7 +34,7 @@
 			return (
 				<div className="wc-block-components-text-input wc-block-components-address-form__email">
 					<p>
-						{moneiData.redirect}
+						{moneiData.redirected}
 					</p>
 				</div>
 			);

@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
-	const SALE_TRANSACTION_TYPE = 'SALE';
+	const SALE_TRANSACTION_TYPE     = 'SALE';
 	const PRE_AUTH_TRANSACTION_TYPE = 'AUTH';
 
 	/**
@@ -49,6 +49,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	/**
 	 * Hide Logo in checkout.
+	 *
 	 * @var bool
 	 */
 	public $hide_logo;
@@ -83,12 +84,14 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	/**
 	 * Enable Tokenization.
+	 *
 	 * @var bool
 	 */
 	public $tokenization;
 
 	/**
 	 * Enable Pre-Auth.
+	 *
 	 * @var bool
 	 */
 	public $pre_auth;
@@ -124,12 +127,12 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	protected function is_valid_for_use() {
-        if (empty($this->getAccountId()) || empty($this->getApiKey())) {
+        if ( empty( $this->getAccountId() ) || empty( $this->getApiKey() ) ) {
             return false;
         }
-        $methodAvailability = $this->paymentMethodsService->getMethodAvailability($this->id);
+        $methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id );
 
-        if(!$methodAvailability) {
+        if( !$methodAvailability ) {
             return false;
         }
 
@@ -158,11 +161,10 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 *
 	 * @return string
 	 */
-	public function get_icon()
-    {
-        $output = $this->icon ?: '';
-        return apply_filters('woocommerce_gateway_icon', $output, $this->id);
-    }
+	public function get_icon() {
+		$output = $this->icon ?: '';
+		return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
+	}
 
 
 	/**
@@ -174,7 +176,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 */
 	public function admin_options() {
 		if ( $this->is_valid_for_use() ) {
-            parent::admin_options();
+			parent::admin_options();
 		} else {
             if  ( ! $this->getAccountId() || ! $this->getApiKey() ) {
                 woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available-api.php' );
@@ -190,8 +192,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * @param int $order_id
-	 * @param null $amount
+	 * @param int    $order_id
+	 * @param null   $amount
 	 * @param string $reason
 	 *
 	 * @return bool
@@ -217,14 +219,14 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
-				$order->add_order_note( __('<strong>MONEI Refund Approved:</strong> ', 'monei') . wc_price($amount) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
+				$order->add_order_note( __( 'MONEI Refund Approved:', 'monei' ) . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
 
 			}
 		} catch ( Exception $e ) {
 			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
-			$order->add_order_note(__('Refund error: ', 'monei') . $e->getMessage());
+			$order->add_order_note( __( 'Refund error: ', 'monei' ) . $e->getMessage() );
 		}
 		return false;
 	}
@@ -245,17 +247,21 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	/**
 	 * If user has selected a saved payment method, we will return it's id.
+	 *
 	 * @return int|false
 	 */
 	protected function get_payment_token_id_if_selected() {
-		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( $_POST[ 'wc-' . $this->id . '-payment-token' ], FILTER_SANITIZE_NUMBER_INT ) : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-payment-token' ] ), FILTER_SANITIZE_NUMBER_INT ) : false; // WPCS: CSRF ok.
 	}
 
 	/**
 	 * IF user has selected save payment method checkbox in checkout.
+	 *
 	 * @return bool
 	 */
 	protected function get_save_payment_card_checkbox() {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		return ( isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) );
 	}
 
@@ -276,94 +282,93 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	}
 
 	protected function log( $message, $level = 'debug' ) {
-		if ( 'yes' === get_option( 'monei_debug') || 'error' === $level ) {
+		if ( 'yes' === get_option( 'monei_debug' ) || 'error' === $level ) {
 			WC_Monei_Logger::log( $message, $level );
 		}
 	}
 
-    /**
-     * Setting checks when saving.
-     *
-     * @param $is_post
-     * @param $option string name of the option to enable/disable the method
-     * @return bool
-     */
-    public function checks_before_save( $is_post, $option ) {
-        if ( $is_post ) {
-            // Check if API key is saved in general settings
-            $api_key = get_option( 'monei_apikey', false );
-            $account_id = get_option( 'monei_accountid', false );
-            if ( !$api_key || !$account_id) {
-                WC_Admin_Settings::add_error(__('MONEI needs an API Key in order to work. Disabling the gateway.', 'monei'));
-                unset( $_POST[$option] );
-            }
-        }
-        return $is_post;
-    }
+	/**
+	 * Setting checks when saving.
+	 *
+	 * @param $is_post
+	 * @param $option string name of the option to enable/disable the method
+	 * @return bool
+	 */
+	public function checks_before_save( $is_post, $option ) {
+		if ( $is_post ) {
+			// Check if API key is saved in general settings
+			$api_key    = get_option( 'monei_apikey', false );
+			$account_id = get_option( 'monei_accountid', false );
+			if ( ! $api_key || ! $account_id ) {
+				WC_Admin_Settings::add_error( __( 'MONEI needs an API Key in order to work. Disabling the gateway.', 'monei' ) );
+				unset( $_POST[ $option ] );
+			}
+		}
+		return $is_post;
+	}
 
-    public  function getApiKey()
-    {
-        return !empty( get_option( 'monei_apikey', false ) )
-            ? get_option( 'monei_apikey' )
-            : ( !empty( $this->get_option( 'apikey' ) )
-                ? $this->get_option( 'apikey' )
-                : '' );
-    }
+	public function getApiKey() {
+		return ! empty( get_option( 'monei_apikey', false ) )
+			? get_option( 'monei_apikey' )
+			: ( ! empty( $this->get_option( 'apikey' ) )
+				? $this->get_option( 'apikey' )
+				: '' );
+	}
 
-    public function getAccountId()
-    {
-        return !empty( get_option( 'monei_accountid' , false) )
-            ? get_option( 'monei_accountid' )
-            : ( !empty( $this->get_option( 'accountid' ) )
-                ? $this->get_option( 'accountid' )
-                : '' );
-    }
+	public function getAccountId() {
+		return ! empty( get_option( 'monei_accountid', false ) )
+			? get_option( 'monei_accountid' )
+			: ( ! empty( $this->get_option( 'accountid' ) )
+				? $this->get_option( 'accountid' )
+				: '' );
+	}
 
-    public function getTestmode()
-    {
-        return !empty( get_option( 'monei_testmode', false ) )
-            ? get_option( 'monei_testmode' )
-            : ( !empty( $this->get_option( 'testmode' ) )
-                ? $this->get_option( 'testmode' )
-                : 'no' );
-    }
+	public function getTestmode() {
+		return ! empty( get_option( 'monei_testmode', false ) )
+			? get_option( 'monei_testmode' )
+			: ( ! empty( $this->get_option( 'testmode' ) )
+				? $this->get_option( 'testmode' )
+				: 'no' );
+	}
 
-    /**
-     * Frontend MONEI generated flag for block checkout processing.
-     *
-     * @return boolean
-     */
-    public function isBlockCheckout() {
-        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_is_block_checkout']), ENT_QUOTES, 'UTF-8') === 'yes' : false; // WPCS: CSRF ok.
-    }
+	/**
+	 * Frontend MONEI generated flag for block checkout processing.
+	 *
+	 * @return boolean
+	 */
+	public function isBlockCheckout() {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false; // WPCS: CSRF ok.
+	}
 
-    /**
-     * Frontend MONEI generated token.
-     *
-     * @return false|string
-     */
-    public function get_frontend_generated_monei_token() {
-        return ( isset( $_POST['monei_payment_token'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
-    }
+	/**
+	 * Frontend MONEI generated token.
+	 *
+	 * @return false|string
+	 */
+	public function get_frontend_generated_monei_token() {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false; // WPCS: CSRF ok.
+	}
 
-    /**
-     * @return float|int|string|null
-     */
-    public function determineTheTotalAmountToBePassed()
-    {
-        $total = null;
-        if (is_wc_endpoint_url('order-pay') && isset($_GET['key'])) {
-            // If on the pay for order page, get the order total
-            $order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
-            if ($order_id) {
-                $order = wc_get_order($order_id);
-                $total = $order ? $order->get_total() : 0;
-            }
-        } else {
-            // Otherwise, use the cart total
-            $total = WC()->cart->get_total(false);
-        }
-        return $total;
-    }
+	/**
+	 * @return float|int|string|null
+	 */
+	public function determineTheTotalAmountToBePassed() {
+		$total = null;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( is_wc_endpoint_url( 'order-pay' ) && isset( $_GET['key'] ) ) {
+			// If on the pay for order page, get the order total
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$order_id = wc_get_order_id_by_order_key( wc_clean( wp_unslash( $_GET['key'] ) ) );
+			if ( $order_id ) {
+				$order = wc_get_order( $order_id );
+				$total = $order ? $order->get_total() : 0;
+			}
+		} else {
+			// Otherwise, use the cart total
+			$total = WC()->cart->get_total( false );
+		}
+		return $total;
+	}
 }
-

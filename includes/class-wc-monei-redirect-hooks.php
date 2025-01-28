@@ -19,7 +19,7 @@ class WC_Monei_Redirect_Hooks {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_cancelled_order', array( $this, 'add_notice_monei_order_cancelled' ) );
-		add_action('template_redirect', [$this, 'add_notice_monei_order_failed']);
+		add_action( 'template_redirect', array( $this, 'add_notice_monei_order_failed' ) );
 		add_action( 'wp', array( $this, 'save_payment_token' ) );
 	}
 
@@ -31,14 +31,16 @@ class WC_Monei_Redirect_Hooks {
 	 * @return void
 	 */
 	public function add_notice_monei_order_failed() {
-		if ( !isset( $_GET['status'] )) {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! isset( $_GET['status'] ) ) {
 			return;
 		}
-		$status = wc_clean( $_GET['status'] );
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$status = wc_clean( wp_unslash( $_GET['status'] ) );
 		if ( $status === 'FAILED' ) {
-			wc_add_notice(__('The payment failed. Please try again', 'monei'), 'error');
+			wc_add_notice( __( 'The payment failed. Please try again', 'monei' ), 'error' );
 		}
-		add_filter('woocommerce_payment_gateway_get_new_payment_method_option_html', '__return_empty_string');
+		add_filter( 'woocommerce_payment_gateway_get_new_payment_method_option_html', '__return_empty_string' );
 	}
 
 	/**
@@ -49,19 +51,24 @@ class WC_Monei_Redirect_Hooks {
 	 * @return void
 	 */
 	public function add_notice_monei_order_cancelled( $order_id ) {
-		if ( isset( $_GET['status'] ) && isset( $_GET['message'] ) && 'FAILED' === sanitize_text_field( $_GET['status'] ) ) {
-			$order_id = absint( $_GET['order_id'] );
-			$order    = wc_get_order( $order_id );
+        // phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( isset( $_GET['status'] ) && isset( $_GET['message'] ) && 'FAILED' === wc_clean( wp_unslash( $_GET['status'] ) ) ) {
+			$order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : false;
+			$order    = $order_id ? wc_get_order( $order_id ) : false;
+			if ( ! $order ) {
+				return;
+			}
 
-			$order->add_order_note( __( 'MONEI Status: ', 'monei' ) . esc_html( sanitize_text_field( $_GET['status'] ) ) );
-			$order->add_order_note( __( 'MONEI message: ', 'monei' ) . esc_html( sanitize_text_field( $_GET['message'] ) ) );
+			$order->add_order_note( __( 'MONEI Status: ', 'monei' ) . esc_html( wc_clean( wp_unslash( $_GET['status'] ) ) ) );
+			$order->add_order_note( __( 'MONEI message: ', 'monei' ) . esc_html( wc_clean( wp_unslash( $_GET['message'] ) ) ) );
 
-			wc_add_notice( esc_html( sanitize_text_field( $_GET['message'] ) ), 'error' );
+			wc_add_notice( esc_html( wc_clean( wp_unslash( $_GET['message'] ) ) ), 'error' );
 
 			WC_Monei_Logger::log( __( 'Order Cancelled: ', 'monei' ) . $order_id );
-			WC_Monei_Logger::log( __( 'MONEI Status: ', 'monei' ) . esc_html( sanitize_text_field( $_GET['status'] ) ) );
-			WC_Monei_Logger::log( __( 'MONEI message: ', 'monei' ) . esc_html( sanitize_text_field( $_GET['message'] ) ) );
+			WC_Monei_Logger::log( __( 'MONEI Status: ', 'monei' ) . esc_html( wc_clean( wp_unslash( $_GET['status'] ) ) ) );
+			WC_Monei_Logger::log( __( 'MONEI message: ', 'monei' ) . esc_html( wc_clean( wp_unslash( $_GET['message'] ) ) ) );
 		}
+        // phpcs:enable
 	}
 
 	/**
@@ -80,7 +87,7 @@ class WC_Monei_Redirect_Hooks {
 		if ( ! is_add_payment_method_page() && ! is_order_received_page() ) {
 			return;
 		}
-
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}
@@ -89,18 +96,19 @@ class WC_Monei_Redirect_Hooks {
 		 * In the redirect back (from add payment method), the payment could have been failed, the only way to check is the url $_GET['status']
 		 * We should remove the "Payment method successfully added." notice and add a 'Unable to add payment method to your account.' manually.
 		 */
-		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== sanitize_text_field( $_GET['status'] ) ) ) {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== wc_clean( wp_unslash( $_GET['status'] ) ) ) ) {
 			wc_clear_notices();
 			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
-			$error_message = filter_input( INPUT_GET, 'message', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
+			$error_message = filter_input( INPUT_GET, 'message', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 			if ( $error_message ) {
 				wc_add_notice( $error_message, 'error' );
 			}
 			return;
 		}
 
-		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
-		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
+		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
+		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 		try {
 			WC_Monei_API::set_order( $order_id );
 			$payment       = WC_Monei_API::get_payment( $payment_id );
@@ -132,7 +140,7 @@ class WC_Monei_Redirect_Hooks {
 			WC_Monei_Logger::log( 'saving tokent into DB', 'debug' );
 			WC_Monei_Logger::log( $payment_method, 'debug' );
 
-			$expiration = new DateTime( date( 'm/d/Y', $payment_method->getCard()->getExpiration() ) );
+			$expiration = new DateTime( gmdate( 'm/d/Y', $payment_method->getCard()->getExpiration() ) );
 
 			$token = new WC_Payment_Token_CC();
 			$token->set_token( $payment_token );
@@ -149,8 +157,6 @@ class WC_Monei_Redirect_Hooks {
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 		}
 	}
-
 }
 
 new WC_Monei_Redirect_Hooks();
-

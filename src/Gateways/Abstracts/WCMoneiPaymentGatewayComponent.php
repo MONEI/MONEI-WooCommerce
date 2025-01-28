@@ -26,7 +26,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * Process the payment and return the result
 	 *
 	 * @access public
-	 * @param int $order_id
+	 * @param int    $order_id
 	 * @param string $allowed_payment_method
 	 * @return array
 	 */
@@ -51,31 +51,31 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			$this->log( $create_payment, 'debug' );
 
 			$confirm_payment = false;
-            // We need to return the payment ID to the frontend and confirm payment there if we arrive from block checkout
-            // and when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method
-            if ( $this->isBlockCheckout() && !$this->redirect_flow && !isset( $payload['paymentToken'] ) ) {
-                return array(
-                    'result'   => 'success',
-                    'redirect' => false,
-                    'paymentId' => $create_payment->getId(),// Send the paymentId back to the client
-                    'token' => $this->get_frontend_generated_monei_token(),// Send the token back to the client
-                    'completeUrl' => $payload['completeUrl'],
-                    'failUrl'=> $payload['failUrl'],
-                    'orderId'=> $order_id
-                );
-            }
+			// We need to return the payment ID to the frontend and confirm payment there if we arrive from block checkout
+			// and when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method
+			if ( $this->isBlockCheckout() && ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
+				return array(
+					'result'      => 'success',
+					'redirect'    => false,
+					'paymentId'   => $create_payment->getId(), // Send the paymentId back to the client
+					'token'       => $this->get_frontend_generated_monei_token(), // Send the token back to the client
+					'completeUrl' => $payload['completeUrl'],
+					'failUrl'     => $payload['failUrl'],
+					'orderId'     => $order_id,
+				);
+			}
 
 			// We need to confirm payment, when we are not in redirect flow (component cc), but user didn't choose any tokenized saved method.
 			if ( ! $this->redirect_flow && ! isset( $payload['paymentToken'] ) ) {
 				// We do 2 steps, in order to confirm card holder Name in the second step.
-				$confirm_payload = [
+				$confirm_payload = array(
 					'paymentToken'  => $this->get_frontend_generated_monei_token(),
-					'paymentMethod' => [
-						'card' => [
-							'cardholderName' => $this->get_frontend_generated_monei_cardholder($order),
-						]
-					]
-				];
+					'paymentMethod' => array(
+						'card' => array(
+							'cardholderName' => $this->get_frontend_generated_monei_cardholder( $order ),
+						),
+					),
+				);
 
 				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
@@ -98,18 +98,18 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			// Extract and log the responseBody message
-			$response_body = json_decode($e->getResponseBody(), true);
-			if (isset($response_body['message'])) {
+			$response_body = json_decode( $e->getResponseBody(), true );
+			if ( isset( $response_body['message'] ) ) {
 				WC_Monei_Logger::log( $response_body['message'], 'error' );
 				wc_add_notice( $response_body['message'], 'error' );
-                return array(
-                    'result'   => 'failure',
-                );
+				return array(
+					'result' => 'failure',
+				);
 			}
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			return array(
-				'result'   => 'failure',
+				'result' => 'failure',
 			);
 		}
 	}
@@ -136,7 +136,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		/**
 		 * The URL the customer will be directed to if the payment failed.
 		 */
-		$fail_url = esc_url_raw( $order->get_checkout_payment_url(false) );
+		$fail_url = esc_url_raw( $order->get_checkout_payment_url( false ) );
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
@@ -145,65 +145,67 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		/**
 		 * Create Payment Payload
 		 */
-		$payload = [
-			'amount'      => $amount,
-			'currency'    => $currency,
-			'orderId'     => (string) $order_id,
-			'description' => $description,
-			'customer' => [
+		$payload = array(
+			'amount'                => $amount,
+			'currency'              => $currency,
+			'orderId'               => (string) $order_id,
+			'description'           => $description,
+			'customer'              => array(
 				'email' => $user_email,
 				'name'  => $order->get_formatted_billing_full_name(),
 				'phone' => ( $order->get_billing_phone() ) ?: null,
-			],
-			'callbackUrl' => $callback_url,
-			'completeUrl' => $complete_url,
-			'cancelUrl'   => wc_get_checkout_url(),
-			'failUrl'     => $fail_url,
-			'transactionType' => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
-			'sessionDetails'  => [
+			),
+			'callbackUrl'           => $callback_url,
+			'completeUrl'           => $complete_url,
+			'cancelUrl'             => wc_get_checkout_url(),
+			'failUrl'               => $fail_url,
+			'transactionType'       => ( $this->pre_auth ) ? self::PRE_AUTH_TRANSACTION_TYPE : self::SALE_TRANSACTION_TYPE,
+			'sessionDetails'        => array(
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
-			],
-			'billingDetails' => [
-				'name'  => ( $order->get_formatted_billing_full_name() ) ?: null,
-				'email' => ( $order->get_billing_email() ) ?: null,
-				'phone' => ( $order->get_billing_phone() ) ?: null,
+			),
+			'billingDetails'        => array(
+				'name'    => ( $order->get_formatted_billing_full_name() ) ?: null,
+				'email'   => ( $order->get_billing_email() ) ?: null,
+				'phone'   => ( $order->get_billing_phone() ) ?: null,
 				'company' => ( $order->get_billing_company() ) ?: null,
-				'address' => [
+				'address' => array(
 					'country' => ( $order->get_billing_country() ) ?: null,
 					'city'    => ( $order->get_billing_city() ) ?: null,
 					'line1'   => ( $order->get_billing_address_1() ) ?: null,
 					'line2'   => ( $order->get_billing_address_2() ) ?: null,
 					'zip'     => ( $order->get_billing_postcode() ) ?? null,
 					'state'   => ( $order->get_billing_state() ) ?: null,
-				],
-			],
-			'shippingDetails' => [
-				'name'  => ( $order->get_formatted_shipping_full_name() ) ?: null,
-				'email' => $user_email,
-				'phone' => ( $order->get_shipping_phone() ) ?: null,
+				),
+			),
+			'shippingDetails'       => array(
+				'name'    => ( $order->get_formatted_shipping_full_name() ) ?: null,
+				'email'   => $user_email,
+				'phone'   => ( $order->get_shipping_phone() ) ?: null,
 				'company' => ( $order->get_shipping_company() ) ?: null,
-				'address' => [
+				'address' => array(
 					'country' => ( $order->get_shipping_country() ) ?: null,
 					'city'    => ( $order->get_shipping_city() ) ?: null,
 					'line1'   => ( $order->get_shipping_address_1() ) ?: null,
 					'line2'   => ( $order->get_shipping_address_2() ) ?: null,
 					'zip'     => ( $order->get_shipping_postcode() ) ?: null,
 					'state'   => ( $order->get_shipping_state() ) ?: null,
-				],
-			],
-			'allowedPaymentMethods' => [ $allowed_payment_method ],
-		];
+				),
+			),
+			'allowedPaymentMethods' => array( $allowed_payment_method ),
+		);
 
 		// If customer has selected a saved payment method, we get the token from $_POST and we add it to the payload.
-		if ( $token_id = $this->get_payment_token_id_if_selected() ) {
+		$token_id = $this->get_payment_token_id_if_selected();
+		if ( $token_id ) {
 			$wc_token                = WC_Payment_Tokens::get( $token_id );
 			$payload['paymentToken'] = $wc_token->get_token();
 		}
 
 		// If user has paid using Apple or Google pay, we add paymentToken.
 		// This will overwrite previous token, in case one preselected token was checked in checkout, but we should ignore it.
-		if ( $token_id = $this->get_frontend_generated_monei_apple_google_token() ) {
+		$token_id = $this->get_frontend_generated_monei_apple_google_token();
+		if ( $token_id ) {
 			$payload['paymentToken'] = $token_id;
 		}
 
@@ -211,9 +213,9 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
-        $componentGateways = [MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID];
+		$componentGateways = array( MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID );
 		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
-		if ( in_array($this->id, $componentGateways) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
+		if ( in_array( $this->id, $componentGateways, true ) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
 		}
 
@@ -227,29 +229,30 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	public function get_frontend_generated_monei_token() {
-		return ( isset( $_POST['monei_payment_token'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false; // WPCS: CSRF ok.
 	}
 
-    /**
-     * Frontend MONEI generated flag for block checkout processing.
-     *
-     * @return boolean
-     */
-    public function isBlockCheckout() {
-        return ( isset( $_POST['monei_is_block_checkout'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_is_block_checkout']), ENT_QUOTES, 'UTF-8') === 'yes' : false; // WPCS: CSRF ok.
-    }
+	/**
+	 * Frontend MONEI generated flag for block checkout processing.
+	 *
+	 * @return boolean
+	 */
+	public function isBlockCheckout() {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false; // WPCS: CSRF ok.
+	}
 
-    /**
-     * Frontend MONEI cardholderName.
-     *
-     * @return false|string
-     */
-    public function get_frontend_generated_monei_cardholder($order)
-    {
-        $defaultName = $order->get_formatted_billing_full_name();
-        return ( isset( $_POST['monei_cardholder_name'] ) ) ? htmlspecialchars(strip_tags($_POST['monei_cardholder_name']), ENT_QUOTES, 'UTF-8') : $defaultName; // WPCS: CSRF ok.
-
-    }
+	/**
+	 * Frontend MONEI cardholderName.
+	 *
+	 * @return false|string
+	 */
+	public function get_frontend_generated_monei_cardholder( $order ) {
+		$defaultName = $order->get_formatted_billing_full_name();
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_cardholder_name'] ) ) ? wc_clean( wp_unslash( $_POST['monei_cardholder_name'] ) ) : $defaultName; // WPCS: CSRF ok.
+	}
 
 	/**
 	 * Frontend MONEI payment-request token generated when Apple or Google pay.
@@ -258,8 +261,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_monei_apple_google_token() {
-		return ( isset( $_POST[ 'monei_payment_request_token' ] ) ) ? htmlspecialchars(strip_tags($_POST['monei_payment_request_token']), ENT_QUOTES, 'UTF-8') : false; // WPCS: CSRF ok.
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
 	}
-
 }
-
