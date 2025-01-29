@@ -14,7 +14,7 @@
 		let paypalContainer = null;
 		useEffect( () => {
 			const placeOrderButton = document.querySelector(
-				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
+				'.wc-block-components-checkout-place-order-button'
 			);
 			if ( activePaymentMethod === 'monei_paypal' ) {
 				if ( placeOrderButton ) {
@@ -65,7 +65,7 @@
 					if ( result.token ) {
 						requestToken = result.token;
 						const placeOrderButton = document.querySelector(
-							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button--full-width.contained'
+							'.wc-block-components-checkout-place-order-button'
 						);
 						if ( placeOrderButton ) {
 							placeOrderButton.style.color = '';
