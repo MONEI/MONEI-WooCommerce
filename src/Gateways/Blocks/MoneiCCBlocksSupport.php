@@ -100,35 +100,35 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		$logoApple       = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
 		$logoGoogle      = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
 		$data            = array(
-			'title'          => $this->gateway->title,
-			'description'    => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
-			'logo'           => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
-			'logo_google'    => $isGoogleEnabled ? $logoGoogle : false,
-			'logo_apple'     => $isAppleEnabled ? $logoApple : false,
-            'cardholderName' => esc_attr__('Cardholder Name', 'monei'),
-            'nameErrorString' => esc_html__('Please enter a valid name. Special characters are not allowed.', 'monei'),
-            'cardErrorString' => esc_html__('Please check your card details.', 'monei'),
-            'tokenErrorString' => esc_html__('MONEI token could not be generated.', 'monei'),
-            'redirected' => esc_html__('You will be redirected to the payment page', 'monei'),
-			'supports'       => $supports,
+			'title'            => $this->gateway->title,
+			'description'      => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
+			'logo'             => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
+			'logo_google'      => $isGoogleEnabled ? $logoGoogle : false,
+			'logo_apple'       => $isAppleEnabled ? $logoApple : false,
+			'cardholderName'   => esc_attr__( 'Cardholder Name', 'monei' ),
+			'nameErrorString'  => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
+			'cardErrorString'  => esc_html__( 'Please check your card details.', 'monei' ),
+			'tokenErrorString' => esc_html__( 'MONEI token could not be generated.', 'monei' ),
+			'redirected'       => esc_html__( 'You will be redirected to the payment page', 'monei' ),
+			'supports'         => $supports,
 
 			// yes: test mode.
 			// no:  live,
-			'test_mode'      => $this->gateway->getTestmode(),
+			'test_mode'        => $this->gateway->getTestmode(),
 
 			// yes: redirect the customer to the Hosted Payment Page.
 			// no:  credit card input will be rendered directly on the checkout page
-			'redirect'       => $this->get_setting( 'cc_mode' ) ?? 'no',
+			'redirect'         => $this->get_setting( 'cc_mode' ) ?? 'no',
 
 			// yes: Can save credit card and use saved cards.
 			// no:  Cannot save/use
-			'tokenization'   => $this->get_setting( 'tokenization' ) ?? 'no',
-			'accountId'      => $this->gateway->getAccountId() ?? false,
-			'sessionId'      => ( wc()->session ) ? wc()->session->get_customer_id() : '',
-			'currency'       => get_woocommerce_currency(),
-			'total'          => $total,
-			'appleGooglePay' => $this->get_setting( 'apple_google_pay' ) ?? 'no',
-			'language'       => locale_iso_639_1_code(),
+			'tokenization'     => $this->get_setting( 'tokenization' ) ?? 'no',
+			'accountId'        => $this->gateway->getAccountId() ?? false,
+			'sessionId'        => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+			'currency'         => get_woocommerce_currency(),
+			'total'            => $total,
+			'appleGooglePay'   => $this->get_setting( 'apple_google_pay' ) ?? 'no',
+			'language'         => locale_iso_639_1_code(),
 		);
 
 		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
