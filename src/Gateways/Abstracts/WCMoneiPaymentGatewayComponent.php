@@ -2,7 +2,12 @@
 
 namespace Monei\Gateways\Abstracts;
 
-use Monei\Services\PaymentMethodsService;
+use Exception;
+use WC_Geolocation;
+use WC_Monei_API;
+use WC_Order;
+use WC_Payment_Tokens;
+use WC_Monei_Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

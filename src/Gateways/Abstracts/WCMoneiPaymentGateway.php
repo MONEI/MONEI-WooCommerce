@@ -8,7 +8,6 @@ use WC_Admin_Settings;
 use WC_Monei_API;
 use WC_Monei_Logger;
 use WC_Payment_Gateway;
-use WC_Payment_Gateway_CC;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Abstract class that will be inherited by all payment methods.
  *
- * @extends WC_Payment_Gateway_CC
+ * @extends WC_Payment_Gateway
  *
  * @since 5.0
  */

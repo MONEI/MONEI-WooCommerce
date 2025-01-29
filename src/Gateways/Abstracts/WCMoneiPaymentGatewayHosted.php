@@ -3,7 +3,6 @@
 namespace Monei\Gateways\Abstracts;
 
 use Exception;
-use Monei\Services\PaymentMethodsService;
 use WC_Geolocation;
 use WC_Monei_API;
 use WC_Order;
