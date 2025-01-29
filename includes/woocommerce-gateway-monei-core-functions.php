@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * A positive integer representing how much to charge in the smallest currency unit (e.g., 100 cents to charge 1.00 USD).
+ *
  * @param float $amount
  *
  * @return int
@@ -30,7 +31,7 @@ function locale_iso_639_1_code() {
 
 /**
  * @param false|string $key
- * @param string $option_key
+ * @param string       $option_key
  *
  * @return false|string|array
  */
@@ -56,9 +57,9 @@ function monei_get_option_key_from_order( $order ) {
 		return $option_key;
 	}
 
-    if ( is_numeric( $order ) || is_string( $order ) ) {
-        $order = new WC_Order( $order );
-    }
+	if ( is_numeric( $order ) || is_string( $order ) ) {
+		$order = new WC_Order( $order );
+	}
 
 	if ( isset( $order ) && $order->get_payment_method() ) {
 		switch ( $order->get_payment_method() ) {
@@ -79,6 +80,7 @@ function monei_get_option_key_from_order( $order ) {
 
 /**
  * Check if a $monei_token is already saved into Woo Token DB.
+ *
  * @param string $monei_token
  * @param string $gateway_id
  *
@@ -93,4 +95,3 @@ function monei_token_exits( $monei_token, $gateway_id ) {
 	}
 	return false;
 }
-

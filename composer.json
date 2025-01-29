@@ -1,6 +1,21 @@
 {
     "require": {
         "php": ">=7.4",
-        "monei/monei-php-sdk": "^2.4.0"
+        "monei/monei-php-sdk": "^2.4.0",
+        "php-di/php-di": "^6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Monei\\": "src/"
+        }
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "wp-coding-standards/wpcs": "^3.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

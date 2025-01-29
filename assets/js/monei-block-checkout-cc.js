@@ -34,7 +34,7 @@
 			return (
 				<div className="wc-block-components-text-input wc-block-components-address-form__email">
 					<p>
-						{moneiData.redirect}
+						{moneiData.redirected}
 					</p>
 				</div>
 			);
@@ -464,8 +464,11 @@
 
 	const appleGoogleLabel = () => {
 		const isApple = window.ApplePaySession?.canMakePayments();
-		const logo = isApple ? moneiData.logo_apple : moneiData.logo_google;
-		const title = isApple
+		const appleEnabled = moneiData.logo_apple !== false;
+		const googleEnabled = moneiData.logo_google !== false;
+		let logo = googleEnabled? moneiData.logo_google : false;
+		logo = isApple && appleEnabled ? moneiData.logo_apple : logo;
+		const title = isApple && appleEnabled
 			?  'Apple Pay'
 			: 'Google Pay';
 		const shouldShowLogo =

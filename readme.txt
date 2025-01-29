@@ -103,7 +103,13 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-2024-12-26 = 6.1.2 =
+2025-02-04 - version 6.2.0
+* Add - PayPal method in block checkout
+* Fix - Plugin check issues
+* Fix - Show only the methods enabled in MONEI dashboard
+* Fix - Show correct icon for Apple Pay and GooglePay
+
+2024-12-26 - version 6.1.2
 * Fix - Cardholder Name not translated in block checkout
 * Fix - Plugin check issues
 * Fix - Move images to public folder

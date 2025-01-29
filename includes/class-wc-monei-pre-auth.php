@@ -29,9 +29,9 @@ class WC_Monei_Pre_Auth {
 	 * @param $order_id
 	 */
 	public function capture_payment_when_pre_auth( $order_id ) {
-		$order = wc_get_order( $order_id );
-
-		if ( ! $payment_id = $this->is_pre_auth_order( $order ) ) {
+		$order      = wc_get_order( $order_id );
+		$payment_id = $this->is_pre_auth_order( $order );
+		if ( ! $payment_id ) {
 			return;
 		}
 
@@ -56,9 +56,9 @@ class WC_Monei_Pre_Auth {
 	 * @param $order_id
 	 */
 	public function cancel_payment_when_pre_auth( $order_id ) {
-		$order = wc_get_order( $order_id );
-
-		if ( ! $payment_id = $this->is_pre_auth_order( $order ) ) {
+		$order      = wc_get_order( $order_id );
+		$payment_id = $this->is_pre_auth_order( $order );
+		if ( ! $payment_id ) {
 			return;
 		}
 
@@ -108,8 +108,6 @@ class WC_Monei_Pre_Auth {
 
 		return $payment_id;
 	}
-
 }
 
 new WC_Monei_Pre_Auth();
-

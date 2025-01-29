@@ -33,13 +33,13 @@ class WC_Monei_Addons_Redirect_Hooks {
 		if ( ! is_account_page() ) {
 			return;
 		}
-
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}
 
-		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
-		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
+		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
+		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 
 		$verification_order_id = explode( '_', $order_id );
 		// Order ID will have a format like follows.
@@ -78,13 +78,13 @@ class WC_Monei_Addons_Redirect_Hooks {
 		if ( ! is_order_received_page() ) {
 			return;
 		}
-
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}
 
-		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
-		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field') );
+		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
+		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 
 		/**
 		 * Bail when not subscription.
@@ -118,4 +118,3 @@ class WC_Monei_Addons_Redirect_Hooks {
 }
 
 new WC_Monei_Addons_Redirect_Hooks();
-

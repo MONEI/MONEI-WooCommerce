@@ -30,8 +30,8 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 		if ( ! isset( $_POST['woocommerce_monei_apple_google_pay'] ) ) {
 			return;
 		}
-
-		if ( ! sanitize_text_field($_POST['woocommerce_monei_apple_google_pay'] )) {
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_pay'] ) ) ) {
 			return;
 		}
 
@@ -47,15 +47,16 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 
 	/**
 	 * Expose DOMAIN_ASSOCIATION_FILE_NAME on https://example.com/.well-known/apple-developer-merchantid-domain-association request.
+	 *
 	 * @param $wp
 	 */
 	public function expose_on_domain_association_request( $wp ) {
 		if ( isset( $wp->request ) && ( self::DOMAIN_ASSOCIATION_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME ) === $wp->request ) {
-			$path = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
-            $args = array( 'headers' => array( 'Content-Type' => 'text/plain;charset=utf-8' ));
+			$path     = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
+			$args     = array( 'headers' => array( 'Content-Type' => 'text/plain;charset=utf-8' ) );
 			$response = wp_remote_get( $path, $args );
 			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-				$body    = $response['body'];
+				$body = $response['body'];
 				echo esc_html( $response['body'] );
 			}
 			exit;
@@ -64,4 +65,3 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 }
 
 new WC_Monei_Addons_Apple_Pay_Verification();
-

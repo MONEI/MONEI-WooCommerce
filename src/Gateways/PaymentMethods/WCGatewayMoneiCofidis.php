@@ -1,4 +1,12 @@
 <?php
+
+namespace Monei\Gateways\PaymentMethods;
+
+use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayHosted;
+use Monei\Services\PaymentMethodsService;
+use WC_Monei_IPN;
+use WC_Monei_Payment_Gateway_Hosted;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -8,7 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Class WC_Gateway_Monei_Cofidis
  */
-class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
+class WCGatewayMoneiCofidis extends WCMoneiPaymentGatewayHosted {
+
 
 	const PAYMENT_METHOD = 'cofidis';
 
@@ -18,8 +27,8 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 	 * @access public
 	 * @return void
 	 */
-	public function __construct() {
-
+	public function __construct( PaymentMethodsService $paymentMethodsService ) {
+		parent::__construct( $paymentMethodsService );
 		$this->id                 = MONEI_GATEWAY_ID . '_cofidis';
 		$this->method_title       = __( 'MONEI - Cofidis', 'monei' );
 		$this->method_description = __( 'Accept Cofidis payments.', 'monei' );
@@ -46,48 +55,54 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();
-		new WC_Monei_IPN($this->logging);
+		new WC_Monei_IPN( $this->logging );
 
 		$this->supports = array(
 			'products',
 			'refunds',
 		);
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
-			$this,
-			'process_admin_options'
-		) );
-        add_filter(
-            'woocommerce_save_settings_checkout_' . $this->id,
-            function ($is_post) {
-                return $this->checks_before_save($is_post, 'woocommerce_monei_cofidis_enabled');
-            }
-        );
-		add_action( 'wp_enqueue_scripts', [ $this, 'cofidis_scripts' ] );
+		add_action(
+			'woocommerce_update_options_payment_gateways_' . $this->id,
+			array(
+				$this,
+				'process_admin_options',
+			)
+		);
+		add_filter(
+			'woocommerce_save_settings_checkout_' . $this->id,
+			function ( $is_post ) {
+				return $this->checks_before_save( $is_post, 'woocommerce_monei_cofidis_enabled' );
+			}
+		);
+		add_action( 'wp_enqueue_scripts', array( $this, 'cofidis_scripts' ) );
 
 		// Add new total on checkout updates (ex, selecting different shipping methods)
-		add_filter( 'woocommerce_update_order_review_fragments', function( $fragments ) {
-			return self::add_cart_total_fragments( $fragments );
-		} );
+		add_filter(
+			'woocommerce_update_order_review_fragments',
+			function ( $fragments ) {
+				return self::add_cart_total_fragments( $fragments );
+			}
+		);
 	}
 
-    /**
-     * Return whether or not this gateway still requires setup to function.
-     *
-     * When this gateway is toggled on via AJAX, if this returns true a
-     * redirect will occur to the settings page instead.
-     *
-     * @since 3.4.0
-     * @return bool
-     */
-    public function needs_setup() {
+	/**
+	 * Return whether or not this gateway still requires setup to function.
+	 *
+	 * When this gateway is toggled on via AJAX, if this returns true a
+	 * redirect will occur to the settings page instead.
+	 *
+	 * @return bool
+	 * @since 3.4.0
+	 */
+	public function needs_setup() {
 
-        if ( ! $this->account_id || ! $this->api_key ) {
-            return true;
-        }
+		if ( ! $this->account_id || ! $this->api_key ) {
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -132,7 +147,7 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 	 */
 	protected function render_cofidis_widget() {
 		?>
-        <div id="cofidis_widget"></div>
+		<div id="cofidis_widget"></div>
 		<?php
 	}
 
@@ -156,18 +171,17 @@ class WC_Gateway_Monei_Cofidis extends WC_Monei_Payment_Gateway_Hosted {
 			wp_enqueue_script( 'monei' );
 		}
 
-		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'public/js/monei-cofidis.min.js', MONEI_MAIN_FILE ), [ 'jquery', 'monei' ], MONEI_VERSION, true );
+		wp_register_script( 'woocommerce_monei_cofidis', plugins_url( 'public/js/monei-cofidis.min.js', MONEI_MAIN_FILE ), array( 'jquery', 'monei' ), MONEI_VERSION, true );
 		wp_localize_script(
 			'woocommerce_monei_cofidis',
 			'wc_monei_cofidis_params',
-			[
+			array(
 				'account_id' => monei_get_settings( false, 'monei_accountid' ),
 				'lang'       => ( 0 === strpos( get_locale(), 'en' ) ) ? 'en' : 'es',
 				'total'      => monei_price_format( WC()->cart->get_total( false ) ),
-			]
+			)
 		);
 		wp_enqueue_script( 'woocommerce_monei_cofidis' );
 	}
-
 }
 
