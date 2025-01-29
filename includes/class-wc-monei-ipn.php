@@ -39,8 +39,11 @@ class WC_Monei_IPN {
 		$this->log_ipn_request( $headers, $raw_body );
 
 		try {
+            if(!isset( $_SERVER['HTTP_MONEI_SIGNATURE'] )) {
+                return;
+            }
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$payload = isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) && $this->verify_signature_get_payload( $raw_body, wc_clean( wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) );
+			$payload =  $this->verify_signature_get_payload( $raw_body, wc_clean( wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) );
 			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
