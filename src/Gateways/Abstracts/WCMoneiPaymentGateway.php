@@ -116,11 +116,11 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	public $form_fields = array();
 
 	public PaymentMethodsService $paymentMethodsService;
-    private TemplateManager $templateManager;
+	private TemplateManager $templateManager;
 
-    public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager) {
+	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
 		$this->paymentMethodsService = $paymentMethodsService;
-        $this->templateManager = $templateManager;
+		$this->templateManager       = $templateManager;
 	}
 
 	/**
@@ -182,24 +182,24 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 			parent::admin_options();
 		} else {
 			if ( ! $this->getAccountId() || ! $this->getApiKey() ) {
-                $template = $this->templateManager->getTemplate('notice-admin-gateway-not-available-api');
-                if ( $template ) {
-                    $template->render([]);
-                }
+				$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-available-api' );
+				if ( $template ) {
+					$template->render( array() );
+				}
 				return;
 			}
 			$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id, $this->getAccountId() );
 			if ( ! $methodAvailability ) {
-                $template = $this->templateManager->getTemplate('notice-admin-gateway-not-enabled-monei');
-                if ( $template ) {
-                    $template->render([]);
-                }
+				$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-enabled-monei' );
+				if ( $template ) {
+					$template->render( array() );
+				}
 				return;
 			}
-            $template = $this->templateManager->getTemplate('notice-admin-gateway-not-available');
-            if ( $template ) {
-                $template->render([]);
-            }
+			$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-available' );
+			if ( $template ) {
+				$template->render( array() );
+			}
 		}
 	}
 

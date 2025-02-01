@@ -7,12 +7,12 @@ use WC_Admin_Settings;
 
 class MoneiSettings extends \WC_Settings_Page {
 
-    protected ContainerInterface $container;
+	protected ContainerInterface $container;
 
-    public function __construct(ContainerInterface $container) {
-		$this->id    = 'monei_settings';
-		$this->label = __( 'MONEI Settings', 'monei' );
-        $this->container = $container;
+	public function __construct( ContainerInterface $container ) {
+		$this->id        = 'monei_settings';
+		$this->label     = __( 'MONEI Settings', 'monei' );
+		$this->container = $container;
 		parent::__construct();
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
@@ -72,19 +72,19 @@ class MoneiSettings extends \WC_Settings_Page {
 	}
 
 	public function output() {
-        $data = [
-            'moneiIconUrl'    => WC_Monei()->image_url('monei-logo.svg'),
-            'welcomeString'   => __('Welcome to MONEI! Enhance your payment processing experience with our seamless integration', 'monei'),
-            'dashboardString' => __('Go to Dashboard', 'monei'),
-            'supportString'   => __('Support', 'monei'),
-        ];
+		$data = array(
+			'moneiIconUrl'    => WC_Monei()->image_url( 'monei-logo.svg' ),
+			'welcomeString'   => __( 'Welcome to MONEI! Enhance your payment processing experience with our seamless integration', 'monei' ),
+			'dashboardString' => __( 'Go to Dashboard', 'monei' ),
+			'supportString'   => __( 'Support', 'monei' ),
+		);
 
-        $templateManager = $this->container->get('Monei\Templates\TemplateManager' );
-        $template = $templateManager->getTemplate('monei-settings-header');
-        if ( $template ) {
+		$templateManager = $this->container->get( 'Monei\Templates\TemplateManager' );
+		$template        = $templateManager->getTemplate( 'monei-settings-header' );
+		if ( $template ) {
 
-            $template->render($data);
-        }
+			$template->render( $data );
+		}
 		$settings = $this->get_settings();
 		WC_Admin_Settings::output_fields( $settings );
 	}
