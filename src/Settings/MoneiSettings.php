@@ -2,13 +2,17 @@
 
 namespace Monei\Settings;
 
+use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
 
 class MoneiSettings extends \WC_Settings_Page {
 
-	public function __construct() {
+    protected ContainerInterface $container;
+
+    public function __construct(ContainerInterface $container) {
 		$this->id    = 'monei_settings';
 		$this->label = __( 'MONEI Settings', 'monei' );
+        $this->container = $container;
 		parent::__construct();
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
@@ -68,16 +72,19 @@ class MoneiSettings extends \WC_Settings_Page {
 	}
 
 	public function output() {
-		$moneiIconUrl    = WC_Monei()->image_url( 'monei-logo.svg' );
-		$welcomeString   = __( 'Welcome to MONEI! Enhance your payment processing experience with our seamless integration.', 'monei' );
-		$dashboardString = __( 'Go to Dashboard', 'monei' );
-		$supportString   = __( 'Support', 'monei' );
-		$plugin_dir      = WC_Monei()->plugin_path();
-		$template_path   = $plugin_dir . '/templates/html-monei-settings-header.php';
+        $data = [
+            'moneiIconUrl'    => WC_Monei()->image_url('monei-logo.svg'),
+            'welcomeString'   => __('Welcome to MONEI! Enhance your payment processing experience with our seamless integration', 'monei'),
+            'dashboardString' => __('Go to Dashboard', 'monei'),
+            'supportString'   => __('Support', 'monei'),
+        ];
 
-		if ( file_exists( $template_path ) ) {
-			include $template_path;
-		}
+        $templateManager = $this->container->get('Monei\Templates\TemplateManager' );
+        $template = $templateManager->getTemplate('monei-settings-header');
+        if ( $template ) {
+
+            $template->render($data);
+        }
 		$settings = $this->get_settings();
 		WC_Admin_Settings::output_fields( $settings );
 	}

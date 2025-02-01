@@ -4,6 +4,7 @@ namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayHosted;
 use Monei\Services\PaymentMethodsService;
+use Monei\Templates\TemplateManager;
 use WC_Monei_IPN;
 use WC_Monei_Payment_Gateway_Hosted;
 
@@ -27,8 +28,8 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 	 * @access public
 	 * @return void
 	 */
-	public function __construct( PaymentMethodsService $paymentMethodsService ) {
-		parent::__construct( $paymentMethodsService );
+	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
+		parent::__construct( $paymentMethodsService, $templateManager );
 		$this->id                 = MONEI_GATEWAY_ID . '_paypal';
 		$this->method_title       = __( 'MONEI - PayPal', 'monei' );
 		$this->method_description = __( 'Accept PayPal payments.', 'monei' );
