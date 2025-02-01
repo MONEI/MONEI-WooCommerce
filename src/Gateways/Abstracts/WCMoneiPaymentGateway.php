@@ -4,6 +4,7 @@ namespace Monei\Gateways\Abstracts;
 
 use Exception;
 use Monei\Services\PaymentMethodsService;
+use Monei\Templates\TemplateManager;
 use WC_Admin_Settings;
 use WC_Monei_API;
 use WC_Monei_Logger;
@@ -115,9 +116,11 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	public $form_fields = array();
 
 	public PaymentMethodsService $paymentMethodsService;
+	private TemplateManager $templateManager;
 
-	public function __construct( PaymentMethodsService $paymentMethodsService ) {
+	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
 		$this->paymentMethodsService = $paymentMethodsService;
+		$this->templateManager       = $templateManager;
 	}
 
 	/**
@@ -179,15 +182,24 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 			parent::admin_options();
 		} else {
 			if ( ! $this->getAccountId() || ! $this->getApiKey() ) {
-				woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available-api.php' );
+				$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-available-api' );
+				if ( $template ) {
+					$template->render( array() );
+				}
 				return;
 			}
 			$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id, $this->getAccountId() );
 			if ( ! $methodAvailability ) {
-				woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-enabled-monei.php' );
+				$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-enabled-monei' );
+				if ( $template ) {
+					$template->render( array() );
+				}
 				return;
 			}
-			woocommerce_gateway_monei_get_template( 'notice-admin-gateway-not-available.php' );
+			$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-available' );
+			if ( $template ) {
+				$template->render( array() );
+			}
 		}
 	}
 

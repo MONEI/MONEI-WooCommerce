@@ -4,6 +4,7 @@ namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Services\PaymentMethodsService;
+use Monei\Templates\TemplateManager;
 use WC_Monei_API;
 use WC_Monei_IPN;
 use WC_Monei_Subscriptions_Trait;
@@ -52,8 +53,8 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * @access public
 	 * @return void
 	 */
-	public function __construct( PaymentMethodsService $paymentMethodsService ) {
-		parent::__construct( $paymentMethodsService );
+	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
+		parent::__construct( $paymentMethodsService, $templateManager );
 		$this->id           = MONEI_GATEWAY_ID;
 		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
 		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;

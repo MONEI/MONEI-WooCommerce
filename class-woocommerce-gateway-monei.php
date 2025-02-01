@@ -128,8 +128,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * Include required core files used in admin and on the frontend.
 		 */
 		private function includes() {
-
-			include_once 'includes/woocommerce-gateway-monei-template-functions.php';
+            $container = ContainerProvider::getContainer();
 			include_once 'includes/woocommerce-gateway-monei-core-functions.php';
 			include_once 'includes/class-wc-monei-ipn.php';
 			include_once 'includes/class-wc-monei-api.php';
@@ -140,8 +139,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
-                add_filter('woocommerce_get_settings_pages', function ($settings) {
-                    $settings[] = new MoneiSettings();
+                add_filter('woocommerce_get_settings_pages', function ($settings) use ($container) {
+                    $settings[] = new MoneiSettings($container);
                     return $settings;
                 });
 			}
@@ -170,14 +169,18 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			/**
 			 * If Dismissed, we save the versions installed.
 			 */
-			
 			if ( isset( $_GET['monei-hide-new-version'] ) && 'hide-new-version-monei' === sanitize_text_field( $_GET['monei-hide-new-version'] ) ) {
 				if ( wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_monei_hide_new_version_nonce'] ) ), 'monei_hide_new_version_nonce' ) ) {
 					update_option( 'hide-new-version-monei-notice', MONEI_VERSION );
 				}
 				return;
 			}
-			woocommerce_gateway_monei_get_template( 'notice-admin-new-install.php' );
+            $container = \Monei\Core\ContainerProvider::getContainer();
+            $templateManager = $container->get('Monei\Templates\TemplateManager' );
+            $template = $templateManager->getTemplate('notice-admin-new-install');
+            if ( $template ) {
+                $template->render([]);
+            }
 		}
 
 		/**
@@ -186,7 +189,12 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return void
 		 */
 		public function dependency_notice() {
-			woocommerce_gateway_monei_get_template( 'notice-admin-dependency.php' );
+            $container = \Monei\Core\ContainerProvider::getContainer();
+            $templateManager = $container->get('Monei\Templates\TemplateManager' );
+            $template = $templateManager->getTemplate('notice-admin-dependency');
+            if ( $template ) {
+                $template->render([]);
+            }
 		}
 
 		/**
