@@ -14,7 +14,7 @@ class NoticeAdminNewInstall implements TemplateInterface {
 					href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'monei-hide-new-version', 'hide-new-version-monei' ), 'monei_hide_new_version_nonce', '_monei_hide_new_version_nonce' ) ); ?>"><?php esc_html_e( 'Dismiss', 'monei' ); ?></a>
 				<p>
 				<h3>
-					<?php esc_html_e( 'Thank you for install MONEI for WooCommerce. Version: ', 'monei' ) . ' ' . esc_html( MONEI_VERSION ); ?>
+					<?php echo esc_html__( 'Thank you for install MONEI for WooCommerce. Version: ', 'monei' ). ' ' . esc_html(MONEI_VERSION) ?>
 				</h3>
 				</p>
 				<p>
@@ -25,10 +25,6 @@ class NoticeAdminNewInstall implements TemplateInterface {
 						target="_blank"><?php esc_html_e( 'Signup', 'monei' ); ?></a>
 					<a href="<?php echo esc_url( MONEI_WEB ); ?>" class="button-primary"
 						target="_blank"><?php esc_html_e( 'MONEI website', 'monei' ); ?></a>
-					<a href="<?php echo esc_url( MONEI_REVIEW ); ?>" class="button-primary"
-						target="_blank"><?php esc_html_e( 'Leave a review', 'monei' ); ?></a>
-					<a href="<?php echo esc_url( MONEI_SUPPORT ); ?>" class="button-primary"
-						target="_blank"><?php esc_html_e( 'Support', 'monei' ); ?></a>
 				</p>
 			</div>
 		</div>
