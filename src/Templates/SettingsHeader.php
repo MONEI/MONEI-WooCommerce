@@ -10,6 +10,7 @@ class SettingsHeader implements TemplateInterface {
 		$welcomeString   = $data['welcomeString'] ?? '';
 		$dashboardString = $data['dashboardString'] ?? '';
 		$supportString   = $data['supportString'] ?? '';
+		$reviewString    = $data['reviewString'] ?? '';
 		?>
 
 		<div class="monei-settings-header-logo">
@@ -19,8 +20,9 @@ class SettingsHeader implements TemplateInterface {
 			<p><?php echo esc_html( $welcomeString ); ?></p>
 		</div>
 		<div class="monei-settings-header-buttons">
-			<a href="https://dashboard.monei.com" class="button button-primary" target="_blank"><?php echo esc_html( $dashboardString ); ?></a>
-			<a href="https://support.monei.com/" class="button" target="_blank"><?php echo esc_html( $supportString ); ?></a>
+			<a href="<?php echo esc_url( MONEI_SIGNUP ); ?>" class="button button-primary" target="_blank"><?php echo esc_html( $dashboardString ); ?></a>
+			<a href="<?php echo esc_url( MONEI_SUPPORT ); ?>" class="button" target="_blank"><?php echo esc_html( $supportString ); ?></a>
+			<a href="<?php echo esc_url( MONEI_REVIEW ); ?>" class="button" target="_blank"><?php echo esc_html( $reviewString ); ?></a>
 		</div>
 		<?php
 	}

@@ -77,6 +77,7 @@ class MoneiSettings extends \WC_Settings_Page {
 			'welcomeString'   => __( 'Welcome to MONEI! Enhance your payment processing experience with our seamless integration', 'monei' ),
 			'dashboardString' => __( 'Go to Dashboard', 'monei' ),
 			'supportString'   => __( 'Support', 'monei' ),
+			'reviewString'    => __( 'Leave a review', 'monei' ),
 		);
 
 		$templateManager = $this->container->get( 'Monei\Templates\TemplateManager' );
