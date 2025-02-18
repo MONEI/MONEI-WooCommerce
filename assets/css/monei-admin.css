@@ -15,11 +15,9 @@
 .monei-settings-header-welcome p {
     font-size: 16px;
 }
-/* Hide the Monei tab in the main row of WooCommerce settings */
 .wc-settings-sub-nav a[href*="tab=monei_settings"] {
     display: none !important;
 }
-/* Also hide it in the "horizontal" tabs if WooCommerce uses them */
 .nav-tab-wrapper a.nav-tab[href*="tab=monei_settings"] {
     display: none !important;
 }

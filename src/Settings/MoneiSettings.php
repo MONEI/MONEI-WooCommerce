@@ -102,21 +102,17 @@ class MoneiSettings extends \WC_Settings_Page {
 
 		$screen = get_current_screen();
 
-		// Ensure we're on the WooCommerce settings page
-		if ( $screen->id !== 'woocommerce_page_wc-settings' ) {
-			return;
-		}
+        // Ensure we're on the WooCommerce settings page
+        if ($screen->id !== 'woocommerce_page_wc-settings') {
+            return;
+        }
 
-		// Check if our settings tab is active
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( isset( $_GET['tab'] ) && $_GET['tab'] === $this->id ) {
-			$plugin_url = plugin_dir_url( dirname( __DIR__ ) );
-			wp_enqueue_style(
-				'monei-admin-css',
-				$plugin_url . 'public/css/monei-admin.css',
-				array(),
-				'1.0.0'
-			);
-		}
+        $plugin_url = plugin_dir_url(dirname(__DIR__));
+        wp_enqueue_style(
+            'monei-admin-css',
+            $plugin_url . 'public/css/monei-admin.css',
+            array(),
+            '1.0.0'
+        );
 	}
 }
