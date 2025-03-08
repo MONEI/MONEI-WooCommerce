@@ -1,4 +1,9 @@
 <?php
+
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\sdk\MoneiSdkClientFactory;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -11,6 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 trait WC_Monei_Subscriptions_Trait {
 
 	use WC_Monei_Addons_Helper_Trait;
+
+	public function __construct( bool $logging = false ) {
+		//TODO use the container
+		$apiKeyService              = new ApiKeyService();
+		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+	}
 
 	/**
 	 * Add support to subscription.
@@ -72,7 +84,7 @@ trait WC_Monei_Subscriptions_Trait {
 		);
 
 		try {
-			$payment = WC_Monei_API::recurring_payment( $sequence_id, $payload );
+			$payment = $this->moneiPaymentServices->recurring_payment( $sequence_id, $payload );
 
 			if ( 'SUCCEEDED' === $payment->getStatus() ) {
 				$renewal_order->payment_complete( $payment->getId() );
@@ -146,7 +158,7 @@ trait WC_Monei_Subscriptions_Trait {
 		/**
 		 * Refund that cent.
 		 */
-		WC_Monei_API::refund_payment( $confirm_payment->getId(), 1 );
+		MoneiPaymentServices::refund_payment( $confirm_payment->getId(), 1 );
 	}
 
 	/**

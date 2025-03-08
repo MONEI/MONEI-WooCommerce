@@ -1,7 +1,11 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+
+namespace Monei\Services;
+
+use Monei\Services\payment\MoneiPaymentServices;
+use OpenAPI\Client\ApiException;
+use WC_Monei_Logger;
+use WC_Admin_Settings;
 
 /**
  * Class to verify Apple Pay Registration.
@@ -9,12 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 5.5
  */
-class WC_Monei_Addons_Apple_Pay_Verification {
+class MoneiApplePayVerificationService {
 
 	const DOMAIN_ASSOCIATION_FILE_NAME = 'apple-developer-merchantid-domain-association';
 	const DOMAIN_ASSOCIATION_DIR       = '.well-known';
+	private MoneiPaymentServices $moneiPaymentServices;
 
-	public function __construct() {
+	public function __construct( MoneiPaymentServices $moneiPaymentServices ) {
+		$this->moneiPaymentServices = $moneiPaymentServices;
 		add_action( 'parse_request', array( $this, 'expose_on_domain_association_request' ), 1 );
 		add_filter( 'woocommerce_update_options_payment_gateways_monei', array( $this, 'apple_domain_register' ) );
 	}
@@ -37,8 +43,8 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 
 		try {
 			$domain = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
-			WC_Monei_API::register_apple_domain( $domain );
-		} catch ( OpenAPI\Client\ApiException $e ) {
+			$this->moneiPaymentServices->register_apple_domain( $domain );
+		} catch ( ApiException $e ) {
 			WC_Monei_Logger::log( $e, 'error' );
 			$response_body = json_decode( $e->getResponseBody() );
 			WC_Admin_Settings::add_error( __( 'Apple', 'monei' ) . ' ' . $response_body->message );
@@ -63,5 +69,3 @@ class WC_Monei_Addons_Apple_Pay_Verification {
 		}
 	}
 }
-
-new WC_Monei_Addons_Apple_Pay_Verification();

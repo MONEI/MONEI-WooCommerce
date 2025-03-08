@@ -1,4 +1,9 @@
 <?php
+
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\sdk\MoneiSdkClientFactory;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -16,12 +21,18 @@ class WC_Monei_Addons_Redirect_Hooks {
 	 */
 	use WC_Monei_Subscriptions_Trait;
 
+	private MoneiPaymentServices $moneiPaymentServices;
+
 	/**
 	 * Hooks on redirects.
 	 */
 	public function __construct() {
 		add_action( 'template_redirect', array( $this, 'subscriptions_save_sequence_id' ) );
 		add_action( 'template_redirect', array( $this, 'subscriptions_save_sequence_id_on_payment_method_change' ) );
+		//TODO use the container
+		$apiKeyService              = new ApiKeyService();
+		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 	}
 
 	/**
@@ -57,7 +68,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 			/**
 			 * We need to update parent from subscription, where sequence id is stored.
 			 */
-			$payment      = WC_Monei_API::get_payment( $payment_id );
+			$payment      = $this->moneiPaymentServices->get_payment( $payment_id );
 			$subscription = new WC_Subscription( $order_id );
 
 			$subscription->update_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
@@ -100,7 +111,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 				return;
 			}
 
-			$payment = WC_Monei_API::get_payment( $payment_id );
+			$payment = $this->moneiPaymentServices->get_payment( $payment_id );
 			/**
 			 * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
 			 */

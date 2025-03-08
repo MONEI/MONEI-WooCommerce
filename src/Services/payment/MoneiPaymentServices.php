@@ -1,10 +1,9 @@
 <?php
 
-use OpenAPI\Client\Configuration;
+namespace Monei\Services\payment;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+use Monei\Services\sdk\MoneiSdkClientFactory;
+use OpenAPI\Client\Configuration;
 
 /**
  * API Helper Class
@@ -12,62 +11,30 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 5.0
  * @version 5.0
  */
-class WC_Monei_API {
-
-	const OPTION_API_KEY = 'monei_apikey';
-
-	/**
-	 * @var string
-	 */
-	protected static $api_key;
+class MoneiPaymentServices {
 
 	/**
 	 * @var \Monei\MoneiClient
 	 */
-	protected static $client;
+	protected $client;
 
 	/**
 	 * Holds the order.
 	 *
-	 * @var int|WC_Order|null
+	 * @var int|\WC_Order|null
 	 */
-	protected static $order = null;
+	protected $order = null;
 
-	/**
-	 * Get API Key.
-	 *
-	 * @return false|string
-	 */
-	protected static function get_api_key() {
-		if ( isset( self::$api_key ) ) {
-			return self::$api_key;
-		}
-
-		self::$api_key = monei_get_settings( false, self::OPTION_API_KEY );
-		return self::$api_key;
+	public function __construct( MoneiSdkClientFactory $sdkClientFactory ) {
+		$this->client = $sdkClientFactory;
 	}
 
 	/**
-	 * @param int|WC_Order $order
+	 * @param int|\WC_Order $order
 	 */
-	public static function set_order( $order ) {
+	public function set_order( $order ) {
 		$order       = is_int( $order ) ? wc_get_order( $order ) : $order;
-		self::$order = $order;
-	}
-
-	/**
-	 * @return \Monei\MoneiClient
-	 */
-	protected static function get_client() {
-		if ( isset( self::$client ) ) {
-			return self::$client;
-		}
-
-		include_once WC_Monei()->plugin_path() . '/vendor/autoload.php';
-		$config = Configuration::getDefaultConfiguration();
-		$config->setUserAgent( 'MONEI/WooCommerce/' . WC_Monei()->version );
-		self::$client = new Monei\MoneiClient( self::get_api_key(), $config );
-		return self::$client;
+		$this->order = $order;
 	}
 
 	/**
@@ -77,8 +44,8 @@ class WC_Monei_API {
 	 * @return object
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function verify_signature( $body, $signature ) {
-		$client = self::get_client();
+	public function verify_signature( $body, $signature ) {
+		$client = $this->client->get_client();
 		return $client->verifySignature( $body, $signature );
 	}
 
@@ -90,8 +57,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function create_payment( $payload ) {
-		$client = self::get_client();
+	public function create_payment( $payload ) {
+		$client = $this->client->get_client();
 		return $client->payments->create( $payload );
 	}
 
@@ -104,8 +71,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function confirm_payment( $id, $payload ) {
-		$client = self::get_client();
+	public function confirm_payment( $id, $payload ) {
+		$client = $this->client->get_client();
 		return $client->payments->confirm( $id, $payload );
 	}
 
@@ -118,8 +85,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function get_payment( $payment_id ) {
-		$client = self::get_client();
+	public function get_payment( $payment_id ) {
+		$client = $this->client->get_client();
 		return $client->payments->get( $payment_id );
 	}
 
@@ -134,8 +101,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function capture_payment( $payment_id, $amount ) {
-		$client = self::get_client();
+	public function capture_payment( $payment_id, $amount ) {
+		$client = $this->client->get_client();
 		return $client->payments->capture( $payment_id, array( 'amount' => $amount ) );
 	}
 
@@ -149,8 +116,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function cancel_payment( $payment_id ) {
-		$client = self::get_client();
+	public function cancel_payment( $payment_id ) {
+		$client = $this->client->get_client();
 		return $client->payments->cancel( $payment_id, array( 'cancellationReason' => 'requested_by_customer' ) );
 	}
 
@@ -164,8 +131,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function refund_payment( $payment_id, $amount, $refund_reason = 'requested_by_customer' ) {
-		$client = self::get_client();
+	public function refund_payment( $payment_id, $amount, $refund_reason = 'requested_by_customer' ) {
+		$client = $this->client->get_client();
 		return $client->payments->refund(
 			$payment_id,
 			array(
@@ -184,8 +151,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\Payment
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function recurring_payment( $sequence_id, $payload ) {
-		$client = self::get_client();
+	public function recurring_payment( $sequence_id, $payload ) {
+		$client = $this->client->get_client();
 		return $client->payments->recurring( $sequence_id, $payload );
 	}
 
@@ -196,8 +163,8 @@ class WC_Monei_API {
 	 * @return \OpenAPI\Client\Model\InlineResponse200
 	 * @throws \OpenAPI\Client\ApiException
 	 */
-	public static function register_apple_domain( $domain ) {
-		$client = self::get_client();
+	public function register_apple_domain( $domain ) {
+		$client = $this->client->get_client();
 		return $client->applePayDomain->register( array( 'domainName' => $domain ) );
 	}
 }

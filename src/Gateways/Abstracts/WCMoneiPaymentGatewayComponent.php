@@ -4,7 +4,7 @@ namespace Monei\Gateways\Abstracts;
 
 use Exception;
 use WC_Geolocation;
-use WC_Monei_API;
+use MoneiPaymentServices;
 use WC_Order;
 use WC_Payment_Tokens;
 use WC_Monei_Logger;
@@ -44,7 +44,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		 * See: https://docs.monei.com/docs/guides/send-cardholder-name/
 		 */
 		try {
-			$create_payment = WC_Monei_API::create_payment( $payload );
+			$create_payment = $this->moneiPaymentServices->create_payment( $payload );
 			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
 
 			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
@@ -78,7 +78,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 					),
 				);
 
-				$confirm_payment = WC_Monei_API::confirm_payment( $create_payment->getId(), $confirm_payload );
+				$confirm_payment = $this->moneiPaymentServices->confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
 
 				$this->log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );

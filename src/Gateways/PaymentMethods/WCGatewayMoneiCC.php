@@ -3,9 +3,10 @@
 namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
-use WC_Monei_API;
 use WC_Monei_IPN;
 use WC_Monei_Subscriptions_Trait;
 
@@ -53,8 +54,13 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * @access public
 	 * @return void
 	 */
-	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
-		parent::__construct( $paymentMethodsService, $templateManager );
+	public function __construct(
+		PaymentMethodsService $paymentMethodsService,
+		TemplateManager $templateManager,
+		ApiKeyService $apiKeyService,
+		MoneiPaymentServices $moneiPaymentServices
+	) {
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
 		$this->id           = MONEI_GATEWAY_ID;
 		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
 		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
@@ -77,7 +83,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
-		$this->testmode             = ( ! empty( $this->getTestmode() && 'yes' === $this->get_option( 'testmode' ) ) ) ? true : false;
+		$this->testmode             = $this->getTestmode();
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
@@ -197,7 +203,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		// Since it is a hosted version, we need to create a 0 EUR payment and send customer to MONEI.
 		try {
 			$zero_payload = $this->create_zero_eur_payload();
-			$payment      = WC_Monei_API::create_payment( $zero_payload );
+			$payment      = $this->moneiPaymentServices->create_payment( $zero_payload );
 			$this->log( 'WC_Monei_API::add_payment_method', 'debug' );
 			$this->log( $zero_payload, 'debug' );
 			$this->log( $payment, 'debug' );

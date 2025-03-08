@@ -2,6 +2,8 @@
 
 namespace Monei\Gateways\PaymentMethods;
 
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
 use WC_Blocks_Utils;
@@ -39,8 +41,13 @@ class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC {
 	 * @access public
 	 * @return void
 	 */
-	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
-		parent::__construct( $paymentMethodsService, $templateManager );
+	public function __construct(
+		PaymentMethodsService $paymentMethodsService,
+		TemplateManager $templateManager,
+		ApiKeyService $apiKeyService,
+		MoneiPaymentServices $moneiPaymentServices
+	) {
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
 		$this->id           = 'monei_apple_google';
 		$this->method_title = __( 'MONEI - Apple/Google', 'monei' );
 		$this->title        = __( 'Google Pay', 'monei' );
