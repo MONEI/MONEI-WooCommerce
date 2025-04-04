@@ -76,7 +76,9 @@ trait WC_Monei_Subscriptions_Trait {
 	public function scheduled_subscription_payment( $amount_to_charge, $renewal_order ) {
 		$sequence_id = $this->get_sequence_id_from_renewal_order( $renewal_order );
 		$description = $this->shop_name . ' - #' . (string) $renewal_order->get_id() . ' - Subscription Renewal';
-
+        if($renewal_order->get_status() === 'processing') {
+            return;
+        }
 		$payload = array(
 			'orderId'     => (string) $renewal_order->get_id(),
 			'amount'      => monei_price_format( $amount_to_charge ),
