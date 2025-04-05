@@ -19,7 +19,11 @@ jobs:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-      - uses: php-actions/composer@v6
+      - name: Install Composer dependencies
+        uses: php-actions/composer@v6
+        with:
+            args: --no-dev --optimize-autoloader
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -30,6 +34,9 @@ jobs:
 
       - name: Build assets with wp-scripts
         run: npm run build
+
+      - name: Remove dev dependencies
+        run: composer install --no-dev --optimize-autoloader
 
       - name: Exclude files listed in .distignore
         run: |
