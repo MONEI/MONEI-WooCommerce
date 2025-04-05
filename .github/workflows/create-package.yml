@@ -13,16 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v3
-        with:
-          path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-
       - name: Install Composer dependencies
-        uses: php-actions/composer@v6
+        uses: ramsey/composer-install@v3
         with:
-            args: --no-dev --optimize-autoloader
+            composer-options: --no-dev --optimize-autoloader
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -34,9 +28,6 @@ jobs:
 
       - name: Build assets with wp-scripts
         run: npm run build
-
-      - name: Remove dev dependencies
-        run: composer install --no-dev --optimize-autoloader
 
       - name: Exclude files listed in .distignore
         run: |
