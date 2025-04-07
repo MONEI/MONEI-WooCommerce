@@ -10,12 +10,12 @@
  * Plugin Name: MONEI Payments for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/monei/
  * Description: Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment methods in your store.
- * Version: 6.2.0
+ * Version: 6.2.1
  * Author: MONEI
  * Author URI: https://www.monei.com/
  * Tested up to: 6.7
  * WC requires at least: 3.0
- * WC tested up to: 9.5
+ * WC tested up to: 9.7
  * Requires PHP: 7.2
  * Text Domain: monei
  * Domain Path: /languages/

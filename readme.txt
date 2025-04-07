@@ -3,12 +3,12 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 6.2.0
+Stable tag: 6.2.1
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0
-WC tested up to: 9.6
+WC tested up to: 9.7
 
 Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment methods in your WooCommerce store using MONEI payment gateway.
 
@@ -102,6 +102,9 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+2025-04-07 - version 6.2.1
+* Fix - Update Monei SDK to V2
 
 2025-02-18 - version 6.2.0
 * Add - PayPal method in block checkout

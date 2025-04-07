@@ -1,5 +1,8 @@
 *** MONEI Payments for WooCommerce ***
 
+2025-04-07 - version 6.2.1
+* Fix - Update Monei SDK to V2
+
 2025-02-18 - version 6.2.0
 * Add - PayPal method in block checkout
 * Fix - Plugin check issues
