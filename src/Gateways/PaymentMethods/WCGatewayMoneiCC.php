@@ -350,7 +350,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		}
 
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
-			wp_register_script( 'monei', 'https://js.monei.com/v1/monei.js', '', '1.0', true );
+			wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '1.0', true );
 
 		}
 		wp_register_script(
