@@ -1,5 +1,8 @@
 <?php
 
+use Monei\Features\Subscriptions\SubscriptionService;
+use Monei\Features\Subscriptions\WooCommerceSubscriptionsHandler;
+use Monei\Features\Subscriptions\YithSubscriptionPluginHandler;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
@@ -16,11 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Monei_Addons_Redirect_Hooks {
 
-	/**
-	 * Use Subscription trait.
-	 */
-	use WC_Monei_Subscriptions_Trait;
-
 	private MoneiPaymentServices $moneiPaymentServices;
 
 	/**
@@ -32,7 +30,10 @@ class WC_Monei_Addons_Redirect_Hooks {
 		//TODO use the container
 		$apiKeyService              = new ApiKeyService();
 		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
+		$wooHandler                 = new WooCommerceSubscriptionsHandler( $sdkClient );
+		$yithHandler                = new YithSubscriptionPluginHandler( $sdkClient );
 		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+		$this->subscriptionService  = new SubscriptionService( $wooHandler, $yithHandler );
 	}
 
 	/**
@@ -48,6 +49,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}
+        WC_Monei_Logger::log( 'Changing the method, updating the sequence id for subscriptions' );
 
 		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
@@ -60,7 +62,8 @@ class WC_Monei_Addons_Redirect_Hooks {
 		}
 
 		$order_id = $verification_order_id[0];
-		if ( ! $this->is_order_subscription( $order_id ) ) {
+		$handler  = $this->subscriptionService->getHandler();
+		if ( ! $handler || ! $handler->is_subscription_order( $order_id ) ) {
 			return;
 		}
 
@@ -69,12 +72,9 @@ class WC_Monei_Addons_Redirect_Hooks {
 			 * We need to update parent from subscription, where sequence id is stored.
 			 */
 			$payment      = $this->moneiPaymentServices->get_payment( $payment_id );
-			$subscription = new WC_Subscription( $order_id );
+			$subscriptions = $handler->get_subscriptions_for_order( $order_id);
+            $handler->update_subscription_meta_data($subscriptions, $payment);
 
-			$subscription->update_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
-			$subscription->update_meta_data( '_monei_payment_method_brand', $payment->getPaymentMethod()->getCard()->getBrand() );
-			$subscription->update_meta_data( '_monei_payment_method_4_last_digits', $payment->getPaymentMethod()->getCard()->getLast4() );
-			$subscription->save_meta_data();
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
@@ -100,27 +100,19 @@ class WC_Monei_Addons_Redirect_Hooks {
 		/**
 		 * Bail when not subscription.
 		 */
-		if ( ! $this->is_order_subscription( $order_id ) ) {
+		$handler = $this->subscriptionService->getHandler();
+		if ( ! $handler || ! $handler->is_subscription_order( $order_id ) ) {
 			return;
 		}
 
 		try {
-
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'any' ) ) );
+			$subscriptions = $handler->get_subscriptions_for_order( $order_id );
 			if ( ! $subscriptions ) {
 				return;
 			}
 
 			$payment = $this->moneiPaymentServices->get_payment( $payment_id );
-			/**
-			 * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
-			 */
-			foreach ( $subscriptions as $subscription_id => $subscription ) {
-				$subscription->update_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
-				$subscription->update_meta_data( '_monei_payment_method_brand', $payment->getPaymentMethod()->getCard()->getBrand() );
-				$subscription->update_meta_data( '_monei_payment_method_4_last_digits', $payment->getPaymentMethod()->getCard()->getLast4() );
-				$subscription->save_meta_data();
-			}
+			$handler->update_subscription_meta_data( $subscriptions, $payment );
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );

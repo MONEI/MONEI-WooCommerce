@@ -1,5 +1,8 @@
 <?php
 
+use Monei\Features\Subscriptions\SubscriptionService;
+use Monei\Features\Subscriptions\WooCommerceSubscriptionsHandler;
+use Monei\Features\Subscriptions\YithSubscriptionPluginHandler;
 use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
@@ -58,6 +61,16 @@ $definitions            = array(
 	ApiKeyService::class                    => DI\autowire( ApiKeyService::class ),
 	MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
 		->constructor( DI\get( ApiKeyService::class ) ),
+	WooCommerceSubscriptionsHandler::class  => \DI\create(
+		WooCommerceSubscriptionsHandler::class,
+	)->constructor(
+		DI\get( MoneiSdkClientFactory::class )
+	),
+ YithSubscriptionPluginHandler::class => \DI\autowire(YithSubscriptionPluginHandler::class),
+
+ SubscriptionService::class => \DI\autowire(SubscriptionService::class)
+     ->constructorParameter('wooHandler', \DI\get(WooCommerceSubscriptionsHandler::class))
+     ->constructorParameter('yithHandler', \DI\get(YithSubscriptionPluginHandler::class)),
 );
 
 // Dynamically load all gateway classes in the folder

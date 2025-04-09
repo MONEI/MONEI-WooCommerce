@@ -2,13 +2,16 @@
 
 namespace Monei\Gateways\PaymentMethods;
 
+use Exception;
+use Monei\Features\Subscriptions\SubscriptionHandlerInterface;
+use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
+use WC_Geolocation;
 use WC_Monei_IPN;
-use WC_Monei_Subscriptions_Trait;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -32,10 +35,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WC_Gateway_Monei_CC
  */
 class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
-
-
-	use WC_Monei_Subscriptions_Trait;
-
 	const PAYMENT_METHOD = 'card';
 
 	/**
@@ -47,6 +46,8 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * @var bool
 	 */
 	protected $apple_google_pay;
+	protected SubscriptionService $subscriptions_service;
+	protected ?SubscriptionHandlerInterface $handler;
 
 	/**
 	 * Constructor for the gateway.
@@ -58,9 +59,10 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
-		MoneiPaymentServices $moneiPaymentServices
+		MoneiPaymentServices $moneiPaymentServices,
+		SubscriptionService $subscriptionService
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $subscriptionService );
 		$this->id           = MONEI_GATEWAY_ID;
 		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
 		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
@@ -107,9 +109,10 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		if ( $this->tokenization ) {
 			$this->supports[] = 'tokenization';
 		}
-
-		if ( $this->is_subscriptions_addon_enabled() ) {
-			$this->init_subscriptions();
+		$this->subscriptions_service = $subscriptionService;
+		$this->handler               = $this->subscriptions_service->getHandler();
+		if ( $this->handler ) {
+			$this->supports = $this->handler->init_subscriptions($this->supports, $this->id);
 		}
 
 		add_action(
@@ -126,10 +129,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			}
 		);
 
-		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( ! $this->redirect_flow || is_add_payment_method_page() || $this->is_subscription_change_payment_page() ) {
-			add_action( 'wp_enqueue_scripts', array( $this, 'monei_scripts' ) );
-		}
+		add_action( 'wp_enqueue_scripts', array( $this, 'monei_scripts' ) );
 
 		// Add new total on checkout updates (ex, selecting different shipping methods)
 		add_filter(
@@ -269,7 +269,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			esc_html_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
-		} elseif ( $this->is_subscription_change_payment_page() ) {
+		} elseif ( $this->handler->is_subscription_change_payment_page() ) {
 			// On subscription change payment page, we always use component CC.
 			echo esc_html( $this->description );
 			if ( $this->tokenization ) {
@@ -340,8 +340,8 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * Registering MONEI JS library and plugin js.
 	 */
 	public function monei_scripts() {
-
-		if ( ! is_checkout() && ! is_add_payment_method_page() && ! $this->is_subscription_change_payment_page() ) {
+		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
+		if ( $this->redirect_flow && ! is_checkout() && ! is_add_payment_method_page() && ! $this->handler->is_subscription_change_payment_page() ) {
 			return;
 		}
 
