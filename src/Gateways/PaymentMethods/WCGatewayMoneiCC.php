@@ -2,9 +2,11 @@
 
 namespace Monei\Gateways\PaymentMethods;
 
+use Exception;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
+use WC_Geolocation;
 use WC_Monei_API;
 use WC_Monei_IPN;
 use WC_Monei_Subscriptions_Trait;
@@ -235,7 +237,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			'completeUrl'           => wc_get_endpoint_url( 'payment-methods' ),
 			'cancelUrl'             => wc_get_endpoint_url( 'payment-methods' ),
 			'failUrl'               => wc_get_endpoint_url( 'payment-methods' ),
-			'transactionType'       => self::SALE_TRANSACTION_TYPE,
+			'transactionType'       => self::VERIFY_TRANSACTION_TYPE,
 			'sessionDetails'        => array(
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),
