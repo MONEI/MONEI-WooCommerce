@@ -26,6 +26,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	const SALE_TRANSACTION_TYPE     = 'SALE';
 	const PRE_AUTH_TRANSACTION_TYPE = 'AUTH';
+	const VERIFY_TRANSACTION_TYPE   = 'VERIF';
 
 	/**
 	 * Is sandbox?

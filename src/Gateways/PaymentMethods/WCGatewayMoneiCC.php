@@ -241,7 +241,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			'completeUrl'           => wc_get_endpoint_url( 'payment-methods' ),
 			'cancelUrl'             => wc_get_endpoint_url( 'payment-methods' ),
 			'failUrl'               => wc_get_endpoint_url( 'payment-methods' ),
-			'transactionType'       => self::SALE_TRANSACTION_TYPE,
+			'transactionType'       => self::VERIFY_TRANSACTION_TYPE,
 			'sessionDetails'        => array(
 				'ip'        => WC_Geolocation::get_ip_address(),
 				'userAgent' => wc_get_user_agent(),

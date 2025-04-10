@@ -106,8 +106,9 @@ class WC_Monei_Redirect_Hooks {
 		 * In the redirect back (from add payment method), the payment could have been failed, the only way to check is the url $_GET['status']
 		 * We should remove the "Payment method successfully added." notice and add a 'Unable to add payment method to your account.' manually.
 		 */
+		$accepted_statuses = array( 'SUCCEEDED', 'AUTHORIZED' );
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || 'SUCCEEDED' !== wc_clean( wp_unslash( $_GET['status'] ) ) ) ) {
+		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || ! in_array( wc_clean( wp_unslash( $_GET['status'] ) ), $accepted_statuses, true ) ) ) {
 			wc_clear_notices();
 			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
 			$error_message = filter_input( INPUT_GET, 'message', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
