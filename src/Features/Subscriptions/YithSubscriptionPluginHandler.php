@@ -7,21 +7,32 @@ use Monei\Services\sdk\MoneiSdkClientFactory;
 use WC_Order;
 
 class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
-    private $moneiPaymentServices;
+	private $moneiPaymentServices;
 
-	public function __construct( MoneiSdkClientFactory $sdkClient) {
-        $this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+	public function __construct( MoneiSdkClientFactory $sdkClient ) {
+		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 		add_action(
 			'ywsbs_pay_renew_order_with_' . MONEI_GATEWAY_ID,
 			function ( $renew_order ) {
-                if ( ! $renew_order instanceof \WC_Order ) {
-                    return false;
-                }
-                $amount_to_charge = $renew_order->get_total();
+				if ( ! $renew_order instanceof \WC_Order ) {
+					return false;
+				}
+				$amount_to_charge = $renew_order->get_total();
 				$this->scheduled_subscription_payment( $amount_to_charge, $renew_order );
 			},
 			10,
 			1
+		);
+		//whenever it creates a renew order it will check for this meta, as is just created we put to 0
+		add_action(
+			'ywsbs_renew_subscription',
+			function ( $order_id, $subscription_id ) {
+				$order = wc_get_order( $order_id );
+				$order->update_meta_data( 'failed_attemps', '0' );
+				$order->save();
+			},
+			10,
+			2
 		);
 	}
 
@@ -59,24 +70,24 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
         return ( isset( $_GET['pay_for_order'] ) && isset( $_GET['change_payment_method'] ) ); // phpcs:ignore
 	}
 
-	public function get_subscriptions_for_order( int $order_id ):array {
-        $order = wc_get_order( $order_id );
+	public function get_subscriptions_for_order( int $order_id ): array {
+		$order = wc_get_order( $order_id );
 		return $order->get_meta( 'subscriptions' );
 	}
 
 	public function update_subscription_meta_data( $subscriptions, $payment ): void {
-        /**
-         * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
-         */
-        foreach ( $subscriptions as $subscription ) {
-            $subscription = ywsbs_get_subscription( $subscription );
-            $meta = [
-                '_monei_sequence_id' => $payment->getSequenceId(),
-                '_monei_payment_method_brand' => $payment->getPaymentMethod()->getCard()->getBrand(),
-                '_monei_payment_method_4_last_digits' => $payment->getPaymentMethod()->getCard()->getLast4()
-            ];
-            $subscription->update_subscription_meta( $meta  );
-        }
+		/**
+		 * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
+		 */
+		foreach ( $subscriptions as $subscription ) {
+			$subscription = ywsbs_get_subscription( $subscription );
+			$meta         = array(
+				'_monei_sequence_id'                  => $payment->getSequenceId(),
+				'_monei_payment_method_brand'         => $payment->getPaymentMethod()->getCard()->getBrand(),
+				'_monei_payment_method_4_last_digits' => $payment->getPaymentMethod()->getCard()->getLast4(),
+			);
+			$subscription->update_subscription_meta( $meta );
+		}
 	}
 
 
@@ -185,16 +196,15 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	 * @param WC_Order         $renewal_order
 	 */
 	public function scheduled_subscription_payment( $amount_to_charge, $renewal_order ): void {
-        $description = get_bloginfo( 'name' ) . ' - #' . (string) $renewal_order->get_id() . ' - Subscription Renewal';
-        $order_id     = $renewal_order->get_id();
-        $is_a_renew   = $renewal_order->get_meta( 'is_a_renew' );
-        $subscription = $this->get_subscription_from_renew_order( $renewal_order );
-        $sequence_id = $this->get_sequence_id_from_renewal_order( $subscription->get_id() );
+		$description  = get_bloginfo( 'name' ) . ' - #' . (string) $renewal_order->get_id() . ' - Subscription Renewal';
+		$order_id     = $renewal_order->get_id();
+		$is_a_renew   = $renewal_order->get_meta( 'is_a_renew' );
+		$subscription = $this->get_subscription_from_renew_order( $renewal_order );
+		$sequence_id  = $this->get_sequence_id_from_subscription( $subscription );
 
-
-        if ( ! $subscription || 'yes' !== $is_a_renew ) {
-            WC_Monei_Logger::log( sprintf( 'Sorry, any subscription was found for order #%s or order is not a renew.', $order_id ), 'subscription_payment' );
-        }
+		if ( ! $subscription || 'yes' !== $is_a_renew ) {
+			WC_Monei_Logger::log( sprintf( 'Sorry, any subscription was found for order #%s or order is not a renew.', $order_id ), 'subscription_payment' );
+		}
 		$payload = array(
 			'orderId'     => (string) $renewal_order->get_id(),
 			'amount'      => monei_price_format( $amount_to_charge ),
@@ -236,18 +246,18 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		}
 	}
 
-    /**
-     * Get subscription object from renew order
-     *
-     * @param \WC_Order $renewal_order The WooCommerce order.
-     * @return YWSBS_Subscription|bool
-     */
-    private function get_subscription_from_renew_order( \WC_Order $renewal_order ) {
-        $subscriptions   = $renewal_order->get_meta( 'subscriptions' );
-        $subscription_id = ! empty( $subscriptions ) ? array_shift( $subscriptions ) : false; // $subscriptions is always an array of 1 element.
+	/**
+	 * Get subscription object from renew order
+	 *
+	 * @param \WC_Order $renewal_order The WooCommerce order.
+	 * @return YWSBS_Subscription|bool
+	 */
+	private function get_subscription_from_renew_order( \WC_Order $renewal_order ) {
+		$subscriptions   = $renewal_order->get_meta( 'subscriptions' );
+		$subscription_id = ! empty( $subscriptions ) ? array_shift( $subscriptions ) : false; // $subscriptions is always an array of 1 element.
 
-        return $subscription_id ? ywsbs_get_subscription( $subscription_id ) : false;
-    }
+		return $subscription_id ? ywsbs_get_subscription( $subscription_id ) : false;
+	}
 
 	public function init_subscriptions( array $supports, string $gateway_id ): array {
 		add_action( 'wc_gateway_monei_create_payment_success', array( $this, 'subscription_after_payment_success' ), 1, 3 );
@@ -267,12 +277,12 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	/**
 	 * From renewal order, get monei sequence id.
 	 *
-	 * @param $renewal_order
+	 * @param  $subscription
 	 *
 	 * @return string|false
 	 */
-	public function get_sequence_id_from_renewal_order( $renewal_order ) {
-        return $renewal_order->get_meta( '_monei_sequence_id', true );
+	public function get_sequence_id_from_subscription( $subscription ) {
+		return $subscription->get( '_monei_sequence_id' );
 	}
 
 	/**
