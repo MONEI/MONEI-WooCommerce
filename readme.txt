@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 6.2.1
+Stable tag: 6.3.0
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -102,6 +102,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+2025-04-24 - version 6.3.0
+* Add - Selector for live/test API key, now we save both
+* Add - Integration for YITH Subscriptions
+* Fix - Change payment method for subscriptions
+* Fix - Renewal process in WooCommerce Subscriptions
 
 2025-04-07 - version 6.2.1
 * Fix - Update Monei SDK to V2
