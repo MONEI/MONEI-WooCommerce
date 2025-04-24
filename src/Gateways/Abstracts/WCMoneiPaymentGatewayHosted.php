@@ -3,8 +3,8 @@
 namespace Monei\Gateways\Abstracts;
 
 use Exception;
+use Monei\Services\payment\MoneiPaymentServices;
 use WC_Geolocation;
-use WC_Monei_API;
 use WC_Order;
 use WC_Payment_Tokens;
 
@@ -127,8 +127,8 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 
 		try {
 			// We set the order, so we can use the right api key configuration.
-			WC_Monei_API::set_order( $order );
-			$payment = WC_Monei_API::create_payment( $payload );
+			$this->moneiPaymentServices->set_order( $order );
+			$payment = $this->moneiPaymentServices->create_payment( $payload );
 
 			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
 			$this->log( $payload, 'debug' );

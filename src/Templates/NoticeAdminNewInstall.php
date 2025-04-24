@@ -14,7 +14,7 @@ class NoticeAdminNewInstall implements TemplateInterface {
 					href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'monei-hide-new-version', 'hide-new-version-monei' ), 'monei_hide_new_version_nonce', '_monei_hide_new_version_nonce' ) ); ?>"><?php esc_html_e( 'Dismiss', 'monei' ); ?></a>
 				<p>
 				<h3>
-					<?php echo esc_html__( 'Thank you for install MONEI for WooCommerce. Version: ', 'monei' ). ' ' . esc_html(MONEI_VERSION) ?>
+					<?php echo esc_html__( 'Thank you for install MONEI for WooCommerce. Version: ', 'monei' ) . ' ' . esc_html( MONEI_VERSION ); ?>
 				</h3>
 				</p>
 				<p>

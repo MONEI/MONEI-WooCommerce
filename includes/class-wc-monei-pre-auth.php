@@ -1,4 +1,9 @@
 <?php
+
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\sdk\MoneiSdkClientFactory;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -12,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @version 5.0
  */
 class WC_Monei_Pre_Auth {
+	private MoneiPaymentServices $moneiPaymentServices;
 
 	/**
 	 * Constructor.
@@ -21,6 +27,10 @@ class WC_Monei_Pre_Auth {
 		add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'capture_payment_when_pre_auth' ) );
 		add_action( 'woocommerce_order_status_on-hold_to_cancelled', array( $this, 'cancel_payment_when_pre_auth' ) );
 		add_action( 'woocommerce_order_status_on-hold_to_refunded', array( $this, 'cancel_payment_when_pre_auth' ) );
+		//TODO use the container
+		$apiKeyService              = new ApiKeyService();
+		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 	}
 
 	/**
@@ -36,8 +46,8 @@ class WC_Monei_Pre_Auth {
 		}
 
 		try {
-			WC_Monei_API::set_order( $order );
-			$result = WC_Monei_API::capture_payment( $payment_id, monei_price_format( $order->get_total() ) );
+			$this->moneiPaymentServices->set_order( $order );
+			$result = $this->moneiPaymentServices->capture_payment( $payment_id, monei_price_format( $order->get_total() ) );
 			// Deleting pre-auth metadata, once the order is captured.
 			$order->delete_meta_data( '_payment_not_captured_monei' );
 
@@ -63,8 +73,8 @@ class WC_Monei_Pre_Auth {
 		}
 
 		try {
-			WC_Monei_API::set_order( $order );
-			$result = WC_Monei_API::cancel_payment( $payment_id );
+			$this->moneiPaymentServices->set_order( $order );
+			$result = $this->moneiPaymentServices->cancel_payment( $payment_id );
 			WC_Monei_Logger::log( 'Cancel Payment Payment OK.', 'debug' );
 			WC_Monei_Logger::log( $result, 'debug' );
 			$order->add_order_note( '<strong>Cancel Payment approved</strong>: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() . ' ' . $result->getStatusCode() );

@@ -3,10 +3,11 @@
 namespace Monei\Gateways\Abstracts;
 
 use Exception;
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
 use WC_Admin_Settings;
-use WC_Monei_API;
 use WC_Monei_Logger;
 use WC_Payment_Gateway;
 
@@ -118,10 +119,19 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	public PaymentMethodsService $paymentMethodsService;
 	private TemplateManager $templateManager;
+	private ApiKeyService $apiKeyService;
+	protected MoneiPaymentServices $moneiPaymentServices;
 
-	public function __construct( PaymentMethodsService $paymentMethodsService, TemplateManager $templateManager ) {
+	public function __construct(
+		PaymentMethodsService $paymentMethodsService,
+		TemplateManager $templateManager,
+		ApiKeyService $apiKeyService,
+		MoneiPaymentServices $moneiPaymentServices
+	) {
 		$this->paymentMethodsService = $paymentMethodsService;
 		$this->templateManager       = $templateManager;
+		$this->apiKeyService         = $apiKeyService;
+		$this->moneiPaymentServices  = $moneiPaymentServices;
 	}
 
 	/**
@@ -226,7 +236,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 		try {
 
-			$result = WC_Monei_API::refund_payment( $payment_id, monei_price_format( $amount ) );
+			$result = $this->moneiPaymentServices->refund_payment( $payment_id, monei_price_format( $amount ) );
 
 			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
 
@@ -310,8 +320,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	public function checks_before_save( $is_post, $option ) {
 		if ( $is_post ) {
 			// Check if API key is saved in general settings
-			$api_key    = get_option( 'monei_apikey', false );
-			$account_id = get_option( 'monei_accountid', false );
+			$api_key    = $this->getApiKey();
+			$account_id = $this->getAccountId();
 			if ( ! $api_key || ! $account_id ) {
 				WC_Admin_Settings::add_error( __( 'MONEI needs an API Key in order to work. Disabling the gateway.', 'monei' ) );
 				unset( $_POST[ $option ] );
@@ -321,27 +331,15 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	}
 
 	public function getApiKey() {
-		return ! empty( get_option( 'monei_apikey', false ) )
-			? get_option( 'monei_apikey' )
-			: ( ! empty( $this->get_option( 'apikey' ) )
-				? $this->get_option( 'apikey' )
-				: '' );
+		return $this->apiKeyService->get_api_key();
 	}
 
 	public function getAccountId() {
-		return ! empty( get_option( 'monei_accountid', false ) )
-			? get_option( 'monei_accountid' )
-			: ( ! empty( $this->get_option( 'accountid' ) )
-				? $this->get_option( 'accountid' )
-				: '' );
+		return $this->apiKeyService->get_account_id();
 	}
 
 	public function getTestmode() {
-		return ! empty( get_option( 'monei_testmode', false ) )
-			? get_option( 'monei_testmode' )
-			: ( ! empty( $this->get_option( 'testmode' ) )
-				? $this->get_option( 'testmode' )
-				: 'no' );
+		return $this->apiKeyService->is_test_mode();
 	}
 
 	/**

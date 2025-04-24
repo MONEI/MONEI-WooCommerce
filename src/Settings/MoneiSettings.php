@@ -2,17 +2,23 @@
 
 namespace Monei\Settings;
 
+use Monei\Services\ApiKeyService;
 use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
 
 class MoneiSettings extends \WC_Settings_Page {
 
 	protected ContainerInterface $container;
+	/**
+	 * @var ApiKeyService
+	 */
+	private $apiKeyService;
 
 	public function __construct( ContainerInterface $container ) {
-		$this->id        = 'monei_settings';
-		$this->label     = __( 'MONEI Settings', 'monei' );
-		$this->container = $container;
+		$this->id            = 'monei_settings';
+		$this->label         = __( 'MONEI Settings', 'monei' );
+		$this->container     = $container;
+		$this->apiKeyService = $container->get( ApiKeyService::class );
 		parent::__construct();
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
@@ -33,25 +39,34 @@ class MoneiSettings extends \WC_Settings_Page {
 				'default'  => '',
 			),
 			array(
-				'title'    => __( 'API Key *', 'monei' ),
-				'type'     => 'text',
-				'desc'     => wp_kses_post(
-					__(
-						'You can find your API key in <a href="https://dashboard.monei.com/settings/api" target="_blank">MONEI Dashboard</a>.<br/>Account ID and API key for the test mode are different from the live mode and can only be used for testing purposes.',
-						'monei'
-					)
+				'title'    => __( 'API Key Mode', 'monei' ),
+				'type'     => 'select',
+				'desc'     => __( 'Choose between Test or Live API Key.', 'monei' ),
+				'desc_tip' => true,
+				'id'       => 'monei_apikey_mode',
+				'default'  => 'test',
+				'options'  => array(
+					'test' => __( 'Test API Key', 'monei' ),
+					'live' => __( 'Live API Key', 'monei' ),
 				),
-				'desc_tip' => __( 'Your MONEI API Key. It can be found in your MONEI Dashboard.', 'monei' ),
-				'id'       => 'monei_apikey',
-				'default'  => '',
 			),
 			array(
-				'title'   => __( 'Test mode', 'monei' ),
-				'type'    => 'checkbox',
-				'label'   => __( 'Enable test mode', 'monei' ),
-				'desc'    => __( 'Place the payment gateway in test mode using test API key.', 'monei' ),
-				'id'      => 'monei_testmode',
-				'default' => 'no',
+				'title'    => __( 'Test API Key *', 'monei' ),
+				'type'     => 'text',
+				'desc'     => __( 'Enter your MONEI Test API Key here.', 'monei' ),
+				'desc_tip' => true,
+				'id'       => 'monei_test_apikey',
+				'default'  => '',
+				'class'    => 'monei-api-key-field monei-test-api-key-field',
+			),
+			array(
+				'title'    => __( 'Live API Key *', 'monei' ),
+				'type'     => 'text',
+				'desc'     => __( 'Enter your MONEI Live API Key here.', 'monei' ),
+				'desc_tip' => true,
+				'id'       => 'monei_live_apikey',
+				'default'  => '',
+				'class'    => 'monei-api-key-field monei-live-api-key-field',
 			),
 			array(
 				'title'    => __( 'Debug Log', 'monei' ),
@@ -93,6 +108,7 @@ class MoneiSettings extends \WC_Settings_Page {
 	public function save() {
 		$settings = $this->get_settings();
 		WC_Admin_Settings::save_fields( $settings );
+		$this->apiKeyService->update_keys();
 	}
 
 	public function enqueue_admin_scripts( $hook ) {
@@ -102,17 +118,27 @@ class MoneiSettings extends \WC_Settings_Page {
 
 		$screen = get_current_screen();
 
-        // Ensure we're on the WooCommerce settings page
-        if ($screen->id !== 'woocommerce_page_wc-settings') {
-            return;
-        }
+		// Ensure we're on the WooCommerce settings page
+		if ( $screen->id !== 'woocommerce_page_wc-settings' ) {
+			return;
+		}
 
-        $plugin_url = plugin_dir_url(dirname(__DIR__));
-        wp_enqueue_style(
-            'monei-admin-css',
-            $plugin_url . 'public/css/monei-admin.css',
-            array(),
-            '1.0.0'
-        );
+		$plugin_url = plugin_dir_url( dirname( __DIR__ ) );
+		wp_enqueue_style(
+			'monei-admin-css',
+			$plugin_url . 'public/css/monei-admin.css',
+			array(),
+			'1.0.0'
+		);
+		wp_register_script(
+			'monei-admin-script',
+			$plugin_url . 'public/js/monei-settings.min.js',
+			array( 'jquery' ),
+			WC_Monei()->version,
+			true
+		);
+		wp_enqueue_script(
+			'monei-admin-script'
+		);
 	}
 }

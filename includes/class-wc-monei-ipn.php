@@ -1,4 +1,9 @@
 <?php
+
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\sdk\MoneiSdkClientFactory;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -12,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Monei_IPN {
 
 	private $logging;
+	private MoneiPaymentServices $moneiPaymentServices;
 
 	/**
 	 * Constructor.
@@ -20,6 +26,10 @@ class WC_Monei_IPN {
 		$this->logging = $logging;
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
+		//TODO use the container
+		$apiKeyService              = new ApiKeyService();
+		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 	}
 
 	/**
@@ -163,9 +173,9 @@ class WC_Monei_IPN {
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
 		$decoded_body = json_decode( $request_body );
 		if ( isset( $decoded_body->orderId ) ) {
-			WC_Monei_API::set_order( $decoded_body->orderId );
+			$this->moneiPaymentServices->set_order( $decoded_body->orderId );
 		}
-		return (array) WC_Monei_API::verify_signature( $request_body, $monei_signature );
+		return (array) $this->moneiPaymentServices->verify_signature( $request_body, $monei_signature );
 	}
 
 	/**

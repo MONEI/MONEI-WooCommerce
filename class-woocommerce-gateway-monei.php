@@ -9,7 +9,11 @@
  */
 
 use Monei\Core\ContainerProvider;
+use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
+use Monei\Services\MoneiApplePayVerificationService;
+use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Settings\MoneiSettings;
 
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
@@ -63,7 +67,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			}
 
 			self::$_initialized = true;
-			
+
 			// Declare block compatibility
 			$this->block_compatiblity();
 
@@ -72,23 +76,27 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 		public function block_compatiblity() {
 			// Load checkout block class
-			add_action( 'woocommerce_blocks_loaded', function() {
-				if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-					return;
+			add_action(
+				'woocommerce_blocks_loaded',
+				function () {
+					if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+						return;
+					}
+					$container           = ContainerProvider::getContainer();
+					$blockSupportService = $container->get( BlockSupportService::class );
+					$blockSupportClasses = $blockSupportService->getBlockSupportClasses();
+					add_action(
+						'woocommerce_blocks_payment_method_type_registration',
+						function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) use ( $blockSupportClasses, $container ) {
+							foreach ( $blockSupportClasses as $className ) {
+								if ( $container->has( $className ) ) {
+									$payment_method_registry->register( $container->get( $className ) );
+								}
+							}
+						}
+					);
 				}
-                $container = ContainerProvider::getContainer();
-                $blockSupportService = $container->get(BlockSupportService::class);
-                $blockSupportClasses = $blockSupportService->getBlockSupportClasses();
-				add_action(	'woocommerce_blocks_payment_method_type_registration',
-					function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) use($blockSupportClasses, $container){
-                        foreach ($blockSupportClasses as $className) {
-                            if ($container->has($className)) {
-                                $payment_method_registry->register($container->get($className));
-                            }
-                        }
-				} );
-
-			} );
+			);
 		}
 
 		/**
@@ -128,21 +136,20 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * Include required core files used in admin and on the frontend.
 		 */
 		private function includes() {
-            $container = ContainerProvider::getContainer();
+			$container = ContainerProvider::getContainer();
 			include_once 'includes/woocommerce-gateway-monei-core-functions.php';
 			include_once 'includes/class-wc-monei-ipn.php';
-			include_once 'includes/class-wc-monei-api.php';
 			include_once 'includes/class-wc-monei-logger.php';
-			include_once 'includes/addons/trait-wc-monei-addons-helper.php';
-			include_once 'includes/addons/trait-wc-monei-subscriptions.php';
-			include_once 'includes/addons/class-wc-monei-apple-pay-verification.php';
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
-                add_filter('woocommerce_get_settings_pages', function ($settings) use ($container) {
-                    $settings[] = new MoneiSettings($container);
-                    return $settings;
-                });
+				add_filter(
+					'woocommerce_get_settings_pages',
+					function ( $settings ) use ( $container ) {
+						$settings[] = new MoneiSettings( $container );
+						return $settings;
+					}
+				);
 			}
 
 			if ( $this->is_request( 'frontend' ) ) {
@@ -175,12 +182,12 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				}
 				return;
 			}
-            $container = \Monei\Core\ContainerProvider::getContainer();
-            $templateManager = $container->get('Monei\Templates\TemplateManager' );
-            $template = $templateManager->getTemplate('notice-admin-new-install');
-            if ( $template ) {
-                $template->render([]);
-            }
+			$container       = \Monei\Core\ContainerProvider::getContainer();
+			$templateManager = $container->get( 'Monei\Templates\TemplateManager' );
+			$template        = $templateManager->getTemplate( 'notice-admin-new-install' );
+			if ( $template ) {
+				$template->render( array() );
+			}
 		}
 
 		/**
@@ -189,12 +196,12 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return void
 		 */
 		public function dependency_notice() {
-            $container = \Monei\Core\ContainerProvider::getContainer();
-            $templateManager = $container->get('Monei\Templates\TemplateManager' );
-            $template = $templateManager->getTemplate('notice-admin-dependency');
-            if ( $template ) {
-                $template->render([]);
-            }
+			$container       = \Monei\Core\ContainerProvider::getContainer();
+			$templateManager = $container->get( 'Monei\Templates\TemplateManager' );
+			$template        = $templateManager->getTemplate( 'notice-admin-dependency' );
+			if ( $template ) {
+				$template->render( array() );
+			}
 		}
 
 		/**
@@ -243,55 +250,39 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		public function init() {
 			// Before init
 			do_action( 'before_woocommerce_gateway_monei_init' );
+			//TODO use the container
+			$apiKeyService        = new ApiKeyService();
+			$sdkClient            = new MoneiSdkClientFactory( $apiKeyService );
+			$moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+			new MoneiApplePayVerificationService( $moneiPaymentServices );
 
 			// todo: not translation yet.
 			//$this->load_plugin_textdomain();
 
-			add_filter( 'option_woocommerce_monei_bizum_settings',  array( $this, 'monei_settings_by_default' ), 1 );
+			add_filter( 'option_woocommerce_monei_bizum_settings', array( $this, 'monei_settings_by_default' ), 1 );
 			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
-            add_filter( 'option_woocommerce_monei_multibanco_settings', array( $this, 'monei_settings_by_default' ), 1 );
-            add_filter( 'option_woocommerce_monei_mbway_settings', array( $this, 'monei_settings_by_default' ), 1 );
-            add_filter( 'option_woocommerce_monei_settings', array( $this, 'copyKeysToCentralSettings' ), 1 );
+			add_filter( 'option_woocommerce_monei_multibanco_settings', array( $this, 'monei_settings_by_default' ), 1 );
+			add_filter( 'option_woocommerce_monei_mbway_settings', array( $this, 'monei_settings_by_default' ), 1 );
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
-			wp_register_style( 
-				'monei-icons', 
+			wp_register_style(
+				'monei-icons',
 				$this->plugin_url() . '/public/css/monei-icons-classic.css',
-				[], 
+				array(),
 				filemtime( $this->plugin_path() . '/public/css/monei-icons-classic.css' ),
-				'screen' 
+				'screen'
 			);
 			wp_enqueue_style( 'monei-icons' );
-            wp_register_style(
-                'monei-blocks-checkout-cc',
-                WC_Monei()->plugin_url(). '/public/css/monei-blocks-checkout.css',
-                array(),
-                WC_Monei()->version,
-                'all'
-            );
-            wp_enqueue_style( 'monei-blocks-checkout-cc' );
+			wp_register_style(
+				'monei-blocks-checkout-cc',
+				WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
+				array(),
+				WC_Monei()->version,
+				'all'
+			);
+			wp_enqueue_style( 'monei-blocks-checkout-cc' );
 		}
-
-        public function copyKeysToCentralSettings($default_params)
-        {
-            $centralApiKey = get_option('monei_apikey');
-            $centralAccountId = get_option('monei_accountid');
-            $ccApiKey = $default_params['apikey'] ?? false;
-            $ccAccountId = $default_params['accountid'] ?? false;
-
-            // Update API key if centralApiKey is empty
-            if ( empty( $centralApiKey ) && !empty( $ccApiKey ) ) {
-                update_option( 'monei_apikey',  $ccApiKey );
-            }
-
-            // Update Account ID if centralAccountId is empty
-            if ( empty( $centralAccountId ) && !empty( $ccAccountId ) ) {
-                update_option( 'monei_accountid',  $ccAccountId );
-            }
-
-            return $default_params;
-        }
 
 
 		/**
@@ -301,32 +292,32 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @return array
 		 */
-        public function monei_settings_by_default( $default_params ) {
-            $default_params['testmode'] = $this->get_setting_with_default( 'testmode', $default_params );
-            $default_params['apikey'] = $this->get_setting_with_default( 'apikey', $default_params );
-            $default_params['debug'] = $this->get_setting_with_default( 'debug', $default_params );
-            $default_params['orderdo']  = ( empty( $default_params['orderdo'] ) )  ? monei_get_settings( 'orderdo' )  : $default_params['orderdo'];
+		public function monei_settings_by_default( $default_params ) {
+			$default_params['testmode'] = $this->get_setting_with_default( 'testmode', $default_params );
+			$default_params['apikey']   = $this->get_setting_with_default( 'apikey', $default_params );
+			$default_params['debug']    = $this->get_setting_with_default( 'debug', $default_params );
+			$default_params['orderdo']  = ( empty( $default_params['orderdo'] ) ) ? monei_get_settings( 'orderdo' ) : $default_params['orderdo'];
 
-            return $default_params;
-        }
+			return $default_params;
+		}
 
-        private function get_setting_with_default( $key, $params ) {
-            if ( ! empty( $params[ $key ] ) ) {
-                return $params[ $key ];
-            }
+		private function get_setting_with_default( $key, $params ) {
+			if ( ! empty( $params[ $key ] ) ) {
+				return $params[ $key ];
+			}
 
-            $option_value = get_option( "monei_$key" );
-            if ( ! empty( $option_value ) ) {
-                return $option_value;
-            }
+			$option_value = get_option( "monei_$key" );
+			if ( ! empty( $option_value ) ) {
+				return $option_value;
+			}
 
-            $monei_setting_value = monei_get_settings( $key );
-            if ( ! empty( $monei_setting_value ) ) {
-                return $monei_setting_value;
-            }
+			$monei_setting_value = monei_get_settings( $key );
+			if ( ! empty( $monei_setting_value ) ) {
+				return $monei_setting_value;
+			}
 
-            return '';
-        }
+			return '';
+		}
 
 		/**
 		 * Hooks when plugin_loaded
@@ -343,17 +334,17 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return array
 		 */
 		public function add_gateways( $methods ) {
-            $container = \Monei\Core\ContainerProvider::getContainer();
+			$container = \Monei\Core\ContainerProvider::getContainer();
 
-            $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiCC');
-            if (!is_admin()) {
-                $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle');
-            }
-			$methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiCofidis');
-			$methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiBizum');
-			$methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal');
-            $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiMultibanco');
-            $methods[] = $container->get('Monei\Gateways\PaymentMethods\WCGatewayMoneiMBWay');
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiCC' );
+			if ( ! is_admin() ) {
+				$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle' );
+			}
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiCofidis' );
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiBizum' );
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal' );
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiMultibanco' );
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiMBWay' );
 			return $methods;
 		}
 
@@ -424,4 +415,3 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 	}
 
 endif;
-

@@ -1,8 +1,15 @@
 <?php
 
+use Monei\Features\Subscriptions\SubscriptionService;
+use Monei\Features\Subscriptions\WooCommerceSubscriptionsHandler;
+use Monei\Features\Subscriptions\YithSubscriptionPluginHandler;
 use Monei\Repositories\PaymentMethodsRepository;
+use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
+use Monei\Services\MoneiApplePayVerificationService;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
+use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Templates\NoticeAdminDependency;
 use Monei\Templates\NoticeAdminNewInstall;
 use Monei\Templates\NoticeGatewayNotAvailable;
@@ -18,16 +25,15 @@ $blockNamespacePrefix   = 'Monei\\Gateways\\Blocks\\';
 $definitions            = array(
 	// ========== TEMPLATES ==========
 	// Register each template as an autowired service
-	NoticeAdminNewInstall::class        => DI\autowire( NoticeAdminNewInstall::class ),
-	SettingsHeader::class               => DI\autowire( SettingsHeader::class ),
-	NoticeAdminDependency::class        => DI\autowire( NoticeAdminDependency::class ),
-	NoticeGatewayNotAvailable::class    => DI\autowire( NoticeGatewayNotAvailable::class ),
-	NoticeGatewayNotAvailableApi::class => DI\autowire( NoticeGatewayNotAvailableApi::class ),
-	NoticeGatewayNotEnabledMonei::class => DI\autowire( NoticeGatewayNotEnabledMonei::class ),
-
+	NoticeAdminNewInstall::class            => DI\autowire( NoticeAdminNewInstall::class ),
+	SettingsHeader::class                   => DI\autowire( SettingsHeader::class ),
+	NoticeAdminDependency::class            => DI\autowire( NoticeAdminDependency::class ),
+	NoticeGatewayNotAvailable::class        => DI\autowire( NoticeGatewayNotAvailable::class ),
+	NoticeGatewayNotAvailableApi::class     => DI\autowire( NoticeGatewayNotAvailableApi::class ),
+	NoticeGatewayNotEnabledMonei::class     => DI\autowire( NoticeGatewayNotEnabledMonei::class ),
 
 	// array of [ 'short-template-name' => <template-class-instance> ]
-	TemplateManager::class              => DI\create( TemplateManager::class )
+	TemplateManager::class                  => DI\create( TemplateManager::class )
 		->constructor(
 			array(
 				'notice-admin-new-install'               => DI\get( NoticeAdminNewInstall::class ),
@@ -39,16 +45,32 @@ $definitions            = array(
 			)
 		),
 	// ========== PAYMENT METHOD SERVICES ==========
-	PaymentMethodsRepository::class     => DI\factory(
+	PaymentMethodsRepository::class         => DI\factory(
 		function () {
 			$accountId = get_option( 'monei_accountid' );
 			return new Monei\Repositories\PaymentMethodsRepository( $accountId );
 		}
 	),
-	PaymentMethodsService::class        => DI\create( PaymentMethodsService::class )
+	PaymentMethodsService::class            => DI\create( PaymentMethodsService::class )
 		->constructor( DI\get( PaymentMethodsRepository::class ) ),
-	BlockSupportService::class          => DI\create( BlockSupportService::class )
+	MoneiPaymentServices::class             => DI\autowire( MoneiPaymentServices::class ),
+	BlockSupportService::class              => DI\create( BlockSupportService::class )
 		->constructor( $blocksPath, $blockNamespacePrefix ),
+	MoneiApplePayVerificationService::class => DI\autowire( MoneiApplePayVerificationService::class )
+		->constructor( DI\get( MoneiPaymentServices::class ) ),
+	ApiKeyService::class                    => DI\autowire( ApiKeyService::class ),
+	MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
+		->constructor( DI\get( ApiKeyService::class ) ),
+	WooCommerceSubscriptionsHandler::class  => \DI\create(
+		WooCommerceSubscriptionsHandler::class,
+	)->constructor(
+		DI\get( MoneiSdkClientFactory::class )
+	),
+ YithSubscriptionPluginHandler::class => \DI\autowire(YithSubscriptionPluginHandler::class),
+
+ SubscriptionService::class => \DI\autowire(SubscriptionService::class)
+     ->constructorParameter('wooHandler', \DI\get(WooCommerceSubscriptionsHandler::class))
+     ->constructorParameter('yithHandler', \DI\get(YithSubscriptionPluginHandler::class)),
 );
 
 // Dynamically load all gateway classes in the folder

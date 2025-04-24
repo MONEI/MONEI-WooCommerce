@@ -1,4 +1,9 @@
 <?php
+
+use Monei\Services\ApiKeyService;
+use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\sdk\MoneiSdkClientFactory;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -13,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @version 5.0
  */
 class WC_Monei_Redirect_Hooks {
+	private MoneiPaymentServices $moneiPaymentServices;
 
 	/**
 	 * Constructor.
@@ -21,6 +27,10 @@ class WC_Monei_Redirect_Hooks {
 		add_action( 'woocommerce_cancelled_order', array( $this, 'add_notice_monei_order_cancelled' ) );
 		add_action( 'template_redirect', array( $this, 'add_notice_monei_order_failed' ) );
 		add_action( 'wp', array( $this, 'save_payment_token' ) );
+		//TODO use the container
+		$apiKeyService              = new ApiKeyService();
+		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 	}
 
 	/**
@@ -111,8 +121,8 @@ class WC_Monei_Redirect_Hooks {
 		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 		try {
-			WC_Monei_API::set_order( $order_id );
-			$payment       = WC_Monei_API::get_payment( $payment_id );
+			$this->moneiPaymentServices->set_order( $order_id );
+			$payment       = $this->moneiPaymentServices->get_payment( $payment_id );
 			$payment_token = $payment->getPaymentToken();
 
 			// A payment can come without token, user didn't check on save payment method.
