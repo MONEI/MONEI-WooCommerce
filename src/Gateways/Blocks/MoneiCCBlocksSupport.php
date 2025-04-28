@@ -86,10 +86,10 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 	public function get_payment_method_data() {
 
 		if ( 'no' === $this->get_setting( 'tokenization' ) ) {
-			$supports = $this->get_supported_features();
+			$supports = $this->gateway->supports;
 		} else {
 			$supports = array(
-				'features'       => $this->get_supported_features(),
+				'features'       => $this->gateway->supports,
 				'showSavedCards' => true,
 				'showSaveOption' => true,
 			);
