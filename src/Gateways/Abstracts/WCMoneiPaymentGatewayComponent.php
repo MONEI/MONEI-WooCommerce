@@ -34,7 +34,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		$order   = new WC_Order( $order_id );
 		$payload = $this->create_payload( $order, $allowed_payment_method );
-		$payload = ( $this->handler->is_subscription_order( $order_id ) ) ? $this->handler->create_subscription_payload( $order, $allowed_payment_method, $payload ) : $payload;
+		$payload = $this->handler === null || ! ( $this->handler->is_subscription_order( $order_id ) ) ? $payload : $this->handler->create_subscription_payload( $order, $allowed_payment_method, $payload );
 
 		/**
 		 * If payment is tokenized ( saved cc ) we just need to create_payment with token and everything will work fine.

@@ -269,7 +269,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			esc_html_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
-		} elseif ( $this->handler->is_subscription_change_payment_page() ) {
+		} elseif ( $this->handler !== null && $this->handler->is_subscription_change_payment_page() ) {
 			// On subscription change payment page, we always use component CC.
 			echo esc_html( $this->description );
 			if ( $this->tokenization ) {
@@ -341,7 +341,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 */
 	public function monei_scripts() {
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( $this->redirect_flow && ! is_checkout() && ! is_add_payment_method_page() && ! $this->handler->is_subscription_change_payment_page() ) {
+		if ( $this->redirect_flow && ! is_checkout() && ! is_add_payment_method_page() && ($this->handler && ! $this->handler->is_subscription_change_payment_page() )  ) {
 			return;
 		}
 
