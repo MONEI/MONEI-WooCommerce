@@ -298,4 +298,23 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		/* translators: 1) card brand 2) last 4 digits */
 		return sprintf( __( '%1$s card ending in %2$s', 'monei' ), $brand, $last_digits );
 	}
+
+    /**
+     * Check if a product is a subscription using YITH WooCommerce Subscription logic
+     *
+     * @param int|WC_Product $product Product ID or WC_Product object
+     * @return bool
+     */
+    function cart_has_subscription() {
+        // Ensure YITH WooCommerce Subscription plugin is active
+        if (!function_exists('YITH_WC_Subscription')) {
+            return false;
+        }
+
+        // Get the YITH_WC_Subscription instance
+        $ywsbs = YITH_WC_Subscription();
+
+        // Use the is_subscription method to check if the product is a subscription
+        return $ywsbs->cart_has_subscriptions();
+    }
 }
