@@ -306,15 +306,13 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
      * @return bool
      */
     function cart_has_subscription() {
-        // Ensure YITH WooCommerce Subscription plugin is active
+
         if (!function_exists('YITH_WC_Subscription')) {
             return false;
         }
 
-        // Get the YITH_WC_Subscription instance
         $ywsbs = YITH_WC_Subscription();
 
-        // Use the is_subscription method to check if the product is a subscription
-        return $ywsbs->cart_has_subscriptions();
+        return is_string($ywsbs->cart_has_subscriptions());
     }
 }
