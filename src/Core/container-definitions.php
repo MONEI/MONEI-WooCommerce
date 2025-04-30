@@ -44,13 +44,13 @@ $definitions            = array(
 				'notice-admin-gateway-not-enabled-monei' => DI\get( NoticeGatewayNotEnabledMonei::class ),
 			)
 		),
-	// ========== PAYMENT METHOD SERVICES ==========
-	PaymentMethodsRepository::class         => DI\factory(
-		function () {
-			$accountId = get_option( 'monei_accountid' );
-			return new Monei\Repositories\PaymentMethodsRepository( $accountId );
-		}
-	),
+    ApiKeyService::class => DI\autowire(ApiKeyService::class),
+    PaymentMethodsRepository::class => DI\factory(
+        function (ApiKeyService $apiKeyService) {
+            $accountId = $apiKeyService->get_account_id();
+            return new Monei\Repositories\PaymentMethodsRepository($accountId);
+        }
+    )->parameter('apiKeyService', DI\get(ApiKeyService::class)),
 	PaymentMethodsService::class            => DI\create( PaymentMethodsService::class )
 		->constructor( DI\get( PaymentMethodsRepository::class ) ),
 	MoneiPaymentServices::class             => DI\autowire( MoneiPaymentServices::class ),
@@ -58,7 +58,7 @@ $definitions            = array(
 		->constructor( $blocksPath, $blockNamespacePrefix ),
 	MoneiApplePayVerificationService::class => DI\autowire( MoneiApplePayVerificationService::class )
 		->constructor( DI\get( MoneiPaymentServices::class ) ),
-	ApiKeyService::class                    => DI\autowire( ApiKeyService::class ),
+
 	MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
 		->constructor( DI\get( ApiKeyService::class ) ),
 	WooCommerceSubscriptionsHandler::class  => \DI\create(
