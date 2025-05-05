@@ -12,6 +12,7 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 
 	private $gateway;
 	protected $name = 'monei_bizum';
+    protected $handler;
     protected SubscriptionService $subscriptions_service;
 
     public function __construct( WCMoneiPaymentGateway $gateway, SubscriptionService $subscriptionService) {
