@@ -54,7 +54,7 @@ class MoneiSettings extends \WC_Settings_Page {
             array(
                 'title'    => __( 'Live Account ID *', 'monei' ),
                 'type'     => 'text',
-                'desc'     => __( 'Enter your MONEI Test Account ID here.', 'monei' ),
+                'desc'     => __( 'Enter your MONEI Live Account ID here.', 'monei' ),
                 'desc_tip' => true,
                 'id'       => 'monei_live_accountid',
                 'default'  => '',
