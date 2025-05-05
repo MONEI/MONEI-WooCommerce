@@ -186,7 +186,7 @@
 		content: <MoneiBizumContent />,
 		edit: <div> { __( bizumData.title, 'monei' ) }</div>,
 		canMakePayment: ( { billingData } ) => {
-			return billingData.country === 'ES';
+			return billingData.country === 'ES' && !bizumData.cart_has_subscription;
 		},
 		supports: bizumData.supports,
 	};

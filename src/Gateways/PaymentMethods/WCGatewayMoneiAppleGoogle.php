@@ -55,7 +55,10 @@ class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC {
 		$this->icon     = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->settings = get_option( 'woocommerce_monei_settings', array() );
 		$this->enabled  = ( ! empty( isset( $this->settings['apple_google_pay'] ) && 'yes' === $this->settings['apple_google_pay'] ) ) ? 'yes' : 'no';
-
+        $this->supports = array(
+            'products',
+            'refunds',
+        );
 		add_filter(
 			'woocommerce_available_payment_gateways',
 			array( $this, 'hideAppleGoogleInCheckout' ),

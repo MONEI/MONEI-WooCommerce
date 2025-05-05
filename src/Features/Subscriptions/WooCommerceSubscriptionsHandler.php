@@ -312,4 +312,17 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		/* translators: 1) card brand 2) last 4 digits */
 		return sprintf( __( '%1$s card ending in %2$s', 'monei' ), $brand, $last_digits );
 	}
+
+    /**
+     * Check if a product is a subscription using WooCommerce Subscription logic
+     *
+     * @param int|WC_Product $product Product ID or WC_Product object
+     * @return bool
+     */
+    function cart_has_subscription() {
+        if (!$this->is_subscriptions_addon_enabled()) {
+            return false;
+        }
+        return is_array( WC()->cart->recurring_carts ) ? count( WC()->cart->recurring_carts ) : 0;
+    }
 }
