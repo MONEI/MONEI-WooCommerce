@@ -15,8 +15,8 @@ class ApiKeyService {
 		$this->test_api_key = get_option( 'monei_test_apikey', '' );
 		$this->live_api_key = get_option( 'monei_live_apikey', '' );
 		$this->api_key_mode = get_option( 'monei_apikey_mode', 'test' );
-		$this->test_account_id   = get_option( 'monei_test_accountid' );
-        $this->live_account_id = get_option( 'monei_live_accountid' );
+		$this->test_account_id   = get_option( 'monei_test_accountid', '' );
+        $this->live_account_id = get_option( 'monei_live_accountid', '' );
 
         // Copy the API keys to the central settings when the plugin is activated or updated
 		add_action( 'init', array( $this, 'copyKeysToCentralSettings' ), 0 );
@@ -56,8 +56,8 @@ class ApiKeyService {
 	public function update_keys(): void {
 		$this->test_api_key = get_option( 'monei_test_apikey', '' );
 		$this->live_api_key = get_option( 'monei_live_apikey', '' );
-        $this->test_account_id   = get_option( 'monei_test_accountid' );
-        $this->live_account_id = get_option( 'monei_live_accountid' );
+        $this->test_account_id   = get_option( 'monei_test_accountid', '' );
+        $this->live_account_id = get_option( 'monei_live_accountid', '' );
 		$this->api_key_mode = get_option( 'monei_apikey_mode', 'test' );
 	}
 
@@ -65,10 +65,10 @@ class ApiKeyService {
 		add_filter(
 			'option_woocommerce_monei_settings',
 			function ( $default_params ) {
-				$centralApiKey    = get_option( 'monei_apikey' );
-				$centralAccountId = get_option( 'monei_accountid' );
-				$ccApiKey         = $default_params['apikey'] ?? false;
-				$ccAccountId      = $default_params['accountid'] ?? false;
+				$centralApiKey    = get_option( 'monei_apikey', '' );
+				$centralAccountId = get_option( 'monei_accountid', '' );
+				$ccApiKey         = $default_params['apikey'] ?? '';
+				$ccAccountId      = $default_params['accountid'] ?? '';
 
 				if ( empty( $centralApiKey ) && empty( $ccApiKey ) ) {
 					return $default_params;
