@@ -44,13 +44,12 @@ $definitions            = array(
 				'notice-admin-gateway-not-enabled-monei' => DI\get( NoticeGatewayNotEnabledMonei::class ),
 			)
 		),
-    ApiKeyService::class => DI\autowire(ApiKeyService::class),
-    PaymentMethodsRepository::class => DI\factory(
-        function (ApiKeyService $apiKeyService) {
-            $accountId = $apiKeyService->get_account_id();
-            return new Monei\Repositories\PaymentMethodsRepository($accountId);
-        }
-    )->parameter('apiKeyService', DI\get(ApiKeyService::class)),
+	ApiKeyService::class                    => DI\autowire( ApiKeyService::class ),
+	PaymentMethodsRepository::class         => DI\factory(
+		function ( ApiKeyService $apiKeyService ) {
+			return new Monei\Repositories\PaymentMethodsRepository( $apiKeyService->get_account_id() );
+		}
+	),
 	PaymentMethodsService::class            => DI\create( PaymentMethodsService::class )
 		->constructor( DI\get( PaymentMethodsRepository::class ) ),
 	MoneiPaymentServices::class             => DI\autowire( MoneiPaymentServices::class ),
@@ -66,11 +65,11 @@ $definitions            = array(
 	)->constructor(
 		DI\get( MoneiSdkClientFactory::class )
 	),
- YithSubscriptionPluginHandler::class => \DI\autowire(YithSubscriptionPluginHandler::class),
+	YithSubscriptionPluginHandler::class    => \DI\autowire( YithSubscriptionPluginHandler::class ),
 
- SubscriptionService::class => \DI\autowire(SubscriptionService::class)
-     ->constructorParameter('wooHandler', \DI\get(WooCommerceSubscriptionsHandler::class))
-     ->constructorParameter('yithHandler', \DI\get(YithSubscriptionPluginHandler::class)),
+	SubscriptionService::class              => \DI\autowire( SubscriptionService::class )
+	->constructorParameter( 'wooHandler', \DI\get( WooCommerceSubscriptionsHandler::class ) )
+	->constructorParameter( 'yithHandler', \DI\get( YithSubscriptionPluginHandler::class ) ),
 );
 
 // Dynamically load all gateway classes in the folder
