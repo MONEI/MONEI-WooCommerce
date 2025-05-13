@@ -176,7 +176,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 			'woocommerce_monei-bizum',
 			'wc_bizum_params',
 			array(
-				'account_id' => monei_get_settings( false, 'monei_accountid' ),
+				'account_id' => $this->getAccountId(),
 				'session_id' => WC()->session->get_customer_id(),
 				'total'      => monei_price_format( $total ),
 				'currency'   => get_woocommerce_currency(),
