@@ -1,5 +1,8 @@
 *** MONEI Payments for WooCommerce ***
 
+2025-05-05 - version 6.3.3
+* Fix - Error copying old keys that hides the gateway
+
 2025-05-05 - version 6.3.2
 * Fix - Error in checkout when no subscription plugin present
 * Fix - Showing only available payment methods when subscription product in cart
