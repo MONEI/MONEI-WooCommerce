@@ -103,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-2025-05-05 - version 6.3.3
+2025-05-13 - version 6.3.3
 * Fix - Error copying old keys that hides the gateway
 
 2025-05-05 - version 6.3.2
