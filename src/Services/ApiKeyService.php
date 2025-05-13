@@ -65,6 +65,12 @@ class ApiKeyService {
 		add_filter(
 			'option_woocommerce_monei_settings',
 			function ( $default_params ) {
+                $newCentralTestApiKey    = get_option( 'monei_test_apikey', '' );
+                $newCentralLiveApiKey   = get_option( 'monei_live_apikey', '' );
+                //we already saved the new keys, so we don't need to do anything more here.'
+                if(! empty( $newCentralTestApiKey ) ||! empty( $newCentralLiveApiKey ) ) {
+                    return $default_params;
+                }
 				$centralApiKey    = get_option( 'monei_apikey', '' );
 				$centralAccountId = get_option( 'monei_accountid', '' );
 				$ccApiKey         = $default_params['apikey'] ?? '';
@@ -80,14 +86,10 @@ class ApiKeyService {
 					update_option( 'monei_test_apikey', $keyToUse );
 					update_option( 'monei_apikey_mode', 'test' );
                     update_option( 'monei_test_accountid', $accountId );
-				    delete_option( 'monei_apikey' );
-                    delete_option( 'monei_accountid' );
 				} else if(strpos( $keyToUse, 'pk_live_' ) === 0) {
 					update_option( 'monei_live_apikey', $keyToUse );
 					update_option( 'monei_apikey_mode', 'live' );
                     update_option( 'monei_live_accountid', $accountId );
-				    delete_option( 'monei_apikey' );
-                    delete_option( 'monei_accountid' );
                 }
 
 				return $default_params;
