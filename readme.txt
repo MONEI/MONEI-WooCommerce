@@ -103,9 +103,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-2025-05-13 - version 6.3.3
+2025-05-14 - version 6.3.3
 * Fix - Error copying old keys that hides the gateway
 * Fix - Component buttons not showing in classic checkout
+* Fix - PayPal button not working in block checkout
 
 2025-05-05 - version 6.3.2
 * Fix - Error in checkout when no subscription plugin present

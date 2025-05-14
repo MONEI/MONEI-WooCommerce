@@ -114,7 +114,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
 			$payload['generatePaymentToken'] = true;
 		}
-		$token_id = $this->get_frontend_generated_bizum_token();
+		$token_id = $this->get_frontend_generated_token();
 		if ( $token_id ) {
 			if ( ! $this->isBlockCheckout() ) {
 				$payload['paymentToken'] = $token_id;
@@ -140,7 +140,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 					'result'      => 'success',
 					'redirect'    => false,
 					'paymentId'   => $payment->getId(), // Send the paymentId back to the client
-					'token'       => $this->get_frontend_generated_bizum_token(), // Send the token back to the client
+					'token'       => $this->get_frontend_generated_token(), // Send the token back to the client
 					'completeUrl' => $payload['completeUrl'],
 					'failUrl'     => $payload['failUrl'],
 					'orderId'     => $order_id,
@@ -165,11 +165,11 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 	 *
 	 * @return false|string
 	 */
-	protected function get_frontend_generated_bizum_token() {
-		if ( $this->id !== 'monei_bizum' ) {
-			return false;
+	protected function get_frontend_generated_token() {
+		if ( $this->id === 'monei_bizum' || $this->id === 'monei_paypal') {
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
 		}
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
+        return false;
 	}
 }
