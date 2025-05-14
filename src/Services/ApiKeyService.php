@@ -7,18 +7,18 @@ class ApiKeyService {
 	private string $live_api_key;
 	private string $api_key_mode;
 	private string $test_account_id;
-    private string $live_account_id;
+	private string $live_account_id;
 
 
-    public function __construct() {
+	public function __construct() {
 		// Load the API keys and mode from the database
-		$this->test_api_key = get_option( 'monei_test_apikey', '' );
-		$this->live_api_key = get_option( 'monei_live_apikey', '' );
-		$this->api_key_mode = get_option( 'monei_apikey_mode', 'test' );
-		$this->test_account_id   = get_option( 'monei_test_accountid', '' );
-        $this->live_account_id = get_option( 'monei_live_accountid', '' );
+		$this->test_api_key    = get_option( 'monei_test_apikey', '' );
+		$this->live_api_key    = get_option( 'monei_live_apikey', '' );
+		$this->api_key_mode    = get_option( 'monei_apikey_mode', 'test' );
+		$this->test_account_id = get_option( 'monei_test_accountid', '' );
+		$this->live_account_id = get_option( 'monei_live_accountid', '' );
 
-        // Copy the API keys to the central settings when the plugin is activated or updated
+		// Copy the API keys to the central settings when the plugin is activated or updated
 		add_action( 'init', array( $this, 'copyKeysToCentralSettings' ), 0 );
 	}
 
@@ -54,23 +54,23 @@ class ApiKeyService {
 	 * This can be called whenever the database is updated.
 	 */
 	public function update_keys(): void {
-		$this->test_api_key = get_option( 'monei_test_apikey', '' );
-		$this->live_api_key = get_option( 'monei_live_apikey', '' );
-        $this->test_account_id   = get_option( 'monei_test_accountid', '' );
-        $this->live_account_id = get_option( 'monei_live_accountid', '' );
-		$this->api_key_mode = get_option( 'monei_apikey_mode', 'test' );
+		$this->test_api_key    = get_option( 'monei_test_apikey', '' );
+		$this->live_api_key    = get_option( 'monei_live_apikey', '' );
+		$this->test_account_id = get_option( 'monei_test_accountid', '' );
+		$this->live_account_id = get_option( 'monei_live_accountid', '' );
+		$this->api_key_mode    = get_option( 'monei_apikey_mode', 'test' );
 	}
 
 	public function copyKeysToCentralSettings() {
 		add_filter(
 			'option_woocommerce_monei_settings',
 			function ( $default_params ) {
-                $newCentralTestApiKey    = get_option( 'monei_test_apikey', '' );
-                $newCentralLiveApiKey   = get_option( 'monei_live_apikey', '' );
-                //we already saved the new keys, so we don't need to do anything more here.'
-                if(! empty( $newCentralTestApiKey ) ||! empty( $newCentralLiveApiKey ) ) {
-                    return $default_params;
-                }
+				$newCentralTestApiKey = get_option( 'monei_test_apikey', '' );
+				$newCentralLiveApiKey = get_option( 'monei_live_apikey', '' );
+				//we already saved the new keys, so we don't need to do anything more here.'
+				if ( ! empty( $newCentralTestApiKey ) || ! empty( $newCentralLiveApiKey ) ) {
+					return $default_params;
+				}
 				$centralApiKey    = get_option( 'monei_apikey', '' );
 				$centralAccountId = get_option( 'monei_accountid', '' );
 				$ccApiKey         = $default_params['apikey'] ?? '';
@@ -79,19 +79,25 @@ class ApiKeyService {
 				if ( empty( $centralApiKey ) && empty( $ccApiKey ) ) {
 					return $default_params;
 				}
-				$keyToUse = ! empty( $centralApiKey ) ? $centralApiKey : $ccApiKey;
-                $accountId =! empty( $centralAccountId )? $centralAccountId : $ccAccountId;
+				$keyToUse  = ! empty( $centralApiKey ) ? $centralApiKey : $ccApiKey;
+				$accountId = ! empty( $centralAccountId ) ? $centralAccountId : $ccAccountId;
 
+				$settings = get_option( 'woocommerce_monei_settings', array() );
 				if ( strpos( $keyToUse, 'pk_test_' ) === 0 ) {
 					update_option( 'monei_test_apikey', $keyToUse );
 					update_option( 'monei_apikey_mode', 'test' );
-                    update_option( 'monei_test_accountid', $accountId );
-				} else if(strpos( $keyToUse, 'pk_live_' ) === 0) {
+					update_option( 'monei_test_accountid', $accountId );
+
+				} elseif ( strpos( $keyToUse, 'pk_live_' ) === 0 ) {
 					update_option( 'monei_live_apikey', $keyToUse );
 					update_option( 'monei_apikey_mode', 'live' );
-                    update_option( 'monei_live_accountid', $accountId );
-                }
-
+					update_option( 'monei_live_accountid', $accountId );
+				}
+				delete_option( 'monei_apikey' );
+				delete_option( 'monei_accountid' );
+				unset( $settings['accountid'] );
+				unset( $settings['apikey'] );
+				update_option( 'woocommerce_monei_settings', $settings );
 				return $default_params;
 			},
 			1
