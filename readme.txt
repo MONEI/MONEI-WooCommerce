@@ -103,6 +103,9 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
+2025-xx-xx - version 6.3.4
+* Fix - Remove not supported Cofidis payment gateway
+
 2025-05-14 - version 6.3.3
 * Fix - Error copying old keys that hides the gateway
 * Fix - Component buttons not showing in classic checkout
