@@ -337,9 +337,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$container = \Monei\Core\ContainerProvider::getContainer();
 
 			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiCC' );
-			if ( ! is_admin() ) {
-				$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle' );
-			}
+			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle' );
 			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiBizum' );
 			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal' );
 			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiMultibanco' );

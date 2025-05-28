@@ -36,6 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	const PAYMENT_METHOD = 'card';
+    protected static $scripts_enqueued = false;
 
 	/**
 	 * @var bool
@@ -340,6 +341,9 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * Registering MONEI JS library and plugin js.
 	 */
 	public function monei_scripts() {
+        if (self::$scripts_enqueued && !$this->should_load_scripts()){
+            return;
+        }
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
 		if ( $this->redirect_flow && ! is_checkout() && ! is_add_payment_method_page() && ($this->handler && ! $this->handler->is_subscription_change_payment_page() )  ) {
 			return;
@@ -382,6 +386,9 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		wp_enqueue_script( 'woocommerce_monei' );
 		$this->tokenization_script();
 	}
+    protected function should_load_scripts() {
+        return is_checkout() || is_cart() || is_product() || is_add_payment_method_page();
+    }
 	public function isGoogleAvailable() {
 		$googleInAPI = $this->paymentMethodsService->isGoogleEnabled();
 		$googleInWoo = $this->apple_google_pay;

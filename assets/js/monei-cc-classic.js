@@ -1,260 +1,217 @@
-(function( $ ) {
+(function($) {
 	'use strict';
 
-	// Checkout form.
-	$( document.body ).on(
-		'updated_checkout',
-		function(e, data) {
-			wc_monei_form.update_apple_google_label();
-			// Update cofidis_widget.total on every updated_checkout event.
-			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
-				wc_monei_form.total = data.fragments[ 'monei_new_total' ];
-			}
+	// Checkout form event handlers
+	$(document.body).on('updated_checkout', (e, data) => {
+		wcMoneiForm.updateAppleGoogleLabel();
 
-			if (wc_monei_form.is_apple_selected()) {
-				wc_monei_form.init_apple_google_pay();
-			}
-
-			if ( wc_monei_form.is_monei_selected() ) {
-				wc_monei_form.init_checkout_monei();
-			}
+		// Update total on every updated_checkout event
+		if (data?.fragments?.['monei_new_total']) {
+			wcMoneiForm.total = data.fragments['monei_new_total'];
 		}
-	);
 
-	// Add Payment Method form.
-	$( 'form#add_payment_method' ).on(
-		'click payment_methods',
-		function() {
-			if ( wc_monei_form.is_monei_selected() ) {
-				wc_monei_form.init_checkout_monei();
-			}
+		if (wcMoneiForm.isMoneiSelected()) {
+			wcMoneiForm.initCheckoutMonei();
 		}
-	);
+	});
 
-	// On Pay for order form.
-	$( 'form#order_review' ).on(
-		'click',
-		function() {
-			if (wc_monei_form.is_apple_selected()) {
-				wc_monei_form.init_apple_google_pay();
-			}
-			if ( wc_monei_form.is_monei_selected() ) {
-				wc_monei_form.init_checkout_monei();
-			}
+	// Add Payment Method form event handler
+	$('form#add_payment_method').on('click payment_methods', () => {
+		if (wcMoneiForm.isMoneiSelected()) {
+			wcMoneiForm.initCheckoutMonei();
 		}
-	);
+	});
 
-	var wc_monei_form = {
-		$checkout_form: $( 'form.woocommerce-checkout' ),
-		$add_payment_form: $( 'form#add_payment_method' ),
-		$order_pay_form: $( 'form#order_review' ),
+	// Pay for order form event handler
+	$('form#order_review').on('click', () => {
+		if (wcMoneiForm.isMoneiSelected()) {
+			wcMoneiForm.initCheckoutMonei();
+		}
+	});
+
+	const wcMoneiForm = {
+		// DOM element caches
+		$checkoutForm: $('form.woocommerce-checkout'),
+		$addPaymentForm: $('form#add_payment_method'),
+		$orderPayForm: $('form#order_review'),
 		$cardInput: null,
 		$container: null,
-		$payment_request_container: null,
+		$paymentRequestContainer: null,
 		$errorContainer: null,
 		$paymentForm: null,
-		is_checkout: false,
-		is_add_payment_method: false,
-		is_order_pay: false,
+
+		// State flags
+		isCheckout: false,
+		isAddPaymentMethod: false,
+		isOrderPay: false,
+
+		// Form reference and state
 		form: null,
 		submitted: false,
-		init_counter: 0,
-		init_apple_counter: 0,
+		initCounter: 0,
+		initAppleCounter: 0,
 		total: wc_monei_params.total,
+
+		// Validation regex
 		cardholderNameRegex: /^[A-Za-zÀ-ú- ]{5,50}$/,
-		init: function() {
+
+		init() {
+			this.determineFormContext();
+			this.attachEventListeners();
+		},
+
+		determineFormContext() {
 			// Checkout Page
-			if ( this.$checkout_form.length ) {
-				this.is_checkout = true;
-				this.form        = this.$checkout_form;
-				this.form.on( 'checkout_place_order', this.place_order );
+			if (this.$checkoutForm.length) {
+				this.isCheckout = true;
+				this.form = this.$checkoutForm;
+				this.form.on('checkout_place_order', this.placeOrder.bind(this));
 			}
 
 			// Add payment method Page
-			if ( this.$add_payment_form.length ) {
-				this.is_add_payment_method = true;
-				this.form                  = this.$add_payment_form;
-				this.form.on( 'submit', this.place_order );
+			if (this.$addPaymentForm.length) {
+				this.isAddPaymentMethod = true;
+				this.form = this.$addPaymentForm;
+				this.form.on('submit', this.placeOrder.bind(this));
 			}
 
-			// Pay for order ( change_payment_method for subscriptions)
-			if ( this.$order_pay_form.length ) {
-				if ( wc_monei_form.is_monei_selected() ) {
-					wc_monei_form.on_payment_selected()
-				}
-				if(wc_monei_form.is_apple_selected()) {
-					wc_monei_form.init_apple_google_pay()
+			// Pay for order (change_payment_method for subscriptions)
+			if (this.$orderPayForm.length) {
+				if (this.isMoneiSelected()) {
+					this.onPaymentSelected();
 				}
 
-				this.is_order_pay = true;
-				this.form         = this.$order_pay_form;
-				this.form.on( 'submit', this.place_order_page );
+				this.isOrderPay = true;
+				this.form = this.$orderPayForm;
+				this.form.on('submit', this.placeOrderPage.bind(this));
+			}
+		},
 
-				$('input[name="payment_method"]').on('change', function() {
-					console.log('radio changed')
-					// Check if the apple google pay method is selected
-					if (wc_monei_form.is_apple_selected()) {
-						wc_monei_form.init_apple_google_pay();
-					}
-					// Check if the monei method is selected
-					if (wc_monei_form.is_monei_selected()) {
-						wc_monei_form.init_checkout_monei();
+		attachEventListeners() {
+			if (!this.form) return;
+
+			this.form.on('change', this.onChange.bind(this));
+
+			// Order pay specific event handler
+			if (this.isOrderPay) {
+				$('input[name="payment_method"]').on('change', () => {
+					if (this.isMoneiSelected()) {
+						this.initCheckoutMonei();
 					}
 				});
 			}
+		},
 
-			if ( this.form ) {
-				this.form.on( 'change', this.on_change );
-			}
+		onChange() {
+			// Payment method selection handler
+			$("[name='payment_method']").on('change', () => {
+				wcMoneiForm.onPaymentSelected();
+			});
+
+			// Saved card selection handler
+			$("[name='wc-monei-payment-token']").on('change', () => {
+				wcMoneiForm.onPaymentSelected();
+			});
 		},
-		on_change: function() {
-			// Triggers on payment method selection.
-			$( "[name='payment_method']" ).on(
-				'change',
-				function() {
-					wc_monei_form.on_payment_selected();
+
+		onPaymentSelected() {
+			const $placeOrderBtn = $('#place_order');
+			const $checkoutSubmitBtn = $("[name='woocommerce_checkout_place_order']");
+			const $moneiInputs = $('.monei-input-container, .monei-card-input');
+
+			if (this.isMoneiSelected()) {
+				this.initCheckoutMonei();
+				$placeOrderBtn.prop('disabled', false);
+
+				if (this.isCheckout) {
+					$checkoutSubmitBtn.attr('data-monei', 'submit');
 				}
-			);
-			// Triggers on saved card selection.
-			$( "[name='wc-monei-payment-token']" ).on(
-				'change',
-				function() {
-					wc_monei_form.on_payment_selected();
-				}
-			);
-		},
-		on_payment_selected() {
-			if ( wc_monei_form.is_apple_selected()) {
-				wc_monei_form.init_apple_google_pay();
-				if ( wc_monei_form.is_checkout ) {
-					$("[name='woocommerce_checkout_place_order']").attr('data-monei', 'submit');
-				}
-				$('#place_order').prop('disabled', true);
-				return false;
-			} else if ( wc_monei_form.is_monei_selected() ) {
-				wc_monei_form.init_checkout_monei();
-				$('#place_order').prop('disabled', false);
-				if ( wc_monei_form.is_checkout ) {
-					$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
-				}
-				if ( wc_monei_form.is_tokenized_cc_selected() ) {
-					$('.monei-input-container, .monei-card-input').hide();
+
+				// Show/hide input fields based on tokenized card selection
+				if (this.isTokenizedCcSelected()) {
+					$moneiInputs.hide();
 				} else {
-					$('.monei-input-container, .monei-card-input').show();
+					$moneiInputs.show();
 				}
 			} else {
-				if ( wc_monei_form.is_checkout ) {
-					$('#place_order').prop('disabled', false);
-					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
+				if (this.isCheckout) {
+					$placeOrderBtn.prop('disabled', false);
+					$checkoutSubmitBtn.removeAttr('data-monei');
 				}
 			}
 		},
-		validate_cardholder_name: function() {
-			var value = $('#monei_cardholder_name').val();
-			if (!wc_monei_form.cardholderNameRegex.test(value)) {
-				const errorString = wc_monei_params.nameErrorString
-				// Show error
-				wc_monei_form.print_errors(errorString, '#monei-cardholder-name-error');
+
+		validateCardholderName() {
+			const value = $('#monei_cardholder_name').val();
+			const isValid = this.cardholderNameRegex.test(value);
+
+			if (!isValid) {
+				const errorString = wc_monei_params.nameErrorString;
+				this.printErrors(errorString, '#monei-cardholder-name-error');
 				return false;
 			} else {
-				// Clear error
-				wc_monei_form.clear_errors('#monei-cardholder-name-error');
+				this.clearErrors('#monei-cardholder-name-error');
 				return true;
 			}
 		},
-		is_monei_selected: function() {
-			return $( '#payment_method_monei' ).is( ':checked' );
-		},
-		is_apple_selected: function() {
-			return $( '#payment_method_monei_apple_google' ).is( ':checked' );
-		},
-		is_tokenized_cc_selected: function() {
-			return ( $( 'input[name="wc-monei-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei-payment-token"]:checked' ).val() );
-		},
-		is_monei_saved_cc_selected: function() {
-			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );
-		},
-		init_apple_google_pay: function() {
-			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
-			// and we need to reset the counter in order to initiate again the monei component.
-			if ( wc_monei_form.$payment_request_container && 0 === wc_monei_form.$payment_request_container.childElementCount ) {
-				wc_monei_form.init_apple_counter = 0;
-			}
 
-			// init monei just once, despite how many times this may be triggered.
-			if ( 0 !== this.init_apple_counter ) {
+		isMoneiSelected() {
+			return $('#payment_method_monei').is(':checked');
+		},
+
+		isTokenizedCcSelected() {
+			const $tokenInput = $('input[name="wc-monei-payment-token"]');
+			return $tokenInput.is(':checked') && $tokenInput.val() !== 'new';
+		},
+
+		isMoneiSavedCcSelected() {
+			return this.isMoneiSelected() && this.isTokenizedCcSelected();
+		},
+
+		initCheckoutMonei() {
+			const container = document.getElementById('monei-card-input');
+			if (!container) {
 				return;
 			}
 
-			if ( wc_monei_form.is_checkout ) {
-				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
+			// Reset counter if container was re-rendered
+			if (this.$container?.childElementCount === 0) {
+				this.initCounter = 0;
 			}
 
-			// Init Apple/Google Pay.
-			if ( ! wc_monei_params.apple_google_pay ) {
+			// Initialize only once
+			if (this.initCounter !== 0) {
 				return;
 			}
 
-			wc_monei_form.instantiate_payment_request();
-			wc_monei_form.$payment_request_container = document.getElementById('payment-request-container')
+			// Don't initialize when saved card is selected
+			if (this.isMoneiSavedCcSelected()) {
+				return;
+			}
 
-			// We already init the button.
-			this.init_apple_counter++;
+			// Set checkout submit attribute
+			if (this.isCheckout) {
+				$("[name='woocommerce_checkout_place_order']").attr('data-monei', 'submit');
+			}
 
+			this.setupCardholderValidation();
+			this.initializeCardInput();
+
+			// Mark as initialized
+			this.initCounter++;
 		},
-		instantiate_payment_request: function() {
-			// Create an instance of the Apple/Google Pay component.
-			var paymentRequest = monei.PaymentRequest({
-				accountId: wc_monei_params.account_id,
-				sessionId: wc_monei_params.session_id,
-				amount: parseInt( wc_monei_form.total ),
-				currency: wc_monei_params.currency,
-				onSubmit(result) {
-					wc_monei_form.apple_google_token_handler( result.token );
-				},
-				onError(error) {
-					console.error(error);
-				},
+
+		setupCardholderValidation() {
+			$('#monei_cardholder_name').on('blur', () => {
+				this.validateCardholderName();
 			});
-			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
-			console.log('rendering')
-			paymentRequest.render('#payment-request-container');
-			// Assign a global variable to paymentRequest so it's accessible.
-			window.paymentRequest = paymentRequest;
 		},
-		init_checkout_monei: function() {
-			let container = document.getElementById('monei-card-input')
-			if(container === null) {
-				return;
-			}
-			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
-			// and we need to reset the counter in order to initiate again the monei component.
-			if ( wc_monei_form.$container && 0 === wc_monei_form.$container.childElementCount ) {
-				wc_monei_form.init_counter = 0;
-			}
 
-			// init monei just once, despite how many times this may be triggered.
-			if ( 0 !== this.init_counter ) {
-				return;
-			}
+		initializeCardInput() {
+			this.$container = document.getElementById('monei-card-input');
+			this.$errorContainer = document.getElementById('monei-card-error');
 
-			// We don't want to initialise when a saved cc is selected, since form is not visible.
-			if ( wc_monei_form.is_monei_saved_cc_selected() ) {
-				return;
-			}
-
-			if ( wc_monei_form.is_checkout ) {
-				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
-			}
-
-			$('#monei_cardholder_name').on('blur', function() {
-				wc_monei_form.validate_cardholder_name();
-			});
-
-			wc_monei_form.$container      = document.getElementById( 'monei-card-input' );
-			wc_monei_form.$errorContainer = document.getElementById( 'monei-card-error' );
-
-			var style = {
+			const cardInputStyle = {
 				input: {
 					fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
 					fontSmoothing: "antialiased",
@@ -268,178 +225,144 @@
 				}
 			};
 
-			wc_monei_form.$cardInput = monei.CardInput(
-				{
-					accountId: wc_monei_params.account_id,
-					sessionId: wc_monei_params.session_id,
-					style: style,
-					onChange: function (event) {
-						// Handle real-time validation errors.
-						if (event.isTouched && event.error) {
-							wc_monei_form.print_errors( event.error );
-						} else {
-							wc_monei_form.clear_errors();
-						}
-					},
-					onEnter: function () {
-						wc_monei_form.form.submit();
-					},
-					onFocus: function () {
-						wc_monei_form.$container.classList.add( 'is-focused' );
-					},
-					onBlur: function () {
-						wc_monei_form.$container.classList.remove( 'is-focused' );
-					},
-				}
-			);
-			wc_monei_form.$cardInput.render( wc_monei_form.$container );
+			this.$cardInput = monei.CardInput({
+				accountId: wc_monei_params.account_id,
+				sessionId: wc_monei_params.session_id,
+				style: cardInputStyle,
+				onChange: (event) => {
+					// Handle real-time validation errors
+					if (event.isTouched && event.error) {
+						this.printErrors(event.error);
+					} else {
+						this.clearErrors();
+					}
+				},
+				onEnter: () => {
+					this.form.submit();
+				},
+				onFocus: () => {
+					this.$container.classList.add('is-focused');
+				},
+				onBlur: () => {
+					this.$container.classList.remove('is-focused');
+				},
+			});
 
-			// We already init CardInput.
-			this.init_counter++;
+			this.$cardInput.render(this.$container);
 		},
-		place_order: function( e ) {
-			const token = document.getElementById('monei_payment_token')
-			if(token) {
+
+		placeOrder(e) {
+			const existingToken = document.getElementById('monei_payment_token');
+			if (existingToken) {
 				return true;
 			}
-			if ( wc_monei_form.is_monei_selected() && ! wc_monei_form.is_monei_saved_cc_selected()) {
-				if (!wc_monei_form.validate_cardholder_name()) {
+
+			if (this.isMoneiSelected() && !this.isMoneiSavedCcSelected()) {
+				if (!this.validateCardholderName()) {
 					return false;
 				}
-				//e.preventDefault();
-				// This will be trigger, when CC component is used and "Place order" has been clicked.
-				monei.createToken( wc_monei_form.$cardInput )
-					.then(
-						function ( result ) {
-							if ( result.error ) {
-								console.error('error', result.error);
-								// Inform the user if there was an error.
-								wc_monei_form.print_errors( result.error );
-							} else {
-								console.log('token')
-								// Create monei token and append it to Dconsole.logOM
-								wc_monei_form.monei_token_handler( result.token );
-							}
-						}
-					)
-					.catch(
-						function (error) {
-							console.error( error );
-							wc_monei_form.print_errors( error.message );
-						}
-					);
+
+				this.createTokenAndSubmit();
 				return false;
 			}
 		},
-		place_order_page: function( e ) {
-			const token = document.getElementById('monei_payment_token')
-			if(token) {
+
+		placeOrderPage(e) {
+			const existingToken = document.getElementById('monei_payment_token');
+			if (existingToken) {
 				return true;
 			}
-			if ( wc_monei_form.is_monei_selected() && ! wc_monei_form.is_monei_saved_cc_selected()) {
-				if (!wc_monei_form.validate_cardholder_name()) {
+
+			if (this.isMoneiSelected() && !this.isMoneiSavedCcSelected()) {
+				if (!this.validateCardholderName()) {
 					return false;
 				}
+
 				e.preventDefault();
-				// This will be trigger, when CC component is used and "Place order" has been clicked.
-				monei.createToken( wc_monei_form.$cardInput )
-					.then(
-						function ( result ) {
-							if ( result.error ) {
-								console.error('error', result.error);
-								// Inform the user if there was an error.
-								wc_monei_form.print_errors( result.error );
-							} else {
-								console.log('token', result.token)
-								// Create monei token and append it to Dconsole.logOM
-								wc_monei_form.monei_token_handler( result.token );
-							}
-						}
-					)
-					.catch(
-						function (error) {
-							console.error( error );
-							wc_monei_form.print_errors( error.message );
-						}
-					);
+				this.createTokenAndSubmit();
 				return false;
 			}
 		},
-		/**
-		 * Printing errors into checkout form.
-		 * @param error_string
-		 * @param errorContainer
-		 */
-		print_errors: function(error_string, errorContainer) {
-			if (!errorContainer) {
-				errorContainer = wc_monei_form.$errorContainer;
+
+		async createTokenAndSubmit() {
+			try {
+				const result = await monei.createToken(this.$cardInput);
+
+				if (result.error) {
+					console.error('Token creation error:', result.error);
+					this.printErrors(result.error);
+				} else {
+					console.log('Token created successfully');
+					this.moneiTokenHandler(result.token);
+				}
+			} catch (error) {
+				console.error('Token creation failed:', error);
+				this.printErrors(error.message);
 			}
-			$(errorContainer).html('<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>');
-			$(errorContainer).find('li').text(error_string);
-			// Scroll to error
-			if ($(errorContainer).find('.monei-error').length) {
+		},
+
+		/**
+		 * Display errors in the checkout form
+		 * @param {string} errorString - Error message to display
+		 * @param {string} errorContainer - Container selector for the error
+		 */
+		printErrors(errorString, errorContainer) {
+			const $container = $(errorContainer || this.$errorContainer);
+
+			$container.html('<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>');
+			$container.find('li').text(errorString);
+
+			// Scroll to error if present
+			const $errorElement = $container.find('.monei-error');
+			if ($errorElement.length) {
 				$('html, body').animate({
-					scrollTop: ($(errorContainer).offset().top - 200)
+					scrollTop: ($container.offset().top - 200)
 				}, 200);
 			}
 		},
+
 		/**
-		 * Clearing form errors.
+		 * Clear form errors
+		 * @param {string} errorContainer - Container selector to clear
 		 */
-		clear_errors: function(errorContainer) {
-			if (!errorContainer) {
-				errorContainer = wc_monei_form.$errorContainer;
-			}
-			// Clear all content from the error container
-			$(errorContainer).html('');
+		clearErrors(errorContainer) {
+			const $container = $(errorContainer || this.$errorContainer);
+			$container.html('');
 		},
-		monei_token_handler: function( token ) {
-			wc_monei_form.create_hidden_input( 'monei_payment_token', 'payment-form' , token );
-			// Once Token is created, submit form.
-			wc_monei_form.form.submit();
+
+		moneiTokenHandler(token) {
+			this.createHiddenInput('monei_payment_token', 'payment-form', token);
+			// Submit form once token is created
+			this.form.submit();
 		},
-		apple_google_token_handler: function (token ) {
-			$('#place_order').prop('disabled', false);
-			wc_monei_form.create_hidden_input( 'monei_payment_request_token', 'payment-request-form', token );
-			// Once Token is created, submit form.
-			wc_monei_form.form.submit();
+
+		createHiddenInput(id, formId, token) {
+			const hiddenInput = document.createElement('input');
+
+			Object.assign(hiddenInput, {
+				type: 'hidden',
+				name: id,
+				id: id,
+				value: token
+			});
+
+			this.$paymentForm = document.getElementById(formId);
+			this.$paymentForm?.appendChild(hiddenInput);
 		},
-		create_hidden_input: function( id, form,  token ) {
-			var hiddenInput = document.createElement( 'input' );
-			hiddenInput.setAttribute( 'type', 'hidden' );
-			hiddenInput.setAttribute( 'name', id );
-			hiddenInput.setAttribute( 'id', id );
-			hiddenInput.setAttribute( 'value', token );
-			wc_monei_form.$paymentForm = document.getElementById( form );
-			wc_monei_form.$paymentForm.appendChild( hiddenInput );
-		},
+
 		/**
-		 * If Apple can make payments then we need to show the apple logo and title instead of Google
+		 * Update label and icon based on Apple Pay availability
+		 * Note: This method is maintained for API compatibility but may not be used in card payment flow
 		 */
-		update_apple_google_label: function () {
-			if ( ! wc_monei_params.apple_google_pay ) {
-				return;
-			}
-			const isApple = window.ApplePaySession?.canMakePayments();
-			if (isApple) {
-				const label = document.querySelector('label[for="payment_method_monei_apple_google"]');
-				if (label) {
-					label.childNodes[0].nodeValue = "Apple Pay ";
-					const icon = label.querySelector('img');
-					if (icon) {
-                        icon.src = wc_monei_params.apple_logo;
-						icon.alt = "Apple Pay";
-					}
-				}
-			}
+		updateAppleGoogleLabel() {
+			// Placeholder method for consistency with Apple/Google Pay integration
+			// Implementation would be similar to the Apple Pay version if needed
 		}
 	};
 
-	$(
-		function() {
-			wc_monei_form.init();
-			wc_monei_form.update_apple_google_label();
-		}
-	);
+	// Initialize when DOM is ready
+	$(() => {
+		wcMoneiForm.init();
+	});
 
-})( jQuery );
+})(jQuery);

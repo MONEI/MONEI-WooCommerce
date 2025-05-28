@@ -51,27 +51,65 @@ class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC {
 		$this->description  = __( '&nbsp;', 'monei' );
 		$iconUrl            = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
 		$iconMarkup         = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
-
-		$this->icon     = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->settings = get_option( 'woocommerce_monei_settings', array() );
-		$this->enabled  = ( ! empty( isset( $this->settings['apple_google_pay'] ) && 'yes' === $this->settings['apple_google_pay'] ) ) ? 'yes' : 'no';
-        $this->supports = array(
-            'products',
-            'refunds',
-        );
-		add_filter(
-			'woocommerce_available_payment_gateways',
-			array( $this, 'hideAppleGoogleInCheckout' ),
-			11,
-			1
+		$this->api_key      = $this->getApiKey();
+		$this->account_id   = $this->getAccountId();
+		$this->icon         = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->settings     = get_option( 'woocommerce_monei_apple_google_settings', array() );
+		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->supports     = array(
+			'products',
+			'refunds',
+		);
+        $this->has_fields = true;
+		// Load the form fields.
+		$this->init_form_fields();
+		// Load the settings.
+		$this->init_settings();
+		add_action( 'wp_enqueue_scripts', array( $this, 'apple_google_scripts' ) );
+		add_action(
+			'woocommerce_update_options_payment_gateways_' . $this->id,
+			array(
+				$this,
+				'process_admin_options',
+			)
 		);
 	}
 
-	/**
-	 * Hide Apple/Google Pay in WooCommerce Checkout
-	 */
-	public function hideAppleGoogleInCheckout( $available_gateways ) {
-		return $available_gateways;
+	public function apple_google_scripts() {
+		wp_register_script(
+			'wc-monei-apple-google',
+			plugins_url( 'public/js/monei-apple-google-classic.min.js', MONEI_MAIN_FILE ),
+			array(
+				'jquery',
+				'monei',
+			),
+			MONEI_VERSION,
+			true
+		);
+		wp_enqueue_script( 'wc-monei-apple-google' );
+        $total = $this->determineTheTotalAmountToBePassed();
+		wp_localize_script(
+			'wc-monei-apple-google',
+			'wc_monei_apple_google_params',
+            array(
+                'account_id'       => $this->getAccountId(),
+                'session_id'       => WC()->session->get_customer_id(),
+                'apple_google_pay' => $this->apple_google_pay,
+                'total'            => monei_price_format( $total ),
+                'currency'         => get_woocommerce_currency(),
+                'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
+            )
+		);
+	}
+
+	public function process_admin_options() {
+		parent::process_admin_options();
+
+		// Additional processing if needed
+		$this->init_settings();
+
+		// Update the settings with the new values
+		update_option( 'woocommerce_monei_apple_google_settings', $this->settings, 'yes' );
 	}
 
 	public function isBlockCheckout(): bool {
@@ -104,7 +142,16 @@ class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC {
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		return parent::process_payment( $order_id, self::PAYMENT_METHOD );
 	}
-
+	/**
+	 * Initialise Gateway Settings Form Fields
+	 *
+	 * @access public
+	 * @return void
+	 * @since 5.0
+	 */
+	public function init_form_fields() {
+		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-apple-google-settings.php';
+	}
 	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
@@ -114,9 +161,8 @@ class WCGatewayMoneiAppleGoogle extends WCGatewayMoneiCC {
 		// Checkout screen.
 		// We show description, if tokenization available, we show saved cards and checkbox to save.
 		echo esc_html( $this->description );
-		if ( $this->apple_google_pay ) {
-			$this->render_google_pay_form();
-		}
+
+		$this->render_google_pay_form();
 
 		ob_end_flush();
 	}
