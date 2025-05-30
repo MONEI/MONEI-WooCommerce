@@ -112,7 +112,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->subscriptions_service = $subscriptionService;
 		$this->handler               = $this->subscriptions_service->getHandler();
 		if ( $this->handler ) {
-			$this->supports = $this->handler->init_subscriptions($this->supports, $this->id);
+			$this->supports = $this->handler->init_subscriptions( $this->supports, $this->id );
 		}
 
 		add_action(
@@ -341,7 +341,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 */
 	public function monei_scripts() {
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( $this->redirect_flow && ! is_checkout() && ! is_add_payment_method_page() && ($this->handler && ! $this->handler->is_subscription_change_payment_page() )  ) {
+		if ( $this->redirect_flow || ( ! is_checkout() && ! is_add_payment_method_page() && ( $this->handler && ! $this->handler->is_subscription_change_payment_page() ) ) ) {
 			return;
 		}
 
