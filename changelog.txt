@@ -1,5 +1,8 @@
 *** MONEI Payments for WooCommerce ***
 
+2025-06-04 - version 6.3.5
+* Fix - Remove Cofidis payment method as is not supported
+* Fix - Reduce caching of payment methods and change to Monei SDK
 
 2025-05-30 - version 6.3.4
 * Fix - Redirect flow not working in classic checkout

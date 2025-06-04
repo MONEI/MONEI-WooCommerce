@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 6.3.4
+Stable tag: 6.3.5
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -102,6 +102,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+2025-06-04 - version 6.3.5
+* Fix - Remove Cofidis payment method as is not supported
+* Fix - Reduce caching of payment methods and change to Monei SDK
 
 2025-05-30 - version 6.3.4
 * Fix - Redirect flow not working in classic checkout
