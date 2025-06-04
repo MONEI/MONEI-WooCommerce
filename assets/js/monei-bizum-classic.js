@@ -5,7 +5,7 @@
 	$( document.body ).on(
 		'updated_checkout',
 		function(e, data) {
-			// Update cofidis_widget.total on every updated_checkout event.
+			// Update bizum_widget.total on every updated_checkout event.
 			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
 				wc_bizum_form.total = data.fragments[ 'monei_new_total' ];
 			}
