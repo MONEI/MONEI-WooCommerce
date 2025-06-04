@@ -2,48 +2,37 @@
 
 namespace Monei\Repositories;
 
-use Monei\Repositories\PaymentMethodsRepositoryInterface;
+use Monei\MoneiClient;
 
 class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	private $accountId;
+    private MoneiClient $moneiClient;
 
-	public function __construct( string $accountId ) {
+    public function __construct( string $accountId, MoneiClient $moneiClient) {
 		$this->accountId = $accountId;
+        $this->moneiClient = $moneiClient;
 	}
 
 	/**
 	 * Fetch payment methods from the API.
 	 */
 	private function fetchFromAPI(): ?array {
-		$response = wp_remote_get( 'https://api.monei.com/v1/payment-methods?accountId=' . $this->accountId );
-		if ( is_wp_error( $response ) ) {
-			return null;
-		}
+        if ( ! $this->accountId ) {
+            return null;
+        }
+        try {
+            $response = $this->moneiClient->paymentMethods->get( $this->accountId );
+        } catch ( \Exception $e ) {
+            $response = null;
+        }
 
-		return json_decode( wp_remote_retrieve_body( $response ), true );
-	}
-
-	/**
-	 * Generate a transient key.
-	 */
-	private function generateTransientKey( string $key ): string {
-		return 'payment_methods_' . md5( $key );
+		return json_decode($response, true);
 	}
 
 	/**
 	 * Get payment methods (fetch from transient or API).
 	 */
 	public function getPaymentMethods(): array {
-		$transientKey = $this->generateTransientKey( $this->accountId );
-		$data         = get_transient( $transientKey );
-
-		if ( ! $data ) {
-			$data = $this->fetchFromAPI();
-			if ( $data ) {
-				set_transient( $transientKey, $data, DAY_IN_SECONDS );
-			}
-		}
-
-		return $data ?: array();
+		return $this->fetchFromAPI() ?: array();
 	}
 }
