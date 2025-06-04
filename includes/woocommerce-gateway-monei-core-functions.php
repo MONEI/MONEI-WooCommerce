@@ -69,9 +69,6 @@ function monei_get_option_key_from_order( $order ) {
 			case 'monei_paypal':
 				$option_key = 'woocommerce_monei_paypal_settings';
 				break;
-			case 'monei_cofidis':
-				$option_key = 'woocommerce_monei_cofidis_settings';
-				break;
 		}
 	}
 

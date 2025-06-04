@@ -6,7 +6,7 @@
 		'updated_checkout',
 		function(e, data) {
 			wc_monei_form.update_apple_google_label();
-			// Update cofidis_widget.total on every updated_checkout event.
+			// Update monei_widget.total on every updated_checkout event.
 			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
 				wc_monei_form.total = data.fragments[ 'monei_new_total' ];
 			}
