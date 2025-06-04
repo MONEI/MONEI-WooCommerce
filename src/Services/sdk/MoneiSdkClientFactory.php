@@ -2,9 +2,9 @@
 
 namespace Monei\Services\sdk;
 
+use Monei\Configuration;
 use Monei\MoneiClient;
 use Monei\Services\ApiKeyService;
-use OpenAPI\Client\Configuration;
 
 class MoneiSdkClientFactory {
 	private ApiKeyService $apiKeyService;
@@ -16,7 +16,7 @@ class MoneiSdkClientFactory {
 	}
 
 	/**
-	 * @return \Monei\MoneiClient
+	 * @return MoneiClient
 	 */
 	public function get_client() {
 		if ( $this->client === null ) {

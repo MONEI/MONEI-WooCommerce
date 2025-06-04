@@ -45,9 +45,11 @@ $definitions            = array(
 			)
 		),
 	ApiKeyService::class                    => DI\autowire( ApiKeyService::class ),
+    MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
+        ->constructor( DI\get( ApiKeyService::class ) ),
 	PaymentMethodsRepository::class         => DI\factory(
-		function ( ApiKeyService $apiKeyService ) {
-			return new Monei\Repositories\PaymentMethodsRepository( $apiKeyService->get_account_id() );
+		function ( ApiKeyService $apiKeyService, MoneiSdkClientFactory $sdkClientFactory ) {
+			return new Monei\Repositories\PaymentMethodsRepository( $apiKeyService->get_account_id(), $sdkClientFactory->get_client() );
 		}
 	),
 	PaymentMethodsService::class            => DI\create( PaymentMethodsService::class )
@@ -57,9 +59,6 @@ $definitions            = array(
 		->constructor( $blocksPath, $blockNamespacePrefix ),
 	MoneiApplePayVerificationService::class => DI\autowire( MoneiApplePayVerificationService::class )
 		->constructor( DI\get( MoneiPaymentServices::class ) ),
-
-	MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
-		->constructor( DI\get( ApiKeyService::class ) ),
 	WooCommerceSubscriptionsHandler::class  => \DI\create(
 		WooCommerceSubscriptionsHandler::class,
 	)->constructor(
