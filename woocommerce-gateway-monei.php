@@ -42,6 +42,48 @@ add_action( 'before_woocommerce_init', function () {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
     }
 } );
+/**
+ * Remove transients for payment methods on activation
+ *
+ * @return void
+ */
+function delete_payment_methods_transients() {
+    global $wpdb;
+
+    // Delete transients that match the pattern
+    $result = $wpdb->query(
+        "DELETE FROM {$wpdb->options} 
+         WHERE option_name LIKE '_transient_payment_methods_%' 
+         OR option_name LIKE '_transient_timeout_payment_methods_%'"
+    );
+    if ($result === false) {
+        error_log('MONEI: Failed to delete payment method transients');
+    }
+}
+
+/**
+ * Remove transients for payment methods on update of the plugin
+ *
+ * @param $upgrader_object
+ * @param $options
+ * @return void
+ */
+function delete_payment_methods_transients_on_update($upgrader_object, $options) {
+    if ($options['action'] == 'update' && $options['type'] == 'plugin') {
+        if (isset($options['plugins'])) {
+            foreach ($options['plugins'] as $plugin) {
+                if ($plugin == plugin_basename(__FILE__)) {
+                    delete_payment_methods_transients();
+                    break;
+                }
+            }
+        }
+    }
+}
+
+register_activation_hook(__FILE__, 'delete_payment_methods_transients');
+
+add_action('upgrader_process_complete', 'delete_payment_methods_transients_on_update', 10, 2);
 
 require_once 'class-woocommerce-gateway-monei.php';
 function WC_Monei() {

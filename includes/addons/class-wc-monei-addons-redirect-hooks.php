@@ -20,8 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Monei_Addons_Redirect_Hooks {
 
 	private MoneiPaymentServices $moneiPaymentServices;
+    private SubscriptionService $subscriptionService;
 
-	/**
+    /**
 	 * Hooks on redirects.
 	 */
 	public function __construct() {
