@@ -5,7 +5,7 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  6.3.5
+ * @version  6.3.6
  */
 
 use Monei\Core\ContainerProvider;
@@ -25,7 +25,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '6.3.5';
+		public $version = '6.3.6';
 
 		/**
 		 * The single instance of the class.
