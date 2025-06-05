@@ -51,11 +51,14 @@ function delete_payment_methods_transients() {
     global $wpdb;
 
     // Delete transients that match the pattern
-    $wpdb->query(
+    $result = $wpdb->query(
         "DELETE FROM {$wpdb->options} 
          WHERE option_name LIKE '_transient_payment_methods_%' 
          OR option_name LIKE '_transient_timeout_payment_methods_%'"
     );
+    if ($result === false) {
+        error_log('MONEI: Failed to delete payment method transients');
+    }
 }
 
 /**
