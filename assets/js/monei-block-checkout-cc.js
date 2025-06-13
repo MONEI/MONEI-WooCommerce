@@ -303,6 +303,7 @@
 						type="text"
 						id="cardholder_name"
 						name="cardholder_name"
+						data-testid="cardholder-name-input"
 						placeholder={ moneiData.cardholderName }
 						required
 						className="monei-input"

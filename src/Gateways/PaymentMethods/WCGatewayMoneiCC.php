@@ -314,6 +314,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 						type="text"
 						id="monei_cardholder_name"
 						name="monei_cardholder_name"
+						data-testid="cardholder-name-input"
 						placeholder="<?php echo esc_attr__( 'Cardholder Name', 'monei' ); ?>"
 						required
 						class="monei-input">
