@@ -5,7 +5,6 @@ export class ProductPage {
     readonly page: Page;
 
     // Locators
-    // Locators
     readonly addToCartButton = 'button.single_add_to_cart_button';
     readonly variationDropdown = 'select[data-attribute_name]';
     readonly subscriptionOptionsContainer = '.wcsatt-options-wrapper';

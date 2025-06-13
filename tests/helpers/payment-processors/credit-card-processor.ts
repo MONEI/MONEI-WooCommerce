@@ -10,37 +10,58 @@ export class CreditCardProcessor {
     readonly cardCvcInput: string;
     readonly cardholderNameInput: string;
     readonly submitButton: string;
+    readonly wooSubmitButtonSelectors: string[];
 
     constructor(page: Page, isHosted: boolean) {
         this.page = page;
         this.isHosted = isHosted;
-        if (isHosted) {
-            this.cardNumberInput = '';
-            this.cardExpiryInput = '';
-            this.cardCvcInput = '';
-            this.cardholderNameInput = '';
-            this.submitButton = '#submit-button';
-        } else {
-            this.cardNumberInput = '#monei-card-number';
-            this.cardExpiryInput = '#monei-card-expiry';
-            this.cardCvcInput = '#monei-card-cvc';
-            this.cardholderNameInput = '#monei-card-holder-name';
-            this.submitButton = '#place_order';
+        this.cardNumberInput = 'card-number-input';
+        this.cardExpiryInput = 'expiry-date-input';
+        this.cardCvcInput = 'cvc-input';
+        this.cardholderNameInput = 'cardholder-name-input';
+        this.submitButton = 'pay-button';
+        this.wooSubmitButtonSelectors = [
+            '#place_order',
+            '.wc-block-components-checkout-place-order-button'
+        ];
+    }
+
+    /**
+     * Clicks on the WooCommerce submit button, checking for multiple possible selectors
+     */
+    async clickWooSubmitButton() {
+        // Try each selector in order until one is found
+        for (const selector of this.wooSubmitButtonSelectors) {
+            const buttonExists = await this.page.$(selector) !== null;
+            if (buttonExists) {
+                await this.page.click(selector);
+                return;
+            }
         }
+        throw new Error('WooCommerce submit button not found. Tried selectors: ' + this.wooSubmitButtonSelectors.join(', '));
     }
 
     async processPayment(isHostedPayment, preset: string = 'success') {
         const cardDetails = PAYMENT_TEST_DATA.creditCard[preset];
         if(isHostedPayment) {
-            console.log('redirect')
-            await this.page.click(this.submitButton);
-            //fill the redirected page
+            await this.clickWooSubmitButton()
+            await this.page.waitForLoadState('networkidle');
+
+            const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_card_input__"]');
+
+            await this.page.getByTestId(this.cardholderNameInput).fill(cardDetails.cardholderName);
+
+            await frameLocator.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
+            await frameLocator.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
+            await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
+
+            await this.page.getByTestId(this.submitButton).click();
         } else {
-            await this.page.fill(this.cardNumberInput, cardDetails.cardNumber);
-            await this.page.fill(this.cardExpiryInput, cardDetails.expiry);
-            await this.page.fill(this.cardCvcInput, cardDetails.cvc);
-            await this.page.fill(this.cardholderNameInput, cardDetails.cardholderName);
-            await this.page.click(this.submitButton);
+            await this.page.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
+            await this.page.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
+            await this.page.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
+            await this.page.getByTestId(this.cardholderNameInput).fill(cardDetails.cardholderName);
+            await this.clickWooSubmitButton()
             if (preset === 'threeDSecure') {
                 await this.complete3DSecure();
             } else {
