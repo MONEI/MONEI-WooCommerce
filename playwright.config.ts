@@ -25,7 +25,7 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'matrix',
+      name: 'transaction-tests',
       use: { ...devices['Desktop Chrome'] },
       testMatch: '**/payment-gateway-matrix.spec.ts',
     },

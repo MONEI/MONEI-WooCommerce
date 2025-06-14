@@ -57,15 +57,16 @@ export class CreditCardProcessor {
 
             await this.page.getByTestId(this.submitButton).click();
         } else {
-            await this.page.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
-            await this.page.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
-            await this.page.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
+            const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_card_input__"]');
+
             await this.page.getByTestId(this.cardholderNameInput).fill(cardDetails.cardholderName);
+
+            await frameLocator.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
+            await frameLocator.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
+            await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
             await this.clickWooSubmitButton()
             if (preset === 'threeDSecure') {
                 await this.complete3DSecure();
-            } else {
-                await this.page.waitForNavigation({ waitUntil: 'networkidle' });
             }
         }
     }
