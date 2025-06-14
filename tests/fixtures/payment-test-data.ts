@@ -21,11 +21,10 @@ export const PAYMENT_TEST_DATA = {
     },
     bizum: {
         success: {
-            phoneNumber: '+3450000000000'
+            phoneNumber: '+34500000000'
         },
         fail: {
-            phoneNumber: '+3450000000000'
+            phoneNumber: '+34500000000'
         }
     },
-    // Add other payment methods as needed
 };

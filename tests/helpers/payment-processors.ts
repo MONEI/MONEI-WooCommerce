@@ -5,13 +5,13 @@ import { BizumProcessor } from './payment-processors/bizum-processor';
 
 export function getPaymentProcessor(paymentMethod: string, page: Page): PayPalProcessor | CreditCardProcessor | BizumProcessor {
     switch (paymentMethod) {
-        case 'monei-paypal':
+        case 'monei_paypal':
             return new PayPalProcessor(page);
         case 'monei':
             return new CreditCardProcessor(page, false);
         case 'monei-hosted':
             return new CreditCardProcessor(page, true);
-        case 'monei-bizum':
+        case 'monei_bizum':
             return new BizumProcessor(page);
         default:
             throw new Error(`Unsupported payment method: ${paymentMethod}`);

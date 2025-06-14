@@ -67,7 +67,7 @@ export function generateTestConfigurations(options: {
  */
 export const TEST_CONFIGURATIONS = {
     QUICK: generateTestConfigurations({
-        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_SUCCESS],
+        paymentMethods: [PAYMENT_METHODS.BIZUM],
         checkoutTypes: [CHECKOUT_TYPES.CLASSIC],
         productTypes: [PRODUCT_TYPES.SIMPLE],
         userStates: [USER_STATES.GUEST],

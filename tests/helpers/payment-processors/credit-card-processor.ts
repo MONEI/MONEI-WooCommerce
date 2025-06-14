@@ -1,8 +1,8 @@
 import { Page } from '@playwright/test';
 import { PAYMENT_TEST_DATA } from '../../fixtures/payment-test-data';
+import { BasePaymentProcessor } from './base-payment-processor';
 
-export class CreditCardProcessor {
-    readonly page: Page;
+export class CreditCardProcessor extends BasePaymentProcessor {
     readonly isHosted: boolean;
     // Locators
     readonly cardNumberInput: string;
@@ -10,35 +10,15 @@ export class CreditCardProcessor {
     readonly cardCvcInput: string;
     readonly cardholderNameInput: string;
     readonly submitButton: string;
-    readonly wooSubmitButtonSelectors: string[];
 
     constructor(page: Page, isHosted: boolean) {
-        this.page = page;
+        super(page);
         this.isHosted = isHosted;
         this.cardNumberInput = 'card-number-input';
         this.cardExpiryInput = 'expiry-date-input';
         this.cardCvcInput = 'cvc-input';
         this.cardholderNameInput = 'cardholder-name-input';
         this.submitButton = 'pay-button';
-        this.wooSubmitButtonSelectors = [
-            '#place_order',
-            '.wc-block-components-checkout-place-order-button'
-        ];
-    }
-
-    /**
-     * Clicks on the WooCommerce submit button, checking for multiple possible selectors
-     */
-    async clickWooSubmitButton() {
-        // Try each selector in order until one is found
-        for (const selector of this.wooSubmitButtonSelectors) {
-            const buttonExists = await this.page.$(selector) !== null;
-            if (buttonExists) {
-                await this.page.click(selector);
-                return;
-            }
-        }
-        throw new Error('WooCommerce submit button not found. Tried selectors: ' + this.wooSubmitButtonSelectors.join(', '));
     }
 
     async processPayment(isHostedPayment, preset: string = 'success') {
