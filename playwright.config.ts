@@ -12,6 +12,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: require.resolve('./tests/setup/global-setup'),
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -25,7 +26,12 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'setup',
+      testMatch: /global\.setup\.ts/,
+    },
+    {
       name: 'transaction-tests',
+      dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'] },
       testMatch: '**/payment-gateway-matrix.spec.ts',
     },
