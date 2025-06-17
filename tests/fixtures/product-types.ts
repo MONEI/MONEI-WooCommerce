@@ -44,6 +44,38 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
             short_description: 'Simple test product'
         }
     },
+    BIZUM_SUCCESS: {
+        id: 'bizum_success',
+        sku: 'TEST-BIZUM-01',
+        name: 'Bizum Success Simple Product',
+        isSubscription: false,
+        sampleProductId: 64,
+        sampleProductSlug: 'bizum_success',
+        price: 1.00,
+        woocommerce: {
+            type: 'simple',
+            status: 'publish',
+            catalog_visibility: 'visible',
+            description: 'A simple test product for automated testing',
+            short_description: 'Simple test product'
+        }
+    },
+    BIZUM_FAILS: {
+        id: 'bizum_fails',
+        sku: 'TEST-BIZUM-02',
+        name: 'Bizum Fails Simple Product',
+        isSubscription: false,
+        sampleProductId: 65,
+        sampleProductSlug: 'bizum_fails',
+        price: 10.00,
+        woocommerce: {
+            type: 'simple',
+            status: 'publish',
+            catalog_visibility: 'visible',
+            description: 'A simple test product for automated testing',
+            short_description: 'Simple test product'
+        }
+    },
 
     // Variable product
     VARIABLE: {
@@ -51,7 +83,7 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
         sku: 'TEST-VARIABLE-01',
         name: 'Variable Product',
         isSubscription: false,
-        sampleProductId: 64,
+        sampleProductId: 66,
         sampleProductSlug: 'variable',
         price: 29.99,
         woocommerce: {

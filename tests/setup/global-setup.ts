@@ -24,16 +24,12 @@ async function globalSetup(config: FullConfig) {
     // test api client
     await apiClient.healthCheck();
 
-
-
     // Setup test data
-    await testDataManager.setupTestProducts();
-
-    // await testDataManager.setupTestProducts(['SIMPLE', 'VARIABLE']);
+     await testDataManager.setupTestProducts();
     // await testDataManager.setupProductsByType('simple');
     // await testDataManager.setupSubscriptionProducts('woocommerce');
-    await testDataManager.setupTestPages();
-    await testDataManager.setupMoneiPaymentMethods();
+    //await testDataManager.setupTestPages();
+    //await testDataManager.setupMoneiPaymentMethods();
 
     await browser.close();
 }

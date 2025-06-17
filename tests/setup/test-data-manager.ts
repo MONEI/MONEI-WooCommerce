@@ -91,13 +91,13 @@ export class TestDataManager {
     async setupTestPages() {
         const requiredPages = [
             {
-                slug: 'checkout-classic',
+                slug: 'checkout-short-code',
                 title: 'Classic Checkout',
                 content: '[woocommerce_checkout]',
                 template: 'page'
             },
             {
-                slug: 'checkout-block',
+                slug: 'checkout',
                 title: 'Block Checkout',
                 content: '<!-- wp:woocommerce/checkout --><div class="wp-block-woocommerce-checkout"></div><!-- /wp:woocommerce/checkout -->',
                 template: 'page'
