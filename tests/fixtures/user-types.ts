@@ -18,6 +18,7 @@ export const USER_TYPES: Record<string, UserType> = {
         city: 'Madrid',
         postcode: '28001',
         country: 'ES',
+        state: 'Madrid',
         phone: '+34612345678',
         email: 'juan.perez@example.com'
     },
@@ -28,6 +29,7 @@ export const USER_TYPES: Record<string, UserType> = {
         city: 'Lisbon',
         postcode: '1100-053',
         country: 'PT',
+        state: 'Lisboa',
         phone: '+351912345678',
         email: 'joao.silva@example.com'
     },

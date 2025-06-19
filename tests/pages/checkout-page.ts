@@ -32,14 +32,14 @@ export class CheckoutPage {
     }
 
     private initializeLocators() {
-        if (this.checkoutType.isBlockCheckout) {
+        if (this.checkoutType.isBlockCheckout == true) {
             this.billingFirstNameInput = '#billing-first_name';
             this.billingLastNameInput = '#billing-last_name';
             this.billingAddressInput = '#billing-address_1';
             this.billingCityInput = '#billing-city';
             this.billingPostcodeInput = '#billing-postcode';
             this.billingPhoneInput = '#billing-phone';
-            this.billingEmailInput = '#billing-email';
+            this.billingEmailInput = '#email';
             this.paymentMethodOptions = '.wc-block-components-radio-control__input';
             this.placeOrderButton = '.wc-block-components-checkout-place-order-button';
             this.savedPaymentMethodsSection = '.wc-block-components-payment-methods__saved-payment-methods';
@@ -74,26 +74,25 @@ export class CheckoutPage {
         country?: string;
         state?: string;
     }) {
-        await this.page.fill(this.billingFirstNameInput, details.firstName);
-        await this.page.fill(this.billingLastNameInput, details.lastName);
-        await this.page.fill(this.billingAddressInput, details.address);
-        await this.page.fill(this.billingCityInput, details.city);
-        await this.page.fill(this.billingPostcodeInput, details.postcode);
-        await this.page.fill(this.billingPhoneInput, details.phone);
         await this.page.fill(this.billingEmailInput, details.email);
-
         if (details.country) {
             await this.page.selectOption(this.checkoutType.isBlockCheckout ? '#billing-country' : '#billing_country', details.country);
         }
         if (details.state) {
             await this.page.selectOption(this.checkoutType.isBlockCheckout ? '#billing-state' : '#billing_state', details.state);
         }
+        await this.page.fill(this.billingFirstNameInput, details.firstName);
+        await this.page.fill(this.billingLastNameInput, details.lastName);
+        await this.page.fill(this.billingAddressInput, details.address);
+        await this.page.fill(this.billingCityInput, details.city);
+        await this.page.fill(this.billingPostcodeInput, details.postcode);
+        await this.page.fill(this.billingPhoneInput, details.phone);
     }
 
     async goToCheckout(checkoutType: CheckoutType) {
         const { page } = this;
         // Navigate to the cart page
-        if (checkoutType.isBlockCheckout) {
+        if (this.checkoutType.isBlockCheckout == true) {
             await page.goto('/checkout/');
         }else {
             await page.goto('/checkout-short-code/');

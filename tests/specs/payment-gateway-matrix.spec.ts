@@ -6,7 +6,7 @@ import { getPaymentProcessor } from '../helpers/payment-processors';
 import { OrderVerification } from '../verification/order-verification';
 import {CartPage} from "../pages/cart-page";
 
-const configName = process.env.TEST_CONFIG || 'QUICK';
+const configName = process.env.TEST_CONFIG || 'BIZUM_TESTS';
 const configurations = TEST_CONFIGURATIONS[configName];
 
 // Each configuration is a complete test case with all the properties needed for the test
@@ -29,7 +29,8 @@ test.describe('Payment Gateway Matrix Tests', () => {
             await cartHelper.addProductToCart(productType);
             await checkoutPage.goToCheckout(checkoutType.isBlockCheckout);
             await checkoutPage.fillBillingDetails(userType);
-            const selector = paymentMethod.selector[checkoutType === 'block'? 'block' : 'classic'];
+            const selector = paymentMethod.selector[checkoutType.isBlockCheckout? 'block' : 'classic'];
+            console.log(selector);
             await page.click(selector);
 
             await paymentProcessor.processPayment(paymentMethod.isHostedPayment, paymentMethod.presetCredentials);

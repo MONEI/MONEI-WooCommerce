@@ -45,12 +45,12 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
         }
     },
     BIZUM_SUCCESS: {
-        id: 'bizum_success',
+        id: 'bizum-success-simple-product',
         sku: 'TEST-BIZUM-01',
         name: 'Bizum Success Simple Product',
         isSubscription: false,
         sampleProductId: 64,
-        sampleProductSlug: 'bizum_success',
+        sampleProductSlug: 'bizum-success-simple-product',
         price: 1.00,
         woocommerce: {
             type: 'simple',
@@ -61,12 +61,12 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
         }
     },
     BIZUM_FAILS: {
-        id: 'bizum_fails',
+        id: 'bizum-fails-simple-product',
         sku: 'TEST-BIZUM-02',
         name: 'Bizum Fails Simple Product',
         isSubscription: false,
         sampleProductId: 65,
-        sampleProductSlug: 'bizum_fails',
+        sampleProductSlug: 'bizum-fails-simple-product',
         price: 10.00,
         woocommerce: {
             type: 'simple',

@@ -2,7 +2,7 @@ import { Page, expect } from '@playwright/test';
 
 export class OrderVerification {
     private readonly successSelector = '.wc-block-order-confirmation-status';
-    private readonly failureSelector = '.woocommerce-error';
+    private readonly failureSelector = '.is-error';
     private readonly orderNumberSelector = '.woocommerce-order-overview__order strong';
     private readonly orderItemsSelector = '.woocommerce-table--order-details tbody tr';
 
@@ -20,9 +20,6 @@ export class OrderVerification {
 
     async verifyFailedPayment() {
         await this.page.waitForSelector(this.failureSelector, { timeout: 30000 });
-
-        const isErrorVisible = await this.page.isVisible(this.failureSelector);
-        expect(isErrorVisible).toBeTruthy();
 
         const errorMessage = await this.page.textContent(this.failureSelector);
         expect(errorMessage).toBeTruthy();

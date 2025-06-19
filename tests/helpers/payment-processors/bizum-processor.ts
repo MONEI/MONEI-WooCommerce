@@ -5,6 +5,7 @@ import {PAYMENT_TEST_DATA} from "../../fixtures/payment-test-data";
 export class BizumProcessor extends BasePaymentProcessor {
 
     // Locators
+    readonly bizumContainerSelector = '#bizum-container';
     readonly phoneInput = 'bizum-phone-input';
     readonly bizumButton = 'bizum-button';
     readonly submitButton = 'bizum-pay-button';
@@ -27,13 +28,13 @@ export class BizumProcessor extends BasePaymentProcessor {
     async processPayment(expectSuccess, preset: string = 'success') {
         const bizumDetails = PAYMENT_TEST_DATA.bizum[preset];
 
-        const buttonLocator = this.page.frameLocator('iframe[name^="__zoid__monei_bizum_button"]');
-        await buttonLocator.getByTestId(this.phoneInput).click();
+        await this.page.waitForTimeout(1000);
+        await this.page.click(this.bizumContainerSelector);
         const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_bizum__"]');
         await frameLocator.getByTestId(this.phoneInput).fill(bizumDetails.phoneNumber);
         await frameLocator.getByTestId(this.submitButton).click();
 
-        await this.page.waitForTimeout(15000);
+        await this.page.waitForTimeout(10000);
     }
 
     /**
