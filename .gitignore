@@ -22,3 +22,6 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# Authentication state files
+/tests/auth/*.json
+/tests/auth/
