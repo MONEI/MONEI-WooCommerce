@@ -35,6 +35,13 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: '**/payment-gateway-matrix.spec.ts',
     },
+    {
+      name: 'api-key-tests',
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: '**/monei-settings-api.spec.ts',
+      workers: 1
+    },
   ],
 
   /* Run your local dev server before starting the tests */
