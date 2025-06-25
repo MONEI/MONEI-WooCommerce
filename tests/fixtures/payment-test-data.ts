@@ -27,4 +27,14 @@ export const PAYMENT_TEST_DATA = {
             phoneNumber: '+34500000000'
         }
     },
+    paypal: {
+        success: {
+            user: 'paypal-personal@monei.net',
+            pw: 'monei12345'
+        },
+        fail: {
+            user: 'CCREJECT-REFUSED@paypal.com',
+            pw: 'PayPal2016'
+        }
+    }
 };

@@ -16,7 +16,7 @@ export const CHECKOUT_TYPES: Record<string, CheckoutType> = {
     CLASSIC: {
         id: 'classic',
         name: 'Classic Checkout',
-        url: '/checkout/',
+        url: '/checkout-shortcode/',
         isBlockCheckout: false
     },
 
@@ -24,7 +24,7 @@ export const CHECKOUT_TYPES: Record<string, CheckoutType> = {
     BLOCK: {
         id: 'block',
         name: 'Block Checkout',
-        url: '/checkout-block/',
+        url: '/checkout/',
         isBlockCheckout: true
     },
 

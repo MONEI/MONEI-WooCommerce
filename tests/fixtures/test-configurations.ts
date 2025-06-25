@@ -76,6 +76,17 @@ export const TEST_CONFIGURATIONS = {
         userStates: [USER_STATES.GUEST],
         userTypes: [USER_TYPES.ES_USER]
     }),
+    //PayPal Tests
+    PAYPAL_TESTS: [
+        {
+            paymentMethod: PAYMENT_METHODS.PAYPAL,
+            checkoutType: [CHECKOUT_TYPES.CLASSIC, CHECKOUT_TYPES.BLOCK],
+            productType: PRODUCT_TYPES.SIMPLE,
+            userState: USER_STATES.GUEST,
+            userType: USER_TYPES.ES_USER,
+            expectSuccess: true
+        },
+    ],
     // Bizum-specific tests
     BIZUM_TESTS: [
         // Bizum success scenario
