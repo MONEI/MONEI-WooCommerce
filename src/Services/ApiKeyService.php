@@ -90,8 +90,7 @@ class ApiKeyService {
                     if (empty($currentMode)) {
                         update_option('monei_apikey_mode', 'test'); // Default to test if both exist
                     }
-                    $this->cleanup_legacy_keys($default_params);
-                    return $default_params;
+                    return $this->cleanup_legacy_keys($default_params);
                 }
 
                 // Scenario 2 & 3: Partial new keys exist - try to complete them
@@ -146,7 +145,7 @@ class ApiKeyService {
 
                 // Clean up legacy keys if we did any migration
                 if ($needsMigration) {
-                    $this->cleanup_legacy_keys($default_params);
+                    $default_params = $this->cleanup_legacy_keys($default_params);
                 }
 
                 return $default_params;
@@ -154,7 +153,13 @@ class ApiKeyService {
 			10
 		);
 	}
-    function cleanup_legacy_keys($settings_array) {
+    /**
+     * Clean up legacy API keys from both standalone options and settings array.
+    *
+    * @param array $settings_array The settings array to clean
+    * @return array The cleaned settings array
+    */
+    private function cleanup_legacy_keys($settings_array) {
         // Remove legacy standalone options
         delete_option('monei_apikey');
         delete_option('monei_accountid');
