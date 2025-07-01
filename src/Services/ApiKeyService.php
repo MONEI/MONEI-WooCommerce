@@ -62,97 +62,100 @@ class ApiKeyService {
 	}
 
 	public function copyKeysToCentralSettings() {
-		add_filter(
-			'option_woocommerce_monei_settings',
-			function ( $default_params ) {
-                $newTestApiKey = get_option( 'monei_test_apikey', '' );
-                $newLiveApiKey = get_option( 'monei_live_apikey', '' );
-                $newTestAccountId = get_option( 'monei_test_accountid', '' );
-                $newLiveAccountId = get_option( 'monei_live_accountid', '' );
-                $currentMode = get_option( 'monei_apikey_mode', '' );
-
-                // Get legacy keys
-                $legacyApiKey = get_option( 'monei_apikey', '' );
-                $legacyAccountId = get_option( 'monei_accountid', '' );
-                $settingsApiKey = $default_params['apikey'] ?? '';
-                $settingsAccountId = $default_params['accountid'] ?? '';
-
-                // priority: legacy standalone > settings
-                $sourceApiKey = !empty($legacyApiKey) ? $legacyApiKey : $settingsApiKey;
-                $sourceAccountId = !empty($legacyAccountId) ? $legacyAccountId : $settingsAccountId;
-
-                $needsMigration = false;
-                $testKeysComplete = !empty($newTestApiKey) && !empty($newTestAccountId);
-                $liveKeysComplete = !empty($newLiveApiKey) && !empty($newLiveAccountId);
-
-                // Scenario 1: Both sets of new keys are complete
-                if ($testKeysComplete && $liveKeysComplete) {
-                    if (empty($currentMode)) {
-                        update_option('monei_apikey_mode', 'test'); // Default to test if both exist
-                    }
-                    return $this->cleanup_legacy_keys($default_params);
-                }
-
-                // Scenario 2 & 3: Partial new keys exist - try to complete them
-                if (!empty($newTestApiKey) && empty($newTestAccountId)) {
-                    if (!empty($sourceAccountId)) {
-                        update_option('monei_test_accountid', $sourceAccountId);
-                        $needsMigration = true;
-                    }
-                }
-
-                if (!empty($newLiveApiKey) && empty($newLiveAccountId)) {
-                    if (!empty($sourceAccountId)) {
-                        update_option('monei_live_accountid', $sourceAccountId);
-                        $needsMigration = true;
-                    }
-                }
-
-                // Set mode based on existing new keys if mode is not set
-                if (empty($currentMode)) {
-                    if (!empty($newTestApiKey)) {
-                        update_option('monei_apikey_mode', 'test');
-                    } elseif (!empty($newLiveApiKey)) {
-                        update_option('monei_apikey_mode', 'live');
-                    }
-                }
-
-                // Scenario 4: No new keys exist, need full migration from legacy
-                if (empty($newTestApiKey) && empty($newLiveApiKey) && !empty($sourceApiKey)) {
-                    if (strpos($sourceApiKey, 'pk_test_') === 0) {
-                        // Migrate to test keys
-                        update_option('monei_test_apikey', $sourceApiKey);
-                        if (!empty($sourceAccountId)) {
-                            update_option('monei_test_accountid', $sourceAccountId);
-                        }
-                        if (empty($currentMode)) {
-                            update_option('monei_apikey_mode', 'test');
-                        }
-                        $needsMigration = true;
-
-                    } elseif (strpos($sourceApiKey, 'pk_live_') === 0) {
-                        // Migrate to live keys
-                        update_option('monei_live_apikey', $sourceApiKey);
-                        if (!empty($sourceAccountId)) {
-                            update_option('monei_live_accountid', $sourceAccountId);
-                        }
-                        if (empty($currentMode)) {
-                            update_option('monei_apikey_mode', 'live');
-                        }
-                        $needsMigration = true;
-                    }
-                }
-
-                // Clean up legacy keys if we did any migration
-                if ($needsMigration) {
-                    $default_params = $this->cleanup_legacy_keys($default_params);
-                }
-
-                return $default_params;
-			},
-			10
-		);
+		add_filter('option_woocommerce_monei_settings', array($this, 'processCentralSettings'), 10,1);
 	}
+    /**
+     * Process and migrate API keys between different storage locations
+     *
+     * @param array $default_params The settings array from the filter
+     * @return array The processed settings array
+     */
+    public function processCentralSettings ( $default_params )  {
+        $newTestApiKey = get_option( 'monei_test_apikey', '' );
+        $newLiveApiKey = get_option( 'monei_live_apikey', '' );
+        $newTestAccountId = get_option( 'monei_test_accountid', '' );
+        $newLiveAccountId = get_option( 'monei_live_accountid', '' );
+        $currentMode = get_option( 'monei_apikey_mode', '' );
+
+        // Get legacy keys
+        $legacyApiKey = get_option( 'monei_apikey', '' );
+        $legacyAccountId = get_option( 'monei_accountid', '' );
+        $settingsApiKey = $default_params['apikey'] ?? '';
+        $settingsAccountId = $default_params['accountid'] ?? '';
+
+        // priority: legacy standalone > settings
+        $sourceApiKey = !empty($legacyApiKey) ? $legacyApiKey : $settingsApiKey;
+        $sourceAccountId = !empty($legacyAccountId) ? $legacyAccountId : $settingsAccountId;
+
+        $needsMigration = false;
+        $testKeysComplete = !empty($newTestApiKey) && !empty($newTestAccountId);
+        $liveKeysComplete = !empty($newLiveApiKey) && !empty($newLiveAccountId);
+
+        // Scenario 1: Both sets of new keys are complete
+        if ($testKeysComplete && $liveKeysComplete) {
+            if (empty($currentMode)) {
+                update_option('monei_apikey_mode', 'test'); // Default to test if both exist
+            }
+            return $this->cleanup_legacy_keys($default_params);
+        }
+
+        // Scenario 2 & 3: Partial new keys exist - try to complete them
+        if (!empty($newTestApiKey) && empty($newTestAccountId)) {
+            if (!empty($sourceAccountId)) {
+                update_option('monei_test_accountid', $sourceAccountId);
+                $needsMigration = true;
+            }
+        }
+
+        if (!empty($newLiveApiKey) && empty($newLiveAccountId)) {
+            if (!empty($sourceAccountId)) {
+                update_option('monei_live_accountid', $sourceAccountId);
+                $needsMigration = true;
+            }
+        }
+
+        // Set mode based on existing new keys if mode is not set
+        if (empty($currentMode)) {
+            if (!empty($newTestApiKey)) {
+                update_option('monei_apikey_mode', 'test');
+            } elseif (!empty($newLiveApiKey)) {
+                update_option('monei_apikey_mode', 'live');
+            }
+        }
+
+        // Scenario 4: No new keys exist, need full migration from legacy
+        if (empty($newTestApiKey) && empty($newLiveApiKey) && !empty($sourceApiKey)) {
+            if (strpos($sourceApiKey, 'pk_test_') === 0) {
+                // Migrate to test keys
+                update_option('monei_test_apikey', $sourceApiKey);
+                if (!empty($sourceAccountId)) {
+                    update_option('monei_test_accountid', $sourceAccountId);
+                }
+                if (empty($currentMode)) {
+                    update_option('monei_apikey_mode', 'test');
+                }
+                $needsMigration = true;
+
+            } elseif (strpos($sourceApiKey, 'pk_live_') === 0) {
+                // Migrate to live keys
+                update_option('monei_live_apikey', $sourceApiKey);
+                if (!empty($sourceAccountId)) {
+                    update_option('monei_live_accountid', $sourceAccountId);
+                }
+                if (empty($currentMode)) {
+                    update_option('monei_apikey_mode', 'live');
+                }
+                $needsMigration = true;
+            }
+        }
+
+        // Clean up legacy keys if we did any migration
+        if ($needsMigration) {
+            $default_params = $this->cleanup_legacy_keys($default_params);
+        }
+
+        return $default_params;
+    }
     /**
      * Clean up legacy API keys from both standalone options and settings array.
     *
