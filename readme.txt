@@ -107,7 +107,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Fix - Send correct useragent version
 * Fix - plugin crashes when updating from older version
 
-2025-06-05 - version 6.3.6
+2025-06-05 - version 6.3.7
 * Fix - Remove old _payment_method transients on activation and update
 
 2025-06-04 - version 6.3.5

@@ -1,13 +1,12 @@
 {
   "name": "monei-woocommerce",
-  "version": "6.3.6",
+  "version": "6.3.7",
   "main": "index.js",
   "repository": "git@github.com:MONEI/MONEI-WooCommerce.git",
   "author": "MONEI <support@monei.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "terser ../assets/js/monei-cc-classic.js --compress --mangle --output ../public/js/monei-cc-classic.min.js",
     "release": "release-it"
   },
   "release-it": {
