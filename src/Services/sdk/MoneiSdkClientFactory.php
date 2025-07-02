@@ -22,8 +22,8 @@ class MoneiSdkClientFactory {
 		if ( $this->client === null ) {
 			include_once WC_Monei()->plugin_path() . '/vendor/autoload.php';
 			$config = Configuration::getDefaultConfiguration();
-			$config->setUserAgent( 'MONEI/WooCommerce/' . WC_Monei()->version );
 			$this->client = new MoneiClient( $this->apiKeyService->get_api_key(), $config );
+            $this->client->setUserAgent( 'MONEI/WooCommerce/'. WC_Monei()->version  );
 		}
 		return $this->client;
 	}
