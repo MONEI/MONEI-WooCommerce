@@ -62,10 +62,13 @@ class ApiKeyService {
 	}
 
     public function copyKeysToCentralSettings() {
+        // Get the current state once
+        $keyState = $this->getCurrentKeyState();
+
         // First, check if we need any migration at all
-        if ($this->needsMigration()) {
+        if ($this->needsMigration($keyState)) {
             // Try standalone migration first (has priority)
-            $standaloneSuccess = $this->migrateStandaloneKeys();
+            $standaloneSuccess = $this->migrateStandaloneKeys($keyState);
 
             // Only bother with settings if standalone migration didn't complete everything
             if (!$standaloneSuccess) {
@@ -75,16 +78,27 @@ class ApiKeyService {
     }
 
     /**
+     * Get current state of all keys
+     *
+     * @return array Current key state
+     */
+    private function getCurrentKeyState() {
+        return array(
+            'test_api_key' => get_option('monei_test_apikey', ''),
+            'live_api_key' => get_option('monei_live_apikey', ''),
+            'test_account_id' => get_option('monei_test_accountid', ''),
+            'live_account_id' => get_option('monei_live_accountid', ''),
+            'current_mode' => get_option('monei_apikey_mode', ''),
+        );
+    }
+
+    /**
      * Check if any migration is needed
      *
+     * @param array $keyState Current key state
      * @return bool True if migration is needed
      */
-    private function needsMigration() {
-        $newTestApiKey = get_option('monei_test_apikey', '');
-        $newLiveApiKey = get_option('monei_live_apikey', '');
-        $newTestAccountId = get_option('monei_test_accountid', '');
-        $newLiveAccountId = get_option('monei_live_accountid', '');
-
+    private function needsMigration($keyState) {
         // Get legacy keys
         $legacyApiKey = get_option('monei_apikey', '');
         $legacyAccountId = get_option('monei_accountid', '');
@@ -93,8 +107,8 @@ class ApiKeyService {
         $settingsAccountId = $existingSettings['accountid'] ?? '';
 
         // Check if both new key sets are complete
-        $testKeysComplete = !empty($newTestApiKey) && !empty($newTestAccountId);
-        $liveKeysComplete = !empty($newLiveApiKey) && !empty($newLiveAccountId);
+        $testKeysComplete = !empty($keyState['test_api_key']) && !empty($keyState['test_account_id']);
+        $liveKeysComplete = !empty($keyState['live_api_key']) && !empty($keyState['live_account_id']);
 
         // If both are complete, no migration needed
         if ($testKeysComplete && $liveKeysComplete) {
@@ -104,22 +118,17 @@ class ApiKeyService {
         // If we have any legacy keys or incomplete new keys, migration is needed
         return !empty($legacyApiKey) || !empty($legacyAccountId) ||
             !empty($settingsApiKey) || !empty($settingsAccountId) ||
-            (!empty($newTestApiKey) && empty($newTestAccountId)) ||
-            (!empty($newLiveApiKey) && empty($newLiveAccountId));
+            (!empty($keyState['test_api_key']) && empty($keyState['test_account_id'])) ||
+            (!empty($keyState['live_api_key']) && empty($keyState['live_account_id']));
     }
 
     /**
      * Migrate standalone legacy keys (works regardless of settings existence)
      *
+     * @param array $keyState Current key state
      * @return bool True if migration was successful and complete, false if settings migration is still needed
      */
-    private function migrateStandaloneKeys() {
-        $newTestApiKey = get_option('monei_test_apikey', '');
-        $newLiveApiKey = get_option('monei_live_apikey', '');
-        $newTestAccountId = get_option('monei_test_accountid', '');
-        $newLiveAccountId = get_option('monei_live_accountid', '');
-        $currentMode = get_option('monei_apikey_mode', '');
-
+    private function migrateStandaloneKeys($keyState) {
         // Get legacy standalone keys
         $legacyApiKey = get_option('monei_apikey', '');
         $legacyAccountId = get_option('monei_accountid', '');
@@ -128,48 +137,30 @@ class ApiKeyService {
         $migratedFromStandalone = false;
 
         // Complete partial new keys using legacy standalone keys
-        if (!empty($newTestApiKey) && empty($newTestAccountId) && !empty($legacyAccountId)) {
+        if (!empty($keyState['test_api_key']) && empty($keyState['test_account_id']) && !empty($legacyAccountId)) {
             update_option('monei_test_accountid', $legacyAccountId);
             $needsCleanup = true;
             $migratedFromStandalone = true;
         }
 
-        if (!empty($newLiveApiKey) && empty($newLiveAccountId) && !empty($legacyAccountId)) {
+        if (!empty($keyState['live_api_key']) && empty($keyState['live_account_id']) && !empty($legacyAccountId)) {
             update_option('monei_live_accountid', $legacyAccountId);
             $needsCleanup = true;
             $migratedFromStandalone = true;
         }
 
         // Set mode based on existing new keys if mode is not set
-        if (empty($currentMode)) {
-            if (!empty($newTestApiKey)) {
+        if (empty($keyState['current_mode'])) {
+            if (!empty($keyState['test_api_key'])) {
                 update_option('monei_apikey_mode', 'test');
-            } elseif (!empty($newLiveApiKey)) {
+            } elseif (!empty($keyState['live_api_key'])) {
                 update_option('monei_apikey_mode', 'live');
             }
         }
 
         // Full migration from legacy standalone keys if no new keys exist
-        if (empty($newTestApiKey) && empty($newLiveApiKey) && !empty($legacyApiKey)) {
-            if (strpos($legacyApiKey, 'pk_test_') === 0) {
-                update_option('monei_test_apikey', $legacyApiKey);
-                if (!empty($legacyAccountId)) {
-                    update_option('monei_test_accountid', $legacyAccountId);
-                }
-                if (empty($currentMode)) {
-                    update_option('monei_apikey_mode', 'test');
-                }
-                $needsCleanup = true;
-                $migratedFromStandalone = true;
-
-            } elseif (strpos($legacyApiKey, 'pk_live_') === 0) {
-                update_option('monei_live_apikey', $legacyApiKey);
-                if (!empty($legacyAccountId)) {
-                    update_option('monei_live_accountid', $legacyAccountId);
-                }
-                if (empty($currentMode)) {
-                    update_option('monei_apikey_mode', 'live');
-                }
+        if (empty($keyState['test_api_key']) && empty($keyState['live_api_key']) && !empty($legacyApiKey)) {
+            if ($this->migrateSingleKeySet($legacyApiKey, $legacyAccountId, $keyState['current_mode'])) {
                 $needsCleanup = true;
                 $migratedFromStandalone = true;
             }
@@ -181,18 +172,12 @@ class ApiKeyService {
             delete_option('monei_accountid');
         }
 
-        // Check if migration is now complete (both sets of keys exist OR we successfully migrated what we had)
-        $newTestApiKeyAfter = get_option('monei_test_apikey', '');
-        $newLiveApiKeyAfter = get_option('monei_live_apikey', '');
-        $newTestAccountIdAfter = get_option('monei_test_accountid', '');
-        $newLiveAccountIdAfter = get_option('monei_live_accountid', '');
+        // Return true if we migrated anything from standalone (has priority over settings)
+        // or if we already had complete key sets
+        $initialTestKeysComplete = !empty($keyState['test_api_key']) && !empty($keyState['test_account_id']);
+        $initialLiveKeysComplete = !empty($keyState['live_api_key']) && !empty($keyState['live_account_id']);
 
-        $testKeysComplete = !empty($newTestApiKeyAfter) && !empty($newTestAccountIdAfter);
-        $liveKeysComplete = !empty($newLiveApiKeyAfter) && !empty($newLiveAccountIdAfter);
-
-        // Return true if we have at least one complete set OR if we migrated anything from standalone
-        // (meaning settings keys are irrelevant since standalone has priority)
-        return ($testKeysComplete || $liveKeysComplete) || $migratedFromStandalone;
+        return $migratedFromStandalone || ($initialTestKeysComplete || $initialLiveKeysComplete);
     }
 
     /**
@@ -246,24 +231,7 @@ class ApiKeyService {
 
         // Full migration from settings keys if no new keys exist
         if (empty($newTestApiKey) && empty($newLiveApiKey) && !empty($settingsApiKey)) {
-            if (strpos($settingsApiKey, 'pk_test_') === 0) {
-                update_option('monei_test_apikey', $settingsApiKey);
-                if (!empty($settingsAccountId)) {
-                    update_option('monei_test_accountid', $settingsAccountId);
-                }
-                if (empty($currentMode)) {
-                    update_option('monei_apikey_mode', 'test');
-                }
-                $needsCleanup = true;
-
-            } elseif (strpos($settingsApiKey, 'pk_live_') === 0) {
-                update_option('monei_live_apikey', $settingsApiKey);
-                if (!empty($settingsAccountId)) {
-                    update_option('monei_live_accountid', $settingsAccountId);
-                }
-                if (empty($currentMode)) {
-                    update_option('monei_apikey_mode', 'live');
-                }
+            if ($this->migrateSingleKeySet($settingsApiKey, $settingsAccountId, $currentMode)) {
                 $needsCleanup = true;
             }
         }
@@ -274,6 +242,37 @@ class ApiKeyService {
         }
 
         return $default_params;
+    }
+
+    /**
+     * Migrate a single key set based on key prefix
+     *
+     * @param string $apiKey The API key to migrate
+     * @param string $accountId The account ID to migrate
+     * @param string $currentMode Current mode setting
+     * @return bool True if migration occurred
+     */
+    private function migrateSingleKeySet($apiKey, $accountId, $currentMode) {
+        if (strpos($apiKey, 'pk_test_') === 0) {
+            update_option('monei_test_apikey', $apiKey);
+            if (!empty($accountId)) {
+                update_option('monei_test_accountid', $accountId);
+            }
+            if (empty($currentMode)) {
+                update_option('monei_apikey_mode', 'test');
+            }
+            return true;
+        } elseif (strpos($apiKey, 'pk_live_') === 0) {
+            update_option('monei_live_apikey', $apiKey);
+            if (!empty($accountId)) {
+                update_option('monei_live_accountid', $accountId);
+            }
+            if (empty($currentMode)) {
+                update_option('monei_apikey_mode', 'live');
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
