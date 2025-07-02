@@ -69,10 +69,7 @@ class ApiKeyService {
 
             // Only bother with settings if standalone migration didn't complete everything
             if (!$standaloneSuccess) {
-                $existingSettings = get_option('woocommerce_monei_settings', null);
-                if ($existingSettings !== null) {
-                    add_filter('option_woocommerce_monei_settings', array($this, 'processCentralSettings'), 10, 1);
-                }
+                add_filter('option_woocommerce_monei_settings', array($this, 'processCentralSettings'), 10, 1);
             }
         }
     }
