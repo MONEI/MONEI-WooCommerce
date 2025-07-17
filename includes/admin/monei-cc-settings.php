@@ -24,7 +24,7 @@ return apply_filters(
 		'top_link'         => array(
 			'title'       => '',
 			'type'        => 'title',
-			'description' => '<a href="' . $settings_link . '" class="button">' . __( 'Go to MONEI API key Settings', 'monei' ) . '</a>',
+			'description' => '<a href="' . $settings_link . '" class="button">' . __( 'Go to MONEI API Key Settings', 'monei' ) . '</a>',
 			'id'          => 'cc_monei_top_link',
 		),
 		'enabled'          => array(
