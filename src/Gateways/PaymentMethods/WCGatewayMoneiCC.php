@@ -36,6 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	const PAYMENT_METHOD = 'card';
+    protected static $scripts_enqueued = false;
 
 	/**
 	 * @var bool
@@ -84,7 +85,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
-		$this->apple_google_pay     = ( ! empty( $this->get_option( 'apple_google_pay' ) && 'yes' === $this->get_option( 'apple_google_pay' ) ) ) ? true : false;
 		$this->testmode             = $this->getTestmode();
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
@@ -150,7 +150,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * @since 3.4.0
 	 */
 	public function needs_setup() {
-
 		if ( ! $this->account_id || ! $this->api_key ) {
 			return true;
 		}
@@ -340,8 +339,12 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * Registering MONEI JS library and plugin js.
 	 */
 	public function monei_scripts() {
+        if (self::$scripts_enqueued || !$this->should_load_scripts()){
+            return;
+        }
+
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( $this->redirect_flow || ( ! is_checkout() && ! is_add_payment_method_page() && ( $this->handler && ! $this->handler->is_subscription_change_payment_page() ) ) ) {
+		if ( $this->redirect_flow || (! is_checkout() && ! is_add_payment_method_page() && ($this->handler && ! $this->handler->is_subscription_change_payment_page() ) )  ) {
 			return;
 		}
 
@@ -372,7 +375,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			array(
 				'account_id'       => $this->getAccountId(),
 				'session_id'       => WC()->session->get_customer_id(),
-				'apple_google_pay' => $this->apple_google_pay,
 				'total'            => monei_price_format( $total ),
 				'currency'         => get_woocommerce_currency(),
 				'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
@@ -381,17 +383,10 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 		wp_enqueue_script( 'woocommerce_monei' );
 		$this->tokenization_script();
+        self::$scripts_enqueued = true;
 	}
-	public function isGoogleAvailable() {
-		$googleInAPI = $this->paymentMethodsService->isGoogleEnabled();
-		$googleInWoo = $this->apple_google_pay;
-		return $googleInAPI && $googleInWoo;
-	}
-
-	public function isAppleAvailable() {
-		$appleInAPI = $this->paymentMethodsService->isAppleEnabled();
-		$appleInWoo = $this->apple_google_pay;
-		return $appleInAPI && $appleInWoo;
-	}
+    protected function should_load_scripts() {
+        return is_checkout() || is_cart() || is_product() || is_add_payment_method_page();
+    }
 }
 

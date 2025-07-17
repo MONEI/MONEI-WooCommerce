@@ -514,5 +514,5 @@
 		supports: { features: [ 'products' ] },
 	};
 	registerPaymentMethod( MoneiPaymentMethod );
-	registerPaymentMethod( AppleGooglePaymentMethod );
+	//registerPaymentMethod( AppleGooglePaymentMethod );
 } )();
