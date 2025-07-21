@@ -125,10 +125,7 @@
 		);
 	};
 	const appleGoogleLabel = () => {
-		console.log(moneiData)
-
 		const isApple = window.ApplePaySession?.canMakePayments();
-		console.log('isApple', isApple)
 		const appleEnabled = moneiData.logo_apple !== false;
 		const googleEnabled = moneiData.logo_google !== false;
 		let logo = googleEnabled? moneiData.logo_google : false;
