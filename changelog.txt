@@ -1,5 +1,8 @@
 *** MONEI Payments for WooCommerce ***
 
+2025-08-04 - version 6.3.8
+* Fix - Move ApplePay and Google Pay to a separated gateway
+
 2025-07-02 - version 6.3.7
 * Fix - Send correct useragent version
 * Fix - plugin crashes when updating from older version
