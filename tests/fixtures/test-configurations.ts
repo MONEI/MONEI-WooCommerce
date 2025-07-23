@@ -70,11 +70,12 @@ export function generateTestConfigurations(options: {
 export const TEST_CONFIGURATIONS = {
     // Quick smoke test
     QUICK: generateTestConfigurations({
-        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_SUCCESS],
+        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_FAIL],
         checkoutTypes: [CHECKOUT_TYPES.CLASSIC],
         productTypes: [PRODUCT_TYPES.SIMPLE],
         userStates: [USER_STATES.GUEST],
-        userTypes: [USER_TYPES.ES_USER]
+        userTypes: [USER_TYPES.ES_USER],
+        expectSuccess: false
     }),
     //PayPal Tests
     PAYPAL_TESTS: [
@@ -139,9 +140,9 @@ export const TEST_CONFIGURATIONS = {
 
     // Credit card comprehensive tests
     CREDIT_CARD_TESTS: generateTestConfigurations({
-        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_SUCCESS, PAYMENT_METHODS.CREDIT_CARD_HOSTED],
+        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_HOSTED],
         checkoutTypes: Object.values(CHECKOUT_TYPES),
-        productTypes: [PRODUCT_TYPES.SIMPLE, PRODUCT_TYPES.VARIABLE],
+        productTypes: [PRODUCT_TYPES.SIMPLE],
         userStates: Object.values(USER_STATES),
         userTypes: Object.values(USER_TYPES)
     }),

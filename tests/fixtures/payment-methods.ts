@@ -49,7 +49,21 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
             classic: 'input[name="payment_method"][value="monei"]',
             block: '.wc-block-components-radio-control__input[value="monei"]'
         },
-        presetCredentials: 'success'
+        presetCredentials: 'threeDSecure'
+    },
+    CREDIT_CARD_FAIL: {
+        id: 'monei',
+        name: 'Credit Card (Hosted)',
+        className: 'wc-monei-credit-card-hosted-payment-method',
+        isApplicableToSubscription: true,
+        paymentProcessFunction: 'processCreditCardHostedPayment',
+        isHostedPayment: true,
+        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'UK'], // Example countries
+        selector: {
+            classic: 'input[name="payment_method"][value="monei"]',
+            block: '.wc-block-components-radio-control__input[value="monei"]'
+        },
+        presetCredentials: 'fail'
     },
 
     // Bizum

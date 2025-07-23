@@ -6,7 +6,7 @@ import { getPaymentProcessor } from '../helpers/payment-processors';
 import { OrderVerification } from '../verification/order-verification';
 import {CartPage} from "../pages/cart-page";
 
-const configName = process.env.TEST_CONFIG || 'PAYPAL_TESTS';
+const configName = process.env.TEST_CONFIG || 'QUICK';
 const configurations = TEST_CONFIGURATIONS[configName];
 
 // Each configuration is a complete test case with all the properties needed for the test
@@ -25,6 +25,7 @@ test.describe('Payment Gateway Matrix Tests', () => {
             const checkoutPage = new CheckoutPage(page, checkoutType);
             const cartHelper = new CartPage(page);
             const paymentProcessor = getPaymentProcessor(paymentMethod.id, page);
+            //check if is credit card and if is hosted then change option to have the proper checkout option
             const orderVerification = new OrderVerification(page);
 
             await cartHelper.addProductToCart(productType);
@@ -32,7 +33,6 @@ test.describe('Payment Gateway Matrix Tests', () => {
             await checkoutPage.fillBillingDetails(userType);
             const selector = paymentMethod.selector[checkoutType.isBlockCheckout? 'block' : 'classic'];
             await page.click(selector);
-
             await paymentProcessor.processPayment(paymentMethod.isHostedPayment, paymentMethod.presetCredentials);
 
             if (expectSuccess) {

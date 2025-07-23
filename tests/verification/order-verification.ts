@@ -19,10 +19,15 @@ export class OrderVerification {
     }
 
     async verifyFailedPayment() {
-        await this.page.waitForSelector(this.failureSelector, { timeout: 30000 });
+        // Check that we arrived at the pay for order page
+        const isFailureVisible = await this.page.isVisible(this.failureSelector);
+        expect(isFailureVisible).toBeTruthy();
 
-        const errorMessage = await this.page.textContent(this.failureSelector);
-        expect(errorMessage).toBeTruthy();
+        // Check that at least one payment gateway is visible
+        const isPaymentMethodVisible = await this.page.isVisible('input[name="payment_method"]') ||
+            await this.page.isVisible('.wc-block-components-radio-control__input[name="radio-control-payment-method"]');
+
+        expect(isPaymentMethodVisible).toBeTruthy();
     }
 
     private async getOrderNumber(): Promise<string> {

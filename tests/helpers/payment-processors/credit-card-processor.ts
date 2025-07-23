@@ -36,6 +36,9 @@ export class CreditCardProcessor extends BasePaymentProcessor {
             await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
 
             await this.page.getByTestId(this.submitButton).click();
+            if (preset === 'threeDSecure' || preset === 'fail') {
+                await this.complete3DSecure(preset);
+            }
         } else {
             const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_card_input__"]');
 
@@ -46,7 +49,7 @@ export class CreditCardProcessor extends BasePaymentProcessor {
             await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
             await this.clickWooSubmitButton()
             if (preset === 'threeDSecure') {
-                await this.complete3DSecure();
+                await this.complete3DSecure(preset);
             }
         }
     }
@@ -68,19 +71,12 @@ export class CreditCardProcessor extends BasePaymentProcessor {
         return this.page.$$eval(errorSelector, errors => errors.map(e => e.textContent?.trim()));
     }
 
-    async complete3DSecure() {
-        // Wait for 3D Secure iframe to load
-        await this.page.waitForSelector('iframe[name^="monei-3ds-"]');
-        
-        // Switch to 3D Secure iframe
-        // @ts-ignore
-        const frame = this.page.frame({ name: /monei-3ds-/ });
-        if (!frame) throw new Error('3D Secure iframe not found');
-
-        // Complete 3D Secure verification (this may vary depending on the bank's 3D Secure implementation)
-        await frame.waitForSelector('#password');
-        await frame.fill('#password', '1234');
-        await frame.click('#submit-button');
+    async complete3DSecure(status) {
+        if (status === 'threeDSecure') {
+            await this.page.getByTestId('complete-button').click();
+        } else if (status === 'fail') {
+            await this.page.getByTestId('fail-button').click();
+        }
 
         // Wait for redirection back to the order received page
         await this.page.waitForNavigation({ waitUntil: 'networkidle' });
