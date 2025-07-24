@@ -322,16 +322,15 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		/**
 		 * Hooks when plugin_loaded
 		 */
-		public function plugins_loaded() {
-			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
-            add_filter('plugin_action_links_' . plugin_basename(__FILE__), array( $this, 'plugin_action_links' )  );
-
-
+        public function plugins_loaded()
+        {
+            add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
+            add_filter('plugin_action_links_' . plugin_basename(MONEI_PLUGIN_FILE), array($this, 'plugin_action_links'));
         }
-        public function plugin_action_links( $links ) {
 
-                $links[] = '<a href="'. admin_url( 'admin.php?page=wc-settings&tab=monei_settings' ). '">'. __( 'Settings', 'woocommerce' ). '</a>';
-
+        public function plugin_action_links($links)
+        {
+            $links[] = '<a href="' . admin_url('admin.php?page=wc-settings&tab=monei_settings') . '">' . __('Settings', 'woocommerce') . '</a>';
             return $links;
         }
 
