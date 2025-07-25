@@ -18,7 +18,7 @@ interface WordPressError {
 export class WordPressApiClient {
     private baseUrl: string;
     private wpAuth: string;
-    private wooCommerce: any;
+    wooCommerce: any;
 
     constructor() {
         this.baseUrl = process.env.TESTSITE_URL || 'http://localhost:8080';

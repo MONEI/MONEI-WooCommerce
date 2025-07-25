@@ -42,6 +42,12 @@ export default defineConfig({
       testMatch: '**/monei-settings-api.spec.ts',
       workers: 1
     },
+    {
+      name: 'pay-order-tests',
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: '**/pay-order-gateway-tests.spec.ts',
+    },
   ],
 
   /* Run your local dev server before starting the tests */

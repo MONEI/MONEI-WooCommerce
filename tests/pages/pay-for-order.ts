@@ -10,6 +10,8 @@ export class PayForOrderPage {
     orderTotalSelector: string;
     paymentMethodsSelector: string;
     placeOrderButtonSelector: string;
+    savedPaymentMethodsSelector: string;
+    errorMessageSelector: string;
 
     // Credit Card specific locators
     cardholderNameInputSelector: string;
@@ -27,10 +29,14 @@ export class PayForOrderPage {
             this.orderTotalSelector = '.wc-block-components-totals-footer-item .wc-block-components-totals-item__value';
             this.paymentMethodsSelector = '.wc-block-components-radio-control__input';
             this.placeOrderButtonSelector = '.wc-block-components-checkout-place-order-button';
+            this.savedPaymentMethodsSelector = '.wc-block-saved-payment-method-options';
+            this.errorMessageSelector = '.wc-block-components-notice-banner--error';
         } else {
             this.orderTotalSelector = '.order-total .amount';
             this.paymentMethodsSelector = '.wc_payment_method input[name="payment_method"]';
             this.placeOrderButtonSelector = '#place_order';
+            this.savedPaymentMethodsSelector = '.wc-saved-payment-methods';
+            this.errorMessageSelector = '.woocommerce-error';
         }
 
         this.cardholderNameInputSelector = '#monei-card-holder-name';
@@ -38,79 +44,100 @@ export class PayForOrderPage {
         this.cardErrorContainerSelector = '#monei-card-errors';
     }
 
-    async navigateToPayForOrderPage(orderId: string) {
-        await this.page.goto(`/checkout/order-pay/${orderId}/?pay_for_order=true&key=wc_order_XXXXXXXXXXXXX`);
-        await this.waitForPageLoad();
-    }
-
-    async waitForPageLoad() {
-        if (this.checkoutType.isBlockCheckout) {
-            await this.page.waitForSelector('.wc-block-checkout__main');
-        } else {
-            await this.page.waitForSelector('#order_review');
-        }
+    async navigateToPayForOrderPage(orderId: string, orderKey: string) {
+        const url = `/checkout/order-pay/${orderId}/?pay_for_order=true&key=${orderKey}`;
+        await this.page.goto(url);
+        await this.page.waitForLoadState('networkidle');
     }
 
     async getOrderTotal(): Promise<string> {
-        const totalElement = await this.page.locator(this.orderTotalSelector);
-        return totalElement.innerText();
+        await this.page.waitForSelector(this.orderTotalSelector);
+        const totalElement = await this.page.locator(this.orderTotalSelector).first();
+        return await totalElement.innerText();
     }
 
     async selectPaymentMethod(paymentMethod: PaymentMethod) {
-        await this.page.click(`${this.paymentMethodsSelector}[value="${paymentMethod.id}"]`);
-        await this.page.waitForSelector(`#payment_method_${paymentMethod.id}`);
+        const selector = paymentMethod.selector.classic;
+
+        await this.page.waitForSelector(selector);
+        await this.page.click(selector);
+
+        // Wait for payment method UI to update
+        await this.page.waitForTimeout(500);
     }
 
-    async fillCreditCardDetails(cardDetails: {
-        cardNumber: string;
-        expiryDate: string;
-        cvc: string;
-        cardholderName: string;
-    }) {
-        await this.page.fill(this.cardholderNameInputSelector, cardDetails.cardholderName);
+    async getAvailablePaymentMethods(): Promise<string[]> {
+        await this.page.waitForSelector(this.paymentMethodsSelector);
 
-        // Assuming the card details are entered into an iframe
-        const frameHandle = await this.page.waitForSelector(`${this.cardInputContainerSelector} iframe`);
-        const frame = await frameHandle.contentFrame();
+        const methods: string[] = [];
+        const inputs = await this.page.$$(this.paymentMethodsSelector);
 
-        await frame?.fill('[name="cardnumber"]', cardDetails.cardNumber);
-        await frame?.fill('[name="exp-date"]', cardDetails.expiryDate);
-        await frame?.fill('[name="cvc"]', cardDetails.cvc);
+        for (const input of inputs) {
+            const value = await input.getAttribute('value');
+            if (value) {
+                methods.push(value);
+            }
+        }
+
+        return methods;
     }
 
-    async placeOrder() {
+    async fillCardholderName(name: string) {
+        await this.page.waitForSelector(this.cardholderNameInputSelector);
+        await this.page.fill(this.cardholderNameInputSelector, name);
+    }
+
+    async clickPlaceOrder() {
+        await this.page.waitForSelector(this.placeOrderButtonSelector);
+
+        // Ensure button is enabled
+        await this.page.waitForFunction(
+            selector => {
+                const button = document.querySelector(selector);
+                return button && !(button as HTMLButtonElement).disabled;
+            },
+            this.placeOrderButtonSelector,
+            { timeout: 10000 }
+        );
+
         await this.page.click(this.placeOrderButtonSelector);
-        await this.page.waitForNavigation({ waitUntil: 'networkidle' });
     }
 
-    async verifyOrderDetails(expectedTotal: string) {
-        const actualTotal = await this.getOrderTotal();
-        expect(actualTotal).toBe(expectedTotal);
-    }
-
-    async verifyPaymentMethodVisibility(paymentMethod: PaymentMethod, shouldBeVisible: boolean) {
-        const selector = this.checkoutType.isBlockCheckout
-            ? `.wc-block-components-radio-control__input[value="${paymentMethod.id}"]`
-            : `input[name="payment_method"][value="${paymentMethod.id}"]`;
-
-        if (shouldBeVisible) {
-            await expect(this.page.locator(selector)).toBeVisible();
-        } else {
-            await expect(this.page.locator(selector)).toBeHidden();
+    async hasSavedPaymentMethods(): Promise<boolean> {
+        try {
+            await this.page.waitForSelector(this.savedPaymentMethodsSelector, { timeout: 5000 });
+            return true;
+        } catch {
+            return false;
         }
     }
 
-    async getErrorMessage(): Promise<string | null> {
-        const errorSelector = this.checkoutType.isBlockCheckout
-            ? '.wc-block-components-notice-banner__content'
-            : '.woocommerce-error';
+    async selectSavedPaymentMethod(index: number = 0) {
+        const savedMethodSelector = this.checkoutType.isBlockCheckout ?
+            `.wc-block-saved-payment-method-options__option:nth-child(${index + 1}) input` :
+            `.wc-saved-payment-methods input[type="radio"]:nth-child(${index + 1})`;
 
-        const errorElement = await this.page.locator(errorSelector);
-        return errorElement.isVisible() ? errorElement.innerText() : null;
+        await this.page.click(savedMethodSelector);
     }
 
-    async waitForSuccessfulPayment() {
-        // Wait for the success message or redirection to the order received page
-        await this.page.waitForSelector('.woocommerce-order-received', { timeout: 30000 });
+    async waitForPaymentProcessing() {
+        // Wait for either success redirect or error message
+        await Promise.race([
+            this.page.waitForSelector('.woocommerce-order-received', { timeout: 30000 }),
+            this.page.waitForSelector(this.errorMessageSelector, { timeout: 30000 })
+        ]);
+    }
+
+    async getErrorMessage(): Promise<string | null> {
+        const errorElement = await this.page.locator(this.errorMessageSelector);
+        if (await errorElement.isVisible()) {
+            return await errorElement.innerText();
+        }
+        return null;
+    }
+
+    async isOrderDetailsVisible(): Promise<boolean> {
+        return await this.page.isVisible('.woocommerce-order-pay') ||
+            await this.page.isVisible('.wc-block-checkout__order-pay');
     }
 }
