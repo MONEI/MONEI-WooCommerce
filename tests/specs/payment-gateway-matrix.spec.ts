@@ -18,7 +18,6 @@ const testCombinations = configurations.map(config => ({
     expectSuccess: config.expectSuccess,
     userType: config.userType
 }));
-console.log(testCombinations);
 test.describe('Payment Gateway Matrix Tests', () => {
     testCombinations.forEach(({ paymentMethod, checkoutType, productType, userState, expectSuccess, userType }) => {
         test(`${paymentMethod.name} - ${checkoutType.name} - ${productType.name} - ${userState.name}`, async ({ page }) => {
