@@ -26,32 +26,26 @@ export class CreditCardProcessor extends BasePaymentProcessor {
         if(isHostedPayment) {
             await this.clickWooSubmitButton()
             await this.page.waitForLoadState('networkidle');
-
-            const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_card_input__"]');
-
-            await this.page.getByTestId(this.cardholderNameInput).fill(cardDetails.cardholderName);
-
-            await frameLocator.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
-            await frameLocator.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
-            await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
-
+            await this.fillCardDetails(cardDetails);
             await this.page.getByTestId(this.submitButton).click();
             if (preset === 'threeDSecure' || preset === 'fail') {
                 await this.complete3DSecure(preset);
             }
         } else {
-            const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_card_input__"]');
-
-            await this.page.getByTestId(this.cardholderNameInput).fill(cardDetails.cardholderName);
-
-            await frameLocator.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
-            await frameLocator.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
-            await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
+            await this.fillCardDetails(cardDetails);
             await this.clickWooSubmitButton()
             if (preset === 'threeDSecure') {
                 await this.complete3DSecure(preset);
             }
         }
+    }
+
+    async fillCardDetails(cardDetails = PAYMENT_TEST_DATA.creditCard['success']) {
+        const frameLocator = this.page.frameLocator('iframe[name^="__zoid__monei_card_input__"]');
+        await this.page.getByTestId(this.cardholderNameInput).fill(cardDetails.cardholderName);
+        await frameLocator.getByTestId(this.cardNumberInput).fill(cardDetails.cardNumber);
+        await frameLocator.getByTestId(this.cardExpiryInput).fill(cardDetails.expiry);
+        await frameLocator.getByTestId(this.cardCvcInput).fill(cardDetails.cvc);
     }
 
     async validateCardErrors(invalidCard: {

@@ -39,6 +39,26 @@ export class AdminTestHelpers {
         console.log('✅ Successfully logged in as admin');
     }
 
+    async loginAsCustomer(username: string, password: string) {
+        const adminUser = username;
+        const adminPassword = password;
+
+        await this.page.goto('/wp-admin');
+
+        if (await this.page.locator('#wpadminbar').isVisible()) {
+            console.log('Already logged in as admin');
+            return;
+        }
+
+        await this.page.fill('#user_login', adminUser);
+        await this.page.fill('#user_pass', adminPassword);
+        await this.page.click('#wp-submit');
+
+        await this.page.waitForURL('/wp-admin/', { timeout: 10000 });
+        await expect(this.page.locator('#wpadminbar')).toBeVisible();
+        console.log('✅ Successfully logged in as customer');
+    }
+
     /**
      * Feature: WordPress admin logout
      * Scenario: Admin logs out from WordPress dashboard

@@ -293,6 +293,15 @@ export class WordPressApiClient {
         }
     }
 
+    async updateGatewaySettings(gatewayId, settings) {
+        try {
+            const response = await this.wooCommerce.put(`payment_gateways/${gatewayId}`, settings);
+            return response.data;
+        } catch (error) {
+            this.handleWooCommerceError(error, 'Error updating gateway');
+        }
+    }
+
     // Additional WooCommerce helper methods
     async getTaxRates(): Promise<any[]> {
         this.logApiCall('GET', '/wp-json/wc/v3/taxes', 'All tax rates');

@@ -48,6 +48,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: '**/pay-order-gateway-tests.spec.ts',
     },
+    {
+      name: 'cc-vaulting-tests',
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: '**/cc-vaulting-transaction.spec.ts',
+    },
   ],
 
   /* Run your local dev server before starting the tests */
