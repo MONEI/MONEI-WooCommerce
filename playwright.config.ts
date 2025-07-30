@@ -54,6 +54,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: '**/cc-vaulting-transaction.spec.ts',
     },
+    {
+      name: 'google-transaction-tests',
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: '**/google-transaction.spec.ts',
+    },
   ],
 
   /* Run your local dev server before starting the tests */
