@@ -15,10 +15,24 @@ interface WordPressError {
     data?: any;
 }
 
+interface WooCommerceRestApiResponse<T> {
+    data: T;
+    status: number;
+    headers: Record<string, string>;
+}
+
+interface WooCommerceRestApi {
+    get(endpoint: string, params?: Record<string, any>): Promise<WooCommerceRestApiResponse<any>>;
+    post(endpoint: string, data: Record<string, any>): Promise<WooCommerceRestApiResponse<any>>;
+    put(endpoint: string, data: Record<string, any>): Promise<WooCommerceRestApiResponse<any>>;
+    delete(endpoint: string, params?: Record<string, any>): Promise<WooCommerceRestApiResponse<any>>;
+    options(endpoint: string): Promise<WooCommerceRestApiResponse<any>>;
+}
+
 export class WordPressApiClient {
     private baseUrl: string;
     private wpAuth: string;
-    wooCommerce: any;
+    wooCommerce: WooCommerceRestApi;
 
     constructor() {
         this.baseUrl = process.env.TESTSITE_URL || 'http://localhost:8080';
@@ -183,21 +197,6 @@ export class WordPressApiClient {
         }
     }
 
-    async updateProduct(productId: number, productData: any): Promise<any> {
-        this.logApiCall('PUT', `/wp-json/wc/v3/products/${productId}`, `Updating: ${productData.name || productId}`);
-
-        try {
-            const response = await this.wooCommerce.put(`products/${productId}`, productData);
-            const product = response.data;
-
-            console.log(`  ✅ Product updated: ${product.name} (ID: ${product.id})`);
-            return product;
-
-        } catch (error) {
-            this.handleWooCommerceError(error, `updating product ID: ${productId}`);
-        }
-    }
-
     async getPageBySlug(slug: string): Promise<any | null> {
         this.logApiCall('GET', '/wp-json/wp/v2/pages', `Slug: ${slug}`);
 
@@ -293,69 +292,12 @@ export class WordPressApiClient {
         }
     }
 
-    async updateGatewaySettings(gatewayId, settings) {
+    async updateGatewaySettings(gatewayId: string, settings: Record<string, any>): Promise<any> {
         try {
             const response = await this.wooCommerce.put(`payment_gateways/${gatewayId}`, settings);
             return response.data;
         } catch (error) {
             this.handleWooCommerceError(error, 'Error updating gateway');
-        }
-    }
-
-    // Additional WooCommerce helper methods
-    async getTaxRates(): Promise<any[]> {
-        this.logApiCall('GET', '/wp-json/wc/v3/taxes', 'All tax rates');
-
-        try {
-            const response = await this.wooCommerce.get('taxes');
-            const taxes = response.data;
-            console.log(`  💰 Tax rates found: ${taxes.length}`);
-            return taxes;
-
-        } catch (error) {
-            this.handleWooCommerceError(error, 'fetching tax rates');
-        }
-    }
-
-    async createTaxRate(taxData: any): Promise<any> {
-        this.logApiCall('POST', '/wp-json/wc/v3/taxes', `Creating tax: ${taxData.name}`);
-
-        try {
-            const response = await this.wooCommerce.post('taxes', taxData);
-            const tax = response.data;
-            console.log(`  ✅ Tax rate created: ${tax.name} (${tax.rate}%)`);
-            return tax;
-
-        } catch (error) {
-            this.handleWooCommerceError(error, `creating tax rate: ${taxData.name}`);
-        }
-    }
-
-    async getShippingZones(): Promise<any[]> {
-        this.logApiCall('GET', '/wp-json/wc/v3/shipping/zones', 'All shipping zones');
-
-        try {
-            const response = await this.wooCommerce.get('shipping/zones');
-            const zones = response.data;
-            console.log(`  🚚 Shipping zones found: ${zones.length}`);
-            return zones;
-
-        } catch (error) {
-            this.handleWooCommerceError(error, 'fetching shipping zones');
-        }
-    }
-
-    async createShippingMethod(zoneId: number, methodData: any): Promise<any> {
-        this.logApiCall('POST', `/wp-json/wc/v3/shipping/zones/${zoneId}/methods`, `Creating shipping method`);
-
-        try {
-            const response = await this.wooCommerce.post(`shipping/zones/${zoneId}/methods`, methodData);
-            const method = response.data;
-            console.log(`  ✅ Shipping method created: ${method.method_title} (ID: ${method.id})`);
-            return method;
-
-        } catch (error) {
-            this.handleWooCommerceError(error, `creating shipping method for zone ${zoneId}`);
         }
     }
 }

@@ -9,8 +9,7 @@ import { WordPressApiClient } from '../setup/wordpress-api-client';
 import { CHECKOUT_TYPES } from '../fixtures/checkout-types';
 import { PRODUCT_TYPES } from '../fixtures/product-types';
 import { USER_TYPES } from '../fixtures/user-types';
-import { TEST_USERS } from '../setup/user-setup'
-import { UserAuthenticationManager } from '../setup/user-setup'
+import { TEST_USERS } from '../setup/user-setup';
 
 /**
  * MONEI Vaulting/Tokenization Complete Integration Test Suite
@@ -122,7 +121,7 @@ test.describe('MONEI Vaulting/Tokenization Integration Test', () => {
         // Submit the form
         await page.click('#place_order, .wc-block-components-checkout-place-order-button');
         await page.waitForLoadState('networkidle');
-        creditCardProcessor.fillCardDetails()
+        await creditCardProcessor.fillCardDetails()
         await page.getByTestId('pay-button').click();
 
         // Verify payment method was saved
@@ -228,7 +227,7 @@ test.describe('MONEI Vaulting/Tokenization Integration Test', () => {
     });
 
     async function fillCreditCardFormWithSave(page: any) {
-        creditCardProcessor.fillCardDetails()
+        await creditCardProcessor.fillCardDetails()
         // Check save payment method checkbox
         const saveCheckbox = page.locator('#wc-monei-new-payment-method, input[name="wc-monei-new-payment-method"]');
         if (await saveCheckbox.isVisible()) {

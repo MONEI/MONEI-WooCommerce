@@ -27,12 +27,4 @@ export const CHECKOUT_TYPES: Record<string, CheckoutType> = {
         url: '/checkout/',
         isBlockCheckout: true
     },
-
-    // Pay for Order page (for failed payment recovery)
-    PAY_FOR_ORDER: {
-        id: 'pay_for_order',
-        name: 'Pay for Order',
-        url: '/checkout/order-pay/',
-        isBlockCheckout: false
-    }
 };

@@ -23,7 +23,7 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
     // Credit Card (with Component)
     CREDIT_CARD_SUCCESS: {
         id: 'monei',
-        name: 'Credit Card',
+        name: 'Credit Card Success',
         className: 'wc-monei-credit-card-payment-method',
         isApplicableToSubscription: true,
         paymentProcessFunction: 'processCreditCardPayment',
@@ -37,14 +37,14 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
     },
 
     // Credit Card (with Redirect/Hosted)
-    CREDIT_CARD_HOSTED: {
+    CREDIT_CARD_3DSECURE: {
         id: 'monei',
-        name: 'Credit Card (Hosted)',
+        name: 'Credit Card (3DSecure)',
         className: 'wc-monei-credit-card-hosted-payment-method',
         isApplicableToSubscription: true,
         paymentProcessFunction: 'processCreditCardHostedPayment',
         isHostedPayment: true,
-        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'UK'], // Example countries
+        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'GB'], // Example countries
         selector: {
             classic: 'input[name="payment_method"][value="monei"]',
             block: '.wc-block-components-radio-control__input[value="monei"]'
@@ -53,12 +53,12 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
     },
     CREDIT_CARD_FAIL: {
         id: 'monei',
-        name: 'Credit Card (Hosted)',
+        name: 'Credit Card (Hosted) fail',
         className: 'wc-monei-credit-card-hosted-payment-method',
         isApplicableToSubscription: true,
         paymentProcessFunction: 'processCreditCardHostedPayment',
         isHostedPayment: true,
-        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'UK'], // Example countries
+        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'GB'], // Example countries
         selector: {
             classic: 'input[name="payment_method"][value="monei"]',
             block: '.wc-block-components-radio-control__input[value="monei"]'
@@ -90,14 +90,13 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
         isApplicableToSubscription: true,
         paymentProcessFunction: 'processPayPalPayment',
         isHostedPayment: true,
-        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'UK', 'US'], // Example countries
+        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'GB', 'US'], // Example countries
         selector: {
             classic: 'input[name="payment_method"][value="monei_paypal"]',
             block: '.wc-block-components-radio-control__input[value="monei_paypal"]'
         },
         presetCredentials: 'success'
     },
-
     // Apple Pay
     APPLE_PAY: {
         id: 'monei_apple_pay',
@@ -106,14 +105,13 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
         isApplicableToSubscription: true,
         paymentProcessFunction: 'processApplePayPayment',
         isHostedPayment: false,
-        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'UK', 'US'], // Example countries
+        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'GB', 'US'], // Example countries
         selector: {
             classic: 'input[name="payment_method"][value="monei_apple_pay"]',
             block: '.wc-block-components-radio-control__input[value="monei_apple_pay"]'
         },
         presetCredentials: 'success'
     },
-
     // Google Pay
     GOOGLE_PAY: {
         id: 'monei_google_pay',
@@ -122,14 +120,13 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
         isApplicableToSubscription: true,
         paymentProcessFunction: 'processGooglePayPayment',
         isHostedPayment: false,
-        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'UK', 'US'], // Example countries
+        countriesSupported: ['ES', 'PT', 'FR', 'DE', 'IT', 'GB', 'US'], // Example countries
         selector: {
-            classic: 'input[name="payment_method"][value="monei_google_pay"]',
-            block: '.wc-block-components-radio-control__input[value="monei_google_pay"]'
+            classic: 'input[name="payment_method"][value="monei_apple_google"]',
+            block: '.wc-block-components-radio-control__input[value="monei_apple_google"]'
         },
         presetCredentials: 'success'
     },
-
     // Multibanco
     MULTIBANCO: {
         id: 'monei_multibanco',
@@ -145,7 +142,6 @@ export const PAYMENT_METHODS: Record<string, PaymentMethod> = {
         },
         presetCredentials: 'success'
     },
-
     // MBWay
     MBWAY: {
         id: 'monei_mbway',

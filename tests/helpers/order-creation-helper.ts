@@ -37,7 +37,7 @@ export class OrderCreationHelper {
             paymentMethod = 'monei',
             status = 'pending',
             lineItems,
-            shippingMethod = 'flat_rate',
+            shippingMethod = '',
             couponCodes = []
         } = options;
 
@@ -76,13 +76,13 @@ export class OrderCreationHelper {
                 country: userType.country
             } : undefined,
             line_items: items,
-            shipping_lines: [
+            /*shipping_lines: [
                 {
                     method_id: shippingMethod,
                     method_title: this.getShippingMethodTitle(shippingMethod),
-                    total: '10.00'
+                    total: '0'
                 }
-            ],
+            ],*/
             coupon_lines: couponCodes.map(code => ({ code }))
         };
 

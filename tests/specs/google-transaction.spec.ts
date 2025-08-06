@@ -21,7 +21,7 @@ test.describe('Google Pay Payment Tests', () => {
     ];
 
     testCases.forEach(({ name, checkoutType, selector }) => {
-        test(`Google Pay Success - ${name} Checkout`, async ({ page }) => {
+        test(`Google Pay Button Visibility - ${name} Checkout`, async ({ page }) => {
             const checkoutPage = new CheckoutPage(page, checkoutType);
             const cartHelper = new CartPage(page);
 
@@ -29,8 +29,7 @@ test.describe('Google Pay Payment Tests', () => {
             await checkoutPage.goToCheckout(checkoutType);
             await checkoutPage.fillBillingDetails(USER_TYPES.ES_USER);
 
-            await page.click(selector);
-            await page.waitForTimeout(1000);
+            await page.locator(selector).click();
 
             const iframe = page.locator('iframe[name^="__zoid__monei_payment_request__"]');
             await expect(iframe).toBeVisible({ timeout: 5000 });

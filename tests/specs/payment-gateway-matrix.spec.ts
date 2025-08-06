@@ -5,8 +5,9 @@ import { CheckoutPage } from '../pages/checkout-page';
 import { getPaymentProcessor } from '../helpers/payment-processors';
 import { OrderVerification } from '../verification/order-verification';
 import {CartPage} from "../pages/cart-page";
+import {WordPressApiClient} from "../setup/wordpress-api-client";
 
-const configName = process.env.TEST_CONFIG || 'QUICK';
+const configName = process.env.TEST_CONFIG || 'ALL_METHODS_TESTS_SIMPLE';
 const configurations = TEST_CONFIGURATIONS[configName];
 
 // Each configuration is a complete test case with all the properties needed for the test
@@ -19,12 +20,31 @@ const testCombinations = configurations.map(config => ({
     userType: config.userType
 }));
 test.describe('Payment Gateway Matrix Tests', () => {
+    let apiClient: WordPressApiClient;
+    apiClient = new WordPressApiClient();
     testCombinations.forEach(({ paymentMethod, checkoutType, productType, userState, expectSuccess, userType }) => {
         test(`${paymentMethod.name} - ${checkoutType.name} - ${productType.name} - ${userState.name}`, async ({ page }) => {
             const checkoutPage = new CheckoutPage(page, checkoutType);
             const cartHelper = new CartPage(page);
             const paymentProcessor = getPaymentProcessor(paymentMethod.id, page);
-            //check if is credit card and if is hosted then change option to have the proper checkout option
+            if( paymentMethod.id === 'monei') {
+                if(paymentMethod.isHostedPayment) {
+                    await apiClient.updateGatewaySettings('monei', {
+                        enabled: true,
+                        settings: {
+                            cc_mode: 'yes',
+                        }
+                    });
+                } else {
+                    await apiClient.updateGatewaySettings('monei', {
+                        enabled: true,
+                        settings: {
+                            cc_mode: 'no',
+                        }
+                    });
+                }
+
+            }
             const orderVerification = new OrderVerification(page);
 
             await cartHelper.addProductToCart(productType);
@@ -33,7 +53,7 @@ test.describe('Payment Gateway Matrix Tests', () => {
             const selector = paymentMethod.selector[checkoutType.isBlockCheckout? 'block' : 'classic'];
             await page.click(selector);
             await paymentProcessor.processPayment(paymentMethod.isHostedPayment, paymentMethod.presetCredentials);
-
+            await page.waitForTimeout(3000);
             if (expectSuccess) {
                 await orderVerification.verifySuccessfulOrder();
             } else {

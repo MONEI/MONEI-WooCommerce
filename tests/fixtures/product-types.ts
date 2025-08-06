@@ -12,6 +12,8 @@ export interface ProductType {
     woocommerce?: {
         type: 'simple' | 'variable' | 'subscription' | 'grouped' | 'external';
         status?: 'draft' | 'pending' | 'private' | 'publish';
+        virtual?: boolean;
+        downloadable?: boolean;
         catalog_visibility?: 'visible' | 'catalog' | 'search' | 'hidden';
         description?: string;
         short_description?: string;
@@ -46,7 +48,7 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
     },
     BIZUM_SUCCESS: {
         id: 'bizum-success-simple-product',
-        sku: 'TEST-BIZUM-01',
+        sku: 'TEST-BIZUM-S',
         name: 'Bizum Success Simple Product',
         isSubscription: false,
         sampleProductId: 64,
@@ -55,6 +57,8 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
         woocommerce: {
             type: 'simple',
             status: 'publish',
+            virtual: true,
+            downloadable: true,
             catalog_visibility: 'visible',
             description: 'A simple test product for automated testing',
             short_description: 'Simple test product'
@@ -102,55 +106,7 @@ export const PRODUCT_TYPES: Record<string, ProductType> = {
                 }
             ]
         }
-    },
-
-    // WooCommerce Subscription
-    /*WOO_SUBSCRIPTION: {
-        id: 'woo-subscription',
-        sku: 'TEST-SUBSCRIPTION-WOO-01',
-        name: 'WooCommerce Subscription Product',
-        isSubscription: true,
-        subscriptionPlugin: 'woocommerce',
-        sampleProductId: 65,
-        sampleProductSlug: 'woo-subscription',
-        price: 9.99,
-        woocommerce: {
-            type: 'subscription',//check this cause it fails
-            status: 'publish',
-            catalog_visibility: 'visible',
-            description: 'A WooCommerce subscription test product',
-            short_description: 'WooCommerce subscription test product',
-            meta_data: [
-                { key: '_subscription_price', value: '9.99' },
-                { key: '_subscription_period', value: 'month' },
-                { key: '_subscription_period_interval', value: '1' }
-            ]
-        }
-    },
-
-    // YITH Subscription
-    YITH_SUBSCRIPTION: {
-        id: 'yith-subscription',
-        sku: 'TEST-SUBSCRIPTION-YITH-01',
-        name: 'YITH Subscription Product',
-        isSubscription: true,
-        subscriptionPlugin: 'yith',
-        sampleProductId: 66,
-        sampleProductSlug: 'yith-subscription',
-        price: 14.99,
-        woocommerce: {
-            type: 'simple',
-            status: 'publish',
-            catalog_visibility: 'visible',
-            description: 'A YITH subscription test product',
-            short_description: 'YITH subscription test product',
-            meta_data: [
-                { key: '_ywsbs_subscription', value: 'yes' },
-                { key: '_ywsbs_price_is_per', value: 'month' },
-                { key: '_ywsbs_price_time', value: '1' }
-            ]
-        }
-    }*/
+    }
 };
 
 // Helper to get specific product types

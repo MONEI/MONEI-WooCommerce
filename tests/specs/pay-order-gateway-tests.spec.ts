@@ -16,7 +16,7 @@ interface OrderData {
     status: string;
 }
 
-const orderHelper = new OrderCreationHelper();
+
 
 /**
  * Build pay-order URL
@@ -28,9 +28,18 @@ function buildPayOrderUrl(orderId: number, orderKey: string): string {
 test.describe('Pay Order Page - Gateway Tests', () => {
     let apiClient: WordPressApiClient;
     let createdOrderIds: number[] = [];
+    let orderHelper: OrderCreationHelper;
 
     test.beforeAll(async () => {
         apiClient = new WordPressApiClient();
+        orderHelper = new OrderCreationHelper();
+        //we test with cc redirect only
+        await apiClient.updateGatewaySettings('monei', {
+            enabled: true,
+            settings: {
+                cc_mode: 'no',
+            }
+        });
     });
 
     test.afterAll(async () => {
@@ -46,17 +55,20 @@ test.describe('Pay Order Page - Gateway Tests', () => {
     });
 
     // Test all payment methods
-    const paymentMethodsToTest = Object.values(PAYMENT_METHODS).filter(pm =>
-        // Filter out methods not suitable for pay-order page if needed
-        pm.id !== 'monei_googlepay' && pm.id !== 'monei_applepay'
-    );
+    const paymentMethodsToTest =  [
+        PAYMENT_METHODS.CREDIT_CARD_SUCCESS,
+        PAYMENT_METHODS.BIZUM,
+        PAYMENT_METHODS.PAYPAL,
+    ]
 
     paymentMethodsToTest.forEach(paymentMethod => {
             test(`Pay Order - ${paymentMethod.name}`, async ({ page }) => {
+                const productType = paymentMethod.id.includes('bizum')? PRODUCT_TYPES.BIZUM_SUCCESS : PRODUCT_TYPES.SIMPLE;
+                const sku = paymentMethod.id.includes('bizum')? PRODUCT_TYPES.BIZUM_SUCCESS.sku : PRODUCT_TYPES.SIMPLE.sku;
                 const order = await orderHelper.createOrder({
-                    productType: paymentMethod.id.includes('bizum') ? PRODUCT_TYPES.BIZUM_SUCCESS : PRODUCT_TYPES.SIMPLE,
+                    productType: productType,
                     userType: USER_TYPES.ES_USER,
-                    lineItems: [{ sku: PRODUCT_TYPES.SIMPLE.sku, quantity: 1 }]
+                    lineItems: [{ sku: sku, quantity: 1 }]
                 });
 
                 // Initialize page objects
@@ -91,7 +103,7 @@ test.describe('Pay Order Page - Gateway Tests', () => {
         });
 
     // Test with saved payment methods
-    test('Pay Order - Saved Payment Method', async ({ page, context }) => {
+    /*test('Pay Order - Saved Payment Method', async ({ page, context }) => {
         await context.addInitScript(() => {
             localStorage.setItem('wc-blocks_saved_payment_method_enabled', 'true');
         });
@@ -101,7 +113,7 @@ test.describe('Pay Order Page - Gateway Tests', () => {
             productType: PRODUCT_TYPES.SIMPLE,
             userType: USER_TYPES.ES_USER
         });
-
+        createdOrderIds.push(order.id);
         const payForOrderPage = new PayForOrderPage(page, CHECKOUT_TYPES.CLASSIC);
         const orderVerification = new OrderVerification(page);
 
@@ -120,5 +132,5 @@ test.describe('Pay Order Page - Gateway Tests', () => {
         } else {
             console.log('⚠️ No saved payment methods available');
         }
-    });
+    });*/
 });

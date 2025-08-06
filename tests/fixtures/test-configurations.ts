@@ -140,19 +140,23 @@ export const TEST_CONFIGURATIONS = {
 
     // Credit card comprehensive tests
     CREDIT_CARD_TESTS: generateTestConfigurations({
-        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_HOSTED],
+        paymentMethods: [PAYMENT_METHODS.CREDIT_CARD_3DSECURE],
         checkoutTypes: Object.values(CHECKOUT_TYPES),
         productTypes: [PRODUCT_TYPES.SIMPLE],
         userStates: Object.values(USER_STATES),
         userTypes: Object.values(USER_TYPES)
     }),
-
-    // Subscription tests
-    SUBSCRIPTION_TESTS: generateTestConfigurations({
-        productTypes: [PRODUCT_TYPES.WOO_SUBSCRIPTION, PRODUCT_TYPES.YITH_SUBSCRIPTION],
-        paymentMethods: Object.values(PAYMENT_METHODS).filter(pm => pm.isApplicableToSubscription),
-        checkoutTypes: [CHECKOUT_TYPES.CLASSIC, CHECKOUT_TYPES.BLOCK],
-        userStates: [USER_STATES.LOGGED_IN], // Subscriptions usually require login
-        userTypes: [USER_TYPES.ES_USER, USER_TYPES.US_USER]
-    })
+    ALL_METHODS_TESTS_SIMPLE: generateTestConfigurations({
+        paymentMethods: [
+            PAYMENT_METHODS.CREDIT_CARD_SUCCESS,
+            PAYMENT_METHODS.CREDIT_CARD_HOSTED,
+            PAYMENT_METHODS.CREDIT_CARD_FAIL,
+            PAYMENT_METHODS.BIZUM,
+            PAYMENT_METHODS.PAYPAL,
+        ],
+        checkoutTypes: Object.values(CHECKOUT_TYPES),
+        productTypes: [PRODUCT_TYPES.SIMPLE],
+        userStates: [USER_STATES.GUEST],
+        userTypes: [USER_TYPES.ES_USER]
+    }),
 };

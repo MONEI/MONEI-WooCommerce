@@ -232,7 +232,13 @@ test.describe('MONEI Gateway Complete Integration Test', () => {
         await checkoutPage.goToCheckout(checkoutType.isBlockCheckout);
 
         // Wait for payment methods to load
-        await page.waitForTimeout(3000);
+        // Wait for payment methods to load
+        await page.waitForSelector(
+            checkoutType.isBlockCheckout
+            ? '.wc-block-components-radio-control__input'
+                : 'input[name="payment_method"]',
+            { state: 'visible', timeout: 10000 }
+            );
 
         let visibleMethods = 0;
         for (const methodId of expectedMethods) {
@@ -288,7 +294,7 @@ test.describe('MONEI Gateway Complete Integration Test', () => {
             await checkoutPage.fillBillingDetails(userType);
 
             // Wait for country-based payment method filtering
-            await countryPage.waitForTimeout(3000);
+            await countryPage.waitForLoadState('networkidle');
 
             const visibleMethods = [];
             const paymentInputs = await countryPage.locator('.wc-block-components-radio-control__input').all();
