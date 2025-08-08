@@ -70,6 +70,7 @@ test.describe('Pay Order Page - Gateway Tests', () => {
                     userType: USER_TYPES.ES_USER,
                     lineItems: [{ sku: sku, quantity: 1 }]
                 });
+                createdOrderIds.push(order.id);
 
                 // Initialize page objects
                 const payForOrderPage = new PayForOrderPage(page, CHECKOUT_TYPES.BLOCK);//the url will be in /checkout
@@ -101,36 +102,4 @@ test.describe('Pay Order Page - Gateway Tests', () => {
                 }
             });
         });
-
-    // Test with saved payment methods
-    /*test('Pay Order - Saved Payment Method', async ({ page, context }) => {
-        await context.addInitScript(() => {
-            localStorage.setItem('wc-blocks_saved_payment_method_enabled', 'true');
-        });
-
-        // Create order
-        const order = await orderHelper.createOrder({
-            productType: PRODUCT_TYPES.SIMPLE,
-            userType: USER_TYPES.ES_USER
-        });
-        createdOrderIds.push(order.id);
-        const payForOrderPage = new PayForOrderPage(page, CHECKOUT_TYPES.CLASSIC);
-        const orderVerification = new OrderVerification(page);
-
-        // Navigate to pay-order page
-        const payOrderUrl = buildPayOrderUrl(order.id, order.order_key);
-        await page.goto(payOrderUrl);
-        await page.waitForLoadState('networkidle');
-
-        // Check if saved payment methods are displayed
-        const savedMethodsVisible = await payForOrderPage.hasSavedPaymentMethods();
-        if (savedMethodsVisible) {
-            await payForOrderPage.selectSavedPaymentMethod(0);
-            await payForOrderPage.clickPlaceOrder();
-            await orderVerification.verifySuccessfulOrder();
-            console.log('✅ Payment with saved method successful');
-        } else {
-            console.log('⚠️ No saved payment methods available');
-        }
-    });*/
 });
