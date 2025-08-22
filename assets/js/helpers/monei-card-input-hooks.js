@@ -71,7 +71,6 @@ export const useMoneiCardInput = ( config ) => {
      * Initialize MONEI Card Input
      */
     const initializeCardInput = useCallback( () => {
-        console.log('initializing MONEI Card Input');
         if ( typeof monei === 'undefined' || ! monei.CardInput ) {
             setError( 'MONEI SDK is not available' );
             return;
@@ -86,7 +85,7 @@ export const useMoneiCardInput = ( config ) => {
             input: {
                 color: 'hsla(0,0%,7%,.8)',
                 fontSize: '16px',
-                'box-sizing': 'border-box',
+                boxSizing: 'border-box',
                 '::placeholder': {
                     color: 'hsla(0,0%,7%,.8)',
                 },
@@ -135,7 +134,9 @@ export const useMoneiCardInput = ( config ) => {
                 onEnter() {
                     // Trigger token creation on Enter key
                     if ( cardInputRef.current ) {
-                        createToken();
+                        createToken().catch(err => {
+                            console.error('Token creation failed on Enter:', err);
+                        });
                     }
                 },
             } );
