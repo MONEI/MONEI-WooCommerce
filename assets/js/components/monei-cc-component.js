@@ -44,16 +44,23 @@ export const MoneiCCContent = ( props ) => {
     /**
      * Create payment token
      */
+    const tokenPromiseRef = useRef( null );
+
     const createPaymentToken = useCallback( async () => {
-        if ( tokenRef.current ) {
-            return tokenRef.current;
+        if ( tokenPromiseRef.current ) {
+            return tokenPromiseRef.current;
         }
 
-        const newToken = await cardInput.createToken();
-        if ( newToken ) {
-            tokenRef.current = newToken;
-        }
-        return newToken;
+        tokenPromiseRef.current = cardInput.createToken().then( newToken => {
+            if ( newToken ) {
+                tokenRef.current = newToken;
+            }
+            return newToken;
+        } ).finally( () => {
+            tokenPromiseRef.current = null;
+        } );
+
+        return tokenPromiseRef.current;
     }, [ cardInput ] );
 
     /**
@@ -188,14 +195,18 @@ export const MoneiCCContent = ( props ) => {
                 } );
 
                 if ( result.status === 'FAILED' ) {
-                    window.location.href = `${ paymentDetails.failUrl }&status=FAILED`;
+                    const failUrl = new URL( paymentDetails.failUrl );
+                    failUrl.searchParams.set( 'status', 'FAILED' );
+                    window.location.href = failUrl.toString();
                 } else {
                     let redirectUrl = paymentDetails.completeUrl;
 
                     if ( shouldSavePayment === true ) {
                         const { orderId, paymentId } = paymentDetails;
-                        redirectUrl = `${ paymentDetails.completeUrl }&id=${ paymentId }&orderId=${ orderId }`;
-                    }
+                        const url = new URL( paymentDetails.completeUrl );
+                        url.searchParams.set( 'id', paymentId );
+                        url.searchParams.set( 'orderId', orderId );
+                        redirectUrl = url.toString();                    }
 
                     window.location.href = redirectUrl;
                 }
