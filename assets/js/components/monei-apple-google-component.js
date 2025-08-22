@@ -73,7 +73,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
             accountId: moneiData.accountId,
             sessionId: moneiData.sessionId,
             language: moneiData.language,
-            amount: parseInt( moneiData.total * 100 ),
+            amount: Math.round( moneiData.total * 100 ),
             currency: moneiData.currency,
             onSubmit( result ) {
                 if ( result.token ) {
