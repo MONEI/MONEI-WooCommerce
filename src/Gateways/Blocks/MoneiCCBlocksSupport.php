@@ -97,7 +97,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		$total           = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
 		$isGoogleEnabled = $this->gateway->isGoogleAvailable();
 		$isAppleEnabled  = $this->gateway->isAppleAvailable();
-		WC_Monei_Logger::log( 'Is Apple enabled in API and Woo: ' . $isAppleEnabled );
 		$logoApple  = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
 		$logoGoogle = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
 		$data       = array(
@@ -131,8 +130,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			'appleGooglePay'   => $this->get_setting( 'apple_google_pay' ) ?? 'no',
 			'language'         => locale_iso_639_1_code(),
 		);
-		WC_Monei_Logger::log( 'Data sent to the script' );
-		WC_Monei_Logger::log( $data );
 
 		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
 
