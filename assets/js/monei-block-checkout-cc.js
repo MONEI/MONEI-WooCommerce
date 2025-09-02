@@ -369,6 +369,8 @@
 			if ( window.paymentRequest ) {
 				window.paymentRequest.close();
 			}
+			console.log( 'Initializing MONEI Apple - Google with Data:' );
+			console.log( moneiData );
 			const paymentRequest = monei.PaymentRequest( {
 				accountId: moneiData.accountId,
 				sessionId: moneiData.sessionId,
@@ -464,6 +466,7 @@
 
 	const appleGoogleLabel = () => {
 		const isApple = window.ApplePaySession?.canMakePayments();
+		console.log( 'Apple Pay is supported:', isApple );
 		const appleEnabled = moneiData.logo_apple !== false;
 		const googleEnabled = moneiData.logo_google !== false;
 		let logo = googleEnabled? moneiData.logo_google : false;

@@ -44,6 +44,7 @@ class MoneiApplePayVerificationService {
 		try {
 			$domain = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
 			$this->moneiPaymentServices->register_apple_domain( $domain );
+			WC_Monei_Logger::log( 'Apple Pay registered with domain: ' . $domain );
 		} catch ( ApiException $e ) {
 			WC_Monei_Logger::log( $e, 'error' );
 			$response_body = json_decode( $e->getResponseBody() );
@@ -58,7 +59,8 @@ class MoneiApplePayVerificationService {
 	 */
 	public function expose_on_domain_association_request( $wp ) {
 		if ( isset( $wp->request ) && ( self::DOMAIN_ASSOCIATION_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME ) === $wp->request ) {
-			$path     = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
+			$path = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
+			WC_Monei_Logger::log( 'Apple Pay Domain Association requested in: ' . $path );
 			$args     = array( 'headers' => array( 'Content-Type' => 'text/plain;charset=utf-8' ) );
 			$response = wp_remote_get( $path, $args );
 			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
