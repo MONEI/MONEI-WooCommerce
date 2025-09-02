@@ -2,6 +2,7 @@
 
 namespace Monei\Services\payment;
 
+use Monei\ApiException;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use OpenAPI\Client\Configuration;
 
@@ -161,7 +162,7 @@ class MoneiPaymentServices {
 	 * @param $domain
 	 *
 	 * @return \OpenAPI\Client\Model\InlineResponse200
-	 * @throws \OpenAPI\Client\ApiException
+	 * @throws ApiException
 	 */
 	public function register_apple_domain( $domain ) {
 		$client = $this->client->get_client();

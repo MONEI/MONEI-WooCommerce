@@ -2,8 +2,8 @@
 
 namespace Monei\Services;
 
+use Monei\ApiException;
 use Monei\Services\payment\MoneiPaymentServices;
-use OpenAPI\Client\ApiException;
 use WC_Monei_Logger;
 use WC_Admin_Settings;
 
