@@ -17,7 +17,7 @@ class NoticeGatewayNotAvailable implements TemplateInterface {
             )
         );
         ?>
-        <a class="button" href="<?php echo esc_url( $settings_link );?>"><?php esc_html_e(  'Go to MONEI API key Settings', 'monei' )?></a>
+        <a class="button" href="<?php echo esc_url( $settings_link );?>"><?php esc_html_e(  'Go to MONEI API Key Settings', 'monei' )?></a>
 
         <div class="inline error">
 			<p>

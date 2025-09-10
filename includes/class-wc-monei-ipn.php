@@ -101,14 +101,14 @@ class WC_Monei_IPN {
 
 		if ( 'FAILED' === $status ) {
 			// Order failed.
-			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Failed</strong>', 'monei' ) . $status );
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Failed</strong> ', 'monei' ) . $status );
 			$order->update_status( 'pending', 'Failed MONEI payment: ' . $status_message );
 			return;
 		}
 
 		if ( 'CANCELED' === $status ) {
 			// Order cancelled.
-			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong>', 'monei' ) . $status );
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong> ', 'monei' ) . $status );
 			$message = __( 'Cancelled by MONEI: ', 'monei' ) . $status_message;
 			$order->add_order_note( $message );
 			return;
@@ -118,7 +118,7 @@ class WC_Monei_IPN {
 			// We save is a non captured order.
 			$order->update_meta_data( '_payment_not_captured_monei', 1 );
 
-			$order_note  = __( 'HTTP Notification received - <strong>Payment Authorized</strong>', 'monei' ) . '. <br><br>';
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Authorized</strong> ', 'monei' ) . '. <br><br>';
 			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
 			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
 			$order->add_order_note( $order_note );
@@ -146,7 +146,7 @@ class WC_Monei_IPN {
 				exit;
 			}
 
-			$order_note  = __( 'HTTP Notification received - <strong>Payment Completed</strong>', 'monei' ) . '. <br><br>';
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Completed</strong> ', 'monei' ) . '. <br><br>';
 			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
 			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
 

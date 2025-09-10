@@ -17,11 +17,11 @@ class NoticeGatewayNotEnabledMonei implements TemplateInterface {
             )
         );
         ?>
-        <a class="button" href="<?php echo esc_url( $settings_link );?>"><?php esc_html_e(  'Go to MONEI API key Settings', 'monei' )?></a>
+        <a class="button" href="<?php echo esc_url( $settings_link );?>"><?php esc_html_e(  'Go to MONEI API Key Settings', 'monei' )?></a>
 
 		<div class="inline error">
 			<p>
-				<strong><?php esc_html_e( 'Gateway Disabled', 'monei' ); ?></strong>: <?php esc_html_e( 'The selected payment method is not active in the MONEI dashboard. Or API key is incorrect', 'monei' ); ?>
+				<strong><?php esc_html_e( 'Gateway Disabled', 'monei' ); ?></strong>: <?php esc_html_e( 'The selected payment method is not active in the MONEI dashboard. Or API Key is incorrect', 'monei' ); ?>
 				<a href="https://dashboard.monei.com/?action=signIn"><?php esc_html_e( 'Go to your MONEI Dashboard to activate it', 'monei' ); ?></a>
             </p>
 		</div>

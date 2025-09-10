@@ -26,7 +26,7 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 			$response = null;
 		}
 
-		return json_decode( $response, true );
+		return $response ? json_decode( $response, true ) : [];
 	}
 
 	/**
