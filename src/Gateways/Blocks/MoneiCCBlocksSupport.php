@@ -7,8 +7,6 @@ use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiCC;
 
 final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
-
-
 	private $gateway;
 	protected $name = 'monei';
 	private $profile_monitor;
@@ -18,15 +16,12 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function initialize() {
-
 		$this->settings = get_option( 'woocommerce_monei_settings', array() );
-
 		add_filter( 'woocommerce_saved_payment_methods_list', array( $this, 'filter_saved_payment_methods_list' ), 10, 2 );
 	}
 
 
 	public function is_active() {
-
 		$id  = $this->gateway->getAccountId() ?? false;
 		$key = $this->gateway->getApiKey() ?? false;
 
@@ -45,7 +40,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 	 * @return array               Filtered list of customers payment methods.
 	 */
 	public function filter_saved_payment_methods_list( $paymentMethods, $customer_id ) {
-
 		if ( 'no' === $this->get_setting( 'tokenization' ) ) {
 			return array();
 		}
@@ -84,7 +78,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 
 
 	public function get_payment_method_data() {
-
 		if ( 'no' === $this->get_setting( 'tokenization' ) ) {
 			$supports = $this->gateway->supports;
 		} else {
@@ -95,16 +88,10 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			);
 		}
 		$total           = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
-		$isGoogleEnabled = $this->gateway->isGoogleAvailable();
-		$isAppleEnabled  = $this->gateway->isAppleAvailable();
-		$logoApple       = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
-		$logoGoogle      = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
 		$data            = array(
 			'title'            => $this->gateway->title,
 			'description'      => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
 			'logo'             => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
-			'logo_google'      => $isGoogleEnabled ? $logoGoogle : false,
-			'logo_apple'       => $isAppleEnabled ? $logoApple : false,
 			'cardholderName'   => esc_attr__( 'Cardholder Name', 'monei' ),
 			'nameErrorString'  => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
 			'cardErrorString'  => esc_html__( 'Please check your card details.', 'monei' ),
@@ -127,15 +114,12 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			'sessionId'        => ( wc()->session ) ? wc()->session->get_customer_id() : '',
 			'currency'         => get_woocommerce_currency(),
 			'total'            => $total,
-			'appleGooglePay'   => $this->get_setting( 'apple_google_pay' ) ?? 'no',
 			'language'         => locale_iso_639_1_code(),
 		);
 
 		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
-
 			unset( $data['logo'] );
 			unset( $data['logo_apple_google'] );
-
 		}
 
 		return $data;

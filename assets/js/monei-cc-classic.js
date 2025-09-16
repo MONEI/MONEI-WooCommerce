@@ -5,14 +5,8 @@
 	$( document.body ).on(
 		'updated_checkout',
 		function(e, data) {
-			wc_monei_form.update_apple_google_label();
-			// Update monei_widget.total on every updated_checkout event.
 			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
 				wc_monei_form.total = data.fragments[ 'monei_new_total' ];
-			}
-
-			if (wc_monei_form.is_apple_selected()) {
-				wc_monei_form.init_apple_google_pay();
 			}
 
 			if ( wc_monei_form.is_monei_selected() ) {
@@ -35,9 +29,6 @@
 	$( 'form#order_review' ).on(
 		'click',
 		function() {
-			if (wc_monei_form.is_apple_selected()) {
-				wc_monei_form.init_apple_google_pay();
-			}
 			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
 			}
@@ -82,20 +73,12 @@
 				if ( wc_monei_form.is_monei_selected() ) {
 					wc_monei_form.on_payment_selected()
 				}
-				if(wc_monei_form.is_apple_selected()) {
-					wc_monei_form.init_apple_google_pay()
-				}
 
 				this.is_order_pay = true;
 				this.form         = this.$order_pay_form;
 				this.form.on( 'submit', this.place_order_page );
 
 				$('input[name="payment_method"]').on('change', function() {
-					console.log('radio changed')
-					// Check if the apple google pay method is selected
-					if (wc_monei_form.is_apple_selected()) {
-						wc_monei_form.init_apple_google_pay();
-					}
 					// Check if the monei method is selected
 					if (wc_monei_form.is_monei_selected()) {
 						wc_monei_form.init_checkout_monei();
@@ -124,14 +107,7 @@
 			);
 		},
 		on_payment_selected() {
-			if ( wc_monei_form.is_apple_selected()) {
-				wc_monei_form.init_apple_google_pay();
-				if ( wc_monei_form.is_checkout ) {
-					$("[name='woocommerce_checkout_place_order']").attr('data-monei', 'submit');
-				}
-				$('#place_order').prop('disabled', true);
-				return false;
-			} else if ( wc_monei_form.is_monei_selected() ) {
+			if ( wc_monei_form.is_monei_selected() ) {
 				wc_monei_form.init_checkout_monei();
 				$('#place_order').prop('disabled', false);
 				if ( wc_monei_form.is_checkout ) {
@@ -141,11 +117,6 @@
 					$('.monei-input-container, .monei-card-input').hide();
 				} else {
 					$('.monei-input-container, .monei-card-input').show();
-				}
-			} else {
-				if ( wc_monei_form.is_checkout ) {
-					$('#place_order').prop('disabled', false);
-					$( "[name='woocommerce_checkout_place_order']" ).removeAttr( 'data-monei' );
 				}
 			}
 		},
@@ -165,62 +136,11 @@
 		is_monei_selected: function() {
 			return $( '#payment_method_monei' ).is( ':checked' );
 		},
-		is_apple_selected: function() {
-			return $( '#payment_method_monei_apple_google' ).is( ':checked' );
-		},
 		is_tokenized_cc_selected: function() {
 			return ( $( 'input[name="wc-monei-payment-token"]' ).is( ':checked' ) && 'new' !== $( 'input[name="wc-monei-payment-token"]:checked' ).val() );
 		},
 		is_monei_saved_cc_selected: function() {
 			return ( wc_monei_form.is_monei_selected() && wc_monei_form.is_tokenized_cc_selected() );
-		},
-		init_apple_google_pay: function() {
-			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
-			// and we need to reset the counter in order to initiate again the monei component.
-			if ( wc_monei_form.$payment_request_container && 0 === wc_monei_form.$payment_request_container.childElementCount ) {
-				wc_monei_form.init_apple_counter = 0;
-			}
-
-			// init monei just once, despite how many times this may be triggered.
-			if ( 0 !== this.init_apple_counter ) {
-				return;
-			}
-
-			if ( wc_monei_form.is_checkout ) {
-				$( "[name='woocommerce_checkout_place_order']" ).attr( 'data-monei', 'submit' );
-			}
-
-			// Init Apple/Google Pay.
-			if ( ! wc_monei_params.apple_google_pay ) {
-				return;
-			}
-
-			wc_monei_form.instantiate_payment_request();
-			wc_monei_form.$payment_request_container = document.getElementById('payment-request-container')
-
-			// We already init the button.
-			this.init_apple_counter++;
-
-		},
-		instantiate_payment_request: function() {
-			// Create an instance of the Apple/Google Pay component.
-			var paymentRequest = monei.PaymentRequest({
-				accountId: wc_monei_params.account_id,
-				sessionId: wc_monei_params.session_id,
-				amount: parseInt( wc_monei_form.total ),
-				currency: wc_monei_params.currency,
-				onSubmit(result) {
-					wc_monei_form.apple_google_token_handler( result.token );
-				},
-				onError(error) {
-					console.error(error);
-				},
-			});
-			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
-			console.log('rendering')
-			paymentRequest.render('#payment-request-container');
-			// Assign a global variable to paymentRequest so it's accessible.
-			window.paymentRequest = paymentRequest;
 		},
 		init_checkout_monei: function() {
 			let container = document.getElementById('monei-card-input')
@@ -398,12 +318,6 @@
 			// Once Token is created, submit form.
 			wc_monei_form.form.submit();
 		},
-		apple_google_token_handler: function (token ) {
-			$('#place_order').prop('disabled', false);
-			wc_monei_form.create_hidden_input( 'monei_payment_request_token', 'payment-request-form', token );
-			// Once Token is created, submit form.
-			wc_monei_form.form.submit();
-		},
 		create_hidden_input: function( id, form,  token ) {
 			var hiddenInput = document.createElement( 'input' );
 			hiddenInput.setAttribute( 'type', 'hidden' );
@@ -413,32 +327,10 @@
 			wc_monei_form.$paymentForm = document.getElementById( form );
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
 		},
-		/**
-		 * If Apple can make payments then we need to show the apple logo and title instead of Google
-		 */
-		update_apple_google_label: function () {
-			if ( ! wc_monei_params.apple_google_pay ) {
-				return;
-			}
-			const isApple = window.ApplePaySession?.canMakePayments();
-			if (isApple) {
-				const label = document.querySelector('label[for="payment_method_monei_apple_google"]');
-				if (label) {
-					label.childNodes[0].nodeValue = "Apple Pay ";
-					const icon = label.querySelector('img');
-					if (icon) {
-                        icon.src = wc_monei_params.apple_logo;
-						icon.alt = "Apple Pay";
-					}
-				}
-			}
-		}
 	};
-
 	$(
 		function() {
 			wc_monei_form.init();
-			wc_monei_form.update_apple_google_label();
 		}
 	);
 
