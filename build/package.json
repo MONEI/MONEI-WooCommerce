@@ -34,8 +34,8 @@
     }
   },
   "devDependencies": {
-    "@release-it/bumper": "^3.0.1",
-    "release-it": "^14.12.4",
+    "@release-it/bumper": "^5.1.0",
+    "release-it": "^16.0.0",
     "terser": "^5.10.0"
   },
   "packageManager": "yarn@4.9.2"
