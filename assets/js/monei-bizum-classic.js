@@ -8,8 +8,9 @@
 			// Update bizum_widget.total on every updated_checkout event.
 			if ( 'object' === typeof( data ) && data.fragments && data.fragments[ 'monei_new_total' ] ) {
 				wc_bizum_form.total = data.fragments[ 'monei_new_total' ];
+				// Reset to allow re-initialization
+				wc_bizum_form.init_counter = 0;
 			}
-
 			if ( wc_bizum_form.is_bizum_selected() ) {
 				wc_bizum_form.init_checkout_bizum();
 			}
@@ -128,6 +129,7 @@
 			if ( window.bizumRequest ) {
 				window.bizumRequest.close();
 			}
+			console.log('despues', wc_bizum_form.total);
 			wc_bizum_form.instantiate_payment_request();
 		},
 		instantiate_payment_request: function() {
