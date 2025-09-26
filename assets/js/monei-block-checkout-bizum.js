@@ -1,14 +1,26 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect } = wp.element;
+	const { useEffect, useRef } = wp.element;
+	const { useSelect } = wp.data;
 	const bizumData = wc.wcSettings.getSetting( 'monei_bizum_data' );
 
 	const MoneiBizumContent = ( props ) => {
 		const { responseTypes } = props.emitResponse;
 		const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 		const { activePaymentMethod } = props;
-		let requestToken = null;
+
+		// Use useRef to persist values across re-renders
+		const requestTokenRef = useRef( null );
+		const currentBizumInstanceRef = useRef( null );
+		const lastAmountRef = useRef( null );
+		const isInitializedRef = useRef( false );
+
+		// Subscribe to cart totals
+		const cartTotals = useSelect( ( select ) => {
+			return select( 'wc/store/cart' ).getCartTotals();
+		}, [] );
+
 		useEffect( () => {
 			const placeOrderButton = document.querySelector(
 				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
@@ -29,27 +41,52 @@
 				}
 			};
 		}, [ activePaymentMethod ] );
+
 		useEffect( () => {
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
-			if ( typeof monei !== 'undefined' && monei.Bizum ) {
+			if ( typeof monei !== 'undefined' && monei.Bizum && !isInitializedRef.current ) {
 				initMoneiCard();
-			} else {
+				isInitializedRef.current = true;
+			} else if ( !monei || !monei.Bizum ) {
 				console.error( 'MONEI SDK is not available' );
 			}
-		}, [] ); // Empty dependency array ensures this runs only once when the component mounts.
+		}, [] ); // Only initialize once on mount
+
+		useEffect( () => {
+			// Only update amount if instance exists and cart totals changed
+			if ( isInitializedRef.current && currentBizumInstanceRef.current && cartTotals ) {
+				updateBizumAmount();
+			}
+		}, [ cartTotals ] ); // Update amount when cart totals change
+
 		/**
-		 * Initialize MONEI card input and handle token creation.
+		 * Initialize MONEI Bizum instance once.
 		 */
 		const initMoneiCard = () => {
-			const bizum = monei.Bizum( {
+			const currentTotal = cartTotals?.total_price ?
+				parseInt( cartTotals.total_price ) :
+				parseInt( bizumData.total * 100 );
+
+			lastAmountRef.current = currentTotal;
+
+			const container = document.getElementById( 'bizum-container' );
+			if ( !container ) {
+				console.error( 'Bizum container not found' );
+				return;
+			}
+
+			// Clear container
+			container.innerHTML = '';
+
+			currentBizumInstanceRef.current = monei.Bizum( {
 				accountId: bizumData.accountId,
 				sessionId: bizumData.sessionId,
 				language: bizumData.language,
-				amount: parseInt( bizumData.total * 100 ),
+				amount: currentTotal,
 				currency: bizumData.currency,
 				onSubmit( result ) {
 					if ( result.token ) {
-						requestToken = result.token;
+						requestTokenRef.current = result.token;
 						const placeOrderButton = document.querySelector(
 							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 						);
@@ -64,19 +101,78 @@
 					}
 				},
 				onError( error ) {
-					console.error( error );
+					console.error( 'Bizum error:', error );
 				},
 			} );
 
-			const container = document.getElementById( 'bizum-container' );
-			bizum.render( container );
+			currentBizumInstanceRef.current.render( container );
+		};
+
+		/**
+		 * Update the amount in the existing Bizum instance.
+		 */
+		const updateBizumAmount = () => {
+			const currentTotal = cartTotals?.total_price ?
+				parseInt( cartTotals.total_price ) :
+				parseInt( bizumData.total * 100 );
+
+			// Only update if amount actually changed
+			if ( currentTotal === lastAmountRef.current ) {
+				return;
+			}
+
+			lastAmountRef.current = currentTotal;
+
+			if ( currentBizumInstanceRef.current ) {
+				const preservedToken = requestTokenRef.current;
+
+				if ( typeof currentBizumInstanceRef.current.destroy === 'function' ) {
+					currentBizumInstanceRef.current.destroy();
+				}
+
+				// Clear container
+				const container = document.getElementById( 'bizum-container' );
+				if ( container ) {
+					container.innerHTML = '';
+				}
+
+				// Recreate with new amount
+				currentBizumInstanceRef.current = monei.Bizum( {
+					accountId: bizumData.accountId,
+					sessionId: bizumData.sessionId,
+					language: bizumData.language,
+					amount: currentTotal,
+					currency: bizumData.currency,
+					onSubmit( result ) {
+						if ( result.token ) {
+							requestTokenRef.current = result.token;
+							const placeOrderButton = document.querySelector(
+								'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
+							);
+							if ( placeOrderButton ) {
+								placeOrderButton.style.color = '';
+								placeOrderButton.style.backgroundColor = '';
+								placeOrderButton.disabled = false;
+								placeOrderButton.click();
+							} else {
+								console.error( 'Place Order button not found.' );
+							}
+						}
+					},
+					onError( error ) {
+						console.error( 'Bizum error:', error );
+					},
+				} );
+
+				currentBizumInstanceRef.current.render( container );
+			}
 		};
 
 		// Hook into the payment setup
 		useEffect( () => {
 			const unsubscribePaymentSetup = onPaymentSetup( () => {
 				// If no token was created, fail
-				if ( ! requestToken ) {
+				if ( ! requestTokenRef.current ) {
 					return {
 						type: 'error',
 						message: __(
@@ -89,7 +185,7 @@
 					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
-							monei_payment_request_token: requestToken,
+							monei_payment_request_token: requestTokenRef.current,
 							monei_is_block_checkout: 'yes',
 						},
 					},
@@ -100,6 +196,7 @@
 				unsubscribePaymentSetup();
 			};
 		}, [ onPaymentSetup ] );
+
 		useEffect( () => {
 			const unsubscribeSuccess = onCheckoutSuccess(
 				( { processingResponse } ) => {
@@ -108,8 +205,8 @@
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
 						monei.confirmPayment( {
-								paymentId,
-								paymentToken: tokenValue} )
+							paymentId,
+							paymentToken: tokenValue} )
 							.then( ( result ) => {
 								if (
 									result.nextAction &&
@@ -146,6 +243,19 @@
 				unsubscribeSuccess();
 			};
 		}, [ onCheckoutSuccess ] );
+
+		// Cleanup on unmount
+		useEffect( () => {
+			return () => {
+				if ( currentBizumInstanceRef.current ) {
+					if ( typeof currentBizumInstanceRef.current.destroy === 'function' ) {
+						currentBizumInstanceRef.current.destroy();
+					}
+					currentBizumInstanceRef.current = null;
+				}
+			};
+		}, [] );
+
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
 				<div
@@ -164,12 +274,13 @@
 			</fieldset>
 		);
 	};
+
 	const bizumLabel = () => {
 		return (
 			<div className="monei-label-container">
-				<span className="monei-text">
-					{ __( bizumData.title, 'monei' ) }
-				</span>
+                <span className="monei-text">
+                    { __( bizumData.title, 'monei' ) }
+                </span>
 				{ bizumData?.logo && (
 					<div className="monei-logo">
 						<img src={ bizumData.logo } alt="" />
