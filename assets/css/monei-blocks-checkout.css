@@ -1,11 +1,12 @@
 /* Card Input Container */
 .monei-card-input {
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid hsla(0,0%,7%,.8);
     border-radius: 4px;
     background: #fff;
     transition: border-color 0.2s ease;
     margin-bottom: 12px;
+    height: 1.8em;
 }
 
 .monei-card-input.is-focused {
