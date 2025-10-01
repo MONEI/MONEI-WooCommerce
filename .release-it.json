@@ -5,7 +5,7 @@
   },
   "github": {
     "release": true,
-    "autoGenerate": true
+    "releaseNotes": "npx conventional-changelog -p conventionalcommits -u"
   },
   "npm": {
     "publish": false
@@ -18,6 +18,12 @@
         "woocommerce-gateway-monei.php",
         "class-woocommerce-gateway-monei.php"
       ]
+    },
+    "@release-it/conventional-changelog": {
+      "infile": "CHANGELOG.md",
+      "preset": {
+        "name": "conventionalcommits"
+      }
     }
   },
   "hooks": {
