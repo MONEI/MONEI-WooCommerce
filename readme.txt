@@ -846,11 +846,6 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Version 3.0 (9906102)
 * Version 4.2.1 (933186f)
 
-2025-08-25 - version 6.3.8
-* Fix - Move ApplePay and Google Pay to a separated gateway
-* Fix - Add settings shortcut to plugins page
-* Fix - Add missing space in webhook notice
-
 2025-07-02 - version 6.3.7
 * Fix - Send correct useragent version
 * Fix - plugin crashes when updating from older version
