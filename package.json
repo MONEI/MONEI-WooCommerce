@@ -28,7 +28,6 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@release-it/bumper": "^7.0.5",
-    "@snrankin/generate-wp-readme": "^1.2.0",
     "@wordpress/scripts": "^30.24.0",
     "husky": "^9.1.7",
     "release-it": "^19.0.5"
