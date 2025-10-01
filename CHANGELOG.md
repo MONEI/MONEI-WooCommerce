@@ -1,3 +1,20 @@
+# Changelog
+
+## 6.4.0 (2025-10-01)
+
+* feat: add custom readme generator to show latest 10 releases ([371e09c](https://github.com/MONEI/MONEI-WooCommerce/commit/371e09c))
+* feat: configure GitHub release notes with conventional changelog ([226db8f](https://github.com/MONEI/MONEI-WooCommerce/commit/226db8f))
+* chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
+* chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
+* chore: release v6.3.12 ([e119cc1](https://github.com/MONEI/MONEI-WooCommerce/commit/e119cc1))
+* chore: remove unused generate-wp-readme package ([4e06b1b](https://github.com/MONEI/MONEI-WooCommerce/commit/4e06b1b))
+* chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
+* fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
+* fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
+* fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
+* fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
+* fix: show all changelog versions, remove manual entries ([dbd53a1](https://github.com/MONEI/MONEI-WooCommerce/commit/dbd53a1))
+
 ## 5.1.0 (2021-07-28)
 
 * - check if WooCommerce plugin is activated ([5d7b61c](https://github.com/MONEI/MONEI-WooCommerce/commit/5d7b61c))
@@ -848,6 +865,3 @@
 * chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
 * chore: release v6.3.12 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
 * chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
-
-
-
