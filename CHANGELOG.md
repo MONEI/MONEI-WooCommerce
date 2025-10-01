@@ -824,7 +824,7 @@
 * chore: add auto-generated CHANGELOG.md ([50e9983](https://github.com/MONEI/MONEI-WooCommerce/commit/50e9983))
 * chore: auto-remove README.md after generation ([b299478](https://github.com/MONEI/MONEI-WooCommerce/commit/b299478))
 * chore: modernize build and release pipeline ([21384f0](https://github.com/MONEI/MONEI-WooCommerce/commit/21384f0))
-* chore: release v6.3.9 ([ff172a3](https://github.com/MONEI/MONEI-WooCommerce/commit/ff172a3))
+* chore: release v6.3.9 ([79b2f41](https://github.com/MONEI/MONEI-WooCommerce/commit/79b2f41))
 * chore: remove redundant changelog.txt ([1703044](https://github.com/MONEI/MONEI-WooCommerce/commit/1703044))
 * chore: remove unnecessary README.md auto-deletion ([86c727e](https://github.com/MONEI/MONEI-WooCommerce/commit/86c727e))
 * chore: setup automated changelog generation ([e83b384](https://github.com/MONEI/MONEI-WooCommerce/commit/e83b384))
