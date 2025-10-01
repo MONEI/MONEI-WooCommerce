@@ -101,11 +101,20 @@ yarn release
 ```
 
 This will automatically:
-- ✅ Bump version in `package.json`, `readme.txt`, `woocommerce-gateway-monei.php`, and `class-woocommerce-gateway-monei.php`
-- ✅ Generate changelog from commit history → `readme.txt`
+- ✅ Bump version in `package.json`, `readme.txt`, `.readme-template`, `woocommerce-gateway-monei.php`, and `class-woocommerce-gateway-monei.php`
+- ✅ Generate changelog from git conventional commits
+- ✅ Update `readme.txt` with new changelog entries above manual entries
+- ✅ Generate `CHANGELOG.md` with full git history
 - ✅ Create git tag (e.g., `6.3.9`)
 - ✅ Generate GitHub release notes
 - ✅ Push changes and tags to GitHub
+
+**Changelog System:**
+- New releases with conventional commits → auto-generated entries at the top
+- Historical releases → manual entries preserved below
+- `.readme-template` contains `{{__PLUGIN_CHANGELOG__}}` placeholder
+- `generate-wp-readme` replaces placeholder with git commit history
+- Manual changelog entries remain intact below the auto-generated section
 
 3. **CI/CD takes over**:
    - GitHub Actions builds the plugin
