@@ -17,6 +17,7 @@ yarn.lock
 webpack.config.js
 phpcs.xml
 commitlint.config.js
+.release-it.json
 .husky/
 .readme-template
 CHANGELOG.md

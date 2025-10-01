@@ -1,0 +1,25 @@
+{
+  "git": {
+    "tagName": "${version}",
+    "commitMessage": "chore: release v${version}"
+  },
+  "github": {
+    "release": true,
+    "autoGenerate": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "plugins": {
+    "@release-it/bumper": {
+      "out": [
+        "readme.txt",
+        "woocommerce-gateway-monei.php",
+        "class-woocommerce-gateway-monei.php"
+      ]
+    }
+  },
+  "hooks": {
+    "after:bump": "generate-wp-readme -m woocommerce-gateway-monei.php && git add readme.txt woocommerce-gateway-monei.php class-woocommerce-gateway-monei.php CHANGELOG.md README.md"
+  }
+}
