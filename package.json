@@ -46,7 +46,7 @@
       }
     },
     "hooks": {
-      "after:bump": "generate-wp-readme && git add readme.txt CHANGELOG.md README.md"
+      "after:bump": "generate-wp-readme -m woocommerce-gateway-monei.php && git add readme.txt CHANGELOG.md README.md"
     }
   },
   "devDependencies": {
