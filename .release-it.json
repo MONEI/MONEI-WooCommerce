@@ -21,6 +21,6 @@
     }
   },
   "hooks": {
-    "after:git:release": "generate-wp-readme -m woocommerce-gateway-monei.php && git add .readme-template readme.txt README.md CHANGELOG.md && git commit --amend --no-edit"
+    "after:git:release": "generate-wp-readme -m woocommerce-gateway-monei.php -l 100 && git add .readme-template readme.txt README.md CHANGELOG.md && git commit --amend --no-edit"
   }
 }

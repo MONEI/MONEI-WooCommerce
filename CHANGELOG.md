@@ -841,7 +841,7 @@
 ## <small>6.3.10 (2025-10-01)</small>
 
 * fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
-* chore: release v6.3.10 ([8f0174c](https://github.com/MONEI/MONEI-WooCommerce/commit/8f0174c))
+* chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
 * chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 
 

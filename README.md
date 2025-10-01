@@ -220,12 +220,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Version 3.0 (9906102)
 * Version 4.2.1 (933186f)
 
-2025-10-01 - version 6.3.10
-* Fix - Amount calculation when checkout data is updated
-* Fix - Card input style
-* Fix - Remove minified assets from version control
-* Chore - Update MONEI SDK
-* Chore - Modernize build and release pipeline with automated changelog
+2025-08-25 - version 6.3.8
+* Fix - Move ApplePay and Google Pay to a separated gateway
+* Fix - Add settings shortcut to plugins page
+* Fix - Add missing space in webhook notice
 
 2025-07-02 - version 6.3.7
 * Fix - Send correct useragent version
