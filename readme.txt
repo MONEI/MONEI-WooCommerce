@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 6.3.10
+Stable tag: 6.3.11
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,9 +103,9 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v6.3.10 - 2025-10-01 =
+= v6.3.11 - 2025-10-01 =
 * fix: correct changelog template to show actual 6.3.8 release (0efe693)
-* chore: release v6.3.10 (86d825a)
+* chore: release v6.3.11 (86d825a)
 * chore: update CHANGELOG.md with corrected tag hash (f9b0dfa)
 
 
