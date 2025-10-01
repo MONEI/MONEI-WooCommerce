@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 6.3.8
+Stable tag: 6.3.9
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -102,91 +102,6 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
-
-= v5.3.0 - 2021-10-04 =
-* update hooks (469c7b4)
-* update hooks (deabcc9)
-* update hooks (20241de)
-* update hooks (d0c0795)
-* update readme.txt (369ded9)
-* chore: release v5.3.0 (6faa01e)
-
-
-= v5.2.5 - 2021-10-04 =
-* downgrade release-it (dc0b48e)
-* downgrade release-it (77443b2)
-* update hook (96f5bc0)
-* chore: release v5.2.5 (da836c8)
-
-
-= v5.2.4 - 2021-10-04 =
-* remove minified version (b1ba844)
-* update hook (d16de80)
-* update version (d1973c5)
-* use after init hook (b2a0860)
-* chore: release v5.2.4 (e26a5cb)
-
-
-= v5.2.3 - 2021-10-04 =
-* add build script (bbf5c68)
-* add hooks (83e9cc7)
-* changes css (45a462e)
-* fixing confirm payment bug usage case (e26efc2)
-* fixing container bug (eb1905f)
-* update readme (532e16b)
-* chore: release v5.2.3 (e6f6c6f)
-
-
-= v5.2.2 - 2021-10-04 =
-* remove type declaration for bootstrap80.php (4adbf31)
-* chore: release v5.2.2 (02744be)
-
-
-= v5.2.1 - 2021-10-04 =
-* remove type declaration for bootstrap80.php (c8c225e)
-* upgrade dependencies (75dbff3)
-* chore: release v5.2.1 (0a50df2)
-
-
-= v5.2.0 - 2021-10-04 =
-* 2 steps payment (5e7f4fe)
-* Adding checks on saving settings to see if all data available. (550b2b6)
-* Adding general CC class (f919374)
-* adding minified version (b75afae)
-* adding support to add payment method (d7b8f59)
-* bug is_monei_saved_token_selected (8c9b869)
-* bumping monei sdk (bd4f77b)
-* bumping version (a015897)
-* bumping version sdk 0.1.16 (ca9a7b9)
-* do not export github folder (894cd40)
-* fixing add payment method with component card (5c14b9d)
-* fixing bug in monei_token_exists (10a2369)
-* fixing bug on add payment cards when operation is a failure (0f2280f)
-* fixing bug to tokenise card on its own payment method. (6d8fbb6)
-* fixing bug with tokenised cards, assigning to the right cc provider. (6263299)
-* fixing checkout js problems and my account add card issue. (8cc8162)
-* improving styling (6ef35de)
-* making compatible hosted and component within same class. (becc65c)
-* Payment Token and submit (323a15b)
-* payment with tokenised card in checkout screen. (c8a3f84)
-* removing warnings (e8d7601)
-* sdk (11bdd1c)
-* solving bugs, missing cardname, missing on saved cc, initialize crd (fcc778c)
-* support to add payment method (20cea64)
-* update stable tag (716fac8)
-* updated styles and bumped version to 5.2 (2dd306d)
-* updating styling (d6ba7c4)
-* chore: release v5.2.0 (262b5ed)
-
-
-= v5.1.2 - 2021-07-28 =
-* configure automatic releases (be2ee90)
-* chore: release v5.1.2 (9bfcd7d)
-
-
-= v5.1.1 - 2021-07-28 =
-* update stable tag (47783fc)
-
 
 = v5.1.0 - 2021-07-28 =
 * - check if WooCommerce plugin is activated (5d7b61c)
@@ -303,7 +218,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Version 3.0 (9906102)
 * Version 4.2.1 (933186f)
 
-2025-08-25 - version 6.3.8
+2025-08-25 - version 6.3.9
 * Fix - Move ApplePay and Google Pay to a separated gateway
 * Fix - Add settings shortcut to plugins page
 * Fix - Add missing space in webhook notice

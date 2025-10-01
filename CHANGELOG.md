@@ -814,3 +814,26 @@
 
 
 
+## <small>6.3.9 (2025-10-01)</small>
+
+* Fix amount when checkout data is updated ([2013a03](https://github.com/MONEI/MONEI-WooCommerce/commit/2013a03))
+* Fix card input style ([6c12a5a](https://github.com/MONEI/MONEI-WooCommerce/commit/6c12a5a))
+* Remove minified assets from vcs ([5a6fd99](https://github.com/MONEI/MONEI-WooCommerce/commit/5a6fd99))
+* Update monei sdk ([38a134a](https://github.com/MONEI/MONEI-WooCommerce/commit/38a134a))
+* Update setUserAgent to include comment ([f6d85df](https://github.com/MONEI/MONEI-WooCommerce/commit/f6d85df))
+* chore: add auto-generated CHANGELOG.md ([50e9983](https://github.com/MONEI/MONEI-WooCommerce/commit/50e9983))
+* chore: auto-remove README.md after generation ([b299478](https://github.com/MONEI/MONEI-WooCommerce/commit/b299478))
+* chore: modernize build and release pipeline ([21384f0](https://github.com/MONEI/MONEI-WooCommerce/commit/21384f0))
+* chore: release v6.3.9 ([ff172a3](https://github.com/MONEI/MONEI-WooCommerce/commit/ff172a3))
+* chore: remove redundant changelog.txt ([1703044](https://github.com/MONEI/MONEI-WooCommerce/commit/1703044))
+* chore: remove unnecessary README.md auto-deletion ([86c727e](https://github.com/MONEI/MONEI-WooCommerce/commit/86c727e))
+* chore: setup automated changelog generation ([e83b384](https://github.com/MONEI/MONEI-WooCommerce/commit/e83b384))
+* fix: properly configure changelog generation with placeholder ([2cefc8c](https://github.com/MONEI/MONEI-WooCommerce/commit/2cefc8c))
+* fix: remove version limit from changelog generation ([cfe33a3](https://github.com/MONEI/MONEI-WooCommerce/commit/cfe33a3))
+* fix: run changelog generation after tag creation ([f9aedb5](https://github.com/MONEI/MONEI-WooCommerce/commit/f9aedb5))
+* fix: specify main plugin file for generate-wp-readme ([f93edd3](https://github.com/MONEI/MONEI-WooCommerce/commit/f93edd3))
+* refactor: move release-it config to separate file ([18bf445](https://github.com/MONEI/MONEI-WooCommerce/commit/18bf445))
+* docs: document changelog generation system ([3217a25](https://github.com/MONEI/MONEI-WooCommerce/commit/3217a25))
+
+
+
