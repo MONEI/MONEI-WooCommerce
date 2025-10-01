@@ -105,9 +105,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 ## Changelog ##
 
-### v6.3.11 - 2025-10-01 ###
+### v6.3.10 - 2025-10-01 ###
+* fix: add changelog length limit to show all versions (c135b7c)
 * fix: correct changelog template to show actual 6.3.8 release (0efe693)
-* chore: release v6.3.11 (86d825a)
+* chore: release v6.3.10 (86d825a)
 * chore: update CHANGELOG.md with corrected tag hash (f9b0dfa)
 
 

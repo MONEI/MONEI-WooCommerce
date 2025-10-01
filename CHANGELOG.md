@@ -844,7 +844,7 @@
 * fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
 * fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
 * chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
-* chore: release v6.3.11 ([85ead56](https://github.com/MONEI/MONEI-WooCommerce/commit/85ead56))
+* chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
 * chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 
 
