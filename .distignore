@@ -21,4 +21,4 @@ commitlint.config.js
 .husky/
 .readme-template
 CHANGELOG.md
-README.md
+DEVELOPER.md
