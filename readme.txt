@@ -103,14 +103,14 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v6.3.12 - 2025-10-01 =
+= v6.4.0 - 2025-10-01 =
 * fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
 * fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
 * fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
 * fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
 * chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
 * chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
-* chore: release v6.3.12 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
+* chore: release v6.4.0 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
 * chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 
 = v6.3.9 - 2025-10-01 =
