@@ -13,6 +13,7 @@
   "plugins": {
     "@release-it/bumper": {
       "out": [
+        ".readme-template",
         "readme.txt",
         "woocommerce-gateway-monei.php",
         "class-woocommerce-gateway-monei.php"
@@ -20,6 +21,6 @@
     }
   },
   "hooks": {
-    "after:bump": "generate-wp-readme -m woocommerce-gateway-monei.php -l 10 && git add readme.txt woocommerce-gateway-monei.php class-woocommerce-gateway-monei.php CHANGELOG.md"
+    "after:bump": "generate-wp-readme -m woocommerce-gateway-monei.php -l 10 && git add .readme-template readme.txt woocommerce-gateway-monei.php class-woocommerce-gateway-monei.php"
   }
 }
