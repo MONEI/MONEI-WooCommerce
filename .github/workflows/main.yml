@@ -20,11 +20,14 @@ jobs:
       with:
           node-version: '18'
 
-    - name: Install npm dependencies
-      run: npm install
+    - name: Enable Corepack
+      run: corepack enable
 
-    - name: Build assets with wp-scripts
-      run: npm run build
+    - name: Install dependencies
+      run: yarn install --immutable
+
+    - name: Build assets
+      run: yarn build
 
     - name: WordPress Plugin Deploy
       id: deploy

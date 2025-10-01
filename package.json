@@ -1,7 +1,11 @@
 {
-  "devDependencies": {
-    "@wordpress/scripts": "^29.0.0"
-  },
+  "name": "monei-woocommerce",
+  "version": "6.3.8",
+  "main": "index.js",
+  "repository": "git@github.com:MONEI/MONEI-WooCommerce.git",
+  "author": "MONEI <support@monei.com>",
+  "license": "MIT",
+  "private": true,
   "scripts": {
     "build": "wp-scripts build",
     "check-engines": "wp-scripts check-engines",
@@ -16,7 +20,43 @@
     "plugin-zip": "wp-scripts plugin-zip",
     "start": "wp-scripts start",
     "test:e2e": "wp-scripts test-e2e",
-    "test:unit": "wp-scripts test-unit-js"
+    "test:unit": "wp-scripts test-unit-js",
+    "release": "release-it",
+    "prepare": "husky"
   },
-  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+  "release-it": {
+    "git": {
+      "tagName": "${version}",
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true,
+      "autoGenerate": true
+    },
+    "npm": {
+      "publish": false
+    },
+    "plugins": {
+      "@release-it/bumper": {
+        "out": [
+          "readme.txt",
+          "woocommerce-gateway-monei.php",
+          "class-woocommerce-gateway-monei.php"
+        ]
+      }
+    },
+    "hooks": {
+      "after:bump": "generate-wp-readme && git add readme.txt CHANGELOG.md README.md"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@release-it/bumper": "^7.0.5",
+    "@snrankin/generate-wp-readme": "^1.2.0",
+    "@wordpress/scripts": "^30.24.0",
+    "husky": "^9.1.7",
+    "release-it": "^19.0.5"
+  },
+  "packageManager": "yarn@4.10.3"
 }
