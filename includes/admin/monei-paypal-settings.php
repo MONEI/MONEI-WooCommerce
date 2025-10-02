@@ -33,6 +33,20 @@ return apply_filters(
 			'label'   => __( 'Enable PayPal by MONEI', 'monei' ),
 			'default' => 'no',
 		),
+		'paypal_mode'   => array(
+			'title'       => __( 'Use Redirect Flow', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
+			'default'     => 'no',
+			'description' => sprintf( __( 'If disabled the PayPal button will be rendered directly on the checkout page. It is recommended to enable redirection in cases where PayPal payments do not function correctly.', 'monei' ) ),
+		),
+		'paypal_style'  => array(
+			'title'       => __( 'PayPal Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the PayPal component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paypal-options" target="_blank">MONEI PayPal Style</a>',
+			'default'     => '{"height": "42"}',
+			'css'         => 'min-height: 80px;',
+		),
 		'title'         => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -43,8 +57,9 @@ return apply_filters(
 		'description'   => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with PayPal, you will be redirected to PayPal. Powered by MONEI.', 'monei' ),
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'Pay with PayPal. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-paypal-description-field',
 		),
 		'hide_logo'     => array(
 			'title'       => __( 'Hide Logo', 'monei' ),

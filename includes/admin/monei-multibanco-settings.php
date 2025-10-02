@@ -43,8 +43,9 @@ return apply_filters(
 		'description' => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with Multibanco, you will be redirected to Multibanco. Powered by MONEI', 'monei' ),
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'Pay with Multibanco. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-multibanco-description-field',
 		),
 		'hide_logo'   => array(
 			'title'       => __( 'Hide Logo', 'monei' ),

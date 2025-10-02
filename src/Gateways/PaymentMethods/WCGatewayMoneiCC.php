@@ -35,8 +35,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WC_Gateway_Monei_CC
  */
 class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
-	const PAYMENT_METHOD = 'card';
-    protected static $scripts_enqueued = false;
+	const PAYMENT_METHOD               = 'card';
+	protected static $scripts_enqueued = false;
 
 	/**
 	 * @var bool
@@ -63,7 +63,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		MoneiPaymentServices $moneiPaymentServices,
 		SubscriptionService $subscriptionService
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $subscriptionService );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
 		$this->id           = MONEI_GATEWAY_ID;
 		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
 		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
@@ -75,7 +75,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 		$description = ! empty( $this->get_option( 'description' ) )
 			? $this->get_option( 'description' )
-			: '&nbsp;';  // Non-breaking space if description is empty
+			: '';  // Non-breaking space if description is empty
 
 		// Hosted payment with redirect.
 		$this->has_fields = false;
@@ -87,7 +87,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->testmode             = $this->getTestmode();
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
+		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->account_id           = $this->getAccountId();
 		$this->api_key              = $this->getApiKey();
@@ -167,6 +167,39 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 */
 	public function init_form_fields() {
 		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-cc-settings.php';
+	}
+
+	/**
+	 * Validate card_input_style field
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return string
+	 */
+	public function validate_card_input_style_field( $key, $value ) {
+		if ( empty( $value ) ) {
+			return $value;
+		}
+
+		// WordPress adds slashes to $_POST data, we need to remove them before validating JSON
+		$value = stripslashes( $value );
+
+		// Try to decode JSON
+		json_decode( $value );
+
+		// Check for JSON errors
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			\WC_Admin_Settings::add_error(
+				sprintf(
+					/* translators: %s: JSON error message */
+					__( 'Card Input Style field contains invalid JSON: %s', 'monei' ),
+					json_last_error_msg()
+				)
+			);
+			return $this->get_option( 'card_input_style', '{"base": {"height": "50px"}, "input": {"background": "none"}}' );
+		}
+
+		return $value;
 	}
 
 	/**
@@ -270,7 +303,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			$this->render_monei_form();
 		} elseif ( $this->handler !== null && $this->handler->is_subscription_change_payment_page() ) {
 			// On subscription change payment page, we always use component CC.
-			echo esc_html( $this->description );
+			// Description not shown in component mode (non-redirect)
 			if ( $this->tokenization ) {
 				$this->saved_payment_methods();
 			}
@@ -280,8 +313,10 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			}
 		} else {
 			// Checkout screen.
-			// We show description, if tokenization available, we show saved cards and checkbox to save.
-			echo esc_html( $this->description );
+			// Show description only in redirect mode
+			if ( $this->redirect_flow && $this->description ) {
+				echo esc_html( $this->description );
+			}
 			if ( $this->tokenization ) {
 				$this->saved_payment_methods();
 				// If Component CC
@@ -340,12 +375,12 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * Registering MONEI JS library and plugin js.
 	 */
 	public function monei_scripts() {
-        if (self::$scripts_enqueued || !$this->should_load_scripts()){
-            return;
-        }
+		if ( self::$scripts_enqueued || ! $this->should_load_scripts() ) {
+			return;
+		}
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( $this->redirect_flow || (! is_checkout() && ! is_add_payment_method_page() && ($this->handler && ! $this->handler->is_subscription_change_payment_page() ) )  ) {
+		if ( $this->redirect_flow || ( ! is_checkout() && ! is_add_payment_method_page() && ( $this->handler && ! $this->handler->is_subscription_change_payment_page() ) ) ) {
 			return;
 		}
 
@@ -369,7 +404,8 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		);
 		wp_enqueue_script( 'monei' );
 		// Determine the total amount to be passed
-		$total = $this->determineTheTotalAmountToBePassed();
+		$total            = $this->determineTheTotalAmountToBePassed();
+		$card_input_style = $this->get_option( 'card_input_style', '{"base": {"height": "50px"}, "input": {"background": "none"}}' );
 		wp_localize_script(
 			'woocommerce_monei',
 			'wc_monei_params',
@@ -379,15 +415,16 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 				'total'            => monei_price_format( $total ),
 				'currency'         => get_woocommerce_currency(),
 				'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'card_input_style' => json_decode( $card_input_style ),
 			)
 		);
 
 		wp_enqueue_script( 'woocommerce_monei' );
 		$this->tokenization_script();
-        self::$scripts_enqueued = true;
+		self::$scripts_enqueued = true;
 	}
-    protected function should_load_scripts() {
-        return is_checkout() || is_cart() || is_product() || is_add_payment_method_page();
-    }
+	protected function should_load_scripts() {
+		return is_checkout() || is_cart() || is_product() || is_add_payment_method_page();
+	}
 }
 

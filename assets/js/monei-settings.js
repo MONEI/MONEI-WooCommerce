@@ -1,21 +1,48 @@
-jQuery( document ).ready(
-	function ($) {
-		// Function to toggle API key fields
-		function toggleApiKeyFields() {
-			var mode = $( '#monei_apikey_mode' ).val();
-			if (mode === 'test') {
-				$( '.monei-test-api-key-field' ).closest( 'tr' ).show();
-				$( '.monei-live-api-key-field' ).closest( 'tr' ).hide();
-			} else {
-				$( '.monei-test-api-key-field' ).closest( 'tr' ).hide();
-				$( '.monei-live-api-key-field' ).closest( 'tr' ).show();
-			}
+jQuery( document ).ready( function ( $ ) {
+	// Function to toggle API key fields
+	function toggleApiKeyFields() {
+		const mode = $( '#monei_apikey_mode' ).val();
+		if ( mode === 'test' ) {
+			$( '.monei-test-api-key-field' ).closest( 'tr' ).show();
+			$( '.monei-live-api-key-field' ).closest( 'tr' ).hide();
+		} else {
+			$( '.monei-test-api-key-field' ).closest( 'tr' ).hide();
+			$( '.monei-live-api-key-field' ).closest( 'tr' ).show();
 		}
-
-		// Initial call to set the correct fields on page load
-		toggleApiKeyFields();
-
-		// Bind the function to the change event of the selector
-		$( '#monei_apikey_mode' ).change( toggleApiKeyFields );
 	}
-);
+
+	// Generic function to toggle description fields based on redirect mode
+	function toggleDescriptionField( paymentMethod ) {
+		const redirectCheckbox = $( '#woocommerce_monei_' + paymentMethod + '_' + paymentMethod + '_mode' );
+		const descriptionField = $( '.monei-' + paymentMethod + '-description-field' );
+
+		if ( redirectCheckbox.length ) {
+			// If redirect mode checkbox exists, show/hide based on its state
+			if ( redirectCheckbox.is( ':checked' ) ) {
+				descriptionField.closest( 'tr' ).show();
+			} else {
+				descriptionField.closest( 'tr' ).hide();
+			}
+		} else {
+			// If no redirect mode checkbox, always hide description
+			descriptionField.closest( 'tr' ).hide();
+		}
+	}
+
+	// Payment methods that have description fields
+	const paymentMethods = ['paypal', 'bizum', 'mbway', 'multibanco'];
+
+	// Initial call to set the correct fields on page load
+	toggleApiKeyFields();
+	paymentMethods.forEach( function( method ) {
+		toggleDescriptionField( method );
+	} );
+
+	// Bind the function to the change event of the selectors
+	$( '#monei_apikey_mode' ).change( toggleApiKeyFields );
+	paymentMethods.forEach( function( method ) {
+		$( '#woocommerce_monei_' + method + '_' + method + '_mode' ).change( function() {
+			toggleDescriptionField( method );
+		} );
+	} );
+} );

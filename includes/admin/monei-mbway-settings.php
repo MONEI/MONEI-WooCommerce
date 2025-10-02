@@ -43,8 +43,9 @@ return apply_filters(
 		'description' => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with MBWay, you will be redirected to MBWay. Powered by MONEI', 'monei' ),
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'Pay with MBWay. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-mbway-description-field',
 		),
 		'hide_logo'   => array(
 			'title'       => __( 'Hide Logo', 'monei' ),

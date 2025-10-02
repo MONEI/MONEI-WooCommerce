@@ -33,6 +33,20 @@ return apply_filters(
 			'label'   => __( 'Enable Bizum by MONEI', 'monei' ),
 			'default' => 'no',
 		),
+		'bizum_mode'  => array(
+			'title'       => __( 'Use Redirect Flow', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
+			'default'     => 'no',
+			'description' => sprintf( __( 'If disabled the Bizum button will be rendered directly on the checkout page. It is recommended to enable redirection in cases where Bizum payments do not function correctly.', 'monei' ) ),
+		),
+		'bizum_style' => array(
+			'title'       => __( 'Bizum Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the Bizum component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#bizum-options" target="_blank">MONEI Bizum Style</a>',
+			'default'     => '{"height": "42"}',
+			'css'         => 'min-height: 80px;',
+		),
 		'title'       => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -43,8 +57,9 @@ return apply_filters(
 		'description' => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with Bizum, you will be redirected to Bizum. Powered by MONEI', 'monei' ),
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'Pay with Bizum. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-bizum-description-field',
 		),
 		'hide_logo'   => array(
 			'title'       => __( 'Hide Logo', 'monei' ),
