@@ -151,4 +151,8 @@
     .monei-payment-request-container {
         min-height: 3.75em;
     }
+
+    .monei-card-brands {
+        margin-left: auto;
+    }
 }
