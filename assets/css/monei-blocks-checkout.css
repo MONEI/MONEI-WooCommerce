@@ -81,6 +81,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.3125em;
+    flex-wrap: wrap;
 }
 
 .monei-card-brands img,
