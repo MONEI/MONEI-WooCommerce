@@ -94,9 +94,16 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		if ( ! $card_input_style ) {
 			$card_input_style = '{"base": {"height": "50"}, "input": {"background": "none"}}';
 		}
+
+		$redirect_mode = $this->get_setting( 'cc_mode' ) ?? 'no';
+		$description = '';
+		if ( 'yes' === $redirect_mode && $this->gateway->description !== '&nbsp;' ) {
+			$description = $this->gateway->description;
+		}
+
 		$data            = array(
 			'title'            => $this->gateway->title,
-			'description'      => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
+			'description'      => $description,
 			'logo'             => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',
 			'cardholderName'   => esc_attr__( 'Cardholder Name', 'monei' ),
 			'nameErrorString'  => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
@@ -111,7 +118,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 
 			// yes: redirect the customer to the Hosted Payment Page.
 			// no:  credit card input will be rendered directly on the checkout page
-			'redirect'         => $this->get_setting( 'cc_mode' ) ?? 'no',
+			'redirect'         => $redirect_mode,
 
 			// yes: Can save credit card and use saved cards.
 			// no:  Cannot save/use
