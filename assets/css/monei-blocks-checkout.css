@@ -83,6 +83,7 @@
     align-items: center;
     gap: 0.3125em;
     flex-wrap: wrap;
+    margin-left: auto;
 }
 
 .monei-card-brands img,
@@ -150,9 +151,5 @@
 
     .monei-payment-request-container {
         min-height: 3.75em;
-    }
-
-    .monei-card-brands {
-        margin-left: auto;
     }
 }
