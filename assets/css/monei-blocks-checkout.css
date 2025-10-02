@@ -1,8 +1,6 @@
 /* Card Input Container */
 .monei-card-input {
-    padding: 0.75em;
     transition: border-color 0.2s ease;
-    margin-bottom: 0.75em;
     background-color: #fff;
     border: 0.0625em solid hsla(0, 0%, 7%, .8);
     border-radius: 0.25em;
@@ -12,9 +10,9 @@
     font-size: 1em;
     height: 3.125em;
     line-height: 1em;
-    margin: 0;
+    margin: 0 0 0.75em 0;
     min-height: 0;
-    padding: 0;
+    padding: 0.75em;
     width: 100%;
 }
 
