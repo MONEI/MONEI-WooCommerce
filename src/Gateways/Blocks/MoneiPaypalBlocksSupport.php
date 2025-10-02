@@ -60,11 +60,14 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_data() {
-		$total = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
-		$data  = array(
+		$total        = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
+		$paypal_style = $this->get_setting( 'paypal_style' );
+		if ( ! $paypal_style ) {
+			$paypal_style = '{}';
+		}
+		$data = array(
 
 			'title'       => $this->gateway->title,
-			'description' => $this->gateway->description,
 			'logo'        => WC_Monei()->plugin_url() . '/public/images/paypal-logo.svg',
 			'supports'    => $this->get_supported_features(),
 			'currency'    => get_woocommerce_currency(),
@@ -75,13 +78,13 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 			// no:  live,
 			'test_mode'   => $this->gateway->getTestmode() ?? false,
 			'accountId'   => $this->gateway->getAccountId() ?? false,
-			'sessionId'   => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+			'sessionId'   => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'paypalStyle' => json_decode( $paypal_style ),
 		);
 
-		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
-
+		$hide_logo = $this->get_setting( 'hide_logo' );
+		if ( 'yes' === $hide_logo ) {
 			unset( $data['logo'] );
-
 		}
 
 		return $data;

@@ -1,7 +1,7 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect} = wp.element;
+	const { useEffect } = wp.element;
 	const paypalData = wc.wcSettings.getSetting( 'monei_paypal_data' );
 
 	const MoneiPayPalContent = ( props ) => {
@@ -28,20 +28,19 @@
 				if ( paypalInstance ) {
 					paypalInstance.close();
 					paypalInstance = null;
-					paypalContainer.innerHtml = ''
+					paypalContainer.innerHtml = '';
 				}
 				if ( placeOrderButton ) {
 					placeOrderButton.style.color = '';
 					placeOrderButton.style.backgroundColor = '';
 					placeOrderButton.disabled = false;
 				}
-
 			};
 		}, [ activePaymentMethod ] );
 		useEffect( () => {
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
 			if ( typeof monei !== 'undefined' && monei.PayPal ) {
-				if(counter === 0) {
+				if ( counter === 0 ) {
 					initMoneiCard();
 				}
 			} else {
@@ -61,6 +60,7 @@
 				language: paypalData.language,
 				amount: parseInt( paypalData.total * 100 ),
 				currency: paypalData.currency,
+				style: paypalData.paypalStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
 						requestToken = result.token;
@@ -83,7 +83,7 @@
 			} );
 			paypalInstance.render( paypalContainer );
 
-			counter += 1
+			counter += 1;
 		};
 
 		// Hook into the payment setup
@@ -121,9 +121,11 @@
 					if ( paymentDetails && paymentDetails.paymentId ) {
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
-						monei.confirmPayment( {
-							paymentId,
-							paymentToken: tokenValue} )
+						monei
+							.confirmPayment( {
+								paymentId,
+								paymentToken: tokenValue,
+							} )
 							.then( ( result ) => {
 								if (
 									result.nextAction &&
@@ -161,7 +163,11 @@
 		}, [ onCheckoutSuccess ] );
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
-				<div id="paypal-container">
+				<div
+					id="paypal-container"
+					className="monei-payment-request-container"
+				>
+					{ /* PayPal button will be inserted here */ }
 				</div>
 			</fieldset>
 		);
@@ -187,7 +193,7 @@
 		ariaLabel: __( paypalData.title, 'monei' ),
 		content: <MoneiPayPalContent />,
 		edit: <div> { __( paypalData.title, 'monei' ) }</div>,
-		canMakePayment: ( ) => true,
+		canMakePayment: () => true,
 		supports: paypalData.supports,
 	};
 

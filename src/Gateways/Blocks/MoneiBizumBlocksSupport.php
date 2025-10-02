@@ -65,12 +65,15 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_data() {
-		$total                 = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+		$total                 = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$cart_has_subscription = $this->handler ? $this->handler->cart_has_subscription() : false;
-		$data                  = array(
+		$bizum_style           = $this->get_setting( 'bizum_style' );
+		if ( ! $bizum_style ) {
+			$bizum_style = '{}';
+		}
+		$data = array(
 
 			'title'                 => $this->gateway->title,
-			'description'           => $this->gateway->description,
 			'logo'                  => WC_Monei()->plugin_url() . '/public/images/bizum-logo.svg',
 			'supports'              => $this->get_supported_features(),
 			'currency'              => get_woocommerce_currency(),
@@ -81,14 +84,14 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 			// no:  live,
 			'test_mode'             => $this->gateway->getTestmode() ?? false,
 			'accountId'             => $this->gateway->getAccountId() ?? false,
-			'sessionId'             => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+			'sessionId'             => wc()->session !== null ? wc()->session->get_customer_id() : '',
 			'cart_has_subscription' => $cart_has_subscription,
+			'bizumStyle'            => json_decode( $bizum_style ),
 		);
 
-		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
-
+		$hide_logo = $this->get_setting( 'hide_logo' );
+		if ( 'yes' === $hide_logo ) {
 			unset( $data['logo'] );
-
 		}
 
 		return $data;
