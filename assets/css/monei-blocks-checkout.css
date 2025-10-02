@@ -75,6 +75,7 @@
 
 .monei-text {
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .monei-card-brands {
