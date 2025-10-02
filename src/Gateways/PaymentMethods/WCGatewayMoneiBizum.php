@@ -25,6 +25,11 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	const PAYMENT_METHOD = 'bizum';
 
 	/**
+	 * @var bool
+	 */
+	protected $redirect_flow;
+
+	/**
 	 * Constructor for the gateway.
 	 *
 	 * @access public
@@ -55,8 +60,9 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->redirect_flow        = ( ! empty( $this->get_option( 'bizum_mode' ) && 'yes' === $this->get_option( 'bizum_mode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
+		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->api_key              = $this->getApiKey();
 		$this->account_id           = $this->getAccountId();
@@ -113,6 +119,39 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	}
 
 	/**
+	 * Validate bizum_style field
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return string
+	 */
+	public function validate_bizum_style_field( $key, $value ) {
+		if ( empty( $value ) ) {
+			return $value;
+		}
+
+		// WordPress adds slashes to $_POST data, we need to remove them before validating JSON
+		$value = stripslashes( $value );
+
+		// Try to decode JSON
+		json_decode( $value );
+
+		// Check for JSON errors
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			\WC_Admin_Settings::add_error(
+				sprintf(
+					/* translators: %s: JSON error message */
+					__( 'Bizum Style field contains invalid JSON: %s', 'monei' ),
+					json_last_error_msg()
+				)
+			);
+			return $this->get_option( 'bizum_style', '{"height": "50px"}' );
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Process the payment and return the result
 	 *
 	 * @access public
@@ -135,13 +174,20 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	}
 
 	public function payment_fields() {
-		echo '<fieldset id="monei-bizum-form" class="monei-fieldset monei-payment-request-fieldset">
-				<div
-					id="bizum-container"
-					class="monei-payment-request-container"
-                        >
-				</div>
-			</fieldset>';
+		// Show description only in redirect mode
+		if ( $this->redirect_flow && $this->description ) {
+			echo wpautop( wptexturize( $this->description ) );
+		}
+		// Only render Bizum button if not using redirect flow
+		if ( ! $this->redirect_flow ) {
+			echo '<fieldset id="monei-bizum-form" class="monei-fieldset monei-payment-request-fieldset">
+					<div
+						id="bizum-container"
+						class="monei-payment-request-container"
+	                        >
+					</div>
+				</fieldset>';
+		}
 	}
 
 	public function bizum_scripts() {
@@ -149,6 +195,10 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 			return;
 		}
 		if ( 'no' === $this->enabled ) {
+			return;
+		}
+		// Don't enqueue scripts if using redirect flow
+		if ( $this->redirect_flow ) {
 			return;
 		}
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
@@ -170,17 +220,19 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		wp_enqueue_script( 'woocommerce_monei-bizum' );
 
 		// Determine the total amount to be passed
-		$total = $this->determineTheTotalAmountToBePassed();
+		$total       = $this->determineTheTotalAmountToBePassed();
+		$bizum_style = $this->get_option( 'bizum_style', '{}' );
 
 		wp_localize_script(
 			'woocommerce_monei-bizum',
 			'wc_bizum_params',
 			array(
-				'account_id' => $this->getAccountId(),
-				'session_id' => WC()->session->get_customer_id(),
-				'total'      => monei_price_format( $total ),
-				'currency'   => get_woocommerce_currency(),
-				'language'   => locale_iso_639_1_code(),
+				'account_id'  => $this->getAccountId(),
+				'session_id'  => WC()->session->get_customer_id(),
+				'total'       => monei_price_format( $total ),
+				'currency'    => get_woocommerce_currency(),
+				'language'    => locale_iso_639_1_code(),
+				'bizum_style' => json_decode( $bizum_style ),
 			)
 		);
 	}
