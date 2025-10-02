@@ -1,12 +1,21 @@
 /* Card Input Container */
 .monei-card-input {
     padding: 12px;
-    border: 1px solid hsla(0,0%,7%,.8);
-    border-radius: 4px;
-    background: #fff;
     transition: border-color 0.2s ease;
     margin-bottom: 12px;
-    height: 1.8em;
+    background-color: #fff;
+    border: 1px solid hsla(0, 0%, 7%, .8);
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: #2b2d2f;
+    font-family: inherit;
+    font-size: 1em;
+    height: 3.125em;
+    line-height: 1em;
+    margin: 0;
+    min-height: 0;
+    padding: 0;
+    width: 100%;
 }
 
 .monei-card-input.is-focused {
@@ -20,12 +29,19 @@
 
 /* Cardholder Name Input */
 .monei-input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
+    background-color: #fff;
+    border: 1px solid hsla(0, 0%, 7%, .8);
     border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    color: #2b2d2f;
+    font-family: inherit;
+    font-size: 1em;
+    height: 3.125em;
+    line-height: 1em;
+    margin: 0;
+    min-height: 0;
+    padding: 1em .5em;
+    width: 100%;
 }
 
 .monei-input:focus {
@@ -43,23 +59,15 @@
     cursor: not-allowed;
 }
 
-/* Error Messages */
-.wc-block-components-validation-error {
-    color: #cc1818;
-    font-size: 0.875em;
-    margin-top: 4px;
-    margin-bottom: 8px;
-}
-
 /* Payment Request Container */
 .monei-payment-request-container {
     min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
     background: #fff;
-    margin-bottom: 12px;
+    width: 100%;
+    margin: .5em 0 0;
 }
 
 /* Label Container */
@@ -71,6 +79,20 @@
 
 .monei-text {
     font-weight: 500;
+}
+
+.monei-card-brands {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.monei-card-brands img,
+.card-brand-icon {
+    height: 24px !important;
+    width: auto !important;
+    display: inline-block !important;
+    margin: 0 !important;
 }
 
 .monei-logo {
@@ -85,6 +107,7 @@
 
 /* Fieldset */
 .monei-fieldset {
+    background: none;
     border: none;
     padding: 0;
     margin: 0;
@@ -113,10 +136,6 @@
     margin-bottom: 16px;
 }
 
-/* Apple/Google Pay Button Adjustments */
-#payment-request-container {
-    width: 100%;
-}
 
 /* Place Order Button States */
 .wc-block-components-checkout-place-order-button:disabled {

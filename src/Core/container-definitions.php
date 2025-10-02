@@ -3,6 +3,7 @@
 use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Features\Subscriptions\WooCommerceSubscriptionsHandler;
 use Monei\Features\Subscriptions\YithSubscriptionPluginHandler;
+use Monei\Helpers\CardBrandHelper;
 use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
@@ -54,6 +55,8 @@ $definitions            = array(
 	),
 	PaymentMethodsService::class            => DI\create( PaymentMethodsService::class )
 		->constructor( DI\get( PaymentMethodsRepository::class ) ),
+	CardBrandHelper::class                  => DI\create( CardBrandHelper::class )
+		->constructor( DI\get( PaymentMethodsService::class ) ),
 	MoneiPaymentServices::class             => DI\autowire( MoneiPaymentServices::class ),
 	BlockSupportService::class              => DI\create( BlockSupportService::class )
 		->constructor( $blocksPath, $blockNamespacePrefix ),
@@ -91,6 +94,12 @@ foreach ( glob( $blocksPath . '/*BlocksSupport.php' ) as $file ) {
 		// Register the block support class with the gateway as a dependency
 		$definitions[ $blockClassName ] = DI\autowire()
 			->constructorParameter( 'gateway', DI\get( $gatewayClassName ) );
+
+		// Inject CardBrandHelper only for CC blocks support
+		if ( $blockClassName === 'Monei\\Gateways\\Blocks\\MoneiCCBlocksSupport' ) {
+			$definitions[ $blockClassName ] = $definitions[ $blockClassName ]
+				->constructorParameter( 'cardBrandHelper', DI\get( CardBrandHelper::class ) );
+		}
 	}
 }
 

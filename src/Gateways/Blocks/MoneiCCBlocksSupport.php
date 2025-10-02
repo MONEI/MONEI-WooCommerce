@@ -5,14 +5,16 @@ namespace Monei\Gateways\Blocks;
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiCC;
+use Monei\Helpers\CardBrandHelper;
 
 final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 	private $gateway;
 	protected $name = 'monei';
-	private $profile_monitor;
+	private CardBrandHelper $cardBrandHelper;
 
-	public function __construct( WCMoneiPaymentGateway $gateway ) {
+	public function __construct( WCMoneiPaymentGateway $gateway, CardBrandHelper $cardBrandHelper ) {
 		$this->gateway = $gateway;
+		$this->cardBrandHelper = $cardBrandHelper;
 	}
 
 	public function initialize() {
@@ -87,7 +89,11 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 				'showSaveOption' => true,
 			);
 		}
-		$total           = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+		$total = WC()->cart->get_total( false );
+		$card_input_style = $this->get_setting( 'card_input_style' );
+		if ( ! $card_input_style ) {
+			$card_input_style = '{"base": {"height": "50"}, "input": {"background": "none"}}';
+		}
 		$data            = array(
 			'title'            => $this->gateway->title,
 			'description'      => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
@@ -111,15 +117,21 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			// no:  Cannot save/use
 			'tokenization'     => $this->get_setting( 'tokenization' ) ?? 'no',
 			'accountId'        => $this->gateway->getAccountId() ?? false,
-			'sessionId'        => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+			'sessionId'        => wc()->session !== null ? wc()->session->get_customer_id() : '',
 			'currency'         => get_woocommerce_currency(),
 			'total'            => $total,
 			'language'         => locale_iso_639_1_code(),
+			'cardInputStyle'   => json_decode( $card_input_style ),
+			'cardBrands'       => $this->cardBrandHelper->getCardBrandsConfig(),
 		);
 
-		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
+		if ( 'yes' === $this->get_setting( 'hide_logo' ) ) {
 			unset( $data['logo'] );
-			unset( $data['logo_apple_google'] );
+		}
+
+		// Remove logo when card brands are available
+		if ( ! empty( $data['cardBrands'] ) && count( array_filter( $data['cardBrands'], fn( $b ) => $b['title'] !== 'Card' ) ) > 0 ) {
+			unset( $data['logo'] );
 		}
 
 		return $data;

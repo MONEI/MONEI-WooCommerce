@@ -6,6 +6,7 @@ use Exception;
 use Monei\Features\Subscriptions\SubscriptionHandlerInterface;
 use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
+use Monei\Helpers\CardBrandHelper;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
@@ -49,6 +50,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	protected $apple_google_pay;
 	protected SubscriptionService $subscriptions_service;
 	protected ?SubscriptionHandlerInterface $handler;
+	protected CardBrandHelper $cardBrandHelper;
 
 	/**
 	 * Constructor for the gateway.
@@ -61,12 +63,14 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
 		MoneiPaymentServices $moneiPaymentServices,
-		SubscriptionService $subscriptionService
+		SubscriptionService $subscriptionService,
+		CardBrandHelper $cardBrandHelper
 	) {
 		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
-		$this->id           = MONEI_GATEWAY_ID;
-		$this->method_title = __( 'MONEI - Credit Card', 'monei' );
-		$this->enabled      = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->cardBrandHelper  = $cardBrandHelper;
+		$this->id               = MONEI_GATEWAY_ID;
+		$this->method_title     = __( 'MONEI - Credit Card', 'monei' );
+		$this->enabled          = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -83,7 +87,12 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons-cc" />';
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
+
+		// Hide logo if card brands are available
+		$cardBrands = $this->cardBrandHelper->getCardBrandsConfig();
+		$hasCardBrands = ! empty( $cardBrands ) && count( array_filter( $cardBrands, fn( $b ) => $b['title'] !== 'Card' ) ) > 0;
+
+		$this->icon                 = ( $this->hide_logo || $hasCardBrands ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->testmode             = $this->getTestmode();
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
@@ -416,6 +425,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 				'currency'         => get_woocommerce_currency(),
 				'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
 				'card_input_style' => json_decode( $card_input_style ),
+				'card_brands'      => $this->cardBrandHelper->getCardBrandsConfig(),
 			)
 		);
 
