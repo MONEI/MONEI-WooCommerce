@@ -15,9 +15,7 @@ $settings_link = esc_url(
 	)
 );
 
-/**
- * Apple Google Gateway Settings.
- */
+/** Apple Google Gateway Settings. */
 return apply_filters(
 	'wc_monei_apple_google_settings',
 	array(
@@ -44,7 +42,7 @@ return apply_filters(
 			'title'       => __( 'Apple Pay / Google Pay Style', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the Apple Pay / Google Pay component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">MONEI Payment Request Style</a>',
-			'default'     => '{\"height\": \"42\"}',
+			'default'     => '{"height": "50px"}',
 			'css'         => 'min-height: 80px;',
 		),
 		'title'                 => array(

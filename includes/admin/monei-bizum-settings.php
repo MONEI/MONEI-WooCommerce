@@ -15,9 +15,7 @@ $settings_link = esc_url(
 	)
 );
 
-/**
- * Monei Bizum Gateway Settings.
- */
+/** Monei Bizum Gateway Settings. */
 return apply_filters(
 	'wc_monei_bizum_settings',
 	array(
@@ -51,7 +49,7 @@ return apply_filters(
 			'title'       => __( 'Bizum Style', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the Bizum component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#bizum-options" target="_blank">MONEI Bizum Style</a>',
-			'default'     => '{"height": "42"}',
+			'default'     => '{"height": "50px"}',
 			'css'         => 'min-height: 80px;',
 		),
 		'title'       => array(

@@ -20,7 +20,7 @@
     },
     "scripts": {
         "phpcs": "phpcs -n",
-        "phpcbf": "phpcbf",
+        "phpcbf": "phpcbf || true",
         "phpstan": "phpstan analyse --memory-limit=1G --no-progress",
         "lint": [
             "@phpcs",

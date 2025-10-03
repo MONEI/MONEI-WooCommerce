@@ -15,9 +15,7 @@ $settings_link = esc_url(
 	)
 );
 
-/**
- * Monei Gateway Settings.
- */
+/** Monei Gateway Settings. */
 return apply_filters(
 	'wc_monei_settings',
 	array(
@@ -51,7 +49,7 @@ return apply_filters(
 			'title'       => __( 'Card Input Style', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the Card Input component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
-			'default'     => '{"base": {"height": "50"}, "input": {"background": "none"}}',
+			'default'     => '{"base": {"height": "50px"}, "input": {"background": "none"}}',
 			'css'         => 'min-height: 80px;',
 		),
 		'title'            => array(
@@ -102,6 +100,5 @@ return apply_filters(
 				'completed'  => __( 'Mark as Complete', 'monei' ),
 			),
 		),
-
 	)
 );

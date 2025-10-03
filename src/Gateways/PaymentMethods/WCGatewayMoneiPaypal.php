@@ -139,7 +139,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 		$value = stripslashes( $value );
 
 		// Try to decode JSON
-		json_decode( $value );
+		$decoded = json_decode( $value, true );
 
 		// Check for JSON errors
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
@@ -153,7 +153,8 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 			return $this->get_option( 'paypal_style', '{"height": "50px", "disableMaxWidth": true}' );
 		}
 
-		return $value;
+		// Re-encode with pretty print for better readability in admin
+		return wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 	}
 
 	/**
