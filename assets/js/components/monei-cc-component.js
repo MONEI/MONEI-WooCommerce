@@ -4,7 +4,7 @@ import {
 	useFormErrors,
 } from '../helpers/monei-card-input-hooks';
 
-const { useEffect, useState, useRef, useCallback } = wp.element;
+const { useEffect, useState, useRef, useCallback, useMemo } = wp.element;
 
 /**
  * MONEI Credit Card Content Component
@@ -15,8 +15,13 @@ export const MoneiCCContent = ( props ) => {
 	const { responseTypes } = props.emitResponse;
 	const { onPaymentSetup, onCheckoutValidation, onCheckoutSuccess } =
 		props.eventRegistration;
-	const moneiData =
-		props.moneiData || wc.wcSettings.getSetting( 'monei_data' );
+
+	// Memoize moneiData to prevent infinite re-renders from wc.wcSettings.getSetting() returning new object
+	const moneiData = useMemo(
+		() => props.moneiData || wc.wcSettings.getSetting( 'monei_data' ),
+		[ props.moneiData ]
+	);
+
 	const isHostedWorkflow = moneiData.redirect === 'yes';
 	const shouldSavePayment = props.shouldSavePayment;
 	// State management
@@ -26,19 +31,35 @@ export const MoneiCCContent = ( props ) => {
 	// Form error management
 	const formErrors = useFormErrors();
 
+	// Memoize config objects to prevent infinite re-renders
+	const cardholderNameConfig = useMemo(
+		() => ( {
+			errorMessage: moneiData.nameErrorString,
+			pattern: /^[A-Za-zÀ-ú\s-]{5,50}$/,
+		} ),
+		[ moneiData.nameErrorString ]
+	);
+
+	const cardInputConfig = useMemo(
+		() => ( {
+			accountId: moneiData.accountId,
+			sessionId: moneiData.sessionId,
+			language: moneiData.language,
+			style: moneiData.cardInputStyle,
+		} ),
+		[
+			moneiData.accountId,
+			moneiData.sessionId,
+			moneiData.language,
+			moneiData.cardInputStyle,
+		]
+	);
+
 	// Cardholder name management
-	const cardholderName = useCardholderName( {
-		errorMessage: moneiData.nameErrorString,
-		pattern: /^[A-Za-zÀ-ú\s-]{5,50}$/,
-	} );
+	const cardholderName = useCardholderName( cardholderNameConfig );
 
 	// Card input management
-	const cardInput = useMoneiCardInput( {
-		accountId: moneiData.accountId,
-		sessionId: moneiData.sessionId,
-		language: moneiData.language,
-		style: moneiData.cardInputStyle,
-	} );
+	const cardInput = useMoneiCardInput( cardInputConfig );
 	// If hosted workflow, show redirect message
 	if ( isHostedWorkflow ) {
 		return (
@@ -71,7 +92,7 @@ export const MoneiCCContent = ( props ) => {
 			} );
 
 		return tokenPromiseRef.current;
-	}, [ cardInput ] );
+	}, [ cardInput.createToken ] );
 
 	/**
 	 * Validate form
@@ -94,9 +115,10 @@ export const MoneiCCContent = ( props ) => {
 
 		return isValid;
 	}, [
-		cardholderName,
+		cardholderName.validate,
 		cardInput.isValid,
-		formErrors,
+		formErrors.setError,
+		formErrors.clearError,
 		moneiData.cardErrorString,
 	] );
 
@@ -140,8 +162,11 @@ export const MoneiCCContent = ( props ) => {
 		return unsubscribe;
 	}, [
 		onCheckoutValidation,
-		cardholderName,
-		cardInput,
+		cardholderName.validate,
+		cardholderName.error,
+		cardInput.error,
+		cardInput.isValid,
+		cardInput.token,
 		createPaymentToken,
 		moneiData.cardErrorString,
 		moneiData.tokenErrorString,
@@ -166,14 +191,21 @@ export const MoneiCCContent = ( props ) => {
 					};
 				}
 
+				const paymentData = {
+					monei_payment_token: paymentToken,
+					monei_cardholder_name: cardholderName.value,
+					monei_is_block_checkout: 'yes',
+				};
+
+				// Only include save payment method flag if checkbox is checked
+				if ( shouldSavePayment ) {
+					paymentData[ 'wc-monei-new-payment-method' ] = true;
+				}
+
 				return {
 					type: responseTypes.SUCCESS,
 					meta: {
-						paymentMethodData: {
-							monei_payment_token: paymentToken,
-							monei_cardholder_name: cardholderName.value,
-							monei_is_block_checkout: 'yes',
-						},
+						paymentMethodData: paymentData,
 					},
 				};
 			} finally {

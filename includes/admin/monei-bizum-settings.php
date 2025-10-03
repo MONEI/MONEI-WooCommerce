@@ -38,20 +38,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => sprintf( __( 'If disabled the Bizum button will be rendered directly on the checkout page. It is recommended to enable redirection in cases where Bizum payments do not function correctly.', 'monei' ) ),
 		),
-		'description' => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'You will be redirected to Bizum to complete the payment. Powered by MONEI.', 'monei' ),
-			'class'       => 'monei-bizum-description-field',
-		),
-		'bizum_style' => array(
-			'title'       => __( 'Bizum Style', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'Configure in JSON format the style of the Bizum component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#bizum-options" target="_blank">MONEI Bizum Style</a>',
-			'default'     => '{"height": "50px"}',
-			'css'         => 'min-height: 80px;',
-		),
 		'title'       => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -74,6 +60,20 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
+		),
+		'description' => array(
+			'title'       => __( 'Description', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'You will be redirected to Bizum to complete the payment. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-bizum-description-field',
+		),
+		'bizum_style' => array(
+			'title'       => __( 'Bizum Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the Bizum component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#bizum-options" target="_blank">MONEI Bizum Style</a>',
+			'default'     => '{"height": "50px"}',
+			'css'         => 'min-height: 80px;',
 		),
 	)
 );

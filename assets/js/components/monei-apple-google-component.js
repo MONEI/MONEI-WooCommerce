@@ -37,7 +37,7 @@ export const createAppleGoogleLabel = ( moneiData ) => {
  */
 export const MoneiAppleGoogleContent = ( props ) => {
 	const { useEffect, useRef } = wp.element;
-	const { onPaymentSetup } = props.eventRegistration;
+	const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 	const { activePaymentMethod } = props;
 	const moneiData =
 		props.moneiData ||
@@ -125,6 +125,65 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 		return () => unsubscribe();
 	}, [ onPaymentSetup ] );
+
+	// Setup checkout success hook
+	useEffect( () => {
+		const unsubscribe = onCheckoutSuccess(
+			( { processingResponse } ) => {
+				const { paymentDetails } = processingResponse;
+
+				// If no paymentId, backend handles everything (redirect flow)
+				if ( ! paymentDetails?.paymentId ) {
+					return false;
+				}
+
+				// Component mode: confirm payment with token
+				const paymentId = paymentDetails.paymentId;
+				const tokenValue = paymentDetails.token;
+				// eslint-disable-next-line no-undef
+				monei
+					.confirmPayment( {
+						paymentId,
+						paymentToken: tokenValue,
+					} )
+					.then( ( result ) => {
+						if (
+							result.nextAction &&
+							result.nextAction.mustRedirect
+						) {
+							window.location.assign(
+								result.nextAction.redirectUrl
+							);
+						}
+						if ( result.status === 'FAILED' ) {
+							const failUrl = new URL( paymentDetails.failUrl );
+							failUrl.searchParams.set( 'status', 'FAILED' );
+							window.location.href = failUrl.toString();
+						} else {
+							// Always include payment ID in redirect URL for order verification
+							const { orderId, paymentId } = paymentDetails;
+							const url = new URL( paymentDetails.completeUrl );
+							url.searchParams.set( 'id', paymentId );
+							url.searchParams.set( 'orderId', orderId );
+							url.searchParams.set( 'status', result.status );
+
+							window.location.href = url.toString();
+						}
+					} )
+					.catch( ( error ) => {
+						console.error(
+							'Error during payment confirmation:',
+							error
+						);
+						window.location.href = paymentDetails.failUrl;
+					} );
+
+				return true;
+			}
+		);
+
+		return () => unsubscribe();
+	}, [ onCheckoutSuccess ] );
 
 	return (
 		<fieldset className="monei-fieldset monei-payment-request-fieldset">

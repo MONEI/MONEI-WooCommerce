@@ -271,10 +271,25 @@
 								);
 							}
 							if ( result.status === 'FAILED' ) {
-								window.location.href = `${ paymentDetails.failUrl }&status=FAILED`;
+								const failUrl = new URL(
+									paymentDetails.failUrl
+								);
+								failUrl.searchParams.set( 'status', 'FAILED' );
+								window.location.href = failUrl.toString();
 							} else {
-								window.location.href =
-									paymentDetails.completeUrl;
+								// Always include payment ID in redirect URL for order verification
+								const { orderId, paymentId } = paymentDetails;
+								const url = new URL(
+									paymentDetails.completeUrl
+								);
+								url.searchParams.set( 'id', paymentId );
+								url.searchParams.set( 'orderId', orderId );
+								url.searchParams.set(
+									'status',
+									result.status
+								);
+
+								window.location.href = url.toString();
 							}
 						} )
 						.catch( ( error ) => {

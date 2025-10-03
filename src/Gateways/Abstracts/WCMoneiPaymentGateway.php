@@ -294,7 +294,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 */
 	protected function get_save_payment_card_checkbox() {
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) );
+		return isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] )
+			&& filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
 	}
 
 	/**

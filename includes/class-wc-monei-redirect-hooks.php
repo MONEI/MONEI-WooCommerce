@@ -162,8 +162,10 @@ class WC_Monei_Redirect_Hooks {
 				return;
 			}
 
-			WC_Monei_Logger::log( 'saving tokent into DB', 'debug' );
-			WC_Monei_Logger::log( $payment_method, 'debug' );
+			// Check if user is logged in - we only save tokens for logged-in users
+			if ( ! is_user_logged_in() ) {
+				return;
+			}
 
 			$expiration = new DateTime( gmdate( 'm/d/Y', $payment_method->getCard()->getExpiration() ) );
 

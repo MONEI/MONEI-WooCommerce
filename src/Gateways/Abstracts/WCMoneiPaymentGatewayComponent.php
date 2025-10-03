@@ -221,7 +221,8 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		}
 
 		// If customer has checkboxed "Save payment information to my account for future purchases."
-		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
+		$should_save = $this->get_save_payment_card_checkbox();
+		if ( $this->tokenization && $should_save ) {
 			$payload['generatePaymentToken'] = true;
 		}
 		$componentGateways = array( MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID );

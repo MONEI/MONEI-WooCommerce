@@ -38,20 +38,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
 		),
-		'description'      => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'You will be redirected to the payment page to complete the payment. Powered by MONEI.', 'monei' ),
-			'class'       => 'monei-cc-description-field',
-		),
-		'card_input_style' => array(
-			'title'       => __( 'Card Input Style', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'Configure in JSON format the style of the Card Input component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
-			'default'     => '{"base": {"height": "50px"}, "input": {"background": "none"}}',
-			'css'         => 'min-height: 80px;',
-		),
 		'title'            => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -74,6 +60,20 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
+		),
+		'description'      => array(
+			'title'       => __( 'Description', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'You will be redirected to the payment page to complete the payment. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-cc-description-field',
+		),
+		'card_input_style' => array(
+			'title'       => __( 'Card Input Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the Card Input component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
+			'default'     => '{"base": {"height": "50px"}, "input": {"background": "none"}}',
+			'css'         => 'min-height: 80px;',
 		),
 		'tokenization'     => array(
 			'title'       => __( 'Saved cards', 'monei' ),

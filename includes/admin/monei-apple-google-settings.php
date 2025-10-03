@@ -31,13 +31,6 @@ return apply_filters(
 			'label'   => __( 'Enable Apple Pay and Google Pay by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'payment_request_style' => array(
-			'title'       => __( 'Apple Pay / Google Pay Style', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'Configure in JSON format the style of the Apple Pay / Google Pay component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">MONEI Payment Request Style</a>',
-			'default'     => '{"height": "50px"}',
-			'css'         => 'min-height: 80px;',
-		),
 		'title'                 => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -60,6 +53,13 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
+		),
+		'payment_request_style' => array(
+			'title'       => __( 'Apple Pay / Google Pay Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the Apple Pay / Google Pay component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">MONEI Payment Request Style</a>',
+			'default'     => '{"height": "50px"}',
+			'css'         => 'min-height: 80px;',
 		),
 	)
 );
