@@ -30,7 +30,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		/**
 		 * The single instance of the class.
 		 *
-		 * @var Woocommerce_Gateway_Monei
+		 * @var Woocommerce_Gateway_Monei|null
 		 * @since 1.0.0
 		 */
 		protected static $_instance = null;
@@ -140,6 +140,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/woocommerce-gateway-monei-core-functions.php';
 			include_once 'includes/class-wc-monei-ipn.php';
 			include_once 'includes/class-wc-monei-logger.php';
+			include_once 'includes/class-wc-monei-payment-method-display.php';
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';

@@ -5,11 +5,13 @@ namespace Monei\Gateways\PaymentMethods;
 use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
 use WC_Blocks_Utils;
 use WC_Monei_IPN;
+use WC_Admin_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -33,48 +35,63 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	 */
 	protected $apple_google_pay;
 
-    /**
-     * @var bool
-     */
-    protected static $scripts_enqueued = false;
+	/**
+	 * @var bool
+	 */
+	protected static $scripts_enqueued = false;
 
 	/**
 	 * Constructor for the gateway.
 	 *
 	 * @access public
+	 * @param PaymentMethodsService $paymentMethodsService
+	 * @param TemplateManager $templateManager
+	 * @param ApiKeyService $apiKeyService
+	 * @param MoneiPaymentServices $moneiPaymentServices
+	 * @param SubscriptionService $subscriptionService Injected by DI container but not used (Apple/Google Pay doesn't support subscriptions)
 	 * @return void
+	 * @phpstan-ignore-next-line
 	 */
 	public function __construct(
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
 		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler,
 		SubscriptionService $subscriptionService
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $subscriptionService );
-		$this->id           = 'monei_apple_google';
-		$this->method_title = __( 'MONEI - Apple/Google', 'monei' );
-		$this->title        = __( 'Google Pay', 'monei' );
-		$this->description  = __( '&nbsp;', 'monei' );
-		$iconUrl            = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
-		$iconMarkup         = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
-        $this->testmode     = $this->getTestmode();
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $statusCodeHandler );
+		$this->id                 = 'monei_apple_google';
+		$this->method_title       = __( 'MONEI - Apple Pay / Google Pay', 'monei' );
+		$this->method_description = __( 'Accept Apple Pay and Google Pay payments.', 'monei' );
+		$hide_title               = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
+		$default_title            = __( 'Apple Pay / Google Pay', 'monei' );
+		$saved_title              = $this->get_option( 'title' );
+		$this->title              = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
+		$this->hide_logo          = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
+		$this->description        = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$iconUrl                  = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
+		$iconMarkup               = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+		$this->testmode           = $this->getTestmode();
+		if ( $this->testmode && ! empty( $this->title ) ) {
+			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
+		}
 		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->settings      = get_option( 'woocommerce_monei_apple_google_settings', array() );
-		$this->enabled       = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
-        $this->account_id           = $this->getAccountId();
-        $this->api_key              = $this->getApiKey();
-        $this->shop_name            = get_bloginfo( 'name' );
-        $this->redirect_flow = false;
+		$this->enabled       = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->account_id    = $this->getAccountId();
+		$this->api_key       = $this->getApiKey();
+		$this->shop_name     = get_bloginfo( 'name' );
+		$this->redirect_flow = false;
 		$this->tokenization  = false;
 		$this->pre_auth      = false;
-        $this->logging              = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
-        $this->supports      = array(
+		$this->logging       = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
+		$this->supports      = array(
 			'products',
 			'refunds',
 		);
-        $this->notify_url = WC_Monei()->get_ipn_url();
-        new WC_Monei_IPN( $this->logging );
+		$this->notify_url    = WC_Monei()->get_ipn_url();
+		new WC_Monei_IPN( $this->logging );
 		// Load the form fields.
 		$this->init_form_fields();
 		// Load the settings.
@@ -107,7 +124,41 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$this->form_fields = require WC_Monei()->plugin_path() . '/includes/admin/monei-apple-google-settings.php';
 	}
 
-    /**
+	/**
+	 * Validate payment_request_style field
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return string
+	 */
+	public function validate_payment_request_style_field( $key, $value ) {
+		if ( empty( $value ) ) {
+			return $value;
+		}
+
+		// WordPress adds slashes to $_POST data, we need to remove them before validating JSON
+		$value = stripslashes( $value );
+
+		// Try to decode JSON
+		$decoded = json_decode( $value, true );
+
+		// Check for JSON errors
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			WC_Admin_Settings::add_error(
+				sprintf(
+					/* translators: %s: JSON error message */
+					__( 'Apple Pay / Google Pay Style field contains invalid JSON: %s', 'monei' ),
+					json_last_error_msg()
+				)
+			);
+			return $this->get_option( 'payment_request_style', '{"height": "50px"}' );
+		}
+
+		// Re-encode with pretty print for better readability in admin
+		return wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	}
+
+	/**
 	 * Registering MONEI JS library and plugin js.
 	 */
 	public function monei_scripts() {
@@ -115,9 +166,9 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		if ( 'no' === $this->enabled ) {
 			return;
 		}
-        if (self::$scripts_enqueued || !$this->should_load_scripts()){
-            return;
-        }
+		if ( self::$scripts_enqueued || ! $this->should_load_scripts() ) {
+			return;
+		}
 
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
 			wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '1.0', true );
@@ -135,21 +186,23 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		);
 		wp_enqueue_script( 'monei' );
 		// Determine the total amount to be passed
-		$total = $this->determineTheTotalAmountToBePassed();
+		$total                 = $this->determineTheTotalAmountToBePassed();
+		$payment_request_style = $this->get_option( 'payment_request_style', '{"height": "50px"}' );
 		wp_localize_script(
 			'woocommerce_monei_apple_google',
 			'wc_monei_apple_google_params',
 			array(
-				'account_id'       => $this->getAccountId(),
-				'session_id'       => WC()->session->get_customer_id(),
-				'total'            => monei_price_format( $total ),
-				'currency'         => get_woocommerce_currency(),
-				'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'account_id'            => $this->getAccountId(),
+				'session_id'            => WC()->session->get_customer_id(),
+				'total'                 => monei_price_format( $total ),
+				'currency'              => get_woocommerce_currency(),
+				'apple_logo'            => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'payment_request_style' => json_decode( $payment_request_style ),
 			)
 		);
 
 		wp_enqueue_script( 'woocommerce_monei_apple_google' );
-        self::$scripts_enqueued = true;
+		self::$scripts_enqueued = true;
 	}
 
 
@@ -192,10 +245,22 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	}
 
 	/**
+	 * Check if gateway has fields.
+	 * @return bool
+	 */
+	public function has_fields() {
+		return true;
+	}
+
+	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
 	public function payment_fields() {
 		ob_start();
+		// Show description only in redirect mode
+		if ( $this->redirect_flow && $this->description ) {
+			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
+		}
 		$this->render_google_pay_form();
 		ob_end_flush();
 	}
@@ -216,20 +281,20 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		<?php
 	}
 
-    public function isGoogleAvailable() {
-        $googleInAPI = $this->paymentMethodsService->isGoogleEnabled();
-        $googleInWoo = $this->enabled;
-        return $googleInAPI && $googleInWoo;
-    }
+	public function isGoogleAvailable() {
+		$googleInAPI = $this->paymentMethodsService->isGoogleEnabled();
+		$googleInWoo = $this->enabled;
+		return $googleInAPI && $googleInWoo;
+	}
 
-    public function isAppleAvailable() {
-        $appleInAPI = $this->paymentMethodsService->isAppleEnabled();
-        $appleInWoo = $this->enabled;
-        return $appleInAPI && $appleInWoo;
-    }
+	public function isAppleAvailable() {
+		$appleInAPI = $this->paymentMethodsService->isAppleEnabled();
+		$appleInWoo = $this->enabled;
+		return $appleInAPI && $appleInWoo;
+	}
 
-    protected function should_load_scripts() {
-        return is_checkout();
-    }
+	protected function should_load_scripts() {
+		return is_checkout() || is_checkout_pay_page();
+	}
 }
 

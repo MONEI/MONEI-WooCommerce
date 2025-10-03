@@ -3,7 +3,6 @@
 namespace Monei\Services\payment;
 
 use Monei\Services\sdk\MoneiSdkClientFactory;
-use OpenAPI\Client\Configuration;
 
 /**
  * API Helper Class
@@ -14,7 +13,7 @@ use OpenAPI\Client\Configuration;
 class MoneiPaymentServices {
 
 	/**
-	 * @var \Monei\MoneiClient
+	 * @var MoneiSdkClientFactory
 	 */
 	protected $client;
 
@@ -42,7 +41,7 @@ class MoneiPaymentServices {
 	 * @param $signature
 	 *
 	 * @return object
-	 * @throws \OpenAPI\Client\ApiException
+	 * @throws \Monei\ApiException
 	 */
 	public function verify_signature( $body, $signature ) {
 		$client = $this->client->get_client();
@@ -54,8 +53,8 @@ class MoneiPaymentServices {
 	 *
 	 * @param array $payload
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function create_payment( $payload ) {
 		$client = $this->client->get_client();
@@ -68,8 +67,8 @@ class MoneiPaymentServices {
 	 * @param string $id The payment ID (required)
 	 * @param array  $payload
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function confirm_payment( $id, $payload ) {
 		$client = $this->client->get_client();
@@ -82,8 +81,8 @@ class MoneiPaymentServices {
 	 *
 	 * @param string $payment_id
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function get_payment( $payment_id ) {
 		$client = $this->client->get_client();
@@ -98,8 +97,8 @@ class MoneiPaymentServices {
 	 * @param string $payment_id
 	 * @param string $amount
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function capture_payment( $payment_id, $amount ) {
 		$client = $this->client->get_client();
@@ -113,8 +112,8 @@ class MoneiPaymentServices {
 	 *
 	 * @param string $payment_id
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function cancel_payment( $payment_id ) {
 		$client = $this->client->get_client();
@@ -128,8 +127,8 @@ class MoneiPaymentServices {
 	 * @param $amount
 	 * @param string     $refund_reason
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function refund_payment( $payment_id, $amount, $refund_reason = 'requested_by_customer' ) {
 		$client = $this->client->get_client();
@@ -148,8 +147,8 @@ class MoneiPaymentServices {
 	 * @param string $sequence_id
 	 * @param array  $payload
 	 *
-	 * @return \OpenAPI\Client\Model\Payment
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\Payment
+	 * @throws \Monei\ApiException
 	 */
 	public function recurring_payment( $sequence_id, $payload ) {
 		$client = $this->client->get_client();
@@ -160,8 +159,8 @@ class MoneiPaymentServices {
 	/**
 	 * @param $domain
 	 *
-	 * @return \OpenAPI\Client\Model\InlineResponse200
-	 * @throws \OpenAPI\Client\ApiException
+	 * @return \Monei\Model\InlineObject
+	 * @throws \Monei\ApiException
 	 */
 	public function register_apple_domain( $domain ) {
 		$client = $this->client->get_client();

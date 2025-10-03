@@ -1,4 +1,7 @@
-import { MoneiCCContent, CreditCardLabel } from './components/monei-cc-component';
+import {
+	MoneiCCContent,
+	CreditCardLabel,
+} from './components/monei-cc-component';
 
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
@@ -17,8 +20,8 @@ import { MoneiCCContent, CreditCardLabel } from './components/monei-cc-component
 		canMakePayment: () => true,
 		supports: moneiData.supports || {
 			features: [ 'products' ],
-			savePaymentMethod: true
-		}
+			savePaymentMethod: true,
+		},
 	};
 
 	registerPaymentMethod( MoneiPaymentMethod );

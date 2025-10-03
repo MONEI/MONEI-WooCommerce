@@ -1,0 +1,12 @@
+{
+  "*.php": [
+    "composer phpcbf --",
+    "composer phpstan --"
+  ],
+  "*.{js,jsx}": [
+    "wp-scripts lint-js --fix"
+  ],
+  "*.{css,scss}": [
+    "wp-scripts lint-style --fix"
+  ]
+}

@@ -158,14 +158,138 @@ yarn release 6.4.0              # Specific version
 └── readme.txt          # WordPress.org plugin readme
 ```
 
+## Code Quality & Linting
+
+### Overview
+
+The project uses automated linting and code quality tools to maintain consistent code style and catch bugs early:
+
+- **JavaScript/CSS**: ESLint + Stylelint (via `@wordpress/scripts`)
+- **PHP**: PHPCS (WordPress Coding Standards) + PHPStan (static analysis)
+- **Git Hooks**: Husky + lint-staged for automatic fixing
+- **Commit Messages**: Commitlint (conventional commits)
+
+### Git Hooks
+
+**Pre-commit Hook**:
+- Auto-fixes staged files with `lint-staged`
+- PHP: `phpcbf` (auto-fix code style) + `phpstan` (static analysis)
+- JavaScript: `eslint --fix`
+- CSS: `stylelint --fix`
+- **Prevents committing broken code** by running PHPStan
+
+**Commit-msg Hook**:
+- Validates commit message format (conventional commits)
+
+**Pre-push Hook**:
+- **Branch Protection**: Blocks direct pushes to `master`/`main` branches
+
+### Linting Commands
+
+```bash
+# Auto-fix all issues at once (recommended)
+yarn lint:fix
+
+# Individual fixers
+yarn lint:js-fix    # Fix JavaScript issues
+yarn lint:css-fix   # Fix CSS issues
+yarn lint:php:fix   # Fix PHP code style issues (phpcbf)
+
+# Linters only (no auto-fix)
+yarn lint           # Check all (JS + CSS + PHP)
+yarn lint:js        # Check JavaScript
+yarn lint:css       # Check CSS
+yarn lint:php       # Check PHP (PHPCS + PHPStan)
+yarn lint:php:phpcs # Check PHP code style only
+yarn lint:php:phpstan # Check PHP static analysis only
+```
+
+### Workflow Best Practices
+
+1. **Before committing**: Run `yarn lint:fix` to auto-fix all issues
+2. **During commit**: Hooks auto-fix staged files, run PHPStan, and validate commit message
+3. **If commit fails**: Fix PHPStan errors and commit again
+4. **Before push**: Branch protection check ensures you're not pushing to master
+
+### Configuration Files
+
+- `.lintstagedrc.json` - Auto-fix configuration for staged files
+- `.eslintrc.js` - JavaScript linting rules
+- `.eslintignore` - Exclude `public/` build outputs from JS linting
+- `.stylelintignore` - Exclude `public/` build outputs from CSS linting
+- `phpcs.xml` - PHP code style rules (WordPress standards)
+- `phpstan.neon` - PHP static analysis configuration (Level 4)
+- `commitlint.config.js` - Commit message validation rules
+
+### PHPStan (Static Analysis)
+
+PHPStan analyzes PHP code for type errors and bugs without running it:
+
+```bash
+# Run PHPStan manually
+composer phpstan
+
+# Or via yarn
+yarn lint:php:phpstan
+```
+
+**Common PHPStan errors:**
+- Missing type hints in docblocks
+- Calling undefined methods
+- Type mismatches in function parameters
+- Unreachable code
+
+**Configuration**: `phpstan.neon` (Level 4)
+- WordPress/WooCommerce function stubs included
+- Bootstrap file for plugin constants
+
+### PHPCS (Code Style)
+
+PHPCS checks PHP code against WordPress Coding Standards:
+
+```bash
+# Check code style
+composer phpcs
+yarn lint:php:phpcs
+
+# Auto-fix code style issues
+composer phpcbf
+yarn lint:php:fix
+```
+
+**Configuration**: `phpcs.xml`
+- WordPress-Core ruleset
+- Tabs for indentation
+- PSR-4 autoloading compatible
+
+### Branch Protection
+
+Direct pushes to `master`/`main` branches are blocked by the pre-push hook:
+
+```bash
+# ❌ This will fail:
+git checkout master
+git push origin master
+
+# ✅ Instead, use feature branches:
+git checkout -b feat/my-feature
+git push origin feat/my-feature
+# Then create a Pull Request on GitHub
+```
+
 ## Scripts
 
 - `yarn build` - Build production assets
 - `yarn start` - Development build with watch mode
 - `yarn release` - Create new release (automated versioning)
+- `yarn lint` - Lint all files (JS + CSS + PHP)
+- `yarn lint:fix` - Auto-fix all linting issues
 - `yarn lint:js` - Lint JavaScript
 - `yarn lint:js-fix` - Fix JavaScript linting issues
 - `yarn lint:css` - Lint CSS
+- `yarn lint:css-fix` - Fix CSS linting issues
+- `yarn lint:php` - Lint PHP (PHPCS + PHPStan)
+- `yarn lint:php:fix` - Fix PHP code style issues
 
 ## Tech Stack
 

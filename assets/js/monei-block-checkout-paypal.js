@@ -1,7 +1,7 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect} = wp.element;
+	const { useEffect } = wp.element;
 	const paypalData = wc.wcSettings.getSetting( 'monei_paypal_data' );
 
 	const MoneiPayPalContent = ( props ) => {
@@ -12,7 +12,16 @@
 		let requestToken = null;
 		let paypalInstance = null;
 		let paypalContainer = null;
+
+		// Check if redirect flow is enabled
+		const isRedirectFlow = paypalData.redirectFlow === true;
+
 		useEffect( () => {
+			// Don't modify the Place Order button if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			const placeOrderButton = document.querySelector(
 				'.wc-block-components-checkout-place-order-button'
 			);
@@ -28,20 +37,24 @@
 				if ( paypalInstance ) {
 					paypalInstance.close();
 					paypalInstance = null;
-					paypalContainer.innerHtml = ''
+					paypalContainer.innerHtml = '';
 				}
 				if ( placeOrderButton ) {
 					placeOrderButton.style.color = '';
 					placeOrderButton.style.backgroundColor = '';
 					placeOrderButton.disabled = false;
 				}
-
 			};
 		}, [ activePaymentMethod ] );
 		useEffect( () => {
+			// Don't initialize PayPal component if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
 			if ( typeof monei !== 'undefined' && monei.PayPal ) {
-				if(counter === 0) {
+				if ( counter === 0 ) {
 					initMoneiCard();
 				}
 			} else {
@@ -61,6 +74,7 @@
 				language: paypalData.language,
 				amount: parseInt( paypalData.total * 100 ),
 				currency: paypalData.currency,
+				style: paypalData.paypalStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
 						requestToken = result.token;
@@ -83,16 +97,28 @@
 			} );
 			paypalInstance.render( paypalContainer );
 
-			counter += 1
+			counter += 1;
 		};
 
 		// Hook into the payment setup
 		useEffect( () => {
 			const unsubscribePaymentSetup = onPaymentSetup( () => {
+				// In redirect mode, no token is needed - form submits normally
+				if ( isRedirectFlow ) {
+					return {
+						type: responseTypes.SUCCESS,
+						meta: {
+							paymentMethodData: {
+								monei_is_block_checkout: 'yes',
+							},
+						},
+					};
+				}
+
 				// If no token was created, fail
 				if ( ! requestToken ) {
 					return {
-						type: 'error',
+						type: responseTypes.ERROR,
 						message: __(
 							'MONEI token could not be generated.',
 							'monei'
@@ -115,53 +141,93 @@
 			};
 		}, [ onPaymentSetup ] );
 		useEffect( () => {
-			const unsubscribeSuccess = onCheckoutSuccess(
-				( { processingResponse } ) => {
+			const unsubscribe = onCheckoutSuccess(
+				async ( { processingResponse } ) => {
 					const { paymentDetails } = processingResponse;
-					if ( paymentDetails && paymentDetails.paymentId ) {
+
+					// In redirect mode, backend returns redirect URL and no paymentId
+					// WooCommerce Blocks handles redirect automatically
+					if ( ! paymentDetails?.paymentId ) {
+						return {
+							type: responseTypes.SUCCESS,
+						};
+					}
+
+					try {
+						// Component mode: confirm payment with token
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
-						monei.confirmPayment( {
+						const result = await monei.confirmPayment( {
 							paymentId,
-							paymentToken: tokenValue} )
-							.then( ( result ) => {
-								if (
-									result.nextAction &&
-									result.nextAction.mustRedirect
-								) {
-									window.location.assign(
-										result.nextAction.redirectUrl
-									);
-								}
-								if ( result.status === 'FAILED' ) {
-									window.location.href = `${ paymentDetails.failUrl }&status=FAILED`;
-								} else {
-									window.location.href =
-										paymentDetails.completeUrl;
-								}
-							} )
-							.catch( ( error ) => {
-								console.error(
-									'Error during payment confirmation:',
-									error
-								);
-								window.location.href = paymentDetails.failUrl;
-							} );
-					} else {
-						console.error( 'No paymentId found in paymentDetails' );
+							paymentToken: tokenValue,
+						} );
+
+						if (
+							result.nextAction &&
+							result.nextAction.mustRedirect
+						) {
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: result.nextAction.redirectUrl,
+							};
+						}
+						if ( result.status === 'FAILED' ) {
+							const failUrl = new URL( paymentDetails.failUrl );
+							failUrl.searchParams.set( 'status', 'FAILED' );
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: failUrl.toString(),
+							};
+						} else {
+							// Always include payment ID in redirect URL for order verification
+							const { orderId, paymentId } = paymentDetails;
+							const url = new URL( paymentDetails.completeUrl );
+							url.searchParams.set( 'id', paymentId );
+							url.searchParams.set( 'orderId', orderId );
+							url.searchParams.set( 'status', result.status );
+
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: url.toString(),
+							};
+						}
+					} catch ( error ) {
+						console.error(
+							'Error during payment confirmation:',
+							error
+						);
+						return {
+							type: responseTypes.ERROR,
+							message:
+								error.message ||
+								'Payment confirmation failed',
+							messageContext:
+								props.emitResponse.noticeContexts.PAYMENTS,
+						};
 					}
-					// Return true to indicate that the checkout is successful
-					return true;
 				}
 			);
 
 			return () => {
-				unsubscribeSuccess();
+				unsubscribe();
 			};
 		}, [ onCheckoutSuccess ] );
+		// In redirect mode, show description instead of PayPal button
+		if ( isRedirectFlow ) {
+			return (
+				<div className="monei-redirect-description">
+					{ paypalData.description }
+				</div>
+			);
+		}
+
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
-				<div id="paypal-container">
+				<div
+					id="paypal-container"
+					className="monei-payment-request-container"
+				>
+					{ /* PayPal button will be inserted here */ }
 				</div>
 			</fieldset>
 		);
@@ -183,11 +249,11 @@
 
 	const MoneiPayPalPaymentMethod = {
 		name: 'monei_paypal',
-		label: <div> { paypalLabel() } </div>,
+		label: paypalLabel(),
 		ariaLabel: __( paypalData.title, 'monei' ),
 		content: <MoneiPayPalContent />,
 		edit: <div> { __( paypalData.title, 'monei' ) }</div>,
-		canMakePayment: ( ) => true,
+		canMakePayment: () => true,
 		supports: paypalData.supports,
 	};
 

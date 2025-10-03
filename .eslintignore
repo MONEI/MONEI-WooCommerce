@@ -1,0 +1,11 @@
+# Build outputs
+public/
+build/
+dist/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Cache
+.phpcs.cache

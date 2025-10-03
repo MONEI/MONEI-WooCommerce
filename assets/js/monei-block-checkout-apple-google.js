@@ -1,4 +1,7 @@
-import { MoneiAppleGoogleContent, createAppleGoogleLabel } from './components/monei-apple-google-component';
+import {
+	MoneiAppleGoogleContent,
+	createAppleGoogleLabel,
+} from './components/monei-apple-google-component';
 
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
@@ -17,8 +20,8 @@ import { MoneiAppleGoogleContent, createAppleGoogleLabel } from './components/mo
 		edit: <div>{ __( 'MONEI Payment Form (Edit Mode)', 'monei' ) }</div>,
 		canMakePayment: () => true,
 		supports: {
-			features: [ 'products' ]
-		}
+			features: [ 'products' ],
+		},
 	};
 
 	registerPaymentMethod( AppleGooglePaymentMethod );

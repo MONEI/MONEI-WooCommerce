@@ -10,6 +10,9 @@
 		const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 		const { activePaymentMethod } = props;
 
+		// Check if redirect flow is enabled
+		const isRedirectFlow = bizumData.redirectFlow === true;
+
 		// Use useRef to persist values across re-renders
 		const requestTokenRef = useRef( null );
 		const currentBizumInstanceRef = useRef( null );
@@ -22,6 +25,11 @@
 		}, [] );
 
 		useEffect( () => {
+			// Don't modify the Place Order button if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			const placeOrderButton = document.querySelector(
 				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 			);
@@ -43,18 +51,36 @@
 		}, [ activePaymentMethod ] );
 
 		useEffect( () => {
+			// Don't initialize Bizum component if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
-			if ( typeof monei !== 'undefined' && monei.Bizum && !isInitializedRef.current ) {
+			if (
+				typeof monei !== 'undefined' &&
+				monei.Bizum &&
+				! isInitializedRef.current
+			) {
 				initMoneiCard();
 				isInitializedRef.current = true;
-			} else if ( !monei || !monei.Bizum ) {
+			} else if ( ! monei || ! monei.Bizum ) {
 				console.error( 'MONEI SDK is not available' );
 			}
 		}, [] ); // Only initialize once on mount
 
 		useEffect( () => {
+			// Don't update amount if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			// Only update amount if instance exists and cart totals changed
-			if ( isInitializedRef.current && currentBizumInstanceRef.current && cartTotals ) {
+			if (
+				isInitializedRef.current &&
+				currentBizumInstanceRef.current &&
+				cartTotals
+			) {
 				updateBizumAmount();
 			}
 		}, [ cartTotals ] ); // Update amount when cart totals change
@@ -63,14 +89,14 @@
 		 * Initialize MONEI Bizum instance once.
 		 */
 		const initMoneiCard = () => {
-			const currentTotal = cartTotals?.total_price ?
-				parseInt( cartTotals.total_price ) :
-				parseInt( bizumData.total * 100 );
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: parseInt( bizumData.total * 100 );
 
 			lastAmountRef.current = currentTotal;
 
 			const container = document.getElementById( 'bizum-container' );
-			if ( !container ) {
+			if ( ! container ) {
 				console.error( 'Bizum container not found' );
 				return;
 			}
@@ -84,6 +110,7 @@
 				language: bizumData.language,
 				amount: currentTotal,
 				currency: bizumData.currency,
+				style: bizumData.bizumStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
 						requestTokenRef.current = result.token;
@@ -112,9 +139,9 @@
 		 * Update the amount in the existing Bizum instance.
 		 */
 		const updateBizumAmount = () => {
-			const currentTotal = cartTotals?.total_price ?
-				parseInt( cartTotals.total_price ) :
-				parseInt( bizumData.total * 100 );
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: parseInt( bizumData.total * 100 );
 
 			// Only update if amount actually changed
 			if ( currentTotal === lastAmountRef.current ) {
@@ -126,7 +153,10 @@
 			if ( currentBizumInstanceRef.current ) {
 				const preservedToken = requestTokenRef.current;
 
-				if ( typeof currentBizumInstanceRef.current.destroy === 'function' ) {
+				if (
+					typeof currentBizumInstanceRef.current.destroy ===
+					'function'
+				) {
 					currentBizumInstanceRef.current.destroy();
 				}
 
@@ -155,7 +185,9 @@
 								placeOrderButton.disabled = false;
 								placeOrderButton.click();
 							} else {
-								console.error( 'Place Order button not found.' );
+								console.error(
+									'Place Order button not found.'
+								);
 							}
 						}
 					},
@@ -171,10 +203,22 @@
 		// Hook into the payment setup
 		useEffect( () => {
 			const unsubscribePaymentSetup = onPaymentSetup( () => {
+				// In redirect mode, no token is needed - form submits normally
+				if ( isRedirectFlow ) {
+					return {
+						type: responseTypes.SUCCESS,
+						meta: {
+							paymentMethodData: {
+								monei_is_block_checkout: 'yes',
+							},
+						},
+					};
+				}
+
 				// If no token was created, fail
 				if ( ! requestTokenRef.current ) {
 					return {
-						type: 'error',
+						type: responseTypes.ERROR,
 						message: __(
 							'MONEI token could not be generated.',
 							'monei'
@@ -185,7 +229,8 @@
 					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
-							monei_payment_request_token: requestTokenRef.current,
+							monei_payment_request_token:
+								requestTokenRef.current,
 							monei_is_block_checkout: 'yes',
 						},
 					},
@@ -198,49 +243,75 @@
 		}, [ onPaymentSetup ] );
 
 		useEffect( () => {
-			const unsubscribeSuccess = onCheckoutSuccess(
-				( { processingResponse } ) => {
+			const unsubscribe = onCheckoutSuccess(
+				async ( { processingResponse } ) => {
 					const { paymentDetails } = processingResponse;
-					if ( paymentDetails && paymentDetails.paymentId ) {
-						const paymentId = paymentDetails.paymentId;
-						const tokenValue = paymentDetails.token;
-						monei.confirmPayment( {
-							paymentId,
-							paymentToken: tokenValue} )
-							.then( ( result ) => {
-								if (
-									result.nextAction &&
-									result.nextAction.mustRedirect
-								) {
-									window.location.assign(
-										result.nextAction.redirectUrl
-									);
-								}
-								if ( result.status === 'FAILED' ) {
-									window.location.href = `${ paymentDetails.failUrl }&status=FAILED`;
-								} else {
-									window.location.href =
-										paymentDetails.completeUrl;
-								}
-							} )
-							.catch( ( error ) => {
-								console.error(
-									'Error during payment confirmation:',
-									error
-								);
-								window.location.href = paymentDetails.failUrl;
-							} );
-					} else {
-						console.error( 'No paymentId found in paymentDetails' );
+
+					// In redirect mode, backend returns redirect URL and no paymentId
+					// WooCommerce Blocks handles redirect automatically
+					if ( ! paymentDetails?.paymentId ) {
+						return {
+							type: responseTypes.SUCCESS,
+						};
 					}
 
-					// Return true to indicate that the checkout is successful
-					return true;
+					try {
+						// Component mode: confirm payment with token
+						const paymentId = paymentDetails.paymentId;
+						const tokenValue = paymentDetails.token;
+						const result = await monei.confirmPayment( {
+							paymentId,
+							paymentToken: tokenValue,
+						} );
+
+						if (
+							result.nextAction &&
+							result.nextAction.mustRedirect
+						) {
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: result.nextAction.redirectUrl,
+							};
+						}
+						if ( result.status === 'FAILED' ) {
+							const failUrl = new URL( paymentDetails.failUrl );
+							failUrl.searchParams.set( 'status', 'FAILED' );
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: failUrl.toString(),
+							};
+						} else {
+							// Always include payment ID in redirect URL for order verification
+							const { orderId, paymentId } = paymentDetails;
+							const url = new URL( paymentDetails.completeUrl );
+							url.searchParams.set( 'id', paymentId );
+							url.searchParams.set( 'orderId', orderId );
+							url.searchParams.set( 'status', result.status );
+
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: url.toString(),
+							};
+						}
+					} catch ( error ) {
+						console.error(
+							'Error during payment confirmation:',
+							error
+						);
+						return {
+							type: responseTypes.ERROR,
+							message:
+								error.message ||
+								'Payment confirmation failed',
+							messageContext:
+								props.emitResponse.noticeContexts.PAYMENTS,
+						};
+					}
 				}
 			);
 
 			return () => {
-				unsubscribeSuccess();
+				unsubscribe();
 			};
 		}, [ onCheckoutSuccess ] );
 
@@ -248,13 +319,25 @@
 		useEffect( () => {
 			return () => {
 				if ( currentBizumInstanceRef.current ) {
-					if ( typeof currentBizumInstanceRef.current.destroy === 'function' ) {
+					if (
+						typeof currentBizumInstanceRef.current.destroy ===
+						'function'
+					) {
 						currentBizumInstanceRef.current.destroy();
 					}
 					currentBizumInstanceRef.current = null;
 				}
 			};
 		}, [] );
+
+		// In redirect mode, show description instead of Bizum button
+		if ( isRedirectFlow ) {
+			return (
+				<div className="monei-redirect-description">
+					{ bizumData.description }
+				</div>
+			);
+		}
 
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
@@ -278,9 +361,9 @@
 	const bizumLabel = () => {
 		return (
 			<div className="monei-label-container">
-                <span className="monei-text">
-                    { __( bizumData.title, 'monei' ) }
-                </span>
+				<span className="monei-text">
+					{ __( bizumData.title, 'monei' ) }
+				</span>
 				{ bizumData?.logo && (
 					<div className="monei-logo">
 						<img src={ bizumData.logo } alt="" />
@@ -292,12 +375,15 @@
 
 	const MoneiBizumPaymentMethod = {
 		name: 'monei_bizum',
-		label: <div> { bizumLabel() } </div>,
+		label: bizumLabel(),
 		ariaLabel: __( bizumData.title, 'monei' ),
 		content: <MoneiBizumContent />,
 		edit: <div> { __( bizumData.title, 'monei' ) }</div>,
 		canMakePayment: ( { billingData } ) => {
-			return billingData.country === 'ES' && !bizumData.cart_has_subscription;
+			return (
+				billingData.country === 'ES' &&
+				! bizumData.cart_has_subscription
+			);
 		},
 		supports: bizumData.supports,
 	};

@@ -43,10 +43,26 @@ class PaymentMethodsService {
 	}
 
 	/**
+	 * Get available card brands from MONEI API metadata.
+	 *
+	 * @return array Array of lowercase brand names (e.g., ['visa', 'mastercard', 'amex']).
+	 */
+	public function getCardBrands(): array {
+		$data = $this->repository->getPaymentMethods();
+
+		// Extract card brands from metadata.card.brands
+		if ( isset( $data['metadata']['card']['brands'] ) && is_array( $data['metadata']['card']['brands'] ) ) {
+			return array_map( 'strtolower', $data['metadata']['card']['brands'] );
+		}
+
+		// Fallback to common brands if API doesn't return any
+		return array( 'visa', 'mastercard', 'amex', 'discover' );
+	}
+
+	/**
 	 * Get availability of a specific payment method.
 	 *
 	 * @param string $methodId Payment method ID (e.g., 'bizum', 'card').
-	 * @param string $accountId
 	 * @return array|null Availability details or null if the method is not enabled.
 	 */
 	public function getMethodAvailability( string $methodId ): ?array {

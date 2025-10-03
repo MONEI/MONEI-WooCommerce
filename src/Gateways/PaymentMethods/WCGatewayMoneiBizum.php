@@ -4,11 +4,13 @@ namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayHosted;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
 use WC_Monei_IPN;
 use WC_Monei_Payment_Gateway_Hosted;
+use WC_Admin_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,6 +27,11 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	const PAYMENT_METHOD = 'bizum';
 
 	/**
+	 * @var bool
+	 */
+	protected $redirect_flow;
+
+	/**
 	 * Constructor for the gateway.
 	 *
 	 * @access public
@@ -34,14 +41,15 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
-		MoneiPaymentServices $moneiPaymentServices
+		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $statusCodeHandler );
 
 		$this->id                 = MONEI_GATEWAY_ID . '_bizum';
 		$this->method_title       = __( 'MONEI - Bizum', 'monei' );
 		$this->method_description = __( 'Accept Bizum payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -53,11 +61,19 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$iconUrl          = apply_filters( 'woocommerce_monei_bizum_icon', WC_Monei()->image_url( 'bizum-logo.svg' ) );
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
-		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
-		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
+		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
+		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->redirect_flow = ( ! empty( $this->get_option( 'bizum_mode' ) ) && 'yes' === $this->get_option( 'bizum_mode' ) ) ? true : false;
+		$this->testmode      = $this->getTestmode();
+		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
+		$this->title         = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
+		if ( $this->testmode && ! empty( $this->title ) ) {
+			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
+		}
+		$this->description = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		// Backward compatible: try local setting first, then global setting
+		$local_orderdo              = $this->get_option( 'orderdo' );
+		$this->status_after_payment = ! empty( $local_orderdo ) ? $local_orderdo : get_option( 'monei_orderdo', 'processing' );
 		$this->api_key              = $this->getApiKey();
 		$this->account_id           = $this->getAccountId();
 		$this->shop_name            = get_bloginfo( 'name' );
@@ -113,6 +129,40 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	}
 
 	/**
+	 * Validate bizum_style field
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return string
+	 */
+	public function validate_bizum_style_field( $key, $value ) {
+		if ( empty( $value ) ) {
+			return $value;
+		}
+
+		// WordPress adds slashes to $_POST data, we need to remove them before validating JSON
+		$value = stripslashes( $value );
+
+		// Try to decode JSON
+		$decoded = json_decode( $value, true );
+
+		// Check for JSON errors
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			WC_Admin_Settings::add_error(
+				sprintf(
+					/* translators: %s: JSON error message */
+					__( 'Bizum Style field contains invalid JSON: %s', 'monei' ),
+					json_last_error_msg()
+				)
+			);
+			return $this->get_option( 'bizum_style', '{"height": "50px"}' );
+		}
+
+		// Re-encode with pretty print for better readability in admin
+		return wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	}
+
+	/**
 	 * Process the payment and return the result
 	 *
 	 * @access public
@@ -135,20 +185,31 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	}
 
 	public function payment_fields() {
-		echo '<fieldset id="monei-bizum-form" class="monei-fieldset monei-payment-request-fieldset">
-				<div
-					id="bizum-container"
-					class="monei-payment-request-container"
-                        >
-				</div>
-			</fieldset>';
+		// Show description only in redirect mode
+		if ( $this->redirect_flow && $this->description ) {
+			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
+		}
+		// Only render Bizum button if not using redirect flow
+		if ( ! $this->redirect_flow ) {
+			echo '<fieldset id="monei-bizum-form" class="monei-fieldset monei-payment-request-fieldset">
+					<div
+						id="bizum-container"
+						class="monei-payment-request-container"
+	                        >
+					</div>
+				</fieldset>';
+		}
 	}
 
 	public function bizum_scripts() {
-		if ( ! is_checkout() ) {
+		if ( ! is_checkout() && ! is_checkout_pay_page() ) {
 			return;
 		}
 		if ( 'no' === $this->enabled ) {
+			return;
+		}
+		// Don't enqueue scripts if using redirect flow
+		if ( $this->redirect_flow ) {
 			return;
 		}
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
@@ -170,17 +231,19 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		wp_enqueue_script( 'woocommerce_monei-bizum' );
 
 		// Determine the total amount to be passed
-		$total = $this->determineTheTotalAmountToBePassed();
+		$total       = $this->determineTheTotalAmountToBePassed();
+		$bizum_style = $this->get_option( 'bizum_style', '{}' );
 
 		wp_localize_script(
 			'woocommerce_monei-bizum',
 			'wc_bizum_params',
 			array(
-				'account_id' => $this->getAccountId(),
-				'session_id' => WC()->session->get_customer_id(),
-				'total'      => monei_price_format( $total ),
-				'currency'   => get_woocommerce_currency(),
-				'language'   => locale_iso_639_1_code(),
+				'account_id'  => $this->getAccountId(),
+				'session_id'  => WC()->session->get_customer_id(),
+				'total'       => monei_price_format( $total ),
+				'currency'    => get_woocommerce_currency(),
+				'language'    => locale_iso_639_1_code(),
+				'bizum_style' => json_decode( $bizum_style ),
 			)
 		);
 	}

@@ -3,6 +3,8 @@
 namespace Monei\Gateways\Abstracts;
 
 use Exception;
+use Monei\ApiException;
+use Monei\Model\PaymentStatus;
 use WC_Geolocation;
 use MoneiPaymentServices;
 use WC_Order;
@@ -17,7 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Abstract class that will be inherited by all integrated components payment methods.
  * Class WC_Monei_Payment_Gateway_Component
  *
- * @extends WCMoneiPaymentGateway
  * @since 5.0
  */
 abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
@@ -28,7 +29,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 *
 	 * @access public
 	 * @param int    $order_id
-	 * @param string $allowed_payment_method
+	 * @param string|null $allowed_payment_method
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
@@ -91,23 +92,58 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			/**
 			 * Depends if we came in 1 step or 2.
 			 */
-			$next_action_redirect = ( $confirm_payment ) ? $confirm_payment->getNextAction()->getRedirectUrl() : $create_payment->getNextAction()->getRedirectUrl();
+			$payment_result = $confirm_payment ?: $create_payment;
+			// Get redirect URL from nextAction, or fall back to order received page
+			$next_action = $payment_result->getNextAction();
+			if ( $next_action && $next_action->getRedirectUrl() ) {
+				$next_action_redirect = $next_action->getRedirectUrl();
+			} else {
+				// If no redirect URL from MONEI (e.g., immediately successful payment with saved card),
+				// redirect to order received page
+				$next_action_redirect = $this->get_return_url( $order );
+			}
+
+			// Add payment ID and status to redirect URL for order verification (similar to blocks checkout)
+			// This ensures order is marked as paid even if IPN hasn't arrived yet (race condition fix)
+			/** @var string $payment_status */
+			$payment_status = $payment_result->getStatus();
+			if ( PaymentStatus::SUCCEEDED === $payment_status || PaymentStatus::AUTHORIZED === $payment_status || PaymentStatus::PENDING === $payment_status ) {
+				$redirect_url         = add_query_arg(
+					array(
+						'id'      => $payment_result->getId(),
+						'orderId' => $order_id,
+						'status'  => $payment_status,
+					),
+					$next_action_redirect
+				);
+				$next_action_redirect = $redirect_url;
+			}
+
 			return array(
 				'result'   => 'success',
 				'redirect' => $next_action_redirect,
 			);
 
+		} catch ( ApiException $e ) {
+			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
+			// Parse API exception and get user-friendly error message
+			$error_info = $this->statusCodeHandler->parse_api_exception( $e );
+
+			// Log the technical details
+			if ( $error_info['statusCode'] ) {
+				WC_Monei_Logger::log( sprintf( 'Payment error - Status Code: %s, Raw Message: %s', $error_info['statusCode'], $error_info['rawMessage'] ), 'error' );
+			} else {
+				WC_Monei_Logger::log( sprintf( 'Payment error - Raw Message: %s', $error_info['rawMessage'] ?? $e->getMessage() ), 'error' );
+			}
+
+			// Show user-friendly error message to customer
+			wc_add_notice( $error_info['message'], 'error' );
+
+			return array(
+				'result' => 'failure',
+			);
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			// Extract and log the responseBody message
-			$response_body = json_decode( $e->getResponseBody(), true );
-			if ( isset( $response_body['message'] ) ) {
-				WC_Monei_Logger::log( $response_body['message'], 'error' );
-				wc_add_notice( $response_body['message'], 'error' );
-				return array(
-					'result' => 'failure',
-				);
-			}
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			return array(
@@ -142,7 +178,17 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
-		$complete_url = wp_sanitize_redirect( esc_url_raw( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) ) );
+		$complete_url = wp_sanitize_redirect(
+			esc_url_raw(
+				add_query_arg(
+					array(
+						'utm_nooverride' => '1',
+						'orderId'        => $order_id,
+					),
+					$this->get_return_url( $order )
+				)
+			)
+		);
 
 		/**
 		 * Create Payment Payload
@@ -212,7 +258,8 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		}
 
 		// If customer has checkboxed "Save payment information to my account for future purchases."
-		if ( $this->tokenization && $this->get_save_payment_card_checkbox() ) {
+		$should_save = $this->get_save_payment_card_checkbox();
+		if ( $this->tokenization && $should_save ) {
 			$payload['generatePaymentToken'] = true;
 		}
 		$componentGateways = array( MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID );

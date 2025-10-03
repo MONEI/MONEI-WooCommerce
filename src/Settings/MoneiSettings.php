@@ -5,8 +5,9 @@ namespace Monei\Settings;
 use Monei\Services\ApiKeyService;
 use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
+use WC_Settings_Page;
 
-class MoneiSettings extends \WC_Settings_Page {
+class MoneiSettings extends WC_Settings_Page {
 
 	protected ContainerInterface $container;
 	/**
@@ -42,41 +43,64 @@ class MoneiSettings extends \WC_Settings_Page {
 					'live' => __( 'Live API Key', 'monei' ),
 				),
 			),
-            array(
-                'title'    => __( 'Test Account ID *', 'monei' ),
-                'type'     => 'text',
-                'desc'     => __( 'Enter your MONEI Test Account ID here.', 'monei' ),
-                'desc_tip' => true,
-                'id'       => 'monei_test_accountid',
-                'default'  => '',
-                'class'    => 'monei-api-key-field monei-test-api-key-field',
-            ),
-            array(
-                'title'    => __( 'Live Account ID *', 'monei' ),
-                'type'     => 'text',
-                'desc'     => __( 'Enter your MONEI Live Account ID here.', 'monei' ),
-                'desc_tip' => true,
-                'id'       => 'monei_live_accountid',
-                'default'  => '',
-                'class'    => 'monei-api-key-field monei-live-api-key-field',
-            ),
 			array(
-				'title'    => __( 'Test API Key *', 'monei' ),
-				'type'     => 'text',
-				'desc'     => __( 'Enter your MONEI Test API Key here.', 'monei' ),
-				'desc_tip' => true,
-				'id'       => 'monei_test_apikey',
-				'default'  => '',
-				'class'    => 'monei-api-key-field monei-test-api-key-field',
+				'title'       => __( 'Test Account ID *', 'monei' ),
+				'type'        => 'text',
+				'desc'        => __( 'Enter your MONEI Test Account ID here.', 'monei' ),
+				'desc_tip'    => true,
+				'id'          => 'monei_test_accountid',
+				'default'     => '',
+				'class'       => 'monei-api-key-field monei-test-api-key-field',
+				'placeholder' => '9b1deb4d-3b7d-4bad-9bdd-2b0c11b3dcb6d',
 			),
 			array(
-				'title'    => __( 'Live API Key *', 'monei' ),
-				'type'     => 'text',
-				'desc'     => __( 'Enter your MONEI Live API Key here.', 'monei' ),
-				'desc_tip' => true,
-				'id'       => 'monei_live_apikey',
-				'default'  => '',
-				'class'    => 'monei-api-key-field monei-live-api-key-field',
+				'title'       => __( 'Live Account ID *', 'monei' ),
+				'type'        => 'text',
+				'desc'        => __( 'Enter your MONEI Live Account ID here.', 'monei' ),
+				'desc_tip'    => true,
+				'id'          => 'monei_live_accountid',
+				'default'     => '',
+				'class'       => 'monei-api-key-field monei-live-api-key-field',
+				'placeholder' => 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+			),
+			array(
+				'title'       => __( 'Test API Key *', 'monei' ),
+				'type'        => 'text',
+				'desc'        => __( 'Enter your MONEI Test API Key here.', 'monei' ),
+				'desc_tip'    => true,
+				'id'          => 'monei_test_apikey',
+				'default'     => '',
+				'class'       => 'monei-api-key-field monei-test-api-key-field',
+				'placeholder' => 'pk_test_d3m0t3stk3yf0rd3v3l0pm3ntus4g3',
+			),
+			array(
+				'title'       => __( 'Live API Key *', 'monei' ),
+				'type'        => 'text',
+				'desc'        => __( 'Enter your MONEI Live API Key here.', 'monei' ),
+				'desc_tip'    => true,
+				'id'          => 'monei_live_apikey',
+				'default'     => '',
+				'class'       => 'monei-api-key-field monei-live-api-key-field',
+				'placeholder' => 'pk_live_7h3m4n1f3st0k3yf0r3x4mpl3purp0s3',
+			),
+			array(
+				'title'       => __( 'What to do after payment?', 'monei' ),
+				'type'        => 'select',
+				'description' => __( 'Choose what to do after the customer pays the order. This setting applies to all MONEI payment methods.', 'monei' ),
+				'default'     => 'processing',
+				'id'          => 'monei_orderdo',
+				'options'     => array(
+					'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
+					'completed'  => __( 'Mark as Complete', 'monei' ),
+				),
+			),
+			array(
+				'title'       => __( 'Pre-Authorize', 'monei' ),
+				'type'        => 'checkbox',
+				'label'       => __( 'Manually capture payments', 'monei' ),
+				'description' => __( 'Place a hold on the funds when the customer authorizes the payment, but don\'t capture the funds until later. Only works with payment methods that support authorization (Credit Card, PayPal).<br>You can capture the payment by changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br>You can cancel the payment by changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.', 'monei' ),
+				'default'     => 'no',
+				'id'          => 'monei_pre_authorize',
 			),
 			array(
 				'title'    => __( 'Debug Log', 'monei' ),
@@ -138,7 +162,7 @@ class MoneiSettings extends \WC_Settings_Page {
 			'monei-admin-css',
 			$plugin_url . 'public/css/monei-admin.css',
 			array(),
-			'1.0.0'
+			MONEI_VERSION
 		);
 		wp_register_script(
 			'monei-admin-script',

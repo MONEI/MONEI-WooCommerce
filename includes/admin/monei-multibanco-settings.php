@@ -15,9 +15,7 @@ $settings_link = esc_url(
 	)
 );
 
-/**
- * Monei Multibanco Gateway Settings.
- */
+/** Monei Multibanco Gateway Settings. */
 return apply_filters(
 	'wc_monei_multibanco_settings',
 	array(
@@ -33,6 +31,13 @@ return apply_filters(
 			'label'   => __( 'Enable Multibanco by MONEI', 'monei' ),
 			'default' => 'no',
 		),
+		'description' => array(
+			'title'       => __( 'Description', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Payment method description shown to customers during checkout.', 'monei' ),
+			'default'     => __( 'You will be redirected to Multibanco to complete the payment. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-multibanco-description-field',
+		),
 		'title'       => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -40,11 +45,13 @@ return apply_filters(
 			'default'     => __( 'Multibanco', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'description' => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with Multibanco, you will be redirected to Multibanco. Powered by MONEI', 'monei' ),
+		'hide_title'  => array(
+			'title'       => __( 'Hide Title', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Hide payment method title', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
+			'desc_tip'    => true,
 		),
 		'hide_logo'   => array(
 			'title'       => __( 'Hide Logo', 'monei' ),
@@ -53,16 +60,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'orderdo'     => array(
-			'title'       => __( 'What to do after payment?', 'monei' ),
-			'type'        => 'select',
-			'description' => __( 'Chose what to do after the customer pay the order.', 'monei' ),
-			'default'     => 'processing',
-			'options'     => array(
-				'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
-				'completed'  => __( 'Mark as Complete', 'monei' ),
-			),
 		),
 	)
 );

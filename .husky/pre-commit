@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+# Run lint-staged to lint and fix files
+yarn lint-staged
