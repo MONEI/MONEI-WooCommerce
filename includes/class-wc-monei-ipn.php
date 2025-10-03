@@ -39,33 +39,80 @@ class WC_Monei_IPN {
 	 * @return void
 	 */
 	public function check_ipn_request() {
+		// Enforce POST-only webhook endpoint.
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && ( 'POST' !== wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
-			return;
+            //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			WC_Monei_Logger::log( '[MONEI] Webhook received non-POST request: ' . wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) );
+			http_response_code( 405 );
+			header( 'Allow: POST' );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Method Not Allowed';
+			exit;
 		}
 
 		$headers  = $this->get_all_headers();
 		$raw_body = file_get_contents( 'php://input' );
 		$this->log_ipn_request( $headers, $raw_body );
 
+		// Check for signature header.
+		if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) {
+			WC_Monei_Logger::log( '[MONEI] Webhook missing signature header from IP: ' . WC_Geolocation::get_ip_address() );
+			http_response_code( 401 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Unauthorized';
+			exit;
+		}
+
+		$payload = null;
+
 		try {
-			if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) {
-				return;
-			}
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$payload = $this->verify_signature_get_payload( $raw_body, wc_clean( wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) );
 			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
+		} catch ( Throwable $e ) {
+			// Signature verification failed - this is a security issue, always log.
+			WC_Monei_Logger::log( '[MONEI] Webhook signature verification failed: ' . $e->getMessage() );
+			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
+			http_response_code( 401 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Unauthorized';
+			exit;
+		}
+
+		// Acquire lock to prevent concurrent processing of the same payment.
+		$payment_id = $payload['id'] ?? '';
+		$lock_key   = 'monei_ipn_' . md5( $payment_id );
+		$lock_value = wp_rand();
+
+		if ( ! $this->acquire_lock( $lock_key, $lock_value ) ) {
+			// Another process is handling this payment.
+			$this->logging && WC_Monei_Logger::log( '[MONEI] Webhook already being processed [payment_id=' . $payment_id . ']', 'debug' );
+			http_response_code( 200 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'OK';
+			exit;
+		}
+
+		try {
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
 			http_response_code( 200 );
-			exit();
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
-			$this->logging && WC_Monei_Logger::log( 'Failed IPN request: ' . $e->getMessage() );
-			// Invalid signature
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'OK';
+		} catch ( Throwable $e ) {
+			// Processing error - always log.
+			WC_Monei_Logger::log( '[MONEI] Webhook processing error: ' . $e->getMessage() );
+			do_action( 'woocommerce_monei_handle_processing_error', $payload, $e );
 			http_response_code( 400 );
-			exit();
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Bad Request';
+		} finally {
+			// Always release the lock.
+			$this->release_lock( $lock_key, $lock_value );
 		}
+
+		exit;
 	}
 
 	/**
@@ -91,6 +138,14 @@ class WC_Monei_IPN {
 			return;
 		}
 
+		// Check if this payment was already processed (idempotency check).
+		$processed_payment_id = $order->get_meta( '_monei_payment_id_processed', true );
+		if ( $processed_payment_id === $monei_id ) {
+			// Payment already processed, skip to prevent duplicate processing.
+			$this->logging && WC_Monei_Logger::log( '[MONEI] Payment already processed [payment_id=' . $monei_id . ', order_id=' . $order_id . ']', 'debug' );
+			return;
+		}
+
 		/**
 		 * Saving related information into order meta.
 		 */
@@ -98,11 +153,23 @@ class WC_Monei_IPN {
 		$order->update_meta_data( '_payment_order_status_monei', $status );
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
 		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
+		$order->update_meta_data( '_monei_payment_id_processed', $monei_id );
+		$order->save();
+
+		if ( 'PENDING' === $status ) {
+			// Payment is pending (e.g., Multibanco waiting for payment).
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Pending</strong> ', 'monei' ) . '. <br><br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			$order->add_order_note( $order_note );
+			$order->update_status( 'on-hold', __( 'Payment pending confirmation', 'monei' ) );
+			return;
+		}
 
 		if ( 'FAILED' === $status ) {
 			// Order failed.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Failed</strong> ', 'monei' ) . $status );
-			$order->update_status( 'pending', 'Failed MONEI payment: ' . $status_message );
+			$order->update_status( 'failed', 'Failed MONEI payment: ' . $status_message );
 			return;
 		}
 
@@ -111,6 +178,16 @@ class WC_Monei_IPN {
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong> ', 'monei' ) . $status );
 			$message = __( 'Cancelled by MONEI: ', 'monei' ) . $status_message;
 			$order->add_order_note( $message );
+			$order->update_status( 'cancelled', $message );
+			return;
+		}
+
+		if ( 'EXPIRED' === $status ) {
+			// Payment expired.
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Expired</strong> ', 'monei' ) . $status );
+			$message = __( 'Payment expired: ', 'monei' ) . $status_message;
+			$order->add_order_note( $message );
+			$order->update_status( 'failed', $message );
 			return;
 		}
 
@@ -131,7 +208,7 @@ class WC_Monei_IPN {
 
 			/**
 			 * If amounts don't match, we mark the order on-hold for manual validation.
-			 * 1 cent exception, for subscriptions when 0 sing ups are done.
+			 * 1 cent exception, for subscriptions when 0 sign ups are done.
 			 */
 			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
 				$order->update_status(
@@ -143,7 +220,7 @@ class WC_Monei_IPN {
 						monei_price_format( $order_total )
 					)
 				);
-				exit;
+				return;
 			}
 
 			$order_note  = __( 'HTTP Notification received - <strong>Payment Completed</strong> ', 'monei' ) . '. <br><br>';
@@ -157,18 +234,42 @@ class WC_Monei_IPN {
 			if ( 'completed' === monei_get_settings( 'orderdo', monei_get_option_key_from_order( $order ) ) ) {
 				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 			}
+			return;
+		}
+
+		if ( 'REFUNDED' === $status ) {
+			// Payment fully refunded.
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Refunded</strong> ', 'monei' ) . '. <br><br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			$order->add_order_note( $order_note );
+			$order->update_status( 'refunded', __( 'Payment refunded by MONEI', 'monei' ) );
+			return;
+		}
+
+		if ( 'PARTIALLY_REFUNDED' === $status ) {
+			// Payment partially refunded.
+			$refunded_amount = $payload['refundedAmount'] ?? 0;
+			$order_note      = __( 'HTTP Notification received - <strong>Payment Partially Refunded</strong> ', 'monei' ) . '. <br><br>';
+			$order_note     .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note     .= __( 'Refunded amount: ', 'monei' ) . wc_price( $refunded_amount / 100 ) . '. <br><br>';
+			$order_note     .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			$order->add_order_note( $order_note );
+			// Note: WooCommerce doesn't have a built-in 'partially-refunded' status.
+			// The order remains in its current status with a note about the partial refund.
+			return;
 		}
 	}
 
 	/**
 	 * Verify signature, if all good returns payload.
-	 * Throws Exception if Signaturit not valid.
+	 * Throws Exception if signature is not valid.
 	 *
-	 * @param $request_body
-	 * @param $monei_signature
+	 * @param string $request_body    The request body.
+	 * @param string $monei_signature The MONEI signature header.
 	 *
 	 * @return array
-	 * @throws \OpenAPI\Client\ApiException
+	 * @throws \Monei\ApiException
 	 */
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
 		$decoded_body = json_decode( $request_body );
@@ -182,7 +283,7 @@ class WC_Monei_IPN {
 	 * getallheaders is only available for apache, we need a fallback in case of nginx or others,
 	 * http://php.net/manual/es/function.getallheaders.php
 	 *
-	 * @return array|false
+	 * @return array
 	 */
 	private function get_all_headers() {
 		if ( ! function_exists( 'getallheaders' ) ) {
@@ -194,7 +295,7 @@ class WC_Monei_IPN {
 			}
 			return $headers;
 		} else {
-			return getallheaders();
+			return getallheaders() ?: array();
 		}
 	}
 
@@ -208,5 +309,46 @@ class WC_Monei_IPN {
 		}
 		$headers = implode( "\n", $headers );
 		$this->logging && WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
+	}
+
+	/**
+	 * Acquire a lock using WordPress transients.
+	 *
+	 * @param string $lock_key   The lock key.
+	 * @param mixed  $lock_value The lock value.
+	 * @param int    $timeout    Lock timeout in seconds (default 30).
+	 * @return bool True if lock acquired, false otherwise.
+	 */
+	private function acquire_lock( $lock_key, $lock_value, $timeout = 30 ) {
+		// Try to set transient. If it already exists, add_transient returns false.
+		$acquired = set_transient( $lock_key, $lock_value, $timeout );
+
+		if ( ! $acquired ) {
+			// Transient already exists. Check if it's stale.
+			$existing_value = get_transient( $lock_key );
+			if ( false === $existing_value ) {
+				// Transient expired between checks, try again.
+				return set_transient( $lock_key, $lock_value, $timeout );
+			}
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Release a lock using WordPress transients.
+	 *
+	 * @param string $lock_key   The lock key.
+	 * @param mixed  $lock_value The lock value to verify ownership.
+	 * @return void
+	 */
+	private function release_lock( $lock_key, $lock_value ) {
+		$existing_value = get_transient( $lock_key );
+
+		// Only delete if we own the lock.
+		if ( $existing_value === $lock_value ) {
+			delete_transient( $lock_key );
+		}
 	}
 }

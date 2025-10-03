@@ -39,6 +39,10 @@ parameters:
         - '#Access to an undefined property#'
         # WordPress actions can have return values (they're ignored by WordPress)
         - '#Action callback returns .+ but should not return anything\.#'
+        # Bootstrap stubs can have simplified return types
+        -
+            message: '#never returns .+ so it can be removed from the return type#'
+            path: tests/phpstan-bootstrap.php
 
     # Performance optimizations
     parallel:
