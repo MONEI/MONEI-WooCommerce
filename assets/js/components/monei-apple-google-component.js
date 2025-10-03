@@ -129,56 +129,68 @@ export const MoneiAppleGoogleContent = ( props ) => {
 	// Setup checkout success hook
 	useEffect( () => {
 		const unsubscribe = onCheckoutSuccess(
-			( { processingResponse } ) => {
+			async ( { processingResponse } ) => {
 				const { paymentDetails } = processingResponse;
 
 				// If no paymentId, backend handles everything (redirect flow)
 				if ( ! paymentDetails?.paymentId ) {
-					return false;
+					return {
+						type: props.emitResponse.responseTypes.SUCCESS,
+					};
 				}
 
-				// Component mode: confirm payment with token
-				const paymentId = paymentDetails.paymentId;
-				const tokenValue = paymentDetails.token;
-				// eslint-disable-next-line no-undef
-				monei
-					.confirmPayment( {
+				try {
+					// Component mode: confirm payment with token
+					const paymentId = paymentDetails.paymentId;
+					const tokenValue = paymentDetails.token;
+					// eslint-disable-next-line no-undef
+					const result = await monei.confirmPayment( {
 						paymentId,
 						paymentToken: tokenValue,
-					} )
-					.then( ( result ) => {
-						if (
-							result.nextAction &&
-							result.nextAction.mustRedirect
-						) {
-							window.location.assign(
-								result.nextAction.redirectUrl
-							);
-						}
-						if ( result.status === 'FAILED' ) {
-							const failUrl = new URL( paymentDetails.failUrl );
-							failUrl.searchParams.set( 'status', 'FAILED' );
-							window.location.href = failUrl.toString();
-						} else {
-							// Always include payment ID in redirect URL for order verification
-							const { orderId, paymentId } = paymentDetails;
-							const url = new URL( paymentDetails.completeUrl );
-							url.searchParams.set( 'id', paymentId );
-							url.searchParams.set( 'orderId', orderId );
-							url.searchParams.set( 'status', result.status );
-
-							window.location.href = url.toString();
-						}
-					} )
-					.catch( ( error ) => {
-						console.error(
-							'Error during payment confirmation:',
-							error
-						);
-						window.location.href = paymentDetails.failUrl;
 					} );
 
-				return true;
+					if (
+						result.nextAction &&
+						result.nextAction.mustRedirect
+					) {
+						return {
+							type: props.emitResponse.responseTypes.SUCCESS,
+							redirectUrl: result.nextAction.redirectUrl,
+						};
+					}
+					if ( result.status === 'FAILED' ) {
+						const failUrl = new URL( paymentDetails.failUrl );
+						failUrl.searchParams.set( 'status', 'FAILED' );
+						return {
+							type: props.emitResponse.responseTypes.SUCCESS,
+							redirectUrl: failUrl.toString(),
+						};
+					} else {
+						// Always include payment ID in redirect URL for order verification
+						const { orderId, paymentId } = paymentDetails;
+						const url = new URL( paymentDetails.completeUrl );
+						url.searchParams.set( 'id', paymentId );
+						url.searchParams.set( 'orderId', orderId );
+						url.searchParams.set( 'status', result.status );
+
+						return {
+							type: props.emitResponse.responseTypes.SUCCESS,
+							redirectUrl: url.toString(),
+						};
+					}
+				} catch ( error ) {
+					console.error(
+						'Error during payment confirmation:',
+						error
+					);
+					return {
+						type: props.emitResponse.responseTypes.ERROR,
+						message:
+							error.message || 'Payment confirmation failed',
+						messageContext:
+							props.emitResponse.noticeContexts.PAYMENTS,
+					};
+				}
 			}
 		);
 

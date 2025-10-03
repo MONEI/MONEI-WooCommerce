@@ -118,7 +118,7 @@
 				// If no token was created, fail
 				if ( ! requestToken ) {
 					return {
-						type: 'error',
+						type: responseTypes.ERROR,
 						message: __(
 							'MONEI token could not be generated.',
 							'monei'
@@ -141,70 +141,75 @@
 			};
 		}, [ onPaymentSetup ] );
 		useEffect( () => {
-			const unsubscribeSuccess = onCheckoutSuccess(
-				( { processingResponse } ) => {
+			const unsubscribe = onCheckoutSuccess(
+				async ( { processingResponse } ) => {
 					const { paymentDetails } = processingResponse;
 
 					// In redirect mode, backend returns redirect URL and no paymentId
 					// WooCommerce Blocks handles redirect automatically
 					if ( ! paymentDetails?.paymentId ) {
-						return false;
+						return {
+							type: responseTypes.SUCCESS,
+						};
 					}
 
-					// Component mode: confirm payment with token
-					const paymentId = paymentDetails.paymentId;
-					const tokenValue = paymentDetails.token;
-					monei
-						.confirmPayment( {
+					try {
+						// Component mode: confirm payment with token
+						const paymentId = paymentDetails.paymentId;
+						const tokenValue = paymentDetails.token;
+						const result = await monei.confirmPayment( {
 							paymentId,
 							paymentToken: tokenValue,
-						} )
-						.then( ( result ) => {
-							if (
-								result.nextAction &&
-								result.nextAction.mustRedirect
-							) {
-								window.location.assign(
-									result.nextAction.redirectUrl
-								);
-							}
-							if ( result.status === 'FAILED' ) {
-								const failUrl = new URL(
-									paymentDetails.failUrl
-								);
-								failUrl.searchParams.set( 'status', 'FAILED' );
-								window.location.href = failUrl.toString();
-							} else {
-								// Always include payment ID in redirect URL for order verification
-								const { orderId, paymentId } = paymentDetails;
-								const url = new URL(
-									paymentDetails.completeUrl
-								);
-								url.searchParams.set( 'id', paymentId );
-								url.searchParams.set( 'orderId', orderId );
-								url.searchParams.set(
-									'status',
-									result.status
-								);
-
-								window.location.href = url.toString();
-							}
-						} )
-						.catch( ( error ) => {
-							console.error(
-								'Error during payment confirmation:',
-								error
-							);
-							window.location.href = paymentDetails.failUrl;
 						} );
 
-					// Return true to indicate that the checkout is successful
-					return true;
+						if (
+							result.nextAction &&
+							result.nextAction.mustRedirect
+						) {
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: result.nextAction.redirectUrl,
+							};
+						}
+						if ( result.status === 'FAILED' ) {
+							const failUrl = new URL( paymentDetails.failUrl );
+							failUrl.searchParams.set( 'status', 'FAILED' );
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: failUrl.toString(),
+							};
+						} else {
+							// Always include payment ID in redirect URL for order verification
+							const { orderId, paymentId } = paymentDetails;
+							const url = new URL( paymentDetails.completeUrl );
+							url.searchParams.set( 'id', paymentId );
+							url.searchParams.set( 'orderId', orderId );
+							url.searchParams.set( 'status', result.status );
+
+							return {
+								type: responseTypes.SUCCESS,
+								redirectUrl: url.toString(),
+							};
+						}
+					} catch ( error ) {
+						console.error(
+							'Error during payment confirmation:',
+							error
+						);
+						return {
+							type: responseTypes.ERROR,
+							message:
+								error.message ||
+								'Payment confirmation failed',
+							messageContext:
+								props.emitResponse.noticeContexts.PAYMENTS,
+						};
+					}
 				}
 			);
 
 			return () => {
-				unsubscribeSuccess();
+				unsubscribe();
 			};
 		}, [ onCheckoutSuccess ] );
 		// In redirect mode, show description instead of PayPal button

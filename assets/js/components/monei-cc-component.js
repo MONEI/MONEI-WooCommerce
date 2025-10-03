@@ -25,8 +25,8 @@ export const MoneiCCContent = ( props ) => {
 	const isHostedWorkflow = moneiData.redirect === 'yes';
 	const shouldSavePayment = props.shouldSavePayment;
 	// State management
-	const [ isProcessing, setIsProcessing ] = useState( false );
 	const tokenRef = useRef( null );
+	const [ isProcessing, setIsProcessing ] = useState( false );
 
 	// Form error management
 	const formErrors = useFormErrors();
@@ -231,7 +231,9 @@ export const MoneiCCContent = ( props ) => {
 
 				if ( ! paymentDetails?.paymentId ) {
 					console.error( 'No paymentId found in paymentDetails' );
-					return false;
+					return {
+						type: responseTypes.SUCCESS,
+					};
 				}
 
 				try {
@@ -248,7 +250,10 @@ export const MoneiCCContent = ( props ) => {
 					if ( result.status === 'FAILED' ) {
 						const failUrl = new URL( paymentDetails.failUrl );
 						failUrl.searchParams.set( 'status', 'FAILED' );
-						window.location.href = failUrl.toString();
+						return {
+							type: responseTypes.SUCCESS,
+							redirectUrl: failUrl.toString(),
+						};
 					} else {
 						// Always include payment ID in redirect URL for order verification
 						const { orderId, paymentId } = paymentDetails;
@@ -257,17 +262,24 @@ export const MoneiCCContent = ( props ) => {
 						url.searchParams.set( 'orderId', orderId );
 						url.searchParams.set( 'status', result.status );
 
-						window.location.href = url.toString();
+						return {
+							type: responseTypes.SUCCESS,
+							redirectUrl: url.toString(),
+						};
 					}
 				} catch ( error ) {
 					console.error(
 						'Error during payment confirmation:',
 						error
 					);
-					window.location.href = paymentDetails.failUrl;
+					return {
+						type: responseTypes.ERROR,
+						message:
+							error.message || 'Payment confirmation failed',
+						messageContext:
+							props.emitResponse.noticeContexts.PAYMENTS,
+					};
 				}
-
-				return true;
 			}
 		);
 
