@@ -77,27 +77,27 @@
 				this.form = this.$add_payment_form;
 			}
 
-			// Pay for order ( change_payment_method for subscriptions)
-			if ( this.$order_pay_form.length ) {
-				if ( wc_paypal_form.is_paypal_selected() ) {
-					wc_paypal_form.init_checkout_paypal();
+				// Pay for order ( change_payment_method for subscriptions)
+				if ( this.$order_pay_form.length ) {
+					this.is_order_pay = true;
+					this.form = this.$order_pay_form;
+					// Form reference set
+					if ( wc_paypal_form.is_paypal_selected() ) {
+						wc_paypal_form.init_checkout_paypal();
+					}
 				}
-				this.is_order_pay = true;
-				this.form = this.$order_pay_form;
-				// Form reference set
-			}
 
-			if ( this.form ) {
-				this.form.on( 'change', this.on_change );
-			}
-		},
-		on_change() {
-			// Triggers on payment method selection.
-			$( "[name='payment_method']" ).on( 'change', function () {
-				wc_paypal_form.on_payment_selected();
-			} );
-		},
-		on_payment_selected() {
+				if ( this.form ) {
+					this.form.on( 'change', this.on_change );
+				}
+			},
+			on_change() {
+				// Triggers on payment method selection.
+				$( "[name='payment_method']" ).on( 'change', function () {
+					wc_paypal_form.on_payment_selected();
+				} );
+			},
+			on_payment_selected() {
 			if ( wc_paypal_form.is_paypal_selected() ) {
 				wc_paypal_form.init_checkout_paypal();
 				if ( wc_paypal_form.is_checkout ) {
@@ -133,14 +133,13 @@
 			wc_paypal_form.instantiate_payment_request();
 		},
 		instantiate_payment_request() {
-			const paymentRequest = monei.PaymentRequest( {
+			const paymentRequest = monei.PayPal( {
 				accountId: wc_paypal_params.account_id,
 				sessionId: wc_paypal_params.session_id,
 				amount: parseInt( wc_paypal_form.total ),
 				currency: wc_paypal_params.currency,
 				language: wc_paypal_params.language,
-				paymentMethod: 'paypal',
-				style: wc_paypal_params.paypal_style || {},
+					style: wc_paypal_params.paypal_style || {},
 				onSubmit( result ) {
 					$( '#place_order' ).prop( 'disabled', false );
 					wc_paypal_form.request_token_handler( result.token );
@@ -149,12 +148,35 @@
 					// Error handling is managed by MONEI SDK
 				},
 			} );
-			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.
+			// Render an instance of the PayPal Component into the `paypal-container` <div>.
 			paymentRequest.render( '#paypal-container' );
 			// Assign a global variable to paymentRequest so it's accessible.
 			window.paypalRequest = paymentRequest;
 		},
 		init_checkout_paypal() {
+		// Check if container exists, create if needed (for order-pay page)
+		let container = document.getElementById( 'paypal-container' );
+		if ( ! container ) {
+			// Create container structure if it doesn't exist
+			const paymentMethodLi = document.querySelector( '#payment_method_monei_paypal' )?.closest( 'li' );
+			if ( ! paymentMethodLi ) {
+				return;
+			}
+
+			// Create the container structure
+			const fieldset = document.createElement( 'fieldset' );
+			fieldset.id = 'wc-monei_paypal-form';
+			fieldset.className = 'wc-paypal-form';
+			fieldset.style.background = 'transparent';
+			fieldset.style.border = 'none';
+
+			container = document.createElement( 'div' );
+			container.id = 'paypal-container';
+
+			fieldset.appendChild( container );
+			paymentMethodLi.appendChild( fieldset );
+		}
+
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
 			// and we need to reset the counter in order to initiate again the monei component.
 			if (

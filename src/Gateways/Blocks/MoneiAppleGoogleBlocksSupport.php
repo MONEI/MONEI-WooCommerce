@@ -27,6 +27,11 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
 
 	public function is_active() {
+		// Order-pay page always uses classic checkout
+		if ( is_checkout_pay_page() ) {
+			return false;
+		}
+
 		$id = $this->gateway->getAccountId() ?? false;
 
 		$key = $this->gateway->getApiKey() ?? false;
@@ -40,6 +45,11 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
 
 	public function get_payment_method_script_handles() {
+		// Order-pay page uses classic checkout, not blocks
+		if ( is_checkout_pay_page() ) {
+			return array();
+		}
+
 		wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '2.0', true );
 		wp_enqueue_script( 'monei' );
 

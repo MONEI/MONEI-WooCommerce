@@ -205,7 +205,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 	}
 
 	public function paypal_scripts() {
-		if ( ! is_checkout() ) {
+		if ( ! is_checkout() && ! is_checkout_pay_page() ) {
 			return;
 		}
 		if ( 'no' === $this->enabled ) {

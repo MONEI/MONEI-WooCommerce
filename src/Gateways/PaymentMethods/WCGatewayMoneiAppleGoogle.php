@@ -68,6 +68,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$saved_title              = $this->get_option( 'title' );
 		$this->title              = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
 		$this->hide_logo          = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
+		$this->description        = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$iconUrl                  = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
 		$iconMarkup               = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		$this->testmode           = $this->getTestmode();
@@ -243,11 +244,20 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	}
 
 	/**
+	 * Check if gateway has fields.
+	 * @return bool
+	 */
+	public function has_fields() {
+		return true;
+	}
+
+	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
 	public function payment_fields() {
 		ob_start();
-		if ( $this->description ) {
+		// Show description only in redirect mode
+		if ( $this->redirect_flow && $this->description ) {
 			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
 		}
 		$this->render_google_pay_form();
@@ -283,7 +293,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	}
 
 	protected function should_load_scripts() {
-		return is_checkout();
+		return is_checkout() || is_checkout_pay_page();
 	}
 }
 

@@ -201,7 +201,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	}
 
 	public function bizum_scripts() {
-		if ( ! is_checkout() ) {
+		if ( ! is_checkout() && ! is_checkout_pay_page() ) {
 			return;
 		}
 		if ( 'no' === $this->enabled ) {

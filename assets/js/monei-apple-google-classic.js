@@ -23,6 +23,25 @@
 		}
 	} );
 
+	const targetNode = document.getElementById( 'order_review' );
+
+	if ( targetNode ) {
+		const observer = new MutationObserver( function (
+			mutationsList,
+			observer
+		) {
+			for ( const mutation of mutationsList ) {
+				if ( mutation.type === 'childList' ) {
+					if ( wc_monei_form.is_apple_selected() ) {
+						wc_monei_form.on_payment_selected();
+					}
+				}
+			}
+		} );
+
+		observer.observe( targetNode, { childList: true, subtree: true } );
+	}
+
 	var wc_monei_form = {
 		$checkout_form: $( 'form.woocommerce-checkout' ),
 		$add_payment_form: $( 'form#add_payment_method' ),
@@ -56,12 +75,13 @@
 
 			// Pay for order ( change_payment_method for subscriptions)
 			if ( this.$order_pay_form.length ) {
+				this.is_order_pay = true;
+				this.form = this.$order_pay_form;
+
 				if ( wc_monei_form.is_apple_selected() ) {
 					wc_monei_form.init_apple_google_pay();
 				}
 
-				this.is_order_pay = true;
-				this.form = this.$order_pay_form;
 
 				$( 'input[name="payment_method"]' ).on( 'change', function () {
 					// Check if the apple google pay method is selected
@@ -109,6 +129,33 @@
 			return $( '#payment_method_monei_apple_google' ).is( ':checked' );
 		},
 		init_apple_google_pay() {
+			// Check if container exists, create if needed (for order-pay page)
+			let container = document.getElementById( 'payment-request-container' );
+			if ( ! container ) {
+				// Create container structure if it doesn't exist
+				const paymentMethodLi = document.querySelector( '#payment_method_monei_apple_google' )?.closest( 'li' );
+				if ( ! paymentMethodLi ) {
+					return;
+				}
+
+				// Create the container structure
+				const fieldset = document.createElement( 'fieldset' );
+				fieldset.id = 'wc-monei_apple_google-payment-request-form';
+				fieldset.className = 'wc-payment-request-form';
+				fieldset.style.background = 'transparent';
+				fieldset.style.border = 'none';
+
+				const formDiv = document.createElement( 'div' );
+				formDiv.id = 'payment-request-form';
+
+				container = document.createElement( 'div' );
+				container.id = 'payment-request-container';
+
+				formDiv.appendChild( container );
+				fieldset.appendChild( formDiv );
+				paymentMethodLi.appendChild( fieldset );
+			}
+
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
 			// and we need to reset the counter in order to initiate again the monei component.
 			if (

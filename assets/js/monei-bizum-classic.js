@@ -79,12 +79,12 @@
 
 			// Pay for order ( change_payment_method for subscriptions)
 			if ( this.$order_pay_form.length ) {
-				if ( wc_bizum_form.is_bizum_selected() ) {
-					wc_bizum_form.init_checkout_bizum();
-				}
 				this.is_order_pay = true;
 				this.form = this.$order_pay_form;
 				// Form reference set
+				if ( wc_bizum_form.is_bizum_selected() ) {
+					wc_bizum_form.init_checkout_bizum();
+				}
 			}
 
 			if ( this.form ) {
@@ -153,6 +153,29 @@
 			window.bizumRequest = paymentRequest;
 		},
 		init_checkout_bizum() {
+			// Check if container exists, create if needed (for order-pay page)
+			let container = document.getElementById( 'bizum-container' );
+			if ( ! container ) {
+				// Create container structure if it doesn't exist
+				const paymentMethodLi = document.querySelector( '#payment_method_monei_bizum' )?.closest( 'li' );
+				if ( ! paymentMethodLi ) {
+					return;
+				}
+
+				// Create the container structure
+				const fieldset = document.createElement( 'fieldset' );
+				fieldset.id = 'wc-monei_bizum-cc-form';
+				fieldset.className = 'wc-bizum-form';
+				fieldset.style.background = 'transparent';
+				fieldset.style.border = 'none';
+
+				container = document.createElement( 'div' );
+				container.id = 'bizum-container';
+
+				fieldset.appendChild( container );
+				paymentMethodLi.appendChild( fieldset );
+			}
+
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
 			// and we need to reset the counter in order to initiate again the monei component.
 			if (

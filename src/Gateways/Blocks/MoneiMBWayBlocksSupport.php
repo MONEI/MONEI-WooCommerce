@@ -19,6 +19,10 @@ final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_script_handles() {
+		// Order-pay page uses classic checkout, not blocks
+		if ( is_checkout_pay_page() ) {
+			return array();
+		}
 
 		$script_name = 'wc-monei-mbway-blocks-integration';
 
@@ -45,6 +49,10 @@ final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function is_active() {
+		// Order-pay page always uses classic checkout
+		if ( is_checkout_pay_page() ) {
+			return false;
+		}
 
 		$id = $this->gateway->getAccountId() ?? false;
 

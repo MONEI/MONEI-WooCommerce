@@ -323,6 +323,15 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			esc_html_e( 'Pay via MONEI: you can add your payment method for future payments.', 'monei' );
 			// Always use component form in Add Payment method page.
 			$this->render_monei_form();
+		} elseif ( is_checkout_pay_page() ) {
+			// Order-pay page: Don't show saved cards (matches Stripe behavior)
+			// Always require new payment method for failed payment retries
+			if ( ! $this->redirect_flow ) {
+				$this->render_monei_form();
+			}
+			if ( $this->tokenization ) {
+				$this->save_payment_method_checkbox();
+			}
 		} elseif ( $this->handler !== null && $this->handler->is_subscription_change_payment_page() ) {
 			// On subscription change payment page, we always use component CC.
 			// Description not shown in component mode (non-redirect)
@@ -402,7 +411,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		}
 
 		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( $this->redirect_flow || ( ! is_checkout() && ! is_add_payment_method_page() && ( $this->handler && ! $this->handler->is_subscription_change_payment_page() ) ) ) {
+		if ( $this->redirect_flow || ( ! is_checkout() && ! is_checkout_pay_page() && ! is_add_payment_method_page() && ( $this->handler && ! $this->handler->is_subscription_change_payment_page() ) ) ) {
 			return;
 		}
 
@@ -447,7 +456,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		self::$scripts_enqueued = true;
 	}
 	protected function should_load_scripts() {
-		return is_checkout() || is_cart() || is_product() || is_add_payment_method_page();
+		return is_checkout() || is_checkout_pay_page() || is_cart() || is_product() || is_add_payment_method_page();
 	}
 }
 
