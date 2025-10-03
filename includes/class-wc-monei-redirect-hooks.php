@@ -1,7 +1,9 @@
 <?php
 
+use Monei\Core\ContainerProvider;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\PaymentMethodFormatter;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Monei_Redirect_Hooks {
 	private MoneiPaymentServices $moneiPaymentServices;
+	private PaymentMethodFormatter $paymentMethodFormatter;
 
 	/**
 	 * Constructor.
@@ -28,9 +31,11 @@ class WC_Monei_Redirect_Hooks {
 		add_action( 'template_redirect', array( $this, 'add_notice_monei_order_failed' ) );
 		add_action( 'wp', array( $this, 'save_payment_token' ) );
 		//TODO use the container
-		$apiKeyService              = new ApiKeyService();
-		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
-		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+		$apiKeyService                = new ApiKeyService();
+		$sdkClient                    = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices   = new MoneiPaymentServices( $sdkClient );
+		$container                    = ContainerProvider::getContainer();
+		$this->paymentMethodFormatter = $container->get( PaymentMethodFormatter::class );
 	}
 
 	/**
@@ -236,6 +241,12 @@ class WC_Monei_Redirect_Hooks {
 			$order->update_meta_data( '_payment_order_status_monei', $payment_status );
 			$order->update_meta_data( '_payment_order_status_code_monei', $payment->getStatusCode() );
 			$order->update_meta_data( '_payment_order_status_message_monei', $payment->getStatusMessage() );
+
+			// Store formatted payment method display
+			$payment_method_display = $this->paymentMethodFormatter->get_payment_method_display_from_payment( $payment );
+			if ( $payment_method_display ) {
+				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );
+			}
 
 			if ( 'AUTHORIZED' === $payment_status ) {
 				$order->update_meta_data( '_payment_not_captured_monei', 1 );

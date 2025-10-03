@@ -10,6 +10,7 @@ use Monei\Services\BlockSupportService;
 use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\PaymentMethodFormatter;
 use Monei\Services\PaymentMethodsService;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Templates\NoticeAdminDependency;
@@ -60,6 +61,7 @@ $definitions            = array(
 		->constructor( DI\get( PaymentMethodsService::class ) ),
 	MoneiPaymentServices::class             => DI\autowire( MoneiPaymentServices::class ),
 	MoneiStatusCodeHandler::class           => DI\autowire( MoneiStatusCodeHandler::class ),
+	PaymentMethodFormatter::class           => DI\autowire( PaymentMethodFormatter::class ),
 	BlockSupportService::class              => DI\create( BlockSupportService::class )
 		->constructor( $blocksPath, $blockNamespacePrefix ),
 	MoneiApplePayVerificationService::class => DI\autowire( MoneiApplePayVerificationService::class )

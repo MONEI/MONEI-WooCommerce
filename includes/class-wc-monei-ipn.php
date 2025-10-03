@@ -1,7 +1,9 @@
 <?php
 
+use Monei\Core\ContainerProvider;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\PaymentMethodFormatter;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,6 +20,7 @@ class WC_Monei_IPN {
 
 	private $logging;
 	private MoneiPaymentServices $moneiPaymentServices;
+	private PaymentMethodFormatter $paymentMethodFormatter;
 
 	/**
 	 * Constructor.
@@ -27,9 +30,11 @@ class WC_Monei_IPN {
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
 		//TODO use the container
-		$apiKeyService              = new ApiKeyService();
-		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
-		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+		$apiKeyService                = new ApiKeyService();
+		$sdkClient                    = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices   = new MoneiPaymentServices( $sdkClient );
+		$container                    = ContainerProvider::getContainer();
+		$this->paymentMethodFormatter = $container->get( PaymentMethodFormatter::class );
 	}
 
 	/**
@@ -154,6 +159,20 @@ class WC_Monei_IPN {
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
 		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
 		$order->update_meta_data( '_monei_payment_id_processed', $monei_id );
+
+		// Fetch payment from API to get payment method information
+		try {
+			$this->moneiPaymentServices->set_order( $order );
+			$payment                = $this->moneiPaymentServices->get_payment( $monei_id );
+			$payment_method_display = $this->paymentMethodFormatter->get_payment_method_display_from_payment( $payment );
+			if ( $payment_method_display ) {
+				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );
+			}
+		} catch ( \Exception $e ) {
+			// Log but don't fail - payment method display is not critical
+			WC_Monei_Logger::log( '[MONEI] Failed to get payment method display: ' . $e->getMessage(), 'warning' );
+		}
+
 		$order->save();
 
 		if ( 'PENDING' === $status ) {
