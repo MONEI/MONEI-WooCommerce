@@ -16,10 +16,11 @@ parameters:
         - public/
         - assets/
 
-    # Explicitly load WooCommerce stubs
+    # Explicitly load WooCommerce stubs and plugin helper functions
     scanFiles:
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - tests/stubs/woocommerce-subscriptions-stubs.php
+        - includes/woocommerce-gateway-monei-core-functions.php
 
     # Scan MONEI SDK for type information
     scanDirectories:

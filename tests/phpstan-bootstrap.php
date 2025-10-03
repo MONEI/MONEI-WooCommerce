@@ -198,14 +198,3 @@ if ( ! class_exists( 'WC_Geolocation' ) ) {
 		}
 	}
 }
-
-if ( ! function_exists( 'monei_token_exits' ) ) {
-	/**
-	 * @param string $monei_token
-	 * @param string $gateway_id
-	 * @return bool
-	 */
-	function monei_token_exits( $monei_token, $gateway_id ) {
-		return false;
-	}
-}
