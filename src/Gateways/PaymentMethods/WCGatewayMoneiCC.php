@@ -324,7 +324,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			// Checkout screen.
 			// Show description only in redirect mode
 			if ( $this->redirect_flow && $this->description ) {
-				echo esc_html( $this->description );
+				echo wpautop( wptexturize( $this->description ) );
 			}
 			if ( $this->tokenization ) {
 				$this->saved_payment_methods();
