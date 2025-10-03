@@ -68,6 +68,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$this->api_key              = $this->getApiKey();
 		$this->account_id           = $this->getAccountId();
 		$this->shop_name            = get_bloginfo( 'name' );
+		$this->testmode             = $this->getTestmode();
 		$this->logging              = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
 
 		// IPN callbacks

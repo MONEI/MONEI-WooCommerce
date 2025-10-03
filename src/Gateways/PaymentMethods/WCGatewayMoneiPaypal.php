@@ -65,7 +65,9 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->api_key              = $this->getApiKey();
+		$this->account_id           = $this->getAccountId();
 		$this->shop_name            = get_bloginfo( 'name' );
+		$this->testmode             = $this->getTestmode();
 		$this->pre_auth             = ( ! empty( $this->get_option( 'pre-authorize' ) && 'yes' === $this->get_option( 'pre-authorize' ) ) ) ? true : false;
 		$this->logging              = ( ! empty( $this->get_option( 'debug' ) ) && 'yes' === $this->get_option( 'debug' ) ) ? true : false;
 
