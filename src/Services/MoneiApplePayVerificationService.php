@@ -22,7 +22,7 @@ class MoneiApplePayVerificationService {
 	public function __construct( MoneiPaymentServices $moneiPaymentServices ) {
 		$this->moneiPaymentServices = $moneiPaymentServices;
 		add_action( 'parse_request', array( $this, 'expose_on_domain_association_request' ), 1 );
-		add_filter( 'woocommerce_update_options_payment_gateways_monei', array( $this, 'apple_domain_register' ) );
+		add_filter( 'woocommerce_update_options_payment_gateways_monei_apple_google', array( $this, 'apple_domain_register' ) );
 	}
 
 	/**
@@ -33,11 +33,12 @@ class MoneiApplePayVerificationService {
 			return;
 		}
 
-		if ( ! isset( $_POST['woocommerce_monei_apple_google_pay'] ) ) {
+		// Check if Apple/Google Pay is being enabled
+		if ( ! isset( $_POST['woocommerce_monei_apple_google_enabled'] ) ) {
 			return;
 		}
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( ! wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_pay'] ) ) ) {
+		if ( 'yes' !== wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_enabled'] ) ) ) {
 			return;
 		}
 
@@ -58,12 +59,15 @@ class MoneiApplePayVerificationService {
 	 */
 	public function expose_on_domain_association_request( $wp ) {
 		if ( isset( $wp->request ) && ( self::DOMAIN_ASSOCIATION_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME ) === $wp->request ) {
-			$path     = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
-			$args     = array( 'headers' => array( 'Content-Type' => 'text/plain;charset=utf-8' ) );
-			$response = wp_remote_get( $path, $args );
-			if ( ! is_wp_error( $response ) && is_array( $response ) ) {
-				$body = $response['body'];
-				echo esc_html( $response['body'] );
+			$file_path = WC_Monei()->plugin_path() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
+
+			if ( file_exists( $file_path ) ) {
+				header( 'Content-Type: text/plain' );
+				header( 'Content-Disposition: inline; filename="' . self::DOMAIN_ASSOCIATION_FILE_NAME . '"' );
+				readfile( $file_path );
+			} else {
+				status_header( 404 );
+				echo 'Apple Pay domain verification file not found';
 			}
 			exit;
 		}
