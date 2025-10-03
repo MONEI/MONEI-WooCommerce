@@ -95,7 +95,8 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->icon                 = ( $this->hide_logo || $hasCardBrands ) ? '' : $iconMarkup;
 		$this->redirect_flow        = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
 		$this->testmode             = $this->getTestmode();
-		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
+		$hide_title                 = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$this->title                = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->account_id           = $this->getAccountId();

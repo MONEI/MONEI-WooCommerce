@@ -61,6 +61,14 @@ return apply_filters(
 			'default'     => __( 'Bizum', 'monei' ),
 			'desc_tip'    => true,
 		),
+		'hide_title'  => array(
+			'title'       => __( 'Hide Title', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Hide payment method title', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
+			'desc_tip'    => true,
+		),
 		'hide_logo'   => array(
 			'title'       => __( 'Hide Logo', 'monei' ),
 			'type'        => 'checkbox',

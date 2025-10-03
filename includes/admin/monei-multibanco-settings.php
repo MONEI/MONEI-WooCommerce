@@ -40,6 +40,14 @@ return apply_filters(
 			'default'     => __( 'Multibanco', 'monei' ),
 			'desc_tip'    => true,
 		),
+		'hide_title'  => array(
+			'title'       => __( 'Hide Title', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Hide payment method title', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
+			'desc_tip'    => true,
+		),
 		'description' => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',

@@ -33,6 +33,21 @@ return apply_filters(
 			'label'   => __( 'Enable Apple Pay and Google Pay by MONEI', 'monei' ),
 			'default' => 'no',
 		),
+		'title'            => array(
+			'title'       => __( 'Title', 'monei' ),
+			'type'        => 'text',
+			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
+			'default'     => __( 'Apple Pay / Google Pay', 'monei' ),
+			'desc_tip'    => true,
+		),
+		'hide_title'       => array(
+			'title'       => __( 'Hide Title', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Hide payment method title', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
+			'desc_tip'    => true,
+		),
 		'payment_request_style' => array(
 			'title'       => __( 'Apple Pay / Google Pay Style', 'monei' ),
 			'type'        => 'textarea',
