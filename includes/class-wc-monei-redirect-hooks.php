@@ -91,6 +91,9 @@ class WC_Monei_Redirect_Hooks {
 	 * We trigger this same behaviour in order received page. After a successful payment in MONEI we are redirected
 	 * to order_received_page. If there is a token available, we need to save it.
 	 * We don't do this at IPN level, since right now, token doesn't come thru.
+	 *
+	 * Also, we verify the payment status from the API to complete the order if the IPN hasn't processed yet (race condition).
+	 *
 	 * todo: refactor and split code for is_add_payment_method_page and is_order_received_page to make it more readable.
 	 */
 	public function save_payment_token() {
@@ -125,9 +128,15 @@ class WC_Monei_Redirect_Hooks {
 			$payment       = $this->moneiPaymentServices->get_payment( $payment_id );
 			$payment_token = $payment->getPaymentToken();
 
+			// Verify payment status and complete order if needed (race condition fix)
+			// If user arrives before IPN webhook processes, we complete the order here
+			if ( $order_id && is_order_received_page() ) {
+				$this->verify_and_complete_order( $order_id, $payment );
+			}
+
 			// A payment can come without token, user didn't check on save payment method.
 			// We just ignore it then and do nothing.
-			if ( ! $payment_token || empty( $payment_token ) ) {
+			if ( ! $payment_token ) {
 				return;
 			}
 
@@ -166,6 +175,91 @@ class WC_Monei_Redirect_Hooks {
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while adding your payment method to MONEI. Payment ID: ', 'monei' ) . $payment_id, 'error' );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+		}
+	}
+
+	/**
+	 * Verify payment status and complete order if needed (race condition fix).
+	 * When user returns from MONEI before IPN webhook processes, we need to complete the order here.
+	 *
+	 * @param int    $order_id Order ID.
+	 * @param object $payment MONEI payment object.
+	 * @return void
+	 */
+	private function verify_and_complete_order( $order_id, $payment ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
+		// Check if payment was already processed (prevent duplicate processing)
+		$processed_payment_id = $order->get_meta( '_monei_payment_id_processed', true );
+		if ( $processed_payment_id === $payment->getId() ) {
+			WC_Monei_Logger::log( sprintf( '[MONEI] Payment already processed via IPN [payment_id=%s, order_id=%s]', $payment->getId(), $order_id ), 'debug' );
+			return;
+		}
+
+		$payment_status = $payment->getStatus();
+		$order_status   = $order->get_status();
+
+		WC_Monei_Logger::log( sprintf( '[MONEI] Redirect verification [payment_id=%s, order_id=%s, payment_status=%s, order_status=%s]', $payment->getId(), $order_id, $payment_status, $order_status ), 'debug' );
+
+		// Only process if order is still pending/on-hold and payment succeeded
+		if ( ! in_array( $order_status, array( 'pending', 'on-hold' ), true ) ) {
+			WC_Monei_Logger::log( sprintf( '[MONEI] Order already processed, skipping [order_id=%s, status=%s]', $order_id, $order_status ), 'debug' );
+			return;
+		}
+
+		// If payment is SUCCEEDED or AUTHORIZED, complete the order
+		if ( 'SUCCEEDED' === $payment_status || 'AUTHORIZED' === $payment_status ) {
+			$amount      = $payment->getAmount();
+			$order_total = $order->get_total();
+
+			// Verify amounts match (with 1 cent exception for subscriptions)
+			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
+				$order->update_status(
+					'on-hold',
+					sprintf(
+						/* translators: 1: Order amount, 2: Payment amount */
+						__( 'Validation error: Order vs. Payment amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
+						monei_price_format( $order_total ),
+						$amount
+					)
+				);
+				WC_Monei_Logger::log( sprintf( '[MONEI] Amount mismatch [order_id=%s, order_amount=%s, payment_amount=%s]', $order_id, monei_price_format( $order_total ), $amount ), 'error' );
+				return;
+			}
+
+			// Mark payment as processed to prevent duplicate processing by IPN
+			$order->update_meta_data( '_monei_payment_id_processed', $payment->getId() );
+			$order->update_meta_data( '_payment_order_number_monei', $payment->getId() );
+			$order->update_meta_data( '_payment_order_status_monei', $payment_status );
+			$order->update_meta_data( '_payment_order_status_code_monei', $payment->getStatusCode() );
+			$order->update_meta_data( '_payment_order_status_message_monei', $payment->getStatusMessage() );
+
+			if ( 'AUTHORIZED' === $payment_status ) {
+				$order->update_meta_data( '_payment_not_captured_monei', 1 );
+				$order_note  = __( 'Payment verified via redirect - <strong>Payment Authorized</strong>', 'monei' ) . '. <br><br>';
+				$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $payment->getId() . '. <br><br>';
+				$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $payment->getStatusMessage();
+				$order->add_order_note( $order_note );
+				$order->update_status( 'on-hold', __( 'Order On-Hold by MONEI', 'monei' ) );
+			} else {
+				// SUCCEEDED
+				$order_note  = __( 'Payment verified via redirect - <strong>Payment Completed</strong>', 'monei' ) . '. <br><br>';
+				$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $payment->getId() . '. <br><br>';
+				$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $payment->getStatusMessage();
+				$order->add_order_note( $order_note );
+				$order->payment_complete();
+
+				$payment_method_woo_id = $order->get_payment_method();
+				if ( 'completed' === monei_get_settings( 'orderdo', $payment_method_woo_id ) ) {
+					$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
+				}
+			}
+
+			$order->save();
+			WC_Monei_Logger::log( sprintf( '[MONEI] Order completed via redirect verification [order_id=%s, payment_status=%s]', $order_id, $payment_status ), 'debug' );
 		}
 	}
 }

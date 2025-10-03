@@ -246,40 +246,44 @@
 			const unsubscribeSuccess = onCheckoutSuccess(
 				( { processingResponse } ) => {
 					const { paymentDetails } = processingResponse;
-					if ( paymentDetails && paymentDetails.paymentId ) {
-						const paymentId = paymentDetails.paymentId;
-						const tokenValue = paymentDetails.token;
-						monei
-							.confirmPayment( {
-								paymentId,
-								paymentToken: tokenValue,
-							} )
-							.then( ( result ) => {
-								if (
-									result.nextAction &&
-									result.nextAction.mustRedirect
-								) {
-									window.location.assign(
-										result.nextAction.redirectUrl
-									);
-								}
-								if ( result.status === 'FAILED' ) {
-									window.location.href = `${ paymentDetails.failUrl }&status=FAILED`;
-								} else {
-									window.location.href =
-										paymentDetails.completeUrl;
-								}
-							} )
-							.catch( ( error ) => {
-								console.error(
-									'Error during payment confirmation:',
-									error
-								);
-								window.location.href = paymentDetails.failUrl;
-							} );
-					} else {
-						console.error( 'No paymentId found in paymentDetails' );
+
+					// In redirect mode, backend returns redirect URL and no paymentId
+					// WooCommerce Blocks handles redirect automatically
+					if ( ! paymentDetails?.paymentId ) {
+						return false;
 					}
+
+					// Component mode: confirm payment with token
+					const paymentId = paymentDetails.paymentId;
+					const tokenValue = paymentDetails.token;
+					monei
+						.confirmPayment( {
+							paymentId,
+							paymentToken: tokenValue,
+						} )
+						.then( ( result ) => {
+							if (
+								result.nextAction &&
+								result.nextAction.mustRedirect
+							) {
+								window.location.assign(
+									result.nextAction.redirectUrl
+								);
+							}
+							if ( result.status === 'FAILED' ) {
+								window.location.href = `${ paymentDetails.failUrl }&status=FAILED`;
+							} else {
+								window.location.href =
+									paymentDetails.completeUrl;
+							}
+						} )
+						.catch( ( error ) => {
+							console.error(
+								'Error during payment confirmation:',
+								error
+							);
+							window.location.href = paymentDetails.failUrl;
+						} );
 
 					// Return true to indicate that the checkout is successful
 					return true;

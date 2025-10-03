@@ -137,17 +137,25 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
 
-			if ( $this->isBlockCheckout() ) {
+			// Block checkout with component mode (Bizum/PayPal button)
+			// Return paymentId for frontend confirmation
+			$redirect_flow = property_exists( $this, 'redirect_flow' ) ? $this->redirect_flow : true;
+			$has_token     = $this->get_frontend_generated_token();
+			$is_block      = $this->isBlockCheckout();
+
+			if ( $is_block && ! $redirect_flow && $has_token ) {
 				return array(
 					'result'      => 'success',
 					'redirect'    => false,
-					'paymentId'   => $payment->getId(), // Send the paymentId back to the client
-					'token'       => $this->get_frontend_generated_token(), // Send the token back to the client
+					'paymentId'   => $payment->getId(),
+					'token'       => $has_token,
 					'completeUrl' => $payload['completeUrl'],
 					'failUrl'     => $payload['failUrl'],
 					'orderId'     => $order_id,
 				);
 			}
+			// Classic checkout or Block checkout in redirect mode
+			// Return redirect URL to MONEI hosted page
 			return array(
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
