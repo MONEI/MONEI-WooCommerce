@@ -171,18 +171,18 @@ The project uses automated linting and code quality tools to maintain consistent
 
 ### Git Hooks
 
-**Pre-commit Hook** (fast ~0.9s):
+**Pre-commit Hook**:
 - Auto-fixes staged files with `lint-staged`
-- PHP: `phpcbf` (WordPress coding standards auto-fix)
+- PHP: `phpcbf` (auto-fix code style) + `phpstan` (static analysis)
 - JavaScript: `eslint --fix`
 - CSS: `stylelint --fix`
+- **Prevents committing broken code** by running PHPStan
 
 **Commit-msg Hook**:
 - Validates commit message format (conventional commits)
 
-**Pre-push Hook** (~1s):
+**Pre-push Hook**:
 - **Branch Protection**: Blocks direct pushes to `master`/`main` branches
-- **PHPStan**: Static analysis (type checking, bug detection)
 
 ### Linting Commands
 
@@ -207,9 +207,9 @@ yarn lint:php:phpstan # Check PHP static analysis only
 ### Workflow Best Practices
 
 1. **Before committing**: Run `yarn lint:fix` to auto-fix all issues
-2. **During commit**: Hooks auto-fix staged files and validate commit message
-3. **Before push**: PHPStan runs automatically (takes ~1s)
-4. **If push fails**: Fix PHPStan errors and push again
+2. **During commit**: Hooks auto-fix staged files, run PHPStan, and validate commit message
+3. **If commit fails**: Fix PHPStan errors and commit again
+4. **Before push**: Branch protection check ensures you're not pushing to master
 
 ### Configuration Files
 

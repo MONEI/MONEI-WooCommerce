@@ -11,6 +11,4 @@ if [ "$current_branch" = "master" ] || [ "$current_branch" = "main" ]; then
     exit 1
 fi
 
-# Run static analysis before push
-echo "Running PHPStan static analysis..."
-yarn lint:php:phpstan
+echo "✅ Branch check passed"

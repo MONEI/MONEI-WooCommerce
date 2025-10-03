@@ -314,22 +314,21 @@ The project uses automated linting and static analysis tools with git hooks for 
 
 ### Automated Workflow (Git Hooks)
 
-**Pre-commit Hook** (~0.9s - fast!):
-- Runs `lint-staged` to auto-fix only staged files
-- PHP: `phpcbf` (auto-fixes WordPress coding standards)
+**Pre-commit Hook**:
+- Runs `lint-staged` to auto-fix and validate staged files
+- PHP: `phpcbf` (auto-fixes code style) + `phpstan` (static analysis)
 - JavaScript: `eslint --fix` (auto-fixes linting errors)
 - CSS: `stylelint --fix` (auto-fixes style errors)
-- **Result**: All fixable issues are automatically corrected before commit
+- **Result**: All fixable issues corrected, type errors caught immediately
 
 **Commit-msg Hook** (instant):
 - Validates commit message follows conventional commits format
 - Types: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, etc.
 - **Result**: Invalid commit messages are rejected
 
-**Pre-push Hook** (~1s):
+**Pre-push Hook** (instant):
 - **Branch Protection**: Blocks direct pushes to `master`/`main`
-- **PHPStan**: Runs static analysis (moved from pre-commit for speed)
-- **Result**: Type errors are caught before pushing to remote
+- **Result**: Enforces feature branch workflow
 
 ### Running Linters Manually
 
@@ -359,16 +358,21 @@ yarn lint:php:phpstan # Check PHP static analysis only
 2. **Before staging**: Run `yarn lint:fix` to auto-fix all issues
 3. **Stage your files**: `git add <files>`
 4. **Commit**: `git commit -m "feat: your message"`
-   - Pre-commit hook auto-fixes staged files (~0.9s)
+   - Pre-commit hook auto-fixes staged files
+   - Pre-commit hook runs PHPStan to catch type errors
    - Commit-msg hook validates message format
 5. **Push**: `git push`
-   - Pre-push hook runs PHPStan (~1s)
-   - Branch protection prevents pushing to master
+   - Pre-push hook checks branch protection
 
-**If pre-push fails (PHPStan errors)**:
+**If commit fails (PHPStan errors)**:
 - Fix the type errors reported by PHPStan
-- Commit the fixes
-- Push again
+- Stage the fixes: `git add <files>`
+- Commit again
+
+**Why this is better**:
+- Type errors are caught at commit time, not push time
+- Every commit in git history is guaranteed to be type-safe
+- No need to fix and re-commit after a failed push
 
 ### Configuration Files
 
@@ -434,9 +438,9 @@ composer phpcbf -- src/Gateways/PaymentMethods/WCGatewayMoneiCC.php
 - Create pull requests for code review before merging to master
 
 **Performance**:
-- Pre-commit hook is optimized for speed (~0.9s)
-- PHPStan runs only on pre-push (~1s) to keep commits fast
 - lint-staged only processes staged files, not the entire codebase
+- PHPStan analyzes only staged PHP files and their dependencies
+- Pre-push hook is instant (only branch check)
 
 ### Common PHPStan Errors & Fixes
 
