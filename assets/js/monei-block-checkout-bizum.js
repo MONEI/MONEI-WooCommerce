@@ -10,6 +10,9 @@
 		const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 		const { activePaymentMethod } = props;
 
+		// Check if redirect flow is enabled
+		const isRedirectFlow = bizumData.redirectFlow === true;
+
 		// Use useRef to persist values across re-renders
 		const requestTokenRef = useRef( null );
 		const currentBizumInstanceRef = useRef( null );
@@ -22,6 +25,11 @@
 		}, [] );
 
 		useEffect( () => {
+			// Don't modify the Place Order button if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			const placeOrderButton = document.querySelector(
 				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
 			);
@@ -43,6 +51,11 @@
 		}, [ activePaymentMethod ] );
 
 		useEffect( () => {
+			// Don't initialize Bizum component if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
 			if (
 				typeof monei !== 'undefined' &&
@@ -57,6 +70,11 @@
 		}, [] ); // Only initialize once on mount
 
 		useEffect( () => {
+			// Don't update amount if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			// Only update amount if instance exists and cart totals changed
 			if (
 				isInitializedRef.current &&
@@ -185,6 +203,18 @@
 		// Hook into the payment setup
 		useEffect( () => {
 			const unsubscribePaymentSetup = onPaymentSetup( () => {
+				// In redirect mode, no token is needed - form submits normally
+				if ( isRedirectFlow ) {
+					return {
+						type: responseTypes.SUCCESS,
+						meta: {
+							paymentMethodData: {
+								monei_is_block_checkout: 'yes',
+							},
+						},
+					};
+				}
+
 				// If no token was created, fail
 				if ( ! requestTokenRef.current ) {
 					return {
@@ -275,6 +305,15 @@
 				}
 			};
 		}, [] );
+
+		// In redirect mode, show description instead of Bizum button
+		if ( isRedirectFlow ) {
+			return (
+				<div className="monei-redirect-description">
+					{ bizumData.description }
+				</div>
+			);
+		}
 
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">

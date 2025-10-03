@@ -46,7 +46,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$this->id                 = MONEI_GATEWAY_ID . '_bizum';
 		$this->method_title       = __( 'MONEI - Bizum', 'monei' );
 		$this->method_description = __( 'Accept Bizum payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -58,11 +58,11 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$iconUrl          = apply_filters( 'woocommerce_monei_bizum_icon', WC_Monei()->image_url( 'bizum-logo.svg' ) );
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
-		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
+		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->redirect_flow = ( ! empty( $this->get_option( 'bizum_mode' ) && 'yes' === $this->get_option( 'bizum_mode' ) ) ) ? true : false;
+		$this->redirect_flow = ( ! empty( $this->get_option( 'bizum_mode' ) ) && 'yes' === $this->get_option( 'bizum_mode' ) ) ? true : false;
 		$this->testmode      = $this->getTestmode();
-		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
 		$this->title         = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';

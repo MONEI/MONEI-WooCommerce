@@ -42,8 +42,8 @@ export const MoneiCCContent = ( props ) => {
 	// If hosted workflow, show redirect message
 	if ( isHostedWorkflow ) {
 		return (
-			<div className="wc-block-components-text-input wc-block-components-address-form__email">
-				<p>{ moneiData.redirected }</p>
+			<div className="monei-redirect-description">
+				{ moneiData.description }
 			</div>
 		);
 	}

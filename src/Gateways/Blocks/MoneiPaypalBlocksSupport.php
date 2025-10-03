@@ -60,26 +60,31 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_data() {
-		$total        = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
-		$paypal_style = $this->get_setting( 'paypal_style' );
+		$total         = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
+		$paypal_style  = $this->get_setting( 'paypal_style' );
+		$paypal_mode   = $this->get_setting( 'paypal_mode' );
+		$redirect_flow = ( ! empty( $paypal_mode ) && 'yes' === $paypal_mode );
+
 		if ( ! $paypal_style ) {
 			$paypal_style = '{}';
 		}
 		$data = array(
 
-			'title'       => $this->gateway->title,
-			'logo'        => WC_Monei()->plugin_url() . '/public/images/paypal-logo.svg',
-			'supports'    => $this->get_supported_features(),
-			'currency'    => get_woocommerce_currency(),
-			'total'       => $total,
-			'language'    => locale_iso_639_1_code(),
+			'title'        => $this->gateway->title,
+			'logo'         => WC_Monei()->plugin_url() . '/public/images/paypal-logo.svg',
+			'supports'     => $this->get_supported_features(),
+			'currency'     => get_woocommerce_currency(),
+			'total'        => $total,
+			'language'     => locale_iso_639_1_code(),
 
 			// yes: test mode.
 			// no:  live,
-			'test_mode'   => $this->gateway->getTestmode() ?? false,
-			'accountId'   => $this->gateway->getAccountId() ?? false,
-			'sessionId'   => wc()->session !== null ? wc()->session->get_customer_id() : '',
-			'paypalStyle' => json_decode( $paypal_style ),
+			'test_mode'    => $this->gateway->getTestmode() ?? false,
+			'accountId'    => $this->gateway->getAccountId() ?? false,
+			'sessionId'    => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'paypalStyle'  => json_decode( $paypal_style ),
+			'redirectFlow' => $redirect_flow,
+			'description'  => $this->get_setting( 'description' ),
 		);
 
 		$hide_logo = $this->get_setting( 'hide_logo' );

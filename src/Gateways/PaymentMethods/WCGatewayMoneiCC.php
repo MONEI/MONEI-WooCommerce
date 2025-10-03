@@ -71,7 +71,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->id                 = MONEI_GATEWAY_ID;
 		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
 		$this->method_description = __( 'Accept credit card payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -87,16 +87,16 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$iconUrl          = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ) );
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons-cc" />';
 		// Settings variable
-		$this->hide_logo = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
+		$this->hide_logo = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 
 		// Hide logo if card brands are available
 		$cardBrands    = $this->cardBrandHelper->getCardBrandsConfig();
 		$hasCardBrands = ! empty( $cardBrands ) && count( array_filter( $cardBrands, fn( $b ) => $b['title'] !== 'Card' ) ) > 0;
 
 		$this->icon          = ( $this->hide_logo || $hasCardBrands ) ? '' : $iconMarkup;
-		$this->redirect_flow = ( ! empty( $this->get_option( 'cc_mode' ) && 'yes' === $this->get_option( 'cc_mode' ) ) ) ? true : false;
+		$this->redirect_flow = ( ! empty( $this->get_option( 'cc_mode' ) ) && 'yes' === $this->get_option( 'cc_mode' ) ) ? true : false;
 		$this->testmode      = $this->getTestmode();
-		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
 		$this->title         = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
@@ -109,7 +109,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->api_key              = $this->getApiKey();
 		$this->shop_name            = get_bloginfo( 'name' );
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
-		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
+		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) ) && 'yes' === $this->get_option( 'tokenization' ) ) ? true : false;
 		// Backward compatible: try local setting first, then global setting
 		$local_preauth  = $this->get_option( 'pre-authorize' );
 		$global_preauth = get_option( 'monei_pre_authorize', 'no' );

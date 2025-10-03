@@ -61,12 +61,11 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$this->id                 = 'monei_apple_google';
 		$this->method_title       = __( 'MONEI - Apple Pay / Google Pay', 'monei' );
 		$this->method_description = __( 'Accept Apple Pay and Google Pay payments.', 'monei' );
-		$hide_title               = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$hide_title               = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
 		$default_title            = __( 'Apple Pay / Google Pay', 'monei' );
 		$saved_title              = $this->get_option( 'title' );
 		$this->title              = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
-		$this->description        = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
-		$this->hide_logo          = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
+		$this->hide_logo          = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 		$iconUrl                  = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
 		$iconMarkup               = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		$this->testmode           = $this->getTestmode();
@@ -75,7 +74,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		}
 		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->settings      = get_option( 'woocommerce_monei_apple_google_settings', array() );
-		$this->enabled       = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled       = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
 		$this->account_id    = $this->getAccountId();
 		$this->api_key       = $this->getApiKey();
 		$this->shop_name     = get_bloginfo( 'name' );

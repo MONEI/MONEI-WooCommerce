@@ -17,7 +17,7 @@ $settings_link = esc_url(
 
 /** Monei Gateway Settings. */
 return apply_filters(
-	'wc_monei_settings',
+	'wc_monei_cc_settings',
 	array(
 		'top_link'         => array(
 			'title'       => '',

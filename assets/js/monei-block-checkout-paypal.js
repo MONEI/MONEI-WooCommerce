@@ -12,7 +12,16 @@
 		let requestToken = null;
 		let paypalInstance = null;
 		let paypalContainer = null;
+
+		// Check if redirect flow is enabled
+		const isRedirectFlow = paypalData.redirectFlow === true;
+
 		useEffect( () => {
+			// Don't modify the Place Order button if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			const placeOrderButton = document.querySelector(
 				'.wc-block-components-checkout-place-order-button'
 			);
@@ -38,6 +47,11 @@
 			};
 		}, [ activePaymentMethod ] );
 		useEffect( () => {
+			// Don't initialize PayPal component if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
 			if ( typeof monei !== 'undefined' && monei.PayPal ) {
 				if ( counter === 0 ) {
@@ -89,6 +103,18 @@
 		// Hook into the payment setup
 		useEffect( () => {
 			const unsubscribePaymentSetup = onPaymentSetup( () => {
+				// In redirect mode, no token is needed - form submits normally
+				if ( isRedirectFlow ) {
+					return {
+						type: responseTypes.SUCCESS,
+						meta: {
+							paymentMethodData: {
+								monei_is_block_checkout: 'yes',
+							},
+						},
+					};
+				}
+
 				// If no token was created, fail
 				if ( ! requestToken ) {
 					return {
@@ -161,6 +187,15 @@
 				unsubscribeSuccess();
 			};
 		}, [ onCheckoutSuccess ] );
+		// In redirect mode, show description instead of PayPal button
+		if ( isRedirectFlow ) {
+			return (
+				<div className="monei-redirect-description">
+					{ paypalData.description }
+				</div>
+			);
+		}
+
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
 				<div

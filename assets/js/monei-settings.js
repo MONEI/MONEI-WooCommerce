@@ -13,7 +13,9 @@ jQuery( document ).ready( function ( $ ) {
 
 	// Generic function to toggle description fields based on redirect mode
 	function toggleDescriptionField( paymentMethod ) {
-		const redirectCheckbox = $( '#woocommerce_monei_' + paymentMethod + '_' + paymentMethod + '_mode' );
+		// Credit Card gateway ID is 'monei', not 'monei_cc', so handle it specially
+		const gatewayId = paymentMethod === 'cc' ? 'monei' : 'monei_' + paymentMethod;
+		const redirectCheckbox = $( '#woocommerce_' + gatewayId + '_' + paymentMethod + '_mode' );
 		const descriptionField = $( '.monei-' + paymentMethod + '-description-field' );
 
 		if ( redirectCheckbox.length ) {
@@ -42,7 +44,8 @@ jQuery( document ).ready( function ( $ ) {
 	// Bind the function to the change event of the selectors
 	$( '#monei_apikey_mode' ).change( toggleApiKeyFields );
 	paymentMethods.forEach( function( method ) {
-		$( '#woocommerce_monei_' + method + '_' + method + '_mode' ).change( function() {
+		const gatewayId = method === 'cc' ? 'monei' : 'monei_' + method;
+		$( '#woocommerce_' + gatewayId + '_' + method + '_mode' ).change( function() {
 			toggleDescriptionField( method );
 		} );
 	} );

@@ -31,13 +31,6 @@ return apply_filters(
 			'label'   => __( 'Enable Apple Pay and Google Pay by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'description'           => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'Payment method description shown to customers during checkout.', 'monei' ),
-			'default'     => __( 'You will be redirected to Apple Pay or Google Pay to complete the payment. Powered by MONEI.', 'monei' ),
-			'desc_tip'    => true,
-		),
 		'payment_request_style' => array(
 			'title'       => __( 'Apple Pay / Google Pay Style', 'monei' ),
 			'type'        => 'textarea',
