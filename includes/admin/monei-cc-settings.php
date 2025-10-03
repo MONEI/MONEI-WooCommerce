@@ -37,8 +37,22 @@ return apply_filters(
 			'title'       => __( 'Use Redirect Flow', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
-			'default'     => 'yes',
+			'default'     => 'no',
 			'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
+		),
+		'description'      => array(
+			'title'       => __( 'Description', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'Pay with credit card.', 'monei' ),
+			'class'       => 'monei-cc-description-field',
+		),
+		'card_input_style' => array(
+			'title'       => __( 'Card Input Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the Card Input component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
+			'default'     => '{"base": {"height": "50"}, "input": {"background": "none"}}',
+			'css'         => 'min-height: 80px;',
 		),
 		'title'            => array(
 			'title'       => __( 'Title', 'monei' ),
@@ -46,12 +60,6 @@ return apply_filters(
 			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
 			'default'     => __( 'Credit Card', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'description'      => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'The payment method description a user sees during checkout.', 'monei' ),
-			'default'     => __( 'Pay with credit card.', 'monei' ),
 		),
 		'hide_logo'        => array(
 			'title'       => __( 'Hide Logo', 'monei' ),

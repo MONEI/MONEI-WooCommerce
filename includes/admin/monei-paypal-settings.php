@@ -40,6 +40,13 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => sprintf( __( 'If disabled the PayPal button will be rendered directly on the checkout page. It is recommended to enable redirection in cases where PayPal payments do not function correctly.', 'monei' ) ),
 		),
+		'description'   => array(
+			'title'       => __( 'Description', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'default'     => __( 'Pay with PayPal. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-paypal-description-field',
+		),
 		'paypal_style'  => array(
 			'title'       => __( 'PayPal Style', 'monei' ),
 			'type'        => 'textarea',
@@ -53,13 +60,6 @@ return apply_filters(
 			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
 			'default'     => __( 'PayPal', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'description'   => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'Pay with PayPal. Powered by MONEI.', 'monei' ),
-			'class'       => 'monei-paypal-description-field',
 		),
 		'hide_logo'     => array(
 			'title'       => __( 'Hide Logo', 'monei' ),
