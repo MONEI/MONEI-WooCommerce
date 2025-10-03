@@ -64,26 +64,28 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
     public function get_payment_method_data() {
         $supports = $this->gateway->supports;
-        $total           = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
-        $isGoogleEnabled = $this->gateway->isGoogleAvailable();
-        $isAppleEnabled  = $this->gateway->isAppleAvailable();
-        $logoApple       = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
-        $logoGoogle      = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
-        $data            = array(
-            'title'            => $this->gateway->title,
-            'description'      => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
-            'logo_google'      => $isGoogleEnabled ? $logoGoogle : false,
-            'logo_apple'       => $isAppleEnabled ? $logoApple : false,
-            'supports'         => $supports,
+        $total                 = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+        $isGoogleEnabled       = $this->gateway->isGoogleAvailable();
+        $isAppleEnabled        = $this->gateway->isAppleAvailable();
+        $logoApple             = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
+        $logoGoogle            = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
+        $payment_request_style = $this->get_setting( 'payment_request_style' ) ?? '{"height": "42"}';
+        $data                  = array(
+            'title'                 => $this->gateway->title,
+            'description'           => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
+            'logo_google'           => $isGoogleEnabled ? $logoGoogle : false,
+            'logo_apple'            => $isAppleEnabled ? $logoApple : false,
+            'supports'              => $supports,
 
             // yes: test mode.
             // no:  live,
-            'test_mode'        => $this->gateway->getTestmode(),
-            'accountId'        => $this->gateway->getAccountId() ?? false,
-            'sessionId'        => ( wc()->session ) ? wc()->session->get_customer_id() : '',
-            'currency'         => get_woocommerce_currency(),
-            'total'            => $total,
-            'language'         => locale_iso_639_1_code(),
+            'test_mode'             => $this->gateway->getTestmode(),
+            'accountId'             => $this->gateway->getAccountId() ?? false,
+            'sessionId'             => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+            'currency'              => get_woocommerce_currency(),
+            'total'                 => $total,
+            'language'              => locale_iso_639_1_code(),
+            'paymentRequestStyle'   => json_decode( $payment_request_style ),
         );
 
         return $data;

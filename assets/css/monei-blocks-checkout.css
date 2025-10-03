@@ -155,4 +155,9 @@
     .monei-card-brands {
         margin-left: auto;
     }
+
+    .monei-label-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

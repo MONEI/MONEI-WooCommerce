@@ -28,7 +28,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 *
 	 * @access public
 	 * @param int    $order_id
-	 * @param string $allowed_payment_method
+	 * @param string|null $allowed_payment_method
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {

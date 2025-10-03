@@ -66,7 +66,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	 *
 	 * @return bool
 	 */
-	public function is_subscription_change_payment_page() {
+	public function is_subscription_change_payment_page(): bool {
         return ( isset( $_GET['pay_for_order'] ) && isset( $_GET['change_payment_method'] ) ); // phpcs:ignore
 	}
 
@@ -104,7 +104,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	 * @param $confirm_payment
 	 * @param $order
 	 *
-	 * @throws \OpenAPI\Client\ApiException
+	 * @throws \Monei\ApiException
 	 */
 	public function subscription_after_payment_success( $confirm_payload, $confirm_payment, $order ): void {
 		/**
@@ -203,7 +203,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		$sequence_id  = $this->get_sequence_id_from_subscription( $subscription );
 
 		if ( ! $subscription || 'yes' !== $is_a_renew ) {
-			WC_Monei_Logger::log( sprintf( 'Sorry, any subscription was found for order #%s or order is not a renew.', $order_id ), 'subscription_payment' );
+			\WC_Monei_Logger::log( sprintf( 'Sorry, any subscription was found for order #%s or order is not a renew.', $order_id ), 'subscription_payment' );
 		}
 		$payload = array(
 			'orderId'     => (string) $renewal_order->get_id(),
@@ -234,9 +234,9 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 			}
 			$renewal_order->save();
 
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
-			WC_Monei_Logger::log( $e, 'error' );
+			\WC_Monei_Logger::log( $e, 'error' );
 			$renewal_order->update_status( 'failed' );
 			$renewal_order->add_order_note( __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . $e->getMessage() );
 			$renewal_order->save();
@@ -302,10 +302,9 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
     /**
      * Check if a product is a subscription using YITH WooCommerce Subscription logic
      *
-     * @param int|WC_Product $product Product ID or WC_Product object
      * @return bool
      */
-    function cart_has_subscription() {
+    public function cart_has_subscription() {
 
         if (!function_exists('YITH_WC_Subscription')) {
             return false;

@@ -56,7 +56,7 @@ class WCGatewayMoneiMBWay extends WCMoneiPaymentGatewayHosted {
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
+		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
 		$this->api_key              = $this->getApiKey();
 		$this->account_id           = $this->getAccountId();

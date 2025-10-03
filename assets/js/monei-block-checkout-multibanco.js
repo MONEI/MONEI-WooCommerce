@@ -20,14 +20,14 @@
 
 	const MoneiMultibancoPaymentMethod = {
 		name: 'monei_multibanco',
-		label: <div> {multibancoLabel()} </div>,
-		ariaLabel: __(multibancoData.title, 'monei'),
-		content: <div> {__(multibancoData.description, 'monei')}</div>,
-		edit: <div> {__(multibancoData.title, 'monei')}</div>,
-		canMakePayment: ({billingData}) => {
+		label: <div> { multibancoLabel() } </div>,
+		ariaLabel: __( multibancoData.title, 'monei' ),
+		content: <div> { __( multibancoData.description, 'monei' ) }</div>,
+		edit: <div> { __( multibancoData.title, 'monei' ) }</div>,
+		canMakePayment: ( { billingData } ) => {
 			return billingData.country === 'PT';
 		},
 		supports: multibancoData.supports,
 	};
-	registerPaymentMethod(MoneiMultibancoPaymentMethod );
+	registerPaymentMethod( MoneiMultibancoPaymentMethod );
 } )();

@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+# Get list of staged PHP files
+STAGED_PHP_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.php$')
+
+if [ -n "$STAGED_PHP_FILES" ]; then
+    echo "Running PHPStan on staged PHP files..."
+
+    # Run PHPStan only on staged files with memory limit
+    vendor/bin/phpstan analyse $STAGED_PHP_FILES --error-format=table --memory-limit=1G
+
+    if [ $? -ne 0 ]; then
+        echo "❌ PHPStan found errors. Please fix them before committing."
+        exit 1
+    fi
+
+    echo "✅ PHPStan passed!"
+fi

@@ -25,6 +25,11 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 	const PAYMENT_METHOD = 'paypal';
 
 	/**
+	 * @var bool
+	 */
+	protected $redirect_flow;
+
+	/**
 	 * Constructor for the gateway.
 	 *
 	 * @access public
@@ -54,6 +59,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 		// Settings variable
 		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->redirect_flow        = ( ! empty( $this->get_option( 'paypal_mode' ) && 'yes' === $this->get_option( 'paypal_mode' ) ) ) ? true : false;
 		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
@@ -78,6 +84,8 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 				return $this->checks_before_save( $is_post, 'woocommerce_monei_paypal_enabled' );
 			}
 		);
+
+		add_action( 'wp_enqueue_scripts', array( $this, 'paypal_scripts' ) );
 	}
 
 	/**
@@ -110,6 +118,39 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 	}
 
 	/**
+	 * Validate paypal_style field
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return string
+	 */
+	public function validate_paypal_style_field( $key, $value ) {
+		if ( empty( $value ) ) {
+			return $value;
+		}
+
+		// WordPress adds slashes to $_POST data, we need to remove them before validating JSON
+		$value = stripslashes( $value );
+
+		// Try to decode JSON
+		json_decode( $value );
+
+		// Check for JSON errors
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			\WC_Admin_Settings::add_error(
+				sprintf(
+					/* translators: %s: JSON error message */
+					__( 'PayPal Style field contains invalid JSON: %s', 'monei' ),
+					json_last_error_msg()
+				)
+			);
+			return $this->get_option( 'paypal_style', '{"height": "50px"}' );
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Process the payment and return the result
 	 *
 	 * @access public
@@ -122,12 +163,77 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 	}
 
 	/**
-	 * Frontend MONEI payment-request token generated when Bizum.
+	 * Frontend MONEI payment-request token generated when PayPal.
 	 *
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_token() {
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
+	}
+
+	public function payment_fields() {
+		// Show description only in redirect mode
+		if ( $this->redirect_flow && $this->description ) {
+			echo wpautop( wptexturize( $this->description ) );
+		}
+
+		// Only render PayPal button if not using redirect flow
+		if ( ! $this->redirect_flow ) {
+			echo '<fieldset id="monei-paypal-form" class="monei-fieldset monei-payment-request-fieldset">
+					<div
+						id="paypal-container"
+						class="monei-payment-request-container"
+                        >
+					</div>
+				</fieldset>';
+		}
+	}
+
+	public function paypal_scripts() {
+		if ( ! is_checkout() ) {
+			return;
+		}
+		if ( 'no' === $this->enabled ) {
+			return;
+		}
+		// Don't enqueue scripts if using redirect flow
+		if ( $this->redirect_flow ) {
+			return;
+		}
+		if ( ! wp_script_is( 'monei', 'registered' ) ) {
+			wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '1.0', true );
+		}
+		if ( ! wp_script_is( 'monei', 'enqueued' ) ) {
+			wp_enqueue_script( 'monei' );
+		}
+		wp_register_script(
+			'woocommerce_monei-paypal',
+			plugins_url( 'public/js/monei-paypal-classic.min.js', MONEI_MAIN_FILE ),
+			array(
+				'jquery',
+				'monei',
+			),
+			MONEI_VERSION,
+			true
+		);
+		wp_enqueue_script( 'woocommerce_monei-paypal' );
+
+		// Determine the total amount to be passed
+		$total        = $this->determineTheTotalAmountToBePassed();
+		$paypal_style = $this->get_option( 'paypal_style', '{}' );
+
+		wp_localize_script(
+			'woocommerce_monei-paypal',
+			'wc_paypal_params',
+			array(
+				'account_id'   => $this->getAccountId(),
+				'session_id'   => WC()->session->get_customer_id(),
+				'total'        => monei_price_format( $total ),
+				'currency'     => get_woocommerce_currency(),
+				'language'     => locale_iso_639_1_code(),
+				'paypal_style' => json_decode( $paypal_style ),
+			)
+		);
 	}
 }

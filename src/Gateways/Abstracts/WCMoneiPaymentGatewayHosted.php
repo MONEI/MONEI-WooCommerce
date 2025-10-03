@@ -120,6 +120,9 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 				$payload['paymentToken'] = $token_id;
 			}
 			$payload['sessionId'] = (string) WC()->session->get_customer_id();
+			// When using component flow (with token), don't set allowedPaymentMethods
+			// The token already identifies the payment method
+			unset( $payload['allowedPaymentMethods'] );
 		}
 
 		// Filter to enable external changes on payload.

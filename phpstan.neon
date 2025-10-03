@@ -1,0 +1,49 @@
+parameters:
+    # Start with level 4 for better performance
+    level: 4
+
+    paths:
+        - src/
+
+    # Bootstrap file for plugin constants and functions
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+
+    # Exclude vendor and build directories
+    excludePaths:
+        - vendor/
+        - node_modules/
+        - public/
+        - assets/
+
+    # Explicitly load WooCommerce stubs
+    scanFiles:
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - tests/stubs/woocommerce-subscriptions-stubs.php
+
+    # Scan MONEI SDK for type information
+    scanDirectories:
+        - vendor/monei/monei-php-sdk/lib
+
+    # Ignore specific errors
+    ignoreErrors:
+        # Ignore missing array value types (WordPress patterns)
+        -
+            identifier: missingType.iterableValue
+        # Ignore missing generic types (WordPress patterns)
+        -
+            identifier: missingType.generics
+        # Allow WordPress globals
+        - '#Variable \$[a-zA-Z_]+ might not be defined\.#'
+        # Ignore dynamic properties (WordPress pattern)
+        - '#Access to an undefined property#'
+        # WordPress actions can have return values (they're ignored by WordPress)
+        - '#Action callback returns .+ but should not return anything\.#'
+
+    # Performance optimizations
+    parallel:
+        maximumNumberOfProcesses: 1
+        processTimeout: 300.0
+
+    # Report unmatched ignored errors
+    reportUnmatchedIgnoredErrors: false

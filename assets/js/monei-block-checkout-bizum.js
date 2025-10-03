@@ -44,17 +44,25 @@
 
 		useEffect( () => {
 			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
-			if ( typeof monei !== 'undefined' && monei.Bizum && !isInitializedRef.current ) {
+			if (
+				typeof monei !== 'undefined' &&
+				monei.Bizum &&
+				! isInitializedRef.current
+			) {
 				initMoneiCard();
 				isInitializedRef.current = true;
-			} else if ( !monei || !monei.Bizum ) {
+			} else if ( ! monei || ! monei.Bizum ) {
 				console.error( 'MONEI SDK is not available' );
 			}
 		}, [] ); // Only initialize once on mount
 
 		useEffect( () => {
 			// Only update amount if instance exists and cart totals changed
-			if ( isInitializedRef.current && currentBizumInstanceRef.current && cartTotals ) {
+			if (
+				isInitializedRef.current &&
+				currentBizumInstanceRef.current &&
+				cartTotals
+			) {
 				updateBizumAmount();
 			}
 		}, [ cartTotals ] ); // Update amount when cart totals change
@@ -63,14 +71,14 @@
 		 * Initialize MONEI Bizum instance once.
 		 */
 		const initMoneiCard = () => {
-			const currentTotal = cartTotals?.total_price ?
-				parseInt( cartTotals.total_price ) :
-				parseInt( bizumData.total * 100 );
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: parseInt( bizumData.total * 100 );
 
 			lastAmountRef.current = currentTotal;
 
 			const container = document.getElementById( 'bizum-container' );
-			if ( !container ) {
+			if ( ! container ) {
 				console.error( 'Bizum container not found' );
 				return;
 			}
@@ -84,6 +92,7 @@
 				language: bizumData.language,
 				amount: currentTotal,
 				currency: bizumData.currency,
+				style: bizumData.bizumStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
 						requestTokenRef.current = result.token;
@@ -112,9 +121,9 @@
 		 * Update the amount in the existing Bizum instance.
 		 */
 		const updateBizumAmount = () => {
-			const currentTotal = cartTotals?.total_price ?
-				parseInt( cartTotals.total_price ) :
-				parseInt( bizumData.total * 100 );
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: parseInt( bizumData.total * 100 );
 
 			// Only update if amount actually changed
 			if ( currentTotal === lastAmountRef.current ) {
@@ -126,7 +135,10 @@
 			if ( currentBizumInstanceRef.current ) {
 				const preservedToken = requestTokenRef.current;
 
-				if ( typeof currentBizumInstanceRef.current.destroy === 'function' ) {
+				if (
+					typeof currentBizumInstanceRef.current.destroy ===
+					'function'
+				) {
 					currentBizumInstanceRef.current.destroy();
 				}
 
@@ -155,7 +167,9 @@
 								placeOrderButton.disabled = false;
 								placeOrderButton.click();
 							} else {
-								console.error( 'Place Order button not found.' );
+								console.error(
+									'Place Order button not found.'
+								);
 							}
 						}
 					},
@@ -185,7 +199,8 @@
 					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
-							monei_payment_request_token: requestTokenRef.current,
+							monei_payment_request_token:
+								requestTokenRef.current,
 							monei_is_block_checkout: 'yes',
 						},
 					},
@@ -204,9 +219,11 @@
 					if ( paymentDetails && paymentDetails.paymentId ) {
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
-						monei.confirmPayment( {
-							paymentId,
-							paymentToken: tokenValue} )
+						monei
+							.confirmPayment( {
+								paymentId,
+								paymentToken: tokenValue,
+							} )
 							.then( ( result ) => {
 								if (
 									result.nextAction &&
@@ -248,7 +265,10 @@
 		useEffect( () => {
 			return () => {
 				if ( currentBizumInstanceRef.current ) {
-					if ( typeof currentBizumInstanceRef.current.destroy === 'function' ) {
+					if (
+						typeof currentBizumInstanceRef.current.destroy ===
+						'function'
+					) {
 						currentBizumInstanceRef.current.destroy();
 					}
 					currentBizumInstanceRef.current = null;
@@ -278,9 +298,9 @@
 	const bizumLabel = () => {
 		return (
 			<div className="monei-label-container">
-                <span className="monei-text">
-                    { __( bizumData.title, 'monei' ) }
-                </span>
+				<span className="monei-text">
+					{ __( bizumData.title, 'monei' ) }
+				</span>
 				{ bizumData?.logo && (
 					<div className="monei-logo">
 						<img src={ bizumData.logo } alt="" />
@@ -297,7 +317,10 @@
 		content: <MoneiBizumContent />,
 		edit: <div> { __( bizumData.title, 'monei' ) }</div>,
 		canMakePayment: ( { billingData } ) => {
-			return billingData.country === 'ES' && !bizumData.cart_has_subscription;
+			return (
+				billingData.country === 'ES' &&
+				! bizumData.cart_has_subscription
+			);
 		},
 		supports: bizumData.supports,
 	};
