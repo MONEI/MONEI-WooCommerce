@@ -168,7 +168,7 @@ class WC_Monei_IPN {
 			if ( $payment_method_display ) {
 				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );
 			}
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			// Log but don't fail - payment method display is not critical
 			WC_Monei_Logger::log( '[MONEI] Failed to get payment method display: ' . $e->getMessage(), 'warning' );
 		}

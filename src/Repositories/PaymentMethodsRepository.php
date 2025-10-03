@@ -3,6 +3,7 @@
 namespace Monei\Repositories;
 
 use Monei\MoneiClient;
+use Exception;
 
 class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	private $accountId;
@@ -22,7 +23,7 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 		}
 		try {
 			$response = $this->moneiClient->paymentMethods->get( $this->accountId );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			$response = null;
 		}
 

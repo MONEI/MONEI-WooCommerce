@@ -10,6 +10,7 @@ use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
 use WC_Monei_IPN;
 use WC_Monei_Payment_Gateway_Hosted;
+use WC_Admin_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -150,7 +151,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 
 		// Check for JSON errors
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			\WC_Admin_Settings::add_error(
+			WC_Admin_Settings::add_error(
 				sprintf(
 					/* translators: %s: JSON error message */
 					__( 'PayPal Style field contains invalid JSON: %s', 'monei' ),

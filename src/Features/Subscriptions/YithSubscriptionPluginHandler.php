@@ -5,6 +5,8 @@ namespace Monei\Features\Subscriptions;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use WC_Order;
+use WC_Monei_Logger;
+use Exception;
 
 class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	private $moneiPaymentServices;
@@ -14,7 +16,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		add_action(
 			'ywsbs_pay_renew_order_with_' . MONEI_GATEWAY_ID,
 			function ( $renew_order ) {
-				if ( ! $renew_order instanceof \WC_Order ) {
+				if ( ! $renew_order instanceof WC_Order ) {
 					return false;
 				}
 				$amount_to_charge = $renew_order->get_total();
@@ -207,7 +209,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		$sequence_id  = $this->get_sequence_id_from_subscription( $subscription );
 
 		if ( ! $subscription || 'yes' !== $is_a_renew ) {
-			\WC_Monei_Logger::log( sprintf( 'Sorry, any subscription was found for order #%s or order is not a renew.', $order_id ), 'subscription_payment' );
+			WC_Monei_Logger::log( sprintf( 'Sorry, any subscription was found for order #%s or order is not a renew.', $order_id ), 'subscription_payment' );
 		}
 		$payload = array(
 			'orderId'     => (string) $renewal_order->get_id(),
@@ -238,9 +240,9 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 			}
 			$renewal_order->save();
 
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
-			\WC_Monei_Logger::log( $e, 'error' );
+			WC_Monei_Logger::log( $e, 'error' );
 			$renewal_order->update_status( 'failed' );
 			$renewal_order->add_order_note( __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . $e->getMessage() );
 			$renewal_order->save();
@@ -257,7 +259,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	 * @return \YWSBS_Subscription|false
 	 */
 	// @phpstan-ignore-next-line
-	private function get_subscription_from_renew_order( \WC_Order $renewal_order ) {
+	private function get_subscription_from_renew_order( WC_Order $renewal_order ) {
 		$subscriptions   = $renewal_order->get_meta( 'subscriptions' );
 		$subscription_id = ! empty( $subscriptions ) ? array_shift( $subscriptions ) : false; // $subscriptions is always an array of 1 element.
 

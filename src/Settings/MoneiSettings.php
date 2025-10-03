@@ -5,8 +5,9 @@ namespace Monei\Settings;
 use Monei\Services\ApiKeyService;
 use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
+use WC_Settings_Page;
 
-class MoneiSettings extends \WC_Settings_Page {
+class MoneiSettings extends WC_Settings_Page {
 
 	protected ContainerInterface $container;
 	/**

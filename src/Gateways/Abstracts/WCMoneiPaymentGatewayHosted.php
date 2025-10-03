@@ -7,6 +7,7 @@ use Monei\Services\payment\MoneiPaymentServices;
 use WC_Geolocation;
 use WC_Order;
 use WC_Payment_Tokens;
+use Monei\ApiException;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -160,7 +161,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
-		} catch ( \Monei\ApiException $e ) {
+		} catch ( ApiException $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			// Parse API exception and get user-friendly error message
 			$error_info = $this->statusCodeHandler->parse_api_exception( $e );

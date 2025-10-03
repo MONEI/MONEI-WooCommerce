@@ -6,6 +6,9 @@ use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use WC_Order;
+use Exception;
+use WC_Monei_Logger;
+use WC_Subscriptions_Product;
 
 class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 
@@ -184,9 +187,9 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 			}
 			$renewal_order->save();
 
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
-			\WC_Monei_Logger::log( $e, 'error' );
+			WC_Monei_Logger::log( $e, 'error' );
 			$renewal_order->update_status( 'failed' );
 			$renewal_order->add_order_note( __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . $e->getMessage() );
 			$renewal_order->save();
@@ -232,9 +235,9 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 	}
 	public function get_cart_subscription_interval_in_days() {
 		foreach ( WC()->cart->cart_contents as $cart_item ) {
-			if ( \WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
-				$interval = \WC_Subscriptions_Product::get_interval( $cart_item['data'] );
-				$period   = \WC_Subscriptions_Product::get_period( $cart_item['data'] );
+			if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+				$interval = WC_Subscriptions_Product::get_interval( $cart_item['data'] );
+				$period   = WC_Subscriptions_Product::get_period( $cart_item['data'] );
 				break;
 			}
 		}

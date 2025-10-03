@@ -51,14 +51,14 @@ class MoneiApplePayVerificationService {
 			$this->moneiPaymentServices->register_apple_domain( $domain );
 
 			WC_Monei_Logger::log( 'Apple Pay domain registered successfully: ' . $domain, 'info' );
-			\WC_Admin_Settings::add_message( __( 'Apple Pay domain registered successfully.', 'monei' ) );
+			WC_Admin_Settings::add_message( __( 'Apple Pay domain registered successfully.', 'monei' ) );
 		} catch ( ApiException $e ) {
 			WC_Monei_Logger::log( 'Apple Pay domain registration failed for ' . $domain . ': ' . $e->getMessage(), 'error' );
 			$response_body = json_decode( $e->getResponseBody() );
 			if ( $response_body && isset( $response_body->message ) ) {
-				\WC_Admin_Settings::add_error( __( 'Apple Pay', 'monei' ) . ': ' . $response_body->message );
+				WC_Admin_Settings::add_error( __( 'Apple Pay', 'monei' ) . ': ' . $response_body->message );
 			} else {
-				\WC_Admin_Settings::add_error( __( 'Apple Pay domain registration failed. Please check the logs.', 'monei' ) );
+				WC_Admin_Settings::add_error( __( 'Apple Pay domain registration failed. Please check the logs.', 'monei' ) );
 			}
 		}
 	}
