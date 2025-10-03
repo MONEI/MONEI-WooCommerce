@@ -150,7 +150,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 					json_last_error_msg()
 				)
 			);
-			return $this->get_option( 'paypal_style', '{"height": "50px"}' );
+			return $this->get_option( 'paypal_style', '{"height": "50px", "disableMaxWidth": true}' );
 		}
 
 		return $value;

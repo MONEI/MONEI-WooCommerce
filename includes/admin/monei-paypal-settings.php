@@ -51,7 +51,7 @@ return apply_filters(
 			'title'       => __( 'PayPal Style', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the PayPal component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paypal-options" target="_blank">MONEI PayPal Style</a>',
-			'default'     => '{"height": "42"}',
+			'default'     => '{"height": "50px", "disableMaxWidth": true}',
 			'css'         => 'min-height: 80px;',
 		),
 		'title'         => array(
