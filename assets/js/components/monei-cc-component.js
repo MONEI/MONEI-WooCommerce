@@ -218,17 +218,14 @@ export const MoneiCCContent = ( props ) => {
 						failUrl.searchParams.set( 'status', 'FAILED' );
 						window.location.href = failUrl.toString();
 					} else {
-						let redirectUrl = paymentDetails.completeUrl;
+						// Always include payment ID in redirect URL for order verification
+						const { orderId, paymentId } = paymentDetails;
+						const url = new URL( paymentDetails.completeUrl );
+						url.searchParams.set( 'id', paymentId );
+						url.searchParams.set( 'orderId', orderId );
+						url.searchParams.set( 'status', result.status );
 
-						if ( shouldSavePayment === true ) {
-							const { orderId, paymentId } = paymentDetails;
-							const url = new URL( paymentDetails.completeUrl );
-							url.searchParams.set( 'id', paymentId );
-							url.searchParams.set( 'orderId', orderId );
-							redirectUrl = url.toString();
-						}
-
-						window.location.href = redirectUrl;
+						window.location.href = url.toString();
 					}
 				} catch ( error ) {
 					console.error(
