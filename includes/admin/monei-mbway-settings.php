@@ -15,9 +15,7 @@ $settings_link = esc_url(
 	)
 );
 
-/**
- * Monei mbway Gateway Settings.
- */
+/** Monei mbway Gateway Settings. */
 return apply_filters(
 	'wc_monei_mbway_settings',
 	array(
@@ -37,7 +35,7 @@ return apply_filters(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Payment method description shown to customers during checkout.', 'monei' ),
-			'default'     => __( 'Pay with MBWay. Powered by MONEI.', 'monei' ),
+			'default'     => __( 'Pay with MBWay, you will be redirected to MBWay to complete the payment. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-mbway-description-field',
 		),
 		'title'       => array(
@@ -62,16 +60,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'orderdo'     => array(
-			'title'       => __( 'What to do after payment?', 'monei' ),
-			'type'        => 'select',
-			'description' => __( 'Chose what to do after the customer pay the order.', 'monei' ),
-			'default'     => 'processing',
-			'options'     => array(
-				'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
-				'completed'  => __( 'Mark as Complete', 'monei' ),
-			),
 		),
 	)
 );

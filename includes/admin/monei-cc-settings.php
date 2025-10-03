@@ -42,7 +42,7 @@ return apply_filters(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'Pay with credit card. Powered by MONEI.', 'monei' ),
+			'default'     => __( 'You will be redirected to the payment page to complete the payment. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-cc-description-field',
 		),
 		'card_input_style' => array(
@@ -82,23 +82,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'If enabled, customers will be able to pay with a saved card during checkout. Card details are saved on MONEI servers, not on your store.', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'pre-authorize'    => array(
-			'title'       => __( 'Pre-Authorize', 'monei' ),
-			'type'        => 'checkbox',
-			'label'       => __( 'Manually capture payments', 'monei' ),
-			'description' => __( 'Place a hold on the funds when the customer authorizes the payment, but don’t capture the funds until later.<br>You can capture the payment changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br> You can cancel the Payment changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.', 'monei' ),
-			'default'     => 'no',
-		),
-		'orderdo'          => array(
-			'title'       => __( 'What to do after payment?', 'monei' ),
-			'type'        => 'select',
-			'description' => __( 'Chose what to do after the customer pay the order.', 'monei' ),
-			'default'     => 'processing',
-			'options'     => array(
-				'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
-				'completed'  => __( 'Mark as Complete', 'monei' ),
-			),
 		),
 	)
 );

@@ -101,15 +101,20 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
 		}
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
-		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
+		$this->description = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		// Backward compatible: try local setting first, then global setting
+		$local_orderdo              = $this->get_option( 'orderdo' );
+		$this->status_after_payment = ! empty( $local_orderdo ) ? $local_orderdo : get_option( 'monei_orderdo', 'processing' );
 		$this->account_id           = $this->getAccountId();
 		$this->api_key              = $this->getApiKey();
 		$this->shop_name            = get_bloginfo( 'name' );
 		$this->password             = ( ! empty( $this->get_option( 'password' ) ) ) ? $this->get_option( 'password' ) : '';
 		$this->tokenization         = ( ! empty( $this->get_option( 'tokenization' ) && 'yes' === $this->get_option( 'tokenization' ) ) ) ? true : false;
-		$this->pre_auth             = ( ! empty( $this->get_option( 'pre-authorize' ) && 'yes' === $this->get_option( 'pre-authorize' ) ) ) ? true : false;
-		$this->logging              = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
+		// Backward compatible: try local setting first, then global setting
+		$local_preauth  = $this->get_option( 'pre-authorize' );
+		$global_preauth = get_option( 'monei_pre_authorize', 'no' );
+		$this->pre_auth = ( ! empty( $local_preauth ) && 'yes' === $local_preauth ) || ( empty( $local_preauth ) && 'yes' === $global_preauth );
+		$this->logging  = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
 
 		// IPN callbacks
 		$this->notify_url = WC_Monei()->get_ipn_url();

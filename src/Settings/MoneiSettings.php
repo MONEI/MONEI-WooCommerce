@@ -83,6 +83,25 @@ class MoneiSettings extends \WC_Settings_Page {
 				'placeholder' => 'pk_live_7h3m4n1f3st0k3yf0r3x4mpl3purp0s3',
 			),
 			array(
+				'title'       => __( 'What to do after payment?', 'monei' ),
+				'type'        => 'select',
+				'description' => __( 'Choose what to do after the customer pays the order. This setting applies to all MONEI payment methods.', 'monei' ),
+				'default'     => 'processing',
+				'id'          => 'monei_orderdo',
+				'options'     => array(
+					'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
+					'completed'  => __( 'Mark as Complete', 'monei' ),
+				),
+			),
+			array(
+				'title'       => __( 'Pre-Authorize', 'monei' ),
+				'type'        => 'checkbox',
+				'label'       => __( 'Manually capture payments', 'monei' ),
+				'description' => __( 'Place a hold on the funds when the customer authorizes the payment, but don\'t capture the funds until later. Only works with payment methods that support authorization (Credit Card, PayPal).<br>You can capture the payment by changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br>You can cancel the payment by changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.', 'monei' ),
+				'default'     => 'no',
+				'id'          => 'monei_pre_authorize',
+			),
+			array(
 				'title'    => __( 'Debug Log', 'monei' ),
 				'type'     => 'checkbox',
 				'label'    => __( 'Enable logging', 'monei' ),

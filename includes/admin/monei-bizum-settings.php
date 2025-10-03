@@ -42,7 +42,7 @@ return apply_filters(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'Pay with Bizum. Powered by MONEI.', 'monei' ),
+			'default'     => __( 'You will be redirected to Bizum to complete the payment. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-bizum-description-field',
 		),
 		'bizum_style' => array(
@@ -74,16 +74,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'orderdo'     => array(
-			'title'       => __( 'What to do after payment?', 'monei' ),
-			'type'        => 'select',
-			'description' => __( 'Chose what to do after the customer pay the order.', 'monei' ),
-			'default'     => 'processing',
-			'options'     => array(
-				'processing' => __( 'Mark as Processing (default & recommended)', 'monei' ),
-				'completed'  => __( 'Mark as Complete', 'monei' ),
-			),
 		),
 	)
 );

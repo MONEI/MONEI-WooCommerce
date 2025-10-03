@@ -67,8 +67,10 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
 		}
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
-		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
+		$this->description = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		// Backward compatible: try local setting first, then global setting
+		$local_orderdo              = $this->get_option( 'orderdo' );
+		$this->status_after_payment = ! empty( $local_orderdo ) ? $local_orderdo : get_option( 'monei_orderdo', 'processing' );
 		$this->api_key              = $this->getApiKey();
 		$this->account_id           = $this->getAccountId();
 		$this->shop_name            = get_bloginfo( 'name' );
