@@ -378,10 +378,10 @@ composer phpcbf -- src/Gateways/PaymentMethods/WCGatewayMoneiCC.php
 
 Automatically runs PHPStan on staged PHP files before each commit. This prevents committing code with type errors.
 
-**To bypass** (not recommended):
-```bash
-git commit --no-verify -m "message"
-```
+**CRITICAL**: NEVER use `--no-verify` to bypass pre-commit hooks!
+- Pre-commit hooks are there to catch errors before they reach the repository
+- If the hook fails, fix the actual errors instead of bypassing the check
+- Using `--no-verify` can introduce bugs and break the build
 
 ### Common PHPStan Errors & Fixes
 
