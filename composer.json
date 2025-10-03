@@ -16,7 +16,8 @@
         "szepeviktor/phpstan-wordpress": "^1.3",
         "php-stubs/wordpress-stubs": "^6.6",
         "php-stubs/woocommerce-stubs": "^9.0",
-        "phpstan/extension-installer": "*"
+        "phpstan/extension-installer": "*",
+        "slevomat/coding-standard": "^8.22"
     },
     "scripts": {
         "phpcs": "phpcs -n",
