@@ -33,6 +33,13 @@ return apply_filters(
 			'label'   => __( 'Enable MBWay by MONEI', 'monei' ),
 			'default' => 'no',
 		),
+		'description' => array(
+			'title'       => __( 'Description', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Payment method description shown to customers during checkout.', 'monei' ),
+			'default'     => __( 'Pay with MBWay. Powered by MONEI.', 'monei' ),
+			'class'       => 'monei-mbway-description-field',
+		),
 		'title'       => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
@@ -47,13 +54,6 @@ return apply_filters(
 			'default'     => 'no',
 			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
 			'desc_tip'    => true,
-		),
-		'description' => array(
-			'title'       => __( 'Description', 'monei' ),
-			'type'        => 'textarea',
-			'description' => __( 'Payment method description shown to customers during checkout.', 'monei' ),
-			'default'     => __( 'Pay with MBWay. Powered by MONEI.', 'monei' ),
-			'class'       => 'monei-mbway-description-field',
 		),
 		'hide_logo'   => array(
 			'title'       => __( 'Hide Logo', 'monei' ),

@@ -16,14 +16,14 @@ export const createAppleGoogleLabel = ( moneiData ) => {
 	let logo = googleEnabled ? moneiData.logo_google : false;
 	logo = isApple && appleEnabled ? moneiData.logo_apple : logo;
 
-	const title = isApple && appleEnabled ? 'Apple Pay' : 'Google Pay';
+	const title = moneiData.title || '';
 	const shouldShowLogo =
 		( isApple && moneiData?.logo_apple ) ||
 		( ! isApple && moneiData?.logo_google );
 
 	return (
 		<div className="monei-label-container">
-			<span className="monei-text">{ title }</span>
+			{ title && <span className="monei-text">{ title }</span> }
 			{ shouldShowLogo && (
 				<div className="monei-logo">
 					<img src={ logo } alt="" />
