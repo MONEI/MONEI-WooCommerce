@@ -189,7 +189,7 @@
 
 	const MoneiPayPalPaymentMethod = {
 		name: 'monei_paypal',
-		label: <div> { paypalLabel() } </div>,
+		label: paypalLabel(),
 		ariaLabel: __( paypalData.title, 'monei' ),
 		content: <MoneiPayPalContent />,
 		edit: <div> { __( paypalData.title, 'monei' ) }</div>,

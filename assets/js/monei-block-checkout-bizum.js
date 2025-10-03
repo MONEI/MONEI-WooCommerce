@@ -312,7 +312,7 @@
 
 	const MoneiBizumPaymentMethod = {
 		name: 'monei_bizum',
-		label: <div> { bizumLabel() } </div>,
+		label: bizumLabel(),
 		ariaLabel: __( bizumData.title, 'monei' ),
 		content: <MoneiBizumContent />,
 		edit: <div> { __( bizumData.title, 'monei' ) }</div>,

@@ -20,7 +20,7 @@
 
 	const MoneiMbwayPaymentMethod = {
 		name: 'monei_mbway',
-		label: <div> { mbwayLabel() } </div>,
+		label: mbwayLabel(),
 		ariaLabel: __( mbwayData.title, 'monei' ),
 		content: <div> { __( mbwayData.description, 'monei' ) }</div>,
 		edit: <div> { __( mbwayData.title, 'monei' ) }</div>,

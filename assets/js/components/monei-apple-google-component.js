@@ -1,12 +1,9 @@
-import {
-	getPlaceOrderButton,
-	useButtonStateManager,
-} from '../helpers/monei-shared-utils';
+import { useButtonStateManager } from '../helpers/monei-shared-utils';
 
 /**
  * Create Apple/Google Pay label
  * @param {Object} moneiData - Configuration data
- * @return {React.Element}
+ * @return {*} JSX Element
  */
 export const createAppleGoogleLabel = ( moneiData ) => {
 	const isApple = window.ApplePaySession?.canMakePayments?.();
@@ -36,15 +33,15 @@ export const createAppleGoogleLabel = ( moneiData ) => {
 /**
  * Shared Apple/Google Pay Content Component
  * @param {Object} props - Component props
- * @return {React.Element}
+ * @return {*} JSX Element
  */
 export const MoneiAppleGoogleContent = ( props ) => {
 	const { useEffect, useRef } = wp.element;
-	const { responseTypes } = props.emitResponse;
 	const { onPaymentSetup } = props.eventRegistration;
 	const { activePaymentMethod } = props;
 	const moneiData =
 		props.moneiData ||
+		// eslint-disable-next-line no-undef
 		wc.wcSettings.getSetting( 'monei_apple_google_data' );
 
 	const paymentRequestRef = useRef( null );
@@ -63,6 +60,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 	 * Initialize MONEI Payment Request
 	 */
 	const initPaymentRequest = () => {
+		// eslint-disable-next-line no-undef
 		if ( typeof monei === 'undefined' || ! monei.PaymentRequest ) {
 			console.error( 'MONEI SDK is not available' );
 			return;
@@ -77,6 +75,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 			}
 		}
 
+		// eslint-disable-next-line no-undef
 		const paymentRequest = monei.PaymentRequest( {
 			accountId: moneiData.accountId,
 			sessionId: moneiData.sessionId,
@@ -116,6 +115,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				}
 			}
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
 	// Setup payment hook
@@ -125,7 +125,8 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		} );
 
 		return () => unsubscribe();
-	}, [ onPaymentSetup, buttonManager.tokenRef.current ] );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ onPaymentSetup ] );
 
 	return (
 		<fieldset className="monei-fieldset monei-payment-request-fieldset">

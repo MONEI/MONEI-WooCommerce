@@ -20,7 +20,7 @@
 
 	const MoneiMultibancoPaymentMethod = {
 		name: 'monei_multibanco',
-		label: <div> { multibancoLabel() } </div>,
+		label: multibancoLabel(),
 		ariaLabel: __( multibancoData.title, 'monei' ),
 		content: <div> { __( multibancoData.description, 'monei' ) }</div>,
 		edit: <div> { __( multibancoData.title, 'monei' ) }</div>,
