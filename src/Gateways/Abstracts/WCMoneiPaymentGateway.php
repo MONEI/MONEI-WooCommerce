@@ -5,6 +5,7 @@ namespace Monei\Gateways\Abstracts;
 use Exception;
 use Monei\Model\PaymentStatus;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
@@ -121,16 +122,23 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	private ApiKeyService $apiKeyService;
 	protected MoneiPaymentServices $moneiPaymentServices;
 
+	/**
+	 * @var MoneiStatusCodeHandler
+	 */
+	protected $statusCodeHandler;
+
 	public function __construct(
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
-		MoneiPaymentServices $moneiPaymentServices
+		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler
 	) {
 		$this->paymentMethodsService = $paymentMethodsService;
 		$this->templateManager       = $templateManager;
 		$this->apiKeyService         = $apiKeyService;
 		$this->moneiPaymentServices  = $moneiPaymentServices;
+		$this->statusCodeHandler     = $statusCodeHandler;
 	}
 
 	/**

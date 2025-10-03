@@ -4,6 +4,7 @@ namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayHosted;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
@@ -39,9 +40,10 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
-		MoneiPaymentServices $moneiPaymentServices
+		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $statusCodeHandler );
 
 		$this->id                 = MONEI_GATEWAY_ID . '_bizum';
 		$this->method_title       = __( 'MONEI - Bizum', 'monei' );

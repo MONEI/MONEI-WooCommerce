@@ -152,6 +152,24 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
 			);
+		} catch ( \Monei\ApiException $e ) {
+			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
+			// Parse API exception and get user-friendly error message
+			$error_info = $this->statusCodeHandler->parse_api_exception( $e );
+
+			// Log the technical details
+			if ( $error_info['statusCode'] ) {
+				$this->log( sprintf( 'Payment error - Status Code: %s, Raw Message: %s', $error_info['statusCode'], $error_info['rawMessage'] ), 'error' );
+			} else {
+				$this->log( sprintf( 'Payment error - Raw Message: %s', $error_info['rawMessage'] ?? $e->getMessage() ), 'error' );
+			}
+
+			// Show user-friendly error message to customer
+			wc_add_notice( $error_info['message'], 'error' );
+
+			return array(
+				'result' => 'failure',
+			);
 		} catch ( Exception $e ) {
 			$this->log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );

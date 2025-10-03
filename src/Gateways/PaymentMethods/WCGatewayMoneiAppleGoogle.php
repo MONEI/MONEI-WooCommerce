@@ -5,6 +5,7 @@ namespace Monei\Gateways\PaymentMethods;
 use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
@@ -55,9 +56,10 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
 		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler,
 		SubscriptionService $subscriptionService
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $statusCodeHandler );
 		$this->id                 = 'monei_apple_google';
 		$this->method_title       = __( 'MONEI - Apple Pay / Google Pay', 'monei' );
 		$this->method_description = __( 'Accept Apple Pay and Google Pay payments.', 'monei' );

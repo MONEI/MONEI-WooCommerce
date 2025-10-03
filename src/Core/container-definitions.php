@@ -8,6 +8,7 @@ use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
 use Monei\Services\MoneiApplePayVerificationService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Services\sdk\MoneiSdkClientFactory;
@@ -58,6 +59,7 @@ $definitions            = array(
 	CardBrandHelper::class                  => DI\create( CardBrandHelper::class )
 		->constructor( DI\get( PaymentMethodsService::class ) ),
 	MoneiPaymentServices::class             => DI\autowire( MoneiPaymentServices::class ),
+	MoneiStatusCodeHandler::class           => DI\autowire( MoneiStatusCodeHandler::class ),
 	BlockSupportService::class              => DI\create( BlockSupportService::class )
 		->constructor( $blocksPath, $blockNamespacePrefix ),
 	MoneiApplePayVerificationService::class => DI\autowire( MoneiApplePayVerificationService::class )

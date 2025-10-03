@@ -99,17 +99,19 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 
 		} catch ( ApiException $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			// Extract and log the responseBody message
-			$response_body = json_decode( $e->getResponseBody(), true );
-			if ( isset( $response_body['message'] ) ) {
-				WC_Monei_Logger::log( $response_body['message'], 'error' );
-				wc_add_notice( $response_body['message'], 'error' );
-				return array(
-					'result' => 'failure',
-				);
+			// Parse API exception and get user-friendly error message
+			$error_info = $this->statusCodeHandler->parse_api_exception( $e );
+
+			// Log the technical details
+			if ( $error_info['statusCode'] ) {
+				WC_Monei_Logger::log( sprintf( 'Payment error - Status Code: %s, Raw Message: %s', $error_info['statusCode'], $error_info['rawMessage'] ), 'error' );
+			} else {
+				WC_Monei_Logger::log( sprintf( 'Payment error - Raw Message: %s', $error_info['rawMessage'] ?? $e->getMessage() ), 'error' );
 			}
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
-			wc_add_notice( $e->getMessage(), 'error' );
+
+			// Show user-friendly error message to customer
+			wc_add_notice( $error_info['message'], 'error' );
+
 			return array(
 				'result' => 'failure',
 			);

@@ -8,6 +8,7 @@ use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Helpers\CardBrandHelper;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
@@ -63,10 +64,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
 		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler,
 		SubscriptionService $subscriptionService,
 		CardBrandHelper $cardBrandHelper
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $statusCodeHandler );
 		$this->cardBrandHelper    = $cardBrandHelper;
 		$this->id                 = MONEI_GATEWAY_ID;
 		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
