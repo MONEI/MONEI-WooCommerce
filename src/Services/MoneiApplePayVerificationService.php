@@ -61,7 +61,7 @@ class MoneiApplePayVerificationService {
 			$path     = WC_Monei()->plugin_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
 			$args     = array( 'headers' => array( 'Content-Type' => 'text/plain;charset=utf-8' ) );
 			$response = wp_remote_get( $path, $args );
-			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
+			if ( ! is_wp_error( $response ) && is_array( $response ) ) {
 				$body = $response['body'];
 				echo esc_html( $response['body'] );
 			}

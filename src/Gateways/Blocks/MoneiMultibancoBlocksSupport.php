@@ -59,7 +59,7 @@ final class MoneiMultibancoBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_data() {
-		$total = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+		$total = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$data  = array(
 
 			'title'       => $this->gateway->title,
@@ -74,10 +74,11 @@ final class MoneiMultibancoBlocksSupport extends AbstractPaymentMethodType {
 			// no:  live,
 			'test_mode'   => $this->gateway->getTestmode() ?? false,
 			'accountId'   => $this->gateway->getAccountId() ?? false,
-			'sessionId'   => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+			'sessionId'   => wc()->session !== null ? wc()->session->get_customer_id() : '',
 		);
 
-		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
+		$hide_logo = $this->get_setting( 'hide_logo' ) ?? 'no';
+		if ( 'yes' === $hide_logo ) {
 
 			unset( $data['logo'] );
 

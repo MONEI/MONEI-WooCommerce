@@ -61,9 +61,14 @@ if ( ! function_exists( 'locale_iso_639_1_code' ) ) {
 if ( ! class_exists( 'WC_Monei_IPN' ) ) {
 	/**
 	 * Mock WC_Monei_IPN class for PHPStan
+	 *
+	 * @param bool $logging
 	 */
 	class WC_Monei_IPN {
-		public function __construct( bool $logging = false ) {}
+		public function __construct( bool $logging = false ) {
+			// Stub implementation - parameter kept for signature compatibility
+			unset( $logging );
+		}
 	}
 }
 

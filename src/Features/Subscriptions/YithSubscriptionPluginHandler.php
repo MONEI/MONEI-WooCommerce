@@ -81,6 +81,11 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		 */
 		foreach ( $subscriptions as $subscription ) {
 			$subscription = ywsbs_get_subscription( $subscription );
+			// @phpstan-ignore-next-line
+			if ( ! $subscription ) {
+				continue;
+			}
+			// @phpstan-ignore-next-line
 			$meta         = array(
 				'_monei_sequence_id'                  => $payment->getSequenceId(),
 				'_monei_payment_method_brand'         => $payment->getPaymentMethod()->getCard()->getBrand(),
@@ -131,19 +136,18 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		/**
 		 * Refund that cent.
 		 */
-		MoneiPaymentServices::refund_payment( $confirm_payment->getId(), 1 );
+		$this->moneiPaymentServices->refund_payment( $confirm_payment->getId(), 1 );
 	}
 
 	/**
 	 * It adds subscription configuration to the payload.
 	 *
-	 * @param $order_id
+	 * @param $order
 	 * @param $payment_method
 	 *
 	 * @return array
 	 */
-	public function create_subscription_payload( WC_Order $order_id, $payment_method, $payload ): array {
-		$order               = new WC_Order( $order_id );
+	public function create_subscription_payload( WC_Order $order, $payment_method, $payload ): array {
 		$payload['sequence'] = array(
 			'type'      => 'recurring',
 			'recurring' => array(
@@ -155,7 +159,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		 * If there is a free trial, (first payment for free) and user has selected a tokenized card,
 		 * We hit a monei limitation, so we need to charge the customer 1 cent, that will be refunded afterwards.
 		 */
-		if ( 0 === monei_price_format( $order->get_total() ) && $this->get_payment_token_id_if_selected() ) {
+		if ( 0 === monei_price_format( $order->get_total() ) && isset( $payload['paymentToken'] ) ) {
 			$payload['amount'] = 1;
 		}
 
@@ -250,18 +254,20 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 	 * Get subscription object from renew order
 	 *
 	 * @param \WC_Order $renewal_order The WooCommerce order.
-	 * @return YWSBS_Subscription|bool
+	 * @return \YWSBS_Subscription|false
 	 */
+	// @phpstan-ignore-next-line
 	private function get_subscription_from_renew_order( \WC_Order $renewal_order ) {
 		$subscriptions   = $renewal_order->get_meta( 'subscriptions' );
 		$subscription_id = ! empty( $subscriptions ) ? array_shift( $subscriptions ) : false; // $subscriptions is always an array of 1 element.
 
+		// @phpstan-ignore-next-line
 		return $subscription_id ? ywsbs_get_subscription( $subscription_id ) : false;
 	}
 
 	public function init_subscriptions( array $supports, string $gateway_id ): array {
 		add_action( 'wc_gateway_monei_create_payment_success', array( $this, 'subscription_after_payment_success' ), 1, 3 );
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, array( $this, 'scheduled_subscription_payment' ), 1, 3 );
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, array( $this, 'scheduled_subscription_payment' ), 1, 2 );
 
 		// Add Payment information to Payment method name in "Subscription" Tab.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', array( $this, 'add_extra_info_to_subscriptions_payment_method_title' ), 10, 2 );

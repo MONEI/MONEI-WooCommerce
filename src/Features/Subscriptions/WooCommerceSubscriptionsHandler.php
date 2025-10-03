@@ -88,19 +88,18 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		/**
 		 * Refund that cent.
 		 */
-		MoneiPaymentServices::refund_payment( $confirm_payment->getId(), 1 );
+		$this->moneiPaymentServices->refund_payment( $confirm_payment->getId(), 1 );
 	}
 
 	/**
 	 * It adds subscription configuration to the payload.
 	 *
-	 * @param $order_id
+	 * @param $order
 	 * @param $payment_method
 	 *
 	 * @return array
 	 */
-	public function create_subscription_payload( WC_Order $order_id, $payment_method, $payload ): array {
-		$order               = new WC_Order( $order_id );
+	public function create_subscription_payload( WC_Order $order, $payment_method, $payload ): array {
 		$payload['sequence'] = array(
 			'type'      => 'recurring',
 			'recurring' => array(
@@ -112,7 +111,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		 * If there is a free trial, (first payment for free) and user has selected a tokenized card,
 		 * We hit a monei limitation, so we need to charge the customer 1 cent, that will be refunded afterwards.
 		 */
-		if ( 0 === monei_price_format( $order->get_total() ) && $this->get_payment_token_id_if_selected() ) {
+		if ( 0 === monei_price_format( $order->get_total() ) && isset( $payload['paymentToken'] ) ) {
 			$payload['amount'] = 1;
 		}
 
@@ -213,7 +212,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 
     public function init_subscriptions( array $supports, string $gateway_id ): array {
 		add_action( 'wc_gateway_monei_create_payment_success', array( $this, 'subscription_after_payment_success' ), 1, 3 );
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, array( $this, 'scheduled_subscription_payment' ), 1, 3 );
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, array( $this, 'scheduled_subscription_payment' ), 1, 2 );
 
 		// Add Payment information to Payment method name in "Subscription" Tab.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', array( $this, 'add_extra_info_to_subscriptions_payment_method_title' ), 10, 2 );
@@ -270,7 +269,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
 		$subscription  = array_pop( $subscriptions );
 
-		if ( false === $subscription->get_parent_id() ) {
+		if ( 0 === $subscription->get_parent_id() ) {
 			$parent_order = null;
 		} else {
 			$parent_order = $subscription->get_parent();
@@ -280,9 +279,9 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 	/**
 	 * Retrieves parent order from a subscription order.
 	 *
-	 * @param WC_Subscription $subscription_order
+	 * @param \WCS_Subscription $subscription_order
 	 *
-	 * @return mixed WC_Order|bool
+	 * @return \WC_Order|false
 	 */
 	public function get_parent_for_subscription_id( $subscription_order ) {
 		return $subscription_order->get_parent();
@@ -322,6 +321,6 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
         if (!$this->is_subscriptions_addon_enabled()) {
             return false;
         }
-        return is_array( WC()->cart->recurring_carts ) ? count( WC()->cart->recurring_carts ) : 0;
+        return is_array( WC()->cart->recurring_carts ) && count( WC()->cart->recurring_carts ) > 0;
     }
 }

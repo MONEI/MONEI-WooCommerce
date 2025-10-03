@@ -3,6 +3,7 @@
 namespace Monei\Gateways\Abstracts;
 
 use Exception;
+use Monei\ApiException;
 use WC_Geolocation;
 use MoneiPaymentServices;
 use WC_Order;
@@ -17,7 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Abstract class that will be inherited by all integrated components payment methods.
  * Class WC_Monei_Payment_Gateway_Component
  *
- * @extends WCMoneiPaymentGateway
  * @since 5.0
  */
 abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
@@ -97,7 +97,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 				'redirect' => $next_action_redirect,
 			);
 
-		} catch ( Exception $e ) {
+		} catch ( ApiException $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			// Extract and log the responseBody message
 			$response_body = json_decode( $e->getResponseBody(), true );
@@ -108,6 +108,13 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 					'result' => 'failure',
 				);
 			}
+			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			wc_add_notice( $e->getMessage(), 'error' );
+			return array(
+				'result' => 'failure',
+			);
+		} catch ( Exception $e ) {
+			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			WC_Monei_Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 			return array(

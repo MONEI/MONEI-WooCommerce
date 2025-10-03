@@ -3,6 +3,7 @@
 namespace Monei\Gateways\Abstracts;
 
 use Exception;
+use Monei\Model\PaymentStatus;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
@@ -17,8 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Abstract class that will be inherited by all payment methods.
- *
- * @extends WC_Payment_Gateway
  *
  * @since 5.0
  */
@@ -160,7 +159,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	public function is_available() {
 		$isEnabled      = $this->enabled === 'yes' && $this->is_valid_for_use();
-		$billingCountry = WC()->customer && ! empty( WC()->customer->get_billing_country() )
+		$billingCountry = WC()->customer !== null && ! empty( WC()->customer->get_billing_country() )
 			? WC()->customer->get_billing_country()
 			: wc_get_base_location()['country'];
 
@@ -199,7 +198,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 				}
 				return;
 			}
-			$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id, $this->getAccountId() );
+			$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id );
 			if ( ! $methodAvailability ) {
 				$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-enabled-monei' );
 				if ( $template ) {
@@ -228,7 +227,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 			return false;
 		}
 
-		if ( ! $amount ) {
+		if ( null === $amount ) {
 			$amount = $order->get_total();
 		}
 
@@ -238,7 +237,9 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 			$result = $this->moneiPaymentServices->refund_payment( $payment_id, monei_price_format( $amount ) );
 
-			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
+			// SDK PHPDoc is misleading - getStatus() returns string, not PaymentStatus object
+			// @phpstan-ignore-next-line
+			if ( PaymentStatus::REFUNDED === $result->getStatus() || PaymentStatus::PARTIALLY_REFUNDED === $result->getStatus() ) {
 
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
@@ -296,7 +297,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	protected function add_cart_total_fragments( $fragments ) {
-		if ( ! WC()->cart ) {
+		if ( null === WC()->cart ) {
 			return $fragments;
 		}
 

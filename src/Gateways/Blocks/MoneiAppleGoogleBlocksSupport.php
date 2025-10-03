@@ -4,12 +4,19 @@ namespace Monei\Gateways\Blocks;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
+use Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle;
 
 final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
 	protected $name = 'monei_apple_google';
+	/**
+	 * @var WCGatewayMoneiAppleGoogle
+	 */
 	public WCMoneiPaymentGateway $gateway;
 
+	/**
+	 * @param WCGatewayMoneiAppleGoogle $gateway
+	 */
 	public function __construct( WCMoneiPaymentGateway $gateway ) {
 		$this->gateway = $gateway;
 	}
@@ -64,7 +71,7 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
     public function get_payment_method_data() {
         $supports = $this->gateway->supports;
-        $total                 = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+        $total                 = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
         $isGoogleEnabled       = $this->gateway->isGoogleAvailable();
         $isAppleEnabled        = $this->gateway->isAppleAvailable();
         $logoApple             = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
@@ -81,7 +88,7 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
             // no:  live,
             'test_mode'             => $this->gateway->getTestmode(),
             'accountId'             => $this->gateway->getAccountId() ?? false,
-            'sessionId'             => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+            'sessionId'             => wc()->session !== null ? wc()->session->get_customer_id() : '',
             'currency'              => get_woocommerce_currency(),
             'total'                 => $total,
             'language'              => locale_iso_639_1_code(),

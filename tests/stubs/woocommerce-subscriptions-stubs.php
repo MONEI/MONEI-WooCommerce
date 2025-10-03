@@ -50,9 +50,11 @@ if (!function_exists('wcs_get_subscriptions_for_renewal_order')) {
 if (!function_exists('ywsbs_get_subscription')) {
 	/**
 	 * @param int $subscription_id
-	 * @return YWSBS_Subscription|false
+	 * @return \YWSBS_Subscription|false
+	 * @phpstan-return false
 	 */
 	function ywsbs_get_subscription($subscription_id) {
+		// Stub always returns false for simplicity - real plugin returns YWSBS_Subscription
 		return false;
 	}
 }
@@ -125,6 +127,32 @@ if (!class_exists('YWSBS_Subscription')) {
 		 */
 		public function get_parent() {
 			return false;
+		}
+
+		/**
+		 * @param array $meta
+		 * @return void
+		 */
+		public function update_subscription_meta( array $meta ) {
+			// Mock implementation
+		}
+
+		/**
+		 * @param string $key
+		 * @param mixed $default
+		 * @return mixed
+		 */
+		public function get( string $key, $default = null ) {
+			return $default;
+		}
+
+		/**
+		 * @param string $key
+		 * @param bool $single
+		 * @return mixed
+		 */
+		public function get_meta( string $key, bool $single = true ) {
+			return '';
 		}
 	}
 }

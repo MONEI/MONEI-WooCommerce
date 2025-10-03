@@ -16,7 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Abstract class that will be inherited by all Hosted payment methods.
  * Class WC_Monei_Payment_Gateway_Hosted
  *
- * @extends WCMoneiPaymentGateway
  * @since 5.0
  */
 abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
@@ -82,7 +81,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 					'city'    => ( $order->get_billing_city() ) ?: null,
 					'line1'   => ( $order->get_billing_address_1() ) ?: null,
 					'line2'   => ( $order->get_billing_address_2() ) ?: null,
-					'zip'     => ( $order->get_billing_postcode() ) ?? null,
+					'zip'     => ( $order->get_billing_postcode() ) ?: null,
 					'state'   => ( $order->get_billing_state() ) ?: null,
 				),
 			),
