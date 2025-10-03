@@ -4,6 +4,7 @@ namespace Monei\Gateways\Abstracts;
 
 use Exception;
 use Monei\ApiException;
+use Monei\Model\PaymentStatus;
 use WC_Geolocation;
 use MoneiPaymentServices;
 use WC_Order;
@@ -91,7 +92,33 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			/**
 			 * Depends if we came in 1 step or 2.
 			 */
-			$next_action_redirect = ( $confirm_payment ) ? $confirm_payment->getNextAction()->getRedirectUrl() : $create_payment->getNextAction()->getRedirectUrl();
+			$payment_result = $confirm_payment ?: $create_payment;
+			// Get redirect URL from nextAction, or fall back to order received page
+			$next_action = $payment_result->getNextAction();
+			if ( $next_action && $next_action->getRedirectUrl() ) {
+				$next_action_redirect = $next_action->getRedirectUrl();
+			} else {
+				// If no redirect URL from MONEI (e.g., immediately successful payment with saved card),
+				// redirect to order received page
+				$next_action_redirect = $this->get_return_url( $order );
+			}
+
+			// Add payment ID and status to redirect URL for order verification (similar to blocks checkout)
+			// This ensures order is marked as paid even if IPN hasn't arrived yet (race condition fix)
+			/** @var string $payment_status */
+			$payment_status = $payment_result->getStatus();
+			if ( PaymentStatus::SUCCEEDED === $payment_status || PaymentStatus::AUTHORIZED === $payment_status || PaymentStatus::PENDING === $payment_status ) {
+				$redirect_url         = add_query_arg(
+					array(
+						'id'      => $payment_result->getId(),
+						'orderId' => $order_id,
+						'status'  => $payment_status,
+					),
+					$next_action_redirect
+				);
+				$next_action_redirect = $redirect_url;
+			}
+
 			return array(
 				'result'   => 'success',
 				'redirect' => $next_action_redirect,
@@ -151,7 +178,17 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		/**
 		 * The URL the customer will be directed to after transaction completed (successful or failed).
 		 */
-		$complete_url = wp_sanitize_redirect( esc_url_raw( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) ) );
+		$complete_url = wp_sanitize_redirect(
+			esc_url_raw(
+				add_query_arg(
+					array(
+						'utm_nooverride' => '1',
+						'orderId'        => $order_id,
+					),
+					$this->get_return_url( $order )
+				)
+			)
+		);
 
 		/**
 		 * Create Payment Payload

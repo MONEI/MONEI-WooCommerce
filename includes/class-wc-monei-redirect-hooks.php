@@ -1,6 +1,7 @@
 <?php
 
 use Monei\Core\ContainerProvider;
+use Monei\Model\PaymentStatus;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodFormatter;
@@ -28,8 +29,8 @@ class WC_Monei_Redirect_Hooks {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_cancelled_order', array( $this, 'add_notice_monei_order_cancelled' ) );
-		add_action( 'template_redirect', array( $this, 'add_notice_monei_order_failed' ) );
 		add_action( 'wp', array( $this, 'save_payment_token' ) );
+		add_action( 'template_redirect', array( $this, 'add_notice_monei_order_failed' ), 10 );
 		//TODO use the container
 		$apiKeyService                = new ApiKeyService();
 		$sdkClient                    = new MoneiSdkClientFactory( $apiKeyService );
@@ -206,19 +207,20 @@ class WC_Monei_Redirect_Hooks {
 			return;
 		}
 
+		/** @var string $payment_status */
 		$payment_status = $payment->getStatus();
 		$order_status   = $order->get_status();
 
 		WC_Monei_Logger::log( sprintf( '[MONEI] Redirect verification [payment_id=%s, order_id=%s, payment_status=%s, order_status=%s]', $payment->getId(), $order_id, $payment_status, $order_status ), 'debug' );
 
-		// Only process if order is still pending/on-hold and payment succeeded
-		if ( ! in_array( $order_status, array( 'pending', 'on-hold' ), true ) ) {
+		// Only process if order is still pending/on-hold/failed and payment succeeded
+		if ( ! in_array( $order_status, array( 'pending', 'on-hold', 'failed' ), true ) ) {
 			WC_Monei_Logger::log( sprintf( '[MONEI] Order already processed, skipping [order_id=%s, status=%s]', $order_id, $order_status ), 'debug' );
 			return;
 		}
 
 		// If payment is SUCCEEDED or AUTHORIZED, complete the order
-		if ( 'SUCCEEDED' === $payment_status || 'AUTHORIZED' === $payment_status ) {
+		if ( PaymentStatus::SUCCEEDED === $payment_status || PaymentStatus::AUTHORIZED === $payment_status ) {
 			$amount      = $payment->getAmount();
 			$order_total = $order->get_total();
 
@@ -250,7 +252,7 @@ class WC_Monei_Redirect_Hooks {
 				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );
 			}
 
-			if ( 'AUTHORIZED' === $payment_status ) {
+			if ( PaymentStatus::AUTHORIZED === $payment_status ) {
 				$order->update_meta_data( '_payment_not_captured_monei', 1 );
 				$order_note  = __( 'Payment verified via redirect - <strong>Payment Authorized</strong>', 'monei' ) . '. <br><br>';
 				$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $payment->getId() . '. <br><br>';
