@@ -67,10 +67,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		CardBrandHelper $cardBrandHelper
 	) {
 		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
-		$this->cardBrandHelper  = $cardBrandHelper;
-		$this->id               = MONEI_GATEWAY_ID;
-		$this->method_title     = __( 'MONEI - Credit Card', 'monei' );
-		$this->enabled          = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->cardBrandHelper    = $cardBrandHelper;
+		$this->id                 = MONEI_GATEWAY_ID;
+		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
+		$this->method_description = __( 'Accept credit card payments.', 'monei' );
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
 
 		// Load the form fields.
 		$this->init_form_fields();
