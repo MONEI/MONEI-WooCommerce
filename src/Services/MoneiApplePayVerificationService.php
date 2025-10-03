@@ -27,28 +27,49 @@ class MoneiApplePayVerificationService {
 
 	/**
 	 * Apple API Domain registration.
+	 * Automatically registers domain with Apple Pay when gateway is enabled.
 	 */
 	public function apple_domain_register() {
+		WC_Monei_Logger::log( 'Apple domain registration hook triggered', 'debug' );
+
 		if ( ! check_admin_referer( 'woocommerce-settings' ) ) {
+			WC_Monei_Logger::log( 'Apple domain registration: nonce verification failed', 'debug' );
 			return;
 		}
 
-		// Check if Apple/Google Pay is being enabled
+		// Check if Apple/Google Pay is enabled
 		if ( ! isset( $_POST['woocommerce_monei_apple_google_enabled'] ) ) {
+			WC_Monei_Logger::log( 'Apple domain registration: enabled field not set', 'debug' );
 			return;
 		}
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( 'yes' !== wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_enabled'] ) ) ) {
+		$enabled_value = wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_enabled'] ) );
+		WC_Monei_Logger::log( 'Apple domain registration: enabled value = ' . $enabled_value, 'debug' );
+
+		if ( 'yes' !== $enabled_value && '1' !== $enabled_value ) {
+			WC_Monei_Logger::log( 'Apple domain registration: gateway not enabled', 'debug' );
 			return;
 		}
 
 		try {
 			$domain = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
-			$this->moneiPaymentServices->register_apple_domain( $domain );
+
+			WC_Monei_Logger::log( 'Attempting to register Apple Pay domain: ' . $domain, 'info' );
+
+			$result = $this->moneiPaymentServices->register_apple_domain( $domain );
+
+			WC_Monei_Logger::log( 'Apple Pay domain registration successful for: ' . $domain, 'info' );
+			WC_Monei_Logger::log( 'Registration result: ' . wp_json_encode( $result ), 'debug' );
+			\WC_Admin_Settings::add_message( __( 'Apple Pay domain registered successfully.', 'monei' ) );
 		} catch ( ApiException $e ) {
-			WC_Monei_Logger::log( $e, 'error' );
+			WC_Monei_Logger::log( 'Apple Pay domain registration failed: ' . $e->getMessage(), 'error' );
+			WC_Monei_Logger::log( 'Exception response body: ' . $e->getResponseBody(), 'error' );
 			$response_body = json_decode( $e->getResponseBody() );
-			WC_Admin_Settings::add_error( __( 'Apple', 'monei' ) . ' ' . $response_body->message );
+			if ( $response_body && isset( $response_body->message ) ) {
+				\WC_Admin_Settings::add_error( __( 'Apple Pay', 'monei' ) . ': ' . $response_body->message );
+			} else {
+				\WC_Admin_Settings::add_error( __( 'Apple Pay domain registration failed. Please check the logs.', 'monei' ) );
+			}
 		}
 	}
 
