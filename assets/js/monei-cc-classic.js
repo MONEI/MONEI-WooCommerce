@@ -228,17 +228,17 @@
 					.createToken( wc_monei_form.$cardInput )
 					.then( function ( result ) {
 						if ( result.error ) {
-							console.error( 'error', result.error );
+							// Error displayed via print_errors
 							// Inform the user if there was an error.
 							wc_monei_form.print_errors( result.error );
 						} else {
-							console.log( 'token' );
-							// Create monei token and append it to Dconsole.logOM
+							// Token created successfully
+							// Create monei token and append it to DOM
 							wc_monei_form.monei_token_handler( result.token );
 						}
 					} )
 					.catch( function ( error ) {
-						console.error( error );
+						// Error displayed via print_errors
 						wc_monei_form.print_errors( error.message );
 					} );
 				return false;
@@ -262,17 +262,17 @@
 					.createToken( wc_monei_form.$cardInput )
 					.then( function ( result ) {
 						if ( result.error ) {
-							console.error( 'error', result.error );
+							// Error displayed via print_errors
 							// Inform the user if there was an error.
 							wc_monei_form.print_errors( result.error );
 						} else {
-							console.log( 'token', result.token );
-							// Create monei token and append it to Dconsole.logOM
+							// Token created successfully
+							// Create monei token and append it to DOM
 							wc_monei_form.monei_token_handler( result.token );
 						}
 					} )
 					.catch( function ( error ) {
-						console.error( error );
+						// Error displayed via print_errors
 						wc_monei_form.print_errors( error.message );
 					} );
 				return false;

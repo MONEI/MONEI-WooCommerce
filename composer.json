@@ -19,7 +19,7 @@
         "phpstan/extension-installer": "*"
     },
     "scripts": {
-        "phpcs": "phpcs",
+        "phpcs": "phpcs -n",
         "phpcbf": "phpcbf",
         "phpstan": "phpstan analyse --memory-limit=1G --no-progress",
         "lint": [

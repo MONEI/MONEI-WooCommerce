@@ -7,6 +7,8 @@
  * Shows the LATEST N versions (not the oldest N like the buggy npm package)
  */
 
+/* eslint-disable no-console */
+
 const fs = require( 'fs' );
 const path = require( 'path' );
 

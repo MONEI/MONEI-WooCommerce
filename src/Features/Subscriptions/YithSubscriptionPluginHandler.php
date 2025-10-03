@@ -86,7 +86,7 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 				continue;
 			}
 			// @phpstan-ignore-next-line
-			$meta         = array(
+			$meta = array(
 				'_monei_sequence_id'                  => $payment->getSequenceId(),
 				'_monei_payment_method_brand'         => $payment->getPaymentMethod()->getCard()->getBrand(),
 				'_monei_payment_method_4_last_digits' => $payment->getPaymentMethod()->getCard()->getLast4(),
@@ -305,19 +305,19 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 		return sprintf( __( '%1$s card ending in %2$s', 'monei' ), $brand, $last_digits );
 	}
 
-    /**
-     * Check if a product is a subscription using YITH WooCommerce Subscription logic
-     *
-     * @return bool
-     */
-    public function cart_has_subscription() {
+	/**
+	 * Check if a product is a subscription using YITH WooCommerce Subscription logic
+	 *
+	 * @return bool
+	 */
+	public function cart_has_subscription() {
 
-        if (!function_exists('YITH_WC_Subscription')) {
-            return false;
-        }
+		if ( ! function_exists( 'YITH_WC_Subscription' ) ) {
+			return false;
+		}
 
-        $ywsbs = YITH_WC_Subscription();
+		$ywsbs = YITH_WC_Subscription();
 
-        return is_string($ywsbs->cart_has_subscriptions());
-    }
+		return is_string( $ywsbs->cart_has_subscriptions() );
+	}
 }

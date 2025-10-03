@@ -44,7 +44,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 	}
 
 	public function get_subscriptions_for_order( int $order_id ): array {
-        //new WC_Subscription( $order_id );
+		//new WC_Subscription( $order_id );
 		return wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'any' ) ) );
 	}
 
@@ -196,21 +196,20 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		}
 	}
 
-    public function update_subscription_meta_data($subscriptions, $payment): void
-    {
-        /**
-         * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
-         */
-        foreach ( $subscriptions as $subscription_id => $subscription ) {
-            $subscription->update_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
-            $subscription->update_meta_data( '_monei_payment_method_brand', $payment->getPaymentMethod()->getCard()->getBrand() );
-            $subscription->update_meta_data( '_monei_payment_method_4_last_digits', $payment->getPaymentMethod()->getCard()->getLast4() );
-            $subscription->save_meta_data();
-        }
-    }
+	public function update_subscription_meta_data( $subscriptions, $payment ): void {
+		/**
+		 * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
+		 */
+		foreach ( $subscriptions as $subscription_id => $subscription ) {
+			$subscription->update_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
+			$subscription->update_meta_data( '_monei_payment_method_brand', $payment->getPaymentMethod()->getCard()->getBrand() );
+			$subscription->update_meta_data( '_monei_payment_method_4_last_digits', $payment->getPaymentMethod()->getCard()->getLast4() );
+			$subscription->save_meta_data();
+		}
+	}
 
 
-    public function init_subscriptions( array $supports, string $gateway_id ): array {
+	public function init_subscriptions( array $supports, string $gateway_id ): array {
 		add_action( 'wc_gateway_monei_create_payment_success', array( $this, 'subscription_after_payment_success' ), 1, 3 );
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, array( $this, 'scheduled_subscription_payment' ), 1, 2 );
 
@@ -312,15 +311,15 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		return sprintf( __( '%1$s card ending in %2$s', 'monei' ), $brand, $last_digits );
 	}
 
-    /**
-     * Check if a product is a subscription using WooCommerce Subscription logic
-     *
-     * @return bool
-     */
-    public function cart_has_subscription() {
-        if (!$this->is_subscriptions_addon_enabled()) {
-            return false;
-        }
-        return is_array( WC()->cart->recurring_carts ) && count( WC()->cart->recurring_carts ) > 0;
-    }
+	/**
+	 * Check if a product is a subscription using WooCommerce Subscription logic
+	 *
+	 * @return bool
+	 */
+	public function cart_has_subscription() {
+		if ( ! $this->is_subscriptions_addon_enabled() ) {
+			return false;
+		}
+		return is_array( WC()->cart->recurring_carts ) && count( WC()->cart->recurring_carts ) > 0;
+	}
 }

@@ -58,12 +58,12 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$iconUrl          = apply_filters( 'woocommerce_monei_bizum_icon', WC_Monei()->image_url( 'bizum-logo.svg' ) );
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
-		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->redirect_flow        = ( ! empty( $this->get_option( 'bizum_mode' ) && 'yes' === $this->get_option( 'bizum_mode' ) ) ) ? true : false;
-		$this->testmode             = $this->getTestmode();
-		$hide_title                 = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
-		$this->title                = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
+		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
+		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->redirect_flow = ( ! empty( $this->get_option( 'bizum_mode' ) && 'yes' === $this->get_option( 'bizum_mode' ) ) ) ? true : false;
+		$this->testmode      = $this->getTestmode();
+		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$this->title         = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
 		}
@@ -181,7 +181,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	public function payment_fields() {
 		// Show description only in redirect mode
 		if ( $this->redirect_flow && $this->description ) {
-			echo wpautop( wptexturize( $this->description ) );
+			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
 		}
 		// Only render Bizum button if not using redirect flow
 		if ( ! $this->redirect_flow ) {

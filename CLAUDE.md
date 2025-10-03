@@ -304,38 +304,84 @@ WooCommerce Blocks checkout requires testing in WordPress with WooCommerce Block
 
 ### Overview
 
-The project uses static analysis and code style tools to catch bugs before runtime and maintain consistent code style:
+The project uses automated linting and static analysis tools with git hooks for an optimized developer workflow:
 
-- **PHPStan** - Static analysis to catch type errors, undefined methods, and bugs
-- **PHPCS** - WordPress Coding Standards enforcement
-- **PHPCBF** - Automatic code style fixer
-- **Pre-commit hooks** - Automated checks before committing code
+- **JavaScript/CSS**: ESLint + Stylelint (via `@wordpress/scripts`)
+- **PHP Code Style**: PHPCS (WordPress Coding Standards) + PHPCBF (auto-fixer)
+- **PHP Static Analysis**: PHPStan Level 4 (type checking, bug detection)
+- **Git Hooks**: Husky + lint-staged for automatic fixing on commit
+- **Commit Messages**: Commitlint (conventional commits validation)
 
-### Running Linters
+### Automated Workflow (Git Hooks)
+
+**Pre-commit Hook** (~0.9s - fast!):
+- Runs `lint-staged` to auto-fix only staged files
+- PHP: `phpcbf` (auto-fixes WordPress coding standards)
+- JavaScript: `eslint --fix` (auto-fixes linting errors)
+- CSS: `stylelint --fix` (auto-fixes style errors)
+- **Result**: All fixable issues are automatically corrected before commit
+
+**Commit-msg Hook** (instant):
+- Validates commit message follows conventional commits format
+- Types: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, etc.
+- **Result**: Invalid commit messages are rejected
+
+**Pre-push Hook** (~1s):
+- **Branch Protection**: Blocks direct pushes to `master`/`main`
+- **PHPStan**: Runs static analysis (moved from pre-commit for speed)
+- **Result**: Type errors are caught before pushing to remote
+
+### Running Linters Manually
 
 ```bash
-# Run all linters (PHP + JS + CSS)
-yarn lint
+# Auto-fix all issues at once (recommended workflow)
+yarn lint:fix
 
-# PHP Static Analysis (PHPStan)
-yarn lint:php:phpstan
-composer phpstan
+# Individual auto-fixers
+yarn lint:js-fix      # Fix JavaScript
+yarn lint:css-fix     # Fix CSS
+yarn lint:php:fix     # Fix PHP code style (phpcbf)
 
-# PHP Code Style (PHPCS)
-yarn lint:php:phpcs
-composer phpcs
-
-# Auto-fix PHP code style issues
-yarn lint:php:fix
-composer phpcbf
-
-# JavaScript linting
-yarn lint:js
-yarn lint:js-fix
-
-# CSS linting
-yarn lint:css
+# Linters only (no auto-fix)
+yarn lint             # Check all (JS + CSS + PHP + PHPStan)
+yarn lint:js          # Check JavaScript
+yarn lint:css         # Check CSS
+yarn lint:php         # Check PHP (PHPCS + PHPStan)
+yarn lint:php:phpcs   # Check PHP code style only
+yarn lint:php:phpstan # Check PHP static analysis only
 ```
+
+### Developer Workflow
+
+**Recommended workflow for best experience:**
+
+1. **Make your changes** in the codebase
+2. **Before staging**: Run `yarn lint:fix` to auto-fix all issues
+3. **Stage your files**: `git add <files>`
+4. **Commit**: `git commit -m "feat: your message"`
+   - Pre-commit hook auto-fixes staged files (~0.9s)
+   - Commit-msg hook validates message format
+5. **Push**: `git push`
+   - Pre-push hook runs PHPStan (~1s)
+   - Branch protection prevents pushing to master
+
+**If pre-push fails (PHPStan errors)**:
+- Fix the type errors reported by PHPStan
+- Commit the fixes
+- Push again
+
+### Configuration Files
+
+- **`.lintstagedrc.json`** - Auto-fix configuration for staged files
+- **`.husky/pre-commit`** - Runs lint-staged on commit
+- **`.husky/commit-msg`** - Validates commit messages
+- **`.husky/pre-push`** - Runs PHPStan + branch protection
+- **`.eslintrc.js`** - JavaScript linting rules
+- **`.eslintignore`** - Excludes `public/` from JS linting
+- **`.stylelintignore`** - Excludes `public/` from CSS linting
+- **`phpcs.xml`** - PHP code style rules (WordPress standards)
+- **`phpstan.neon`** - PHP static analysis configuration (Level 4)
+- **`commitlint.config.js`** - Commit message validation
 
 ### PHPStan Configuration
 
@@ -357,11 +403,13 @@ composer phpstan -- src/Gateways/PaymentMethods/WCGatewayMoneiCC.php
 
 ### PHPCS WordPress Coding Standards
 
-**Configuration**: `.phpcs.xml.dist`
+**Configuration**: `phpcs.xml`
 - WordPress-Core ruleset
 - PSR-4 autoloading compatibility
 - Tabs for indentation (WordPress standard)
 - File naming follows WordPress conventions
+- Files checked: `src/` and `includes/`
+- Ignores warnings (only errors fail the build)
 
 **Auto-fixing issues**:
 ```bash
@@ -372,16 +420,23 @@ composer phpcbf
 composer phpcbf -- src/Gateways/PaymentMethods/WCGatewayMoneiCC.php
 ```
 
-### Pre-commit Hooks
+### Git Hooks Best Practices
 
-**File**: `.husky/pre-commit`
-
-Automatically runs PHPStan on staged PHP files before each commit. This prevents committing code with type errors.
-
-**CRITICAL**: NEVER use `--no-verify` to bypass pre-commit hooks!
-- Pre-commit hooks are there to catch errors before they reach the repository
-- If the hook fails, fix the actual errors instead of bypassing the check
+**CRITICAL**: NEVER use `--no-verify` to bypass git hooks!
+- Git hooks auto-fix issues and catch errors before they reach the repository
+- If a hook fails, fix the actual errors instead of bypassing the check
 - Using `--no-verify` can introduce bugs and break the build
+- Pre-commit is fast (~0.9s) and only checks/fixes staged files
+
+**Branch Protection**:
+- Direct pushes to `master`/`main` are automatically blocked
+- Always work in feature branches: `git checkout -b feat/my-feature`
+- Create pull requests for code review before merging to master
+
+**Performance**:
+- Pre-commit hook is optimized for speed (~0.9s)
+- PHPStan runs only on pre-push (~1s) to keep commits fast
+- lint-staged only processes staged files, not the entire codebase
 
 ### Common PHPStan Errors & Fixes
 

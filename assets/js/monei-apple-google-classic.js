@@ -88,7 +88,7 @@
 		on_payment_selected() {
 			if ( wc_monei_form.is_apple_selected() ) {
 				wc_monei_form.init_apple_google_pay();
-				console.log( 'after' );
+				// Apple/Google Pay initialized
 				if ( wc_monei_form.is_checkout ) {
 					$( "[name='woocommerce_checkout_place_order']" ).attr(
 						'data-monei',
@@ -149,7 +149,7 @@
 					wc_monei_form.apple_google_token_handler( result.token );
 				},
 				onError( error ) {
-					console.error( error );
+					// Error handling is managed by MONEI SDK
 				},
 			} );
 			paymentRequest.render( '#payment-request-container' );

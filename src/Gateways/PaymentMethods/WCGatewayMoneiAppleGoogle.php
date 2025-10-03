@@ -62,14 +62,14 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$this->method_title       = __( 'MONEI - Apple Pay / Google Pay', 'monei' );
 		$this->method_description = __( 'Accept Apple Pay and Google Pay payments.', 'monei' );
 		$hide_title               = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
-		$default_title       = __( 'Apple Pay / Google Pay', 'monei' );
-		$saved_title         = $this->get_option( 'title' );
-		$this->title         = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
-		$this->description   = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
-		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$iconUrl             = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
-		$iconMarkup          = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
-		$this->testmode      = $this->getTestmode();
+		$default_title            = __( 'Apple Pay / Google Pay', 'monei' );
+		$saved_title              = $this->get_option( 'title' );
+		$this->title              = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
+		$this->description        = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$this->hide_logo          = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
+		$iconUrl                  = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
+		$iconMarkup               = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+		$this->testmode           = $this->getTestmode();
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
 		}
@@ -246,7 +246,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	public function payment_fields() {
 		ob_start();
 		if ( $this->description ) {
-			echo wpautop( wptexturize( $this->description ) );
+			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
 		}
 		$this->render_google_pay_form();
 		ob_end_flush();

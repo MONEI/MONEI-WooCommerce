@@ -13,7 +13,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 	private CardBrandHelper $cardBrandHelper;
 
 	public function __construct( WCMoneiPaymentGateway $gateway, CardBrandHelper $cardBrandHelper ) {
-		$this->gateway = $gateway;
+		$this->gateway         = $gateway;
 		$this->cardBrandHelper = $cardBrandHelper;
 	}
 
@@ -89,19 +89,19 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 				'showSaveOption' => true,
 			);
 		}
-		$total = WC()->cart->get_total( false );
+		$total            = WC()->cart->get_total( false );
 		$card_input_style = $this->get_setting( 'card_input_style' );
 		if ( ! $card_input_style ) {
 			$card_input_style = '{"base": {"height": "50"}, "input": {"background": "none"}}';
 		}
 
 		$redirect_mode = $this->get_setting( 'cc_mode' ) ?? 'no';
-		$description = '';
+		$description   = '';
 		if ( 'yes' === $redirect_mode && $this->gateway->description !== '&nbsp;' ) {
 			$description = $this->gateway->description;
 		}
 
-		$data            = array(
+		$data = array(
 			'title'            => $this->gateway->title,
 			'description'      => $description,
 			'logo'             => WC_Monei()->plugin_url() . '/public/images/monei-cards.svg',

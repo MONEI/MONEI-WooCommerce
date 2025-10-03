@@ -168,10 +168,10 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_token() {
-		if ( $this->id === 'monei_bizum' || $this->id === 'monei_paypal') {
+		if ( $this->id === 'monei_bizum' || $this->id === 'monei_paypal' ) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
+			return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
 		}
-        return false;
+		return false;
 	}
 }

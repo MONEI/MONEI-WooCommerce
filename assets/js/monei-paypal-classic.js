@@ -84,7 +84,7 @@
 				}
 				this.is_order_pay = true;
 				this.form = this.$order_pay_form;
-				console.log( 'TOTAL', this.form );
+				// Form reference set
 			}
 
 			if ( this.form ) {
@@ -129,7 +129,7 @@
 			if ( window.paypalRequest ) {
 				window.paypalRequest.close();
 			}
-			console.log( 'despues', wc_paypal_form.total );
+			// Total amount updated
 			wc_paypal_form.instantiate_payment_request();
 		},
 		instantiate_payment_request() {
@@ -146,7 +146,7 @@
 					wc_paypal_form.request_token_handler( result.token );
 				},
 				onError( error ) {
-					console.error( error );
+					// Error handling is managed by MONEI SDK
 				},
 			} );
 			// Render an instance of the Payment Request Component into the `payment_request_container` <div>.

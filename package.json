@@ -12,6 +12,7 @@
     "check-licenses": "wp-scripts check-licenses",
     "format": "wp-scripts format",
     "lint:css": "wp-scripts lint-style",
+    "lint:css-fix": "wp-scripts lint-style --fix",
     "lint:js": "wp-scripts lint-js",
     "lint:js-fix": "wp-scripts lint-js --fix",
     "lint:php": "composer lint",
@@ -19,6 +20,7 @@
     "lint:php:phpstan": "composer phpstan",
     "lint:php:fix": "composer phpcbf",
     "lint": "yarn lint:js && yarn lint:css && yarn lint:php",
+    "lint:fix": "yarn lint:js-fix && yarn lint:css-fix && yarn lint:php:fix",
     "lint:md:docs": "wp-scripts lint-md-docs",
     "lint:pkg-json": "wp-scripts lint-pkg-json",
     "packages-update": "wp-scripts packages-update",
@@ -37,6 +39,7 @@
     "@wordpress/scripts": "^30.24.0",
     "conventional-changelog-cli": "^5.0.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.2.3",
     "release-it": "^19.0.5"
   },
   "packageManager": "yarn@4.10.3"

@@ -53,11 +53,11 @@ class WCGatewayMoneiMBWay extends WCMoneiPaymentGatewayHosted {
 		$iconUrl          = apply_filters( 'woocommerce_monei_mbway_icon', WC_Monei()->image_url( 'mbway-logo.svg' ) );
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
-		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->testmode             = $this->getTestmode();
-		$hide_title                 = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
-		$this->title                = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
+		$this->hide_logo = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
+		$this->icon      = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->testmode  = $this->getTestmode();
+		$hide_title      = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$this->title     = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
 		}

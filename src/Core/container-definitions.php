@@ -46,8 +46,8 @@ $definitions            = array(
 			)
 		),
 	ApiKeyService::class                    => DI\autowire( ApiKeyService::class ),
-    MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
-        ->constructor( DI\get( ApiKeyService::class ) ),
+	MoneiSdkClientFactory::class            => DI\autowire( MoneiSdkClientFactory::class )
+		->constructor( DI\get( ApiKeyService::class ) ),
 	PaymentMethodsRepository::class         => DI\factory(
 		function ( ApiKeyService $apiKeyService, MoneiSdkClientFactory $sdkClientFactory ) {
 			return new Monei\Repositories\PaymentMethodsRepository( $apiKeyService->get_account_id(), $sdkClientFactory->get_client() );

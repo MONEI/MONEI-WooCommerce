@@ -115,7 +115,6 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				}
 			}
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
 	// Setup payment hook
@@ -125,7 +124,6 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		} );
 
 		return () => unsubscribe();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ onPaymentSetup ] );
 
 	return (
