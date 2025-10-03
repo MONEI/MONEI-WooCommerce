@@ -58,9 +58,10 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		SubscriptionService $subscriptionService
 	) {
 		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
-		$this->id            = 'monei_apple_google';
-		$this->method_title  = __( 'MONEI - Apple/Google', 'monei' );
-		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
+		$this->id                 = 'monei_apple_google';
+		$this->method_title       = __( 'MONEI - Apple/Google', 'monei' );
+		$this->method_description = __( 'Pay with Apple Pay or Google Pay. Powered by MONEI.', 'monei' );
+		$hide_title               = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
 		$default_title       = __( 'Apple Pay / Google Pay', 'monei' );
 		$saved_title         = $this->get_option( 'title' );
 		$this->title         = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
