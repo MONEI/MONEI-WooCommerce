@@ -48,6 +48,14 @@ return apply_filters(
 			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
 			'desc_tip'    => true,
 		),
+		'hide_logo'        => array(
+			'title'       => __( 'Hide Logo', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Hide payment method logo', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
+			'desc_tip'    => true,
+		),
 		'payment_request_style' => array(
 			'title'       => __( 'Apple Pay / Google Pay Style', 'monei' ),
 			'type'        => 'textarea',

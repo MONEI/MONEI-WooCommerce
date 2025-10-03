@@ -61,8 +61,11 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$this->id            = 'monei_apple_google';
 		$this->method_title  = __( 'MONEI - Apple/Google', 'monei' );
 		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) && 'yes' === $this->get_option( 'hide_title' ) ) ) ? true : false;
-		$this->title         = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : ( $hide_title ? '' : __( 'Apple Pay / Google Pay', 'monei' ) );
+		$default_title       = __( 'Apple Pay / Google Pay', 'monei' );
+		$saved_title         = $this->get_option( 'title' );
+		$this->title         = $hide_title ? '' : ( ! empty( $saved_title ) ? $saved_title : $default_title );
 		$this->description   = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
 		$iconUrl             = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
 		$iconMarkup          = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		$this->testmode      = $this->getTestmode();
