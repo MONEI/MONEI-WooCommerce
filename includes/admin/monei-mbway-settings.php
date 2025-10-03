@@ -43,7 +43,7 @@ return apply_filters(
 		'description' => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
+			'description' => __( 'Payment method description shown to customers during checkout.', 'monei' ),
 			'default'     => __( 'Pay with MBWay. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-mbway-description-field',
 		),

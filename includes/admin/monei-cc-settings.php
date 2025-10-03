@@ -44,7 +44,7 @@ return apply_filters(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'Pay with credit card.', 'monei' ),
+			'default'     => __( 'Pay with credit card. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-cc-description-field',
 		),
 		'card_input_style' => array(

@@ -29,8 +29,9 @@ jQuery( document ).ready( function ( $ ) {
 		}
 	}
 
-	// Payment methods that have description fields
-	const paymentMethods = ['paypal', 'bizum', 'mbway', 'multibanco'];
+	// Payment methods that have description fields (only for methods with both redirect and embedded modes)
+	// MBWay and Multibanco are redirect-only, so their descriptions are always visible
+	const paymentMethods = ['cc', 'paypal', 'bizum'];
 
 	// Initial call to set the correct fields on page load
 	toggleApiKeyFields();
