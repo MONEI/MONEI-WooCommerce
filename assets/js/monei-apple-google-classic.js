@@ -229,18 +229,28 @@
 		 */
 		update_apple_google_label() {
 			const isApple = window.ApplePaySession?.canMakePayments();
+			const label = document.querySelector(
+				'label[for="payment_method_monei_apple_google"]'
+			);
+			if ( ! label ) {
+				return;
+			}
+
 			if ( isApple ) {
-				const label = document.querySelector(
-					'label[for="payment_method_monei_apple_google"]'
-				);
-				if ( label ) {
-					label.childNodes[ 0 ].nodeValue = 'Apple Pay ';
-					const icon = label.querySelector( 'img' );
-					if ( icon ) {
-						icon.src = wc_monei_apple_google_params.appleLogo;
-						icon.alt = 'Apple Pay';
-					}
+				// Use Apple Pay title
+				const appleTitle =
+					wc_monei_apple_google_params.applePayTitle || 'Apple Pay';
+				label.childNodes[ 0 ].nodeValue = appleTitle + ' ';
+				const icon = label.querySelector( 'img' );
+				if ( icon ) {
+					icon.src = wc_monei_apple_google_params.appleLogo;
+					icon.alt = 'Apple Pay';
 				}
+			} else {
+				// Use Google Pay title
+				const googleTitle =
+					wc_monei_apple_google_params.googlePayTitle || 'Google Pay';
+				label.childNodes[ 0 ].nodeValue = googleTitle + ' ';
 			}
 		},
 	};

@@ -13,7 +13,11 @@ export const createAppleGoogleLabel = ( moneiData ) => {
 	let logo = googleEnabled ? moneiData.logoGoogle : false;
 	logo = isApple && appleEnabled ? moneiData.logoApple : logo;
 
-	const title = moneiData.title || '';
+	// Use specific title based on device
+	const title = isApple
+		? moneiData.applePayTitle || ''
+		: moneiData.googlePayTitle || '';
+
 	const shouldShowLogo =
 		( isApple && moneiData?.logoApple ) ||
 		( ! isApple && moneiData?.logoGoogle );

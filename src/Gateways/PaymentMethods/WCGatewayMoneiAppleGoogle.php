@@ -203,6 +203,22 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		// Determine the total amount to be passed
 		$total                 = $this->determineTheTotalAmountToBePassed();
 		$payment_request_style = $this->get_option( 'payment_request_style', '{"height": "50px"}' );
+
+		// Get separate titles with fallback to defaults
+		$apple_pay_title  = $this->get_option( 'apple_pay_title', __( 'Apple Pay', 'monei' ) );
+		$google_pay_title = $this->get_option( 'google_pay_title', __( 'Google Pay', 'monei' ) );
+
+		// Use specific titles if set, otherwise fall back to defaults
+		$apple_pay_title  = ! empty( $apple_pay_title ) ? $apple_pay_title : __( 'Apple Pay', 'monei' );
+		$google_pay_title = ! empty( $google_pay_title ) ? $google_pay_title : __( 'Google Pay', 'monei' );
+
+		// Add test mode suffix if enabled
+		if ( $this->testmode ) {
+			$test_suffix       = ' (' . __( 'Test Mode', 'monei' ) . ')';
+			$apple_pay_title  .= $test_suffix;
+			$google_pay_title .= $test_suffix;
+		}
+
 		wp_localize_script(
 			'woocommerce_monei_apple_google',
 			'wc_monei_apple_google_params',
@@ -212,6 +228,8 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 				'total'               => monei_price_format( $total ),
 				'currency'            => get_woocommerce_currency(),
 				'appleLogo'           => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'applePayTitle'       => $apple_pay_title,
+				'googlePayTitle'      => $google_pay_title,
 				'paymentRequestStyle' => json_decode( $payment_request_style ),
 			)
 		);

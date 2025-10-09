@@ -97,8 +97,25 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 		$logoApple             = WC_Monei()->plugin_url() . '/public/images/apple-logo.svg';
 		$logoGoogle            = WC_Monei()->plugin_url() . '/public/images/google-logo.svg';
 		$payment_request_style = $this->get_setting( 'payment_request_style' ) ?? '{"height": "42"}';
-		$data                  = array(
-			'title'               => $this->gateway->title,
+
+		// Get separate titles with fallback to defaults
+		$apple_pay_title  = $this->get_setting( 'apple_pay_title' );
+		$google_pay_title = $this->get_setting( 'google_pay_title' );
+
+		// Use specific titles if set, otherwise fall back to defaults
+		$apple_pay_title  = ! empty( $apple_pay_title ) ? $apple_pay_title : __( 'Apple Pay', 'monei' );
+		$google_pay_title = ! empty( $google_pay_title ) ? $google_pay_title : __( 'Google Pay', 'monei' );
+
+		// Add test mode suffix if enabled
+		if ( $this->gateway->getTestmode() ) {
+			$test_suffix       = ' (' . __( 'Test Mode', 'monei' ) . ')';
+			$apple_pay_title  .= $test_suffix;
+			$google_pay_title .= $test_suffix;
+		}
+
+		$data = array(
+			'applePayTitle'       => $apple_pay_title,
+			'googlePayTitle'      => $google_pay_title,
 			'description'         => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
 			'logoGoogle'          => $isGoogleEnabled ? $logoGoogle : false,
 			'logoApple'           => $isAppleEnabled ? $logoApple : false,

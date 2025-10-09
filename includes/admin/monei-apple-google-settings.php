@@ -34,8 +34,22 @@ return apply_filters(
 		'title'                 => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
-			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
+			'description' => __( 'Generic payment method name shown in order emails, order history, and admin areas. Not displayed on checkout (checkout shows Apple Pay or Google Pay based on device).', 'monei' ),
 			'default'     => __( 'Apple Pay / Google Pay', 'monei' ),
+			'desc_tip'    => true,
+		),
+		'apple_pay_title'       => array(
+			'title'       => __( 'Apple Pay Title', 'monei' ),
+			'type'        => 'text',
+			'description' => __( 'Title shown on checkout page for Apple devices (iPhone, iPad, Mac with Safari).', 'monei' ),
+			'default'     => __( 'Apple Pay', 'monei' ),
+			'desc_tip'    => true,
+		),
+		'google_pay_title'      => array(
+			'title'       => __( 'Google Pay Title', 'monei' ),
+			'type'        => 'text',
+			'description' => __( 'Title shown on checkout page for non-Apple devices (Android, Chrome, etc).', 'monei' ),
+			'default'     => __( 'Google Pay', 'monei' ),
 			'desc_tip'    => true,
 		),
 		'hide_title'            => array(
