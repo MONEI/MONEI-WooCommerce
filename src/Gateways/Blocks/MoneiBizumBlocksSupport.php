@@ -31,6 +31,16 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 			return array();
 		}
 
+		// Register and enqueue blocks checkout CSS
+		wp_register_style(
+			'monei-blocks-checkout',
+			WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
+			array(),
+			WC_Monei()->version,
+			'all'
+		);
+		wp_enqueue_style( 'monei-blocks-checkout' );
+
 		$script_name = 'wc-monei-bizum-blocks-integration';
 
 		wp_register_script(

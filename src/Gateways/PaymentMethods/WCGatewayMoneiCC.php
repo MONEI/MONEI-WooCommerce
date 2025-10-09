@@ -420,6 +420,16 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			return;
 		}
 
+		// Register and enqueue classic checkout CSS
+		wp_register_style(
+			'monei-classic-checkout',
+			plugins_url( 'public/css/monei-classic-checkout.css', MONEI_MAIN_FILE ),
+			array(),
+			MONEI_VERSION,
+			'all'
+		);
+		wp_enqueue_style( 'monei-classic-checkout' );
+
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
 			wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '1.0', true );
 

@@ -60,6 +60,16 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			return array();
 		}
 
+		// Register and enqueue blocks checkout CSS
+		wp_register_style(
+			'monei-blocks-checkout',
+			WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
+			array(),
+			WC_Monei()->version,
+			'all'
+		);
+		wp_enqueue_style( 'monei-blocks-checkout' );
+
 		wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '2.0', true );
 		wp_enqueue_script( 'monei' );
 

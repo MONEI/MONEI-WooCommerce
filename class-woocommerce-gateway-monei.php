@@ -243,6 +243,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				case 'frontend':
 					return ( ! is_admin() || defined( 'DOING_AJAX' ) ) && ! defined( 'DOING_CRON' );
 			}
+			return false;
 		}
 
 		/**
@@ -267,22 +268,9 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
-			wp_register_style(
-				'monei-icons',
-				$this->plugin_url() . '/public/css/monei-icons-classic.css',
-				array(),
-				filemtime( $this->plugin_path() . '/public/css/monei-icons-classic.css' ),
-				'screen'
-			);
-			wp_enqueue_style( 'monei-icons' );
-			wp_register_style(
-				'monei-blocks-checkout-cc',
-				WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
-				array(),
-				WC_Monei()->version,
-				'all'
-			);
-			wp_enqueue_style( 'monei-blocks-checkout-cc' );
+			// CSS is now enqueued by:
+			// - Classic checkout: In gateway classes' monei_scripts() methods (monei-classic-checkout.css)
+			// - Blocks checkout: In blocks support classes' get_payment_method_script_handles() methods (monei-blocks-checkout.css)
 		}
 
 
@@ -326,7 +314,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
         public function plugins_loaded()
         {
             add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
-            add_filter('plugin_action_links_' . plugin_basename(MONEI_PLUGIN_FILE), array($this, 'plugin_action_links'));
+            add_filter('plugin_action_links_' . plugin_basename(MONEI_MAIN_FILE), array($this, 'plugin_action_links'));
         }
 
         public function plugin_action_links($links)
