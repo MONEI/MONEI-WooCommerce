@@ -316,6 +316,15 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	}
 
 	/**
+	 * Check if gateway has fields.
+	 * @return bool
+	 */
+	public function has_fields() {
+		// Always show fields for component mode or when tokenization is enabled
+		return ! $this->redirect_flow || $this->tokenization;
+	}
+
+	/**
 	 * Payments fields, shown on checkout or payment method page (add payment method).
 	 */
 	public function payment_fields() {
