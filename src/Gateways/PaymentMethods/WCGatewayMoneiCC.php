@@ -420,6 +420,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			return;
 		}
 
+		// Don't load classic CSS on blocks checkout
+		if ( $this->is_block_checkout_page() ) {
+			return;
+		}
+
 		// Register and enqueue classic checkout CSS
 		wp_register_style(
 			'monei-classic-checkout',

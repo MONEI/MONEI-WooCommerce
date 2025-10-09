@@ -10,7 +10,6 @@
 	font-size: 1em;
 	height: 3.125em;
 	line-height: 1;
-	margin: 0 0 0.75em 0;
 	min-height: 0;
 	padding: 0;
 	width: 100%;
@@ -68,9 +67,7 @@
 
 /* Label Container */
 .monei-label-container {
-	display: flex;
-	align-items: center;
-	gap: 1em;
+	display: block;
 }
 
 .monei-text {
