@@ -36,7 +36,7 @@ export const createAppleGoogleLabel = ( moneiData ) => {
  * @return {*} JSX Element
  */
 export const MoneiAppleGoogleContent = ( props ) => {
-	const { useEffect, useRef } = wp.element;
+	const { useEffect, useRef, useState, createPortal } = wp.element;
 	const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 	const { activePaymentMethod } = props;
 	const moneiData =
@@ -45,6 +45,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		wc.wcSettings.getSetting( 'monei_apple_google_data' );
 
 	const paymentRequestRef = useRef( null );
+	const [ isConfirming, setIsConfirming ] = useState( false );
 	const isActive =
 		activePaymentMethod ===
 		( props.paymentMethodId || 'monei_apple_google' );
@@ -139,6 +140,8 @@ export const MoneiAppleGoogleContent = ( props ) => {
 					};
 				}
 
+				setIsConfirming( true );
+
 				try {
 					// Component mode: confirm payment with token
 					const paymentId = paymentDetails.paymentId;
@@ -183,6 +186,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 						'Error during payment confirmation:',
 						error
 					);
+					setIsConfirming( false );
 					return {
 						type: props.emitResponse.responseTypes.ERROR,
 						message:
@@ -199,6 +203,11 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 	return (
 		<fieldset className="monei-fieldset monei-payment-request-fieldset">
+			{ isConfirming &&
+				createPortal(
+					<div className="monei-payment-overlay" />,
+					document.body
+				) }
 			<div
 				id="payment-request-container"
 				className="monei-payment-request-container"

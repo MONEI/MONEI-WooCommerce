@@ -1,7 +1,7 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect, useRef } = wp.element;
+	const { useEffect, useRef, useState, createPortal } = wp.element;
 	const { useSelect } = wp.data;
 	const bizumData = wc.wcSettings.getSetting( 'monei_bizum_data' );
 
@@ -12,6 +12,9 @@
 
 		// Check if redirect flow is enabled
 		const isRedirectFlow = bizumData.redirectFlow === true;
+
+		// State for confirmation overlay
+		const [ isConfirming, setIsConfirming ] = useState( false );
 
 		// Use useRef to persist values across re-renders
 		const requestTokenRef = useRef( null );
@@ -255,6 +258,8 @@
 						};
 					}
 
+					setIsConfirming( true );
+
 					try {
 						// Component mode: confirm payment with token
 						const paymentId = paymentDetails.paymentId;
@@ -298,6 +303,7 @@
 							'Error during payment confirmation:',
 							error
 						);
+						setIsConfirming( false );
 						return {
 							type: responseTypes.ERROR,
 							message:
@@ -341,6 +347,11 @@
 
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
+				{ isConfirming &&
+					createPortal(
+						<div className="monei-payment-overlay" />,
+						document.body
+					) }
 				<div
 					id="bizum-container"
 					className="monei-payment-request-container"

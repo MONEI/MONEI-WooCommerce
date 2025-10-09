@@ -4,7 +4,8 @@ import {
 	useFormErrors,
 } from '../helpers/monei-card-input-hooks';
 
-const { useEffect, useState, useRef, useCallback, useMemo } = wp.element;
+const { useEffect, useState, useRef, useCallback, useMemo, createPortal } =
+	wp.element;
 
 /**
  * MONEI Credit Card Content Component
@@ -27,6 +28,7 @@ export const MoneiCCContent = ( props ) => {
 	// State management
 	const tokenRef = useRef( null );
 	const [ isProcessing, setIsProcessing ] = useState( false );
+	const [ isConfirming, setIsConfirming ] = useState( false );
 
 	// Form error management
 	const formErrors = useFormErrors();
@@ -236,6 +238,8 @@ export const MoneiCCContent = ( props ) => {
 					};
 				}
 
+				setIsConfirming( true );
+
 				try {
 					const result = await monei.confirmPayment( {
 						paymentId: paymentDetails.paymentId,
@@ -272,6 +276,7 @@ export const MoneiCCContent = ( props ) => {
 						'Error during payment confirmation:',
 						error
 					);
+					setIsConfirming( false );
 					return {
 						type: responseTypes.ERROR,
 						message:
@@ -288,6 +293,11 @@ export const MoneiCCContent = ( props ) => {
 
 	return (
 		<fieldset className="monei-fieldset monei-card-fieldset wc-block-components-form">
+			{ isConfirming &&
+				createPortal(
+					<div className="monei-payment-overlay" />,
+					document.body
+				) }
 			{ moneiData?.description && <p>{ moneiData.description }</p> }
 			{ /* Cardholder Name Input */ }
 			<div className="monei-input-container wc-block-components-text-input">

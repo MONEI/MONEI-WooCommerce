@@ -1,7 +1,7 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect } = wp.element;
+	const { useEffect, useState, createPortal } = wp.element;
 	const paypalData = wc.wcSettings.getSetting( 'monei_paypal_data' );
 
 	const MoneiPayPalContent = ( props ) => {
@@ -15,6 +15,9 @@
 
 		// Check if redirect flow is enabled
 		const isRedirectFlow = paypalData.redirectFlow === true;
+
+		// State for confirmation overlay
+		const [ isConfirming, setIsConfirming ] = useState( false );
 
 		useEffect( () => {
 			// Don't modify the Place Order button if using redirect flow
@@ -153,7 +156,9 @@
 						};
 					}
 
-					try {
+					setIsConfirming( true );
+
+					try{
 						// Component mode: confirm payment with token
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
@@ -196,6 +201,7 @@
 							'Error during payment confirmation:',
 							error
 						);
+						setIsConfirming( false );
 						return {
 							type: responseTypes.ERROR,
 							message:
@@ -223,6 +229,11 @@
 
 		return (
 			<fieldset className="monei-fieldset monei-payment-request-fieldset">
+				{ isConfirming &&
+					createPortal(
+						<div className="monei-payment-overlay" />,
+						document.body
+					) }
 				<div
 					id="paypal-container"
 					className="monei-payment-request-container"
