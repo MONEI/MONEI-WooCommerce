@@ -47,7 +47,7 @@
 		init_counter: 0,
 		init_apple_counter: 0,
 		total: wc_monei_params.total,
-		cardholderNameRegex: /^[A-Za-zÀ-ú- ]{5,50}$/,
+		cardholderNameRegex: /^[A-Za-zÀ-ú\s-]{5,50}$/,
 		init() {
 			// Checkout Page
 			if ( this.$checkout_form.length ) {
@@ -288,7 +288,7 @@
 				errorContainer = wc_monei_form.$errorContainer;
 			}
 			$( errorContainer ).html(
-				'<br /><ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>'
+				'<ul class="woocommerce_error woocommerce-error monei-error"><li /></ul>'
 			);
 			$( errorContainer ).find( 'li' ).text( error_string );
 			// Scroll to error
