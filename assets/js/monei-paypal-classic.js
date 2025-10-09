@@ -134,12 +134,12 @@
 		},
 		instantiate_payment_request() {
 			const paymentRequest = monei.PayPal( {
-				accountId: wc_paypal_params.account_id,
-				sessionId: wc_paypal_params.session_id,
+				accountId: wc_paypal_params.accountId,
+				sessionId: wc_paypal_params.sessionId,
 				amount: parseInt( wc_paypal_form.total ),
 				currency: wc_paypal_params.currency,
 				language: wc_paypal_params.language,
-					style: wc_paypal_params.paypal_style || {},
+					style: wc_paypal_params.paypalStyle || {},
 				onSubmit( result ) {
 					$( '#place_order' ).prop( 'disabled', false );
 					wc_paypal_form.request_token_handler( result.token );

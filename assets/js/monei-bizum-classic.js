@@ -134,11 +134,11 @@
 		},
 		instantiate_payment_request() {
 			const paymentRequest = monei.Bizum( {
-				accountId: wc_bizum_params.account_id,
-				sessionId: wc_bizum_params.session_id,
+				accountId: wc_bizum_params.accountId,
+				sessionId: wc_bizum_params.sessionId,
 				amount: parseInt( wc_bizum_form.total ),
 				currency: wc_bizum_params.currency,
-				style: wc_bizum_params.bizum_style || {},
+				style: wc_bizum_params.bizumStyle || {},
 				onSubmit( result ) {
 					$( '#place_order' ).prop( 'disabled', false );
 					wc_bizum_form.request_token_handler( result.token );

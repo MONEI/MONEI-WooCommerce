@@ -242,12 +242,12 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 			'woocommerce_monei-paypal',
 			'wc_paypal_params',
 			array(
-				'account_id'   => $this->getAccountId(),
-				'session_id'   => WC()->session->get_customer_id(),
-				'total'        => monei_price_format( $total ),
-				'currency'     => get_woocommerce_currency(),
-				'language'     => locale_iso_639_1_code(),
-				'paypal_style' => json_decode( $paypal_style ),
+				'accountId'   => $this->getAccountId(),
+				'sessionId'   => WC()->session->get_customer_id(),
+				'total'       => monei_price_format( $total ),
+				'currency'    => get_woocommerce_currency(),
+				'language'    => locale_iso_639_1_code(),
+				'paypalStyle' => json_decode( $paypal_style ),
 			)
 		);
 	}
