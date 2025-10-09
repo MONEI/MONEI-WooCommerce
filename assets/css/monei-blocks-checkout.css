@@ -67,7 +67,12 @@
 
 /* Label Container */
 .monei-label-container {
-	display: block;
+	flex: 1;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5em;
 }
 
 .monei-text {
@@ -79,7 +84,6 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.3125em;
-	flex-wrap: wrap;
 }
 
 .monei-card-brands img,
@@ -150,9 +154,4 @@
 		min-height: 3.75em;
 	}
 
-	.monei-label-container {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.3em;
-	}
 }

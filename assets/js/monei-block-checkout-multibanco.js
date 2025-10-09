@@ -6,9 +6,11 @@
 	const multibancoLabel = () => {
 		return (
 			<div className="monei-label-container">
-				<span className="monei-text">
-					{ __( multibancoData.title, 'monei' ) }
-				</span>
+				{ multibancoData.title && (
+					<span className="monei-text">
+						{ __( multibancoData.title, 'monei' ) }
+					</span>
+				) }
 				{ multibancoData?.logo && (
 					<div className="monei-logo">
 						<img src={ multibancoData.logo } alt="" />

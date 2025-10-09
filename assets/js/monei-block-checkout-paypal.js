@@ -235,9 +235,11 @@
 	const paypalLabel = () => {
 		return (
 			<div className="monei-label-container">
-				<span className="monei-text">
-					{ __( paypalData.title, 'monei' ) }
-				</span>
+				{ paypalData.title && (
+					<span className="monei-text">
+						{ __( paypalData.title, 'monei' ) }
+					</span>
+				) }
 				{ paypalData?.logo && (
 					<div className="monei-logo">
 						<img src={ paypalData.logo } alt="" />

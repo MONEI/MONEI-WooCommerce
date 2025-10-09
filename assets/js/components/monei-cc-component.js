@@ -359,7 +359,9 @@ export const CreditCardLabel = ( moneiData ) => {
 
 	return (
 		<div className="monei-label-container">
-			<span className="monei-text">{ moneiData.title }</span>
+			{ moneiData.title && (
+				<span className="monei-text">{ moneiData.title }</span>
+			) }
 			{ cardBrands.length > 0 ? (
 				<span className="monei-card-brands">
 					{ cardBrands.map( ( brand, index ) => (

@@ -6,9 +6,11 @@
 	const mbwayLabel = () => {
 		return (
 			<div className="monei-label-container">
-				<span className="monei-text">
-					{ __( mbwayData.title, 'monei' ) }
-				</span>
+				{ mbwayData.title && (
+					<span className="monei-text">
+						{ __( mbwayData.title, 'monei' ) }
+					</span>
+				) }
 				{ mbwayData?.logo && (
 					<div className="monei-logo">
 						<img src={ mbwayData.logo } alt="" />
