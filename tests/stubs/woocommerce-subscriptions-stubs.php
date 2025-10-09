@@ -68,21 +68,21 @@ if (!class_exists('WCS_Subscription')) {
 		/**
 		 * @return bool
 		 */
-		public static function is_subscription() {
+		public function is_subscription() {
 			return true;
 		}
 
 		/**
 		 * @return int
 		 */
-		public static function get_interval() {
+		public function get_interval() {
 			return 1;
 		}
 
 		/**
 		 * @return string
 		 */
-		public static function get_period() {
+		public function get_period() {
 			return 'month';
 		}
 
@@ -104,21 +104,21 @@ if (!class_exists('YWSBS_Subscription')) {
 		/**
 		 * @return bool
 		 */
-		public static function is_subscription() {
+		public function is_subscription() {
 			return true;
 		}
 
 		/**
 		 * @return int
 		 */
-		public static function get_interval() {
+		public function get_interval() {
 			return 1;
 		}
 
 		/**
 		 * @return string
 		 */
-		public static function get_period() {
+		public function get_period() {
 			return 'month';
 		}
 

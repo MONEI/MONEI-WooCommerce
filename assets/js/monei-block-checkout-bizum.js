@@ -15,6 +15,7 @@
 
 		// State for confirmation overlay
 		const [ isConfirming, setIsConfirming ] = useState( false );
+		const [ error, setError ] = useState( '' );
 
 		// Use useRef to persist values across re-renders
 		const requestTokenRef = useRef( null );
@@ -116,6 +117,7 @@
 				style: bizumData.bizumStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
+						setError( '' );
 						requestTokenRef.current = result.token;
 						const placeOrderButton = document.querySelector(
 							'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
@@ -131,6 +133,12 @@
 					}
 				},
 				onError( error ) {
+					const errorMessage =
+						error.message ||
+						`${ error.status || 'Error' } ${
+							error.statusCode ? `(${ error.statusCode })` : ''
+						}`;
+					setError( errorMessage );
 					console.error( 'Bizum error:', error );
 				},
 			} );
@@ -178,6 +186,7 @@
 					currency: bizumData.currency,
 					onSubmit( result ) {
 						if ( result.token ) {
+							setError( '' );
 							requestTokenRef.current = result.token;
 							const placeOrderButton = document.querySelector(
 								'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
@@ -195,6 +204,14 @@
 						}
 					},
 					onError( error ) {
+						const errorMessage =
+							error.message ||
+							`${ error.status || 'Error' } ${
+								error.statusCode
+									? `(${ error.statusCode })`
+									: ''
+							}`;
+						setError( errorMessage );
 						console.error( 'Bizum error:', error );
 					},
 				} );
@@ -363,7 +380,7 @@
 					name="monei_payment_token"
 					value=""
 				/>
-				<div id="monei-card-error" className="monei-error" />
+				{ error && <div className="monei-error">{ error }</div> }
 			</fieldset>
 		);
 	};

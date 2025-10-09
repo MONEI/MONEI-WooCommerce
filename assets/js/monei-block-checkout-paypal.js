@@ -16,8 +16,9 @@
 		// Check if redirect flow is enabled
 		const isRedirectFlow = paypalData.redirectFlow === true;
 
-		// State for confirmation overlay
+		// State for confirmation overlay and error handling
 		const [ isConfirming, setIsConfirming ] = useState( false );
+		const [ error, setError ] = useState( '' );
 
 		useEffect( () => {
 			// Don't modify the Place Order button if using redirect flow
@@ -80,6 +81,7 @@
 				style: paypalData.paypalStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
+						setError( '' ); // Clear any previous errors
 						requestToken = result.token;
 						const placeOrderButton = document.querySelector(
 							'.wc-block-components-checkout-place-order-button'
@@ -95,7 +97,13 @@
 					}
 				},
 				onError( error ) {
-					console.error( error );
+					const errorMessage =
+						error.message ||
+						`${ error.status || 'Error' } - ${
+							error.statusMessage || 'Payment failed'
+						}`;
+					setError( errorMessage );
+					console.error( 'PayPal error:', error );
 				},
 			} );
 			paypalInstance.render( paypalContainer );
@@ -239,6 +247,7 @@
 				>
 					{ /* PayPal button will be inserted here */ }
 				</div>
+				{ error && <div className="monei-error">{ error }</div> }
 			</fieldset>
 		);
 	};

@@ -46,6 +46,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 	const paymentRequestRef = useRef( null );
 	const [ isConfirming, setIsConfirming ] = useState( false );
+	const [ error, setError ] = useState( '' );
 	const isActive =
 		activePaymentMethod ===
 		( props.paymentMethodId || 'monei_apple_google' );
@@ -86,11 +87,18 @@ export const MoneiAppleGoogleContent = ( props ) => {
 			style: moneiData.paymentRequestStyle || {},
 			onSubmit( result ) {
 				if ( result.token ) {
+					setError( '' );
 					buttonManager.enableCheckout( result.token );
 				}
 			},
 			onError( error ) {
-				console.error( error );
+				const errorMessage =
+					error.message ||
+					`${ error.status || 'Error' } ${
+						error.statusCode ? `(${ error.statusCode })` : ''
+					}`;
+				setError( errorMessage );
+				console.error( 'Payment Request error:', error );
 			},
 		} );
 
@@ -216,7 +224,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				name="monei_payment_token"
 				value=""
 			/>
-			<div id="monei-card-error" className="monei-error" />
+			{ error && <div className="monei-error">{ error }</div> }
 		</fieldset>
 	);
 };
