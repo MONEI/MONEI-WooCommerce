@@ -452,14 +452,14 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			'woocommerce_monei',
 			'wc_monei_params',
 			array(
-				'account_id'       => $this->getAccountId(),
-				'session_id'       => WC()->session->get_customer_id(),
-				'total'            => monei_price_format( $total ),
-				'currency'         => get_woocommerce_currency(),
-				'apple_logo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
-				'card_input_style' => json_decode( $card_input_style ),
-				'card_brands'      => $this->cardBrandHelper->getCardBrandsConfig(),
-				'nameErrorString'  => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
+				'accountId'       => $this->getAccountId(),
+				'sessionId'       => WC()->session->get_customer_id(),
+				'total'           => monei_price_format( $total ),
+				'currency'        => get_woocommerce_currency(),
+				'appleLogo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'cardInputStyle'  => json_decode( $card_input_style ),
+				'cardBrands'      => $this->cardBrandHelper->getCardBrandsConfig(),
+				'nameErrorString' => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
 			)
 		);
 

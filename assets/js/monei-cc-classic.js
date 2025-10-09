@@ -184,9 +184,9 @@
 				document.getElementById( 'monei-card-error' );
 
 			wc_monei_form.$cardInput = monei.CardInput( {
-				accountId: wc_monei_params.account_id,
-				sessionId: wc_monei_params.session_id,
-				style: wc_monei_params.card_input_style || {},
+				accountId: wc_monei_params.accountId,
+				sessionId: wc_monei_params.sessionId,
+				style: wc_monei_params.cardInputStyle || {},
 				onChange( event ) {
 					// Handle real-time validation errors.
 					if ( event.isTouched && event.error ) {
@@ -331,7 +331,7 @@
 			wc_monei_form.$paymentForm.appendChild( hiddenInput );
 		},
 		render_card_brands_in_label() {
-			if ( ! wc_monei_params.card_brands ) {
+			if ( ! wc_monei_params.cardBrands ) {
 				return;
 			}
 
@@ -341,7 +341,7 @@
 			}
 
 			let html = '<span class="monei-card-brands">';
-			const brands = Object.values( wc_monei_params.card_brands );
+			const brands = Object.values( wc_monei_params.cardBrands );
 
 			// Skip the 'default' brand
 			for ( let i = 0; i < brands.length; i++ ) {

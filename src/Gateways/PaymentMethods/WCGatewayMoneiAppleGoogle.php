@@ -202,12 +202,12 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 			'woocommerce_monei_apple_google',
 			'wc_monei_apple_google_params',
 			array(
-				'account_id'            => $this->getAccountId(),
-				'session_id'            => WC()->session->get_customer_id(),
-				'total'                 => monei_price_format( $total ),
-				'currency'              => get_woocommerce_currency(),
-				'apple_logo'            => WC_Monei()->image_url( 'apple-logo.svg' ),
-				'payment_request_style' => json_decode( $payment_request_style ),
+				'accountId'           => $this->getAccountId(),
+				'sessionId'           => WC()->session->get_customer_id(),
+				'total'               => monei_price_format( $total ),
+				'currency'            => get_woocommerce_currency(),
+				'appleLogo'           => WC_Monei()->image_url( 'apple-logo.svg' ),
+				'paymentRequestStyle' => json_decode( $payment_request_style ),
 			)
 		);
 

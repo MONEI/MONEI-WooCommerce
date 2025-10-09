@@ -187,11 +187,11 @@
 		},
 		instantiate_payment_request() {
 			const paymentRequest = monei.PaymentRequest( {
-				accountId: wc_monei_apple_google_params.account_id,
-				sessionId: wc_monei_apple_google_params.session_id,
+				accountId: wc_monei_apple_google_params.accountId,
+				sessionId: wc_monei_apple_google_params.sessionId,
 				amount: parseInt( wc_monei_form.total ),
 				currency: wc_monei_apple_google_params.currency,
-				style: wc_monei_apple_google_params.payment_request_style || {},
+				style: wc_monei_apple_google_params.paymentRequestStyle || {},
 				onSubmit( result ) {
 					wc_monei_form.apple_google_token_handler( result.token );
 				},
@@ -234,7 +234,7 @@
 					label.childNodes[ 0 ].nodeValue = 'Apple Pay ';
 					const icon = label.querySelector( 'img' );
 					if ( icon ) {
-						icon.src = wc_monei_apple_google_params.apple_logo;
+						icon.src = wc_monei_apple_google_params.appleLogo;
 						icon.alt = 'Apple Pay';
 					}
 				}
