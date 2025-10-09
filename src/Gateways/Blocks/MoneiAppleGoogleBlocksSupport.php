@@ -100,13 +100,13 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 		$data                  = array(
 			'title'               => $this->gateway->title,
 			'description'         => $this->gateway->description === '&nbsp;' ? '' : $this->gateway->description,
-			'logo_google'         => $isGoogleEnabled ? $logoGoogle : false,
-			'logo_apple'          => $isAppleEnabled ? $logoApple : false,
+			'logoGoogle'          => $isGoogleEnabled ? $logoGoogle : false,
+			'logoApple'           => $isAppleEnabled ? $logoApple : false,
 			'supports'            => $supports,
 
 			// yes: test mode.
 			// no:  live,
-			'test_mode'           => $this->gateway->getTestmode(),
+			'testMode'            => $this->gateway->getTestmode(),
 			'accountId'           => $this->gateway->getAccountId() ?? false,
 			'sessionId'           => wc()->session !== null ? wc()->session->get_customer_id() : '',
 			'currency'            => get_woocommerce_currency(),

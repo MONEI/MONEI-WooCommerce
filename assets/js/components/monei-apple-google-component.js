@@ -7,16 +7,16 @@ import { useButtonStateManager } from '../helpers/monei-shared-utils';
  */
 export const createAppleGoogleLabel = ( moneiData ) => {
 	const isApple = window.ApplePaySession?.canMakePayments?.();
-	const appleEnabled = moneiData.logo_apple !== false;
-	const googleEnabled = moneiData.logo_google !== false;
+	const appleEnabled = moneiData.logoApple !== false;
+	const googleEnabled = moneiData.logoGoogle !== false;
 
-	let logo = googleEnabled ? moneiData.logo_google : false;
-	logo = isApple && appleEnabled ? moneiData.logo_apple : logo;
+	let logo = googleEnabled ? moneiData.logoGoogle : false;
+	logo = isApple && appleEnabled ? moneiData.logoApple : logo;
 
 	const title = moneiData.title || '';
 	const shouldShowLogo =
-		( isApple && moneiData?.logo_apple ) ||
-		( ! isApple && moneiData?.logo_google );
+		( isApple && moneiData?.logoApple ) ||
+		( ! isApple && moneiData?.logoGoogle );
 
 	return (
 		<div className="monei-label-container">

@@ -89,7 +89,7 @@ final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 
 			// yes: test mode.
 			// no:  live,
-			'test_mode'   => $this->gateway->getTestmode() ?? false,
+			'testMode'    => $this->gateway->getTestmode() ?? false,
 			'accountId'   => $this->gateway->getAccountId() ?? false,
 			'sessionId'   => wc()->session !== null ? wc()->session->get_customer_id() : '',
 		);

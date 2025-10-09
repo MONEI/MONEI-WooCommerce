@@ -94,22 +94,22 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 		}
 		$data = array(
 
-			'title'                 => $this->gateway->title,
-			'logo'                  => WC_Monei()->plugin_url() . '/public/images/bizum-logo.svg',
-			'supports'              => $this->get_supported_features(),
-			'currency'              => get_woocommerce_currency(),
-			'total'                 => $total,
-			'language'              => locale_iso_639_1_code(),
+			'title'               => $this->gateway->title,
+			'logo'                => WC_Monei()->plugin_url() . '/public/images/bizum-logo.svg',
+			'supports'            => $this->get_supported_features(),
+			'currency'            => get_woocommerce_currency(),
+			'total'               => $total,
+			'language'            => locale_iso_639_1_code(),
 
 			// yes: test mode.
 			// no:  live,
-			'test_mode'             => $this->gateway->getTestmode() ?? false,
-			'accountId'             => $this->gateway->getAccountId() ?? false,
-			'sessionId'             => wc()->session !== null ? wc()->session->get_customer_id() : '',
-			'cart_has_subscription' => $cart_has_subscription,
-			'bizumStyle'            => json_decode( $bizum_style ),
-			'redirectFlow'          => $redirect_flow,
-			'description'           => $this->get_setting( 'description' ),
+			'testMode'            => $this->gateway->getTestmode() ?? false,
+			'accountId'           => $this->gateway->getAccountId() ?? false,
+			'sessionId'           => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'cartHasSubscription' => $cart_has_subscription,
+			'bizumStyle'          => json_decode( $bizum_style ),
+			'redirectFlow'        => $redirect_flow,
+			'description'         => $this->get_setting( 'description' ),
 		);
 
 		$hide_logo = $this->get_setting( 'hide_logo' );

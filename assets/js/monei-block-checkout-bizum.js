@@ -382,7 +382,7 @@
 		canMakePayment: ( { billingData } ) => {
 			return (
 				billingData.country === 'ES' &&
-				! bizumData.cart_has_subscription
+				! bizumData.cartHasSubscription
 			);
 		},
 		supports: bizumData.supports,

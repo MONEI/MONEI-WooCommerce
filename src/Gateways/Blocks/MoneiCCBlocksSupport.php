@@ -134,7 +134,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 
 			// yes: test mode.
 			// no:  live,
-			'test_mode'        => $this->gateway->getTestmode(),
+			'testMode'         => $this->gateway->getTestmode(),
 
 			// yes: redirect the customer to the Hosted Payment Page.
 			// no:  credit card input will be rendered directly on the checkout page
