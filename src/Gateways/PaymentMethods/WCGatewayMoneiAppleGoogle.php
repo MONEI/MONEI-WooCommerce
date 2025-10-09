@@ -229,6 +229,10 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	}
 
 	public function isBlockCheckout(): bool {
+		// Order-pay and add payment method pages are always classic
+		if ( is_checkout_pay_page() || is_add_payment_method_page() ) {
+			return false;
+		}
 		if ( ! is_checkout() ) {
 			return false;
 		}

@@ -300,6 +300,10 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return bool
 	 */
 	public function is_block_checkout_page() {
+		// Order-pay and add payment method pages are always classic
+		if ( is_checkout_pay_page() || is_add_payment_method_page() ) {
+			return false;
+		}
 		if ( ! is_checkout() ) {
 			return false;
 		}
