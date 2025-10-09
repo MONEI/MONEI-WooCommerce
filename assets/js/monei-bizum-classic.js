@@ -157,7 +157,9 @@
 			let container = document.getElementById( 'bizum-container' );
 			if ( ! container ) {
 				// Create container structure if it doesn't exist
-				const paymentMethodLi = document.querySelector( '#payment_method_monei_bizum' )?.closest( 'li' );
+				const paymentMethodLi = document
+					.querySelector( '#payment_method_monei_bizum' )
+					?.closest( 'li' );
 				if ( ! paymentMethodLi ) {
 					return;
 				}

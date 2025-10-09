@@ -158,7 +158,7 @@
 
 					setIsConfirming( true );
 
-					try{
+					try {
 						// Component mode: confirm payment with token
 						const paymentId = paymentDetails.paymentId;
 						const tokenValue = paymentDetails.token;
@@ -205,8 +205,7 @@
 						return {
 							type: responseTypes.ERROR,
 							message:
-								error.message ||
-								'Payment confirmation failed',
+								error.message || 'Payment confirmation failed',
 							messageContext:
 								props.emitResponse.noticeContexts.PAYMENTS,
 						};

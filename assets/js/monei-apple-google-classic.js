@@ -82,7 +82,6 @@
 					wc_monei_form.init_apple_google_pay();
 				}
 
-
 				$( 'input[name="payment_method"]' ).on( 'change', function () {
 					// Check if the apple google pay method is selected
 					if ( wc_monei_form.is_apple_selected() ) {
@@ -130,10 +129,14 @@
 		},
 		init_apple_google_pay() {
 			// Check if container exists, create if needed (for order-pay page)
-			let container = document.getElementById( 'payment-request-container' );
+			let container = document.getElementById(
+				'payment-request-container'
+			);
 			if ( ! container ) {
 				// Create container structure if it doesn't exist
-				const paymentMethodLi = document.querySelector( '#payment_method_monei_apple_google' )?.closest( 'li' );
+				const paymentMethodLi = document
+					.querySelector( '#payment_method_monei_apple_google' )
+					?.closest( 'li' );
 				if ( ! paymentMethodLi ) {
 					return;
 				}

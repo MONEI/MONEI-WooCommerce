@@ -1,32 +1,32 @@
 {
-  "git": {
-    "tagName": "${version}",
-    "commitMessage": "chore: release v${version}"
-  },
-  "github": {
-    "release": true,
-    "releaseNotes": "npx conventional-changelog -p conventionalcommits -u"
-  },
-  "npm": {
-    "publish": false
-  },
-  "plugins": {
-    "@release-it/bumper": {
-      "out": [
-        ".readme-template",
-        "readme.txt",
-        "woocommerce-gateway-monei.php",
-        "class-woocommerce-gateway-monei.php"
-      ]
-    },
-    "@release-it/conventional-changelog": {
-      "infile": "CHANGELOG.md",
-      "preset": {
-        "name": "conventionalcommits"
-      }
-    }
-  },
-  "hooks": {
-    "after:git:release": "node scripts/generate-readme.js 10 && git add readme.txt README.md && git commit --amend --no-edit"
-  }
+	"git": {
+		"tagName": "${version}",
+		"commitMessage": "chore: release v${version}"
+	},
+	"github": {
+		"release": true,
+		"releaseNotes": "npx conventional-changelog -p conventionalcommits -u"
+	},
+	"npm": {
+		"publish": false
+	},
+	"plugins": {
+		"@release-it/bumper": {
+			"out": [
+				".readme-template",
+				"readme.txt",
+				"woocommerce-gateway-monei.php",
+				"class-woocommerce-gateway-monei.php"
+			]
+		},
+		"@release-it/conventional-changelog": {
+			"infile": "CHANGELOG.md",
+			"preset": {
+				"name": "conventionalcommits"
+			}
+		}
+	},
+	"hooks": {
+		"after:git:release": "node scripts/generate-readme.js 10 && git add readme.txt README.md && git commit --amend --no-edit"
+	}
 }

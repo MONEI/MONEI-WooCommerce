@@ -152,10 +152,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 						paymentToken: tokenValue,
 					} );
 
-					if (
-						result.nextAction &&
-						result.nextAction.mustRedirect
-					) {
+					if ( result.nextAction && result.nextAction.mustRedirect ) {
 						return {
 							type: props.emitResponse.responseTypes.SUCCESS,
 							redirectUrl: result.nextAction.redirectUrl,
@@ -189,8 +186,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 					setIsConfirming( false );
 					return {
 						type: props.emitResponse.responseTypes.ERROR,
-						message:
-							error.message || 'Payment confirmation failed',
+						message: error.message || 'Payment confirmation failed',
 						messageContext:
 							props.emitResponse.noticeContexts.PAYMENTS,
 					};

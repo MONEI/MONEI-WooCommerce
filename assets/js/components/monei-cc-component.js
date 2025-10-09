@@ -279,8 +279,7 @@ export const MoneiCCContent = ( props ) => {
 					setIsConfirming( false );
 					return {
 						type: responseTypes.ERROR,
-						message:
-							error.message || 'Payment confirmation failed',
+						message: error.message || 'Payment confirmation failed',
 						messageContext:
 							props.emitResponse.noticeContexts.PAYMENTS,
 					};

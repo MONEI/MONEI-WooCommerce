@@ -1,12 +1,6 @@
 {
-  "*.php": [
-    "composer phpcbf --",
-    "composer phpstan --"
-  ],
-  "*.{js,jsx}": [
-    "wp-scripts lint-js --fix"
-  ],
-  "*.{css,scss}": [
-    "wp-scripts lint-style --fix"
-  ]
+	"*.php": [ "composer phpcbf --", "composer phpstan --" ],
+	"*.{js,jsx}": [ "wp-scripts format", "wp-scripts lint-js --fix" ],
+	"*.{css,scss}": [ "wp-scripts format", "wp-scripts lint-style --fix" ],
+	"*.{json,yml,yaml,md}": [ "wp-scripts format" ]
 }

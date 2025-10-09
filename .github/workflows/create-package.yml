@@ -1,52 +1,51 @@
 name: Create package
 on:
-  workflow_dispatch:
-    inputs:
-      PACKAGE_VERSION:
-        description: 'Package Version'
-        required: true
+    workflow_dispatch:
+        inputs:
+            PACKAGE_VERSION:
+                description: 'Package Version'
+                required: true
 jobs:
-  tag:
-    name: New package
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    tag:
+        name: New package
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
-        with:
-            composer-options: --no-dev --optimize-autoloader
+            - name: Install Composer dependencies
+              uses: ramsey/composer-install@v3
+              with:
+                  composer-options: --no-dev --optimize-autoloader
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '18'
 
-      - name: Enable Corepack
-        run: corepack enable
+            - name: Enable Corepack
+              run: corepack enable
 
-      - name: Install dependencies
-        run: yarn install --immutable
+            - name: Install dependencies
+              run: yarn install --immutable
 
-      - name: Build assets
-        run: yarn build
+            - name: Build assets
+              run: yarn build
 
-      - name: Exclude files listed in .distignore
-        run: |
-          if [ -f .distignore ]; then
-            mkdir filtered
-            rsync -av --exclude-from='.distignore' . ./filtered
-          fi
+            - name: Exclude files listed in .distignore
+              run: |
+                  if [ -f .distignore ]; then
+                    mkdir filtered
+                    rsync -av --exclude-from='.distignore' . ./filtered
+                  fi
 
-      - name: Create zip archive
-        run: |
-          cd filtered
-          zip -r ../monei-${{ github.event.inputs.PACKAGE_VERSION }}.zip .
+            - name: Create zip archive
+              run: |
+                  cd filtered
+                  zip -r ../monei-${{ github.event.inputs.PACKAGE_VERSION }}.zip .
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: monei-${{ github.event.inputs.PACKAGE_VERSION }}
-          path: monei-${{ github.event.inputs.PACKAGE_VERSION }}.zip
-
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: monei-${{ github.event.inputs.PACKAGE_VERSION }}
+                  path: monei-${{ github.event.inputs.PACKAGE_VERSION }}.zip

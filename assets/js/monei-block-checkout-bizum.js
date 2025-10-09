@@ -307,8 +307,7 @@
 						return {
 							type: responseTypes.ERROR,
 							message:
-								error.message ||
-								'Payment confirmation failed',
+								error.message || 'Payment confirmation failed',
 							messageContext:
 								props.emitResponse.noticeContexts.PAYMENTS,
 						};
@@ -394,8 +393,7 @@
 		edit: <div> { __( bizumData.title, 'monei' ) }</div>,
 		canMakePayment: ( { billingData } ) => {
 			return (
-				billingData.country === 'ES' &&
-				! bizumData.cartHasSubscription
+				billingData.country === 'ES' && ! bizumData.cartHasSubscription
 			);
 		},
 		supports: bizumData.supports,
