@@ -139,6 +139,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$container = ContainerProvider::getContainer();
 			include_once 'includes/woocommerce-gateway-monei-core-functions.php';
 			include_once 'includes/class-wc-monei-ipn.php';
+		include_once 'includes/class-wc-monei-lock-helper.php';
 			include_once 'includes/class-wc-monei-logger.php';
 			include_once 'includes/class-wc-monei-payment-method-display.php';
 

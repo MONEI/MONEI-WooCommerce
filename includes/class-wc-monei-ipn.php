@@ -86,11 +86,12 @@ class WC_Monei_IPN {
 		}
 
 		// Acquire lock to prevent concurrent processing of the same payment.
+		// IMPORTANT: Must use same lock key pattern as redirect verification to prevent race conditions.
 		$payment_id = $payload['id'] ?? '';
-		$lock_key   = 'monei_ipn_' . md5( $payment_id );
+		$lock_key   = WC_Monei_Lock_Helper::get_payment_lock_key( $payment_id );
 		$lock_value = wp_rand();
 
-		if ( ! $this->acquire_lock( $lock_key, $lock_value ) ) {
+		if ( ! WC_Monei_Lock_Helper::acquire_lock( $lock_key, $lock_value ) ) {
 			// Another process is handling this payment.
 			$this->logging && WC_Monei_Logger::log( '[MONEI] Webhook already being processed [payment_id=' . $payment_id . ']', 'debug' );
 			http_response_code( 200 );
@@ -114,7 +115,7 @@ class WC_Monei_IPN {
 			echo 'Bad Request';
 		} finally {
 			// Always release the lock.
-			$this->release_lock( $lock_key, $lock_value );
+			WC_Monei_Lock_Helper::release_lock( $lock_key, $lock_value );
 		}
 
 		exit;
@@ -328,46 +329,5 @@ class WC_Monei_IPN {
 		}
 		$headers = implode( "\n", $headers );
 		$this->logging && WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
-	}
-
-	/**
-	 * Acquire a lock using WordPress transients.
-	 *
-	 * @param string $lock_key   The lock key.
-	 * @param mixed  $lock_value The lock value.
-	 * @param int    $timeout    Lock timeout in seconds (default 30).
-	 * @return bool True if lock acquired, false otherwise.
-	 */
-	private function acquire_lock( $lock_key, $lock_value, $timeout = 30 ) {
-		// Try to set transient. If it already exists, add_transient returns false.
-		$acquired = set_transient( $lock_key, $lock_value, $timeout );
-
-		if ( ! $acquired ) {
-			// Transient already exists. Check if it's stale.
-			$existing_value = get_transient( $lock_key );
-			if ( false === $existing_value ) {
-				// Transient expired between checks, try again.
-				return set_transient( $lock_key, $lock_value, $timeout );
-			}
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Release a lock using WordPress transients.
-	 *
-	 * @param string $lock_key   The lock key.
-	 * @param mixed  $lock_value The lock value to verify ownership.
-	 * @return void
-	 */
-	private function release_lock( $lock_key, $lock_value ) {
-		$existing_value = get_transient( $lock_key );
-
-		// Only delete if we own the lock.
-		if ( $existing_value === $lock_value ) {
-			delete_transient( $lock_key );
-		}
 	}
 }

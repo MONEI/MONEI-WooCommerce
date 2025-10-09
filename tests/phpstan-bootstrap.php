@@ -130,6 +130,41 @@ if ( ! function_exists( 'set_transient' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_cache_add' ) ) {
+	/**
+	 * @param string $key
+	 * @param mixed $data
+	 * @param string $group
+	 * @param int $expire
+	 * @return bool
+	 */
+	function wp_cache_add( $key, $data, $group = '', $expire = 0 ) {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_get' ) ) {
+	/**
+	 * @param string $key
+	 * @param string $group
+	 * @return mixed
+	 */
+	function wp_cache_get( $key, $group = '' ) {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_delete' ) ) {
+	/**
+	 * @param string $key
+	 * @param string $group
+	 * @return bool
+	 */
+	function wp_cache_delete( $key, $group = '' ) {
+		return true;
+	}
+}
+
 if ( ! function_exists( 'get_transient' ) ) {
 	/**
 	 * @param string $transient
