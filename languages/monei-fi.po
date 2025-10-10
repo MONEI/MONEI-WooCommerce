@@ -25,7 +25,7 @@ msgstr "MONEI Payments for WooCommerce"
 #. Plugin URI of the plugin
 #: woocommerce-gateway-monei.php
 msgid "https://wordpress.org/plugins/monei/"
-msgstr ""
+msgstr "https://wordpress.org/plugins/monei/"
 
 #. Description of the plugin
 #: woocommerce-gateway-monei.php
@@ -37,12 +37,12 @@ msgstr "Hyväksy kortti-, Apple Pay-, Google Pay-, Bizum-, PayPal- ja monet muut
 #. Author of the plugin
 #: woocommerce-gateway-monei.php
 msgid "MONEI"
-msgstr ""
+msgstr "MONEI"
 
 #. Author URI of the plugin
 #: woocommerce-gateway-monei.php
 msgid "https://www.monei.com/"
-msgstr ""
+msgstr "https://www.monei.com/"
 
 #: class-woocommerce-gateway-monei.php:65
 msgid "Use Singleton."
@@ -254,7 +254,7 @@ msgstr "Kuvaus"
 msgid ""
 "This description is only displayed when using redirect mode. It will be "
 "shown to customers before they are redirected to the payment page."
-msgstr "Tämä kuvaus näytetään vain uudelleenohjaustilas sa. Se näytetään asiakkaille ennen kuin heidät ohjataan maksusivulle."
+msgstr "Tämä kuvaus näytetään vain uudelleenohjaustilassa. Se näytetään asiakkaille ennen kuin heidät ohjataan maksusivulle."
 
 #: includes/admin/monei-bizum-settings.php:68
 msgid ""
@@ -964,7 +964,7 @@ msgstr "CVC/CVV2-numero vaaditaan"
 
 #: src/Services/MoneiStatusCodeHandler.php:150
 msgid "Unsupported card type"
-msgstr "Ei-tuettu korttilyyppi"
+msgstr "Ei-tuettu korttityyppi"
 
 #: src/Services/MoneiStatusCodeHandler.php:152
 msgid "Transaction type not allowed for this type of card"

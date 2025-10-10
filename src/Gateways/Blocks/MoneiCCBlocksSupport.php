@@ -112,7 +112,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			$card_input_style = '{"base": {"height": "50"}, "input": {"background": "none"}}';
 		}
 
-		$redirect_mode = $this->get_setting( 'cc_mode' ) ?? 'no';
+		$redirect_mode = $this->get_setting( 'mode' ) ?? 'no';
 		$description   = '';
 		if ( 'yes' === $redirect_mode && $this->gateway->description !== '&nbsp;' ) {
 			$description = $this->gateway->description;

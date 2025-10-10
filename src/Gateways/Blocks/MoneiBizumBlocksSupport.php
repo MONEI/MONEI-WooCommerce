@@ -85,7 +85,7 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 		$total                 = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$cart_has_subscription = $this->handler ? $this->handler->cart_has_subscription() : false;
 		$bizum_style           = $this->get_setting( 'bizum_style' );
-		$bizum_mode            = $this->get_setting( 'bizum_mode' );
+		$bizum_mode            = $this->get_setting( 'mode' );
 		$redirect_flow         = ( ! empty( $bizum_mode ) && 'yes' === $bizum_mode );
 
 		if ( ! $bizum_style ) {

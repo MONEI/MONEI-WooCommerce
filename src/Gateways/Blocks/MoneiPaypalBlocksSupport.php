@@ -79,7 +79,7 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 	public function get_payment_method_data() {
 		$total         = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$paypal_style  = $this->get_setting( 'paypal_style' );
-		$paypal_mode   = $this->get_setting( 'paypal_mode' );
+		$paypal_mode   = $this->get_setting( 'mode' );
 		$redirect_flow = ( ! empty( $paypal_mode ) && 'yes' === $paypal_mode );
 
 		if ( ! $paypal_style ) {

@@ -24,9 +24,7 @@ jQuery( document ).ready( function ( $ ) {
 		// Credit Card gateway ID is 'monei', not 'monei_cc', so handle it specially
 		const gatewayId =
 			paymentMethod === 'cc' ? 'monei' : 'monei_' + paymentMethod;
-		const redirectCheckbox = $(
-			'#woocommerce_' + gatewayId + '_' + paymentMethod + '_mode'
-		);
+		const redirectCheckbox = $( '#woocommerce_' + gatewayId + '_mode' );
 		const descriptionField = $(
 			'.monei-' + paymentMethod + '-description-field'
 		);
@@ -58,10 +56,8 @@ jQuery( document ).ready( function ( $ ) {
 	$( '#monei_apikey_mode' ).change( toggleApiKeyFields );
 	paymentMethods.forEach( function ( method ) {
 		const gatewayId = method === 'cc' ? 'monei' : 'monei_' + method;
-		$( '#woocommerce_' + gatewayId + '_' + method + '_mode' ).change(
-			function () {
-				toggleDescriptionField( method );
-			}
-		);
+		$( '#woocommerce_' + gatewayId + '_mode' ).change( function () {
+			toggleDescriptionField( method );
+		} );
 	} );
 } );

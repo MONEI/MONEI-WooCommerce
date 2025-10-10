@@ -31,7 +31,7 @@ return apply_filters(
 			'label'   => __( 'Enable Credit Card by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'cc_mode'          => array(
+		'mode'             => array(
 			'title'       => __( 'Use Redirect Flow', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),

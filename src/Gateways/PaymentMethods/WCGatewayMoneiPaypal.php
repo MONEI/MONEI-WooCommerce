@@ -61,7 +61,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 		// Settings variable
 		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->redirect_flow = ( ! empty( $this->get_option( 'paypal_mode' ) ) && 'yes' === $this->get_option( 'paypal_mode' ) ) ? true : false;
+		$this->redirect_flow = ( ! empty( $this->get_option( 'mode' ) ) && 'yes' === $this->get_option( 'mode' ) ) ? true : false;
 		$this->testmode      = $this->getTestmode();
 		$hide_title          = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
 		$this->title         = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
