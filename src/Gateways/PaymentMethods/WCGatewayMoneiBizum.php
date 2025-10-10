@@ -3,14 +3,14 @@
 namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayHosted;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\ApiKeyService;
 use Monei\Services\MoneiStatusCodeHandler;
-use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
+use WC_Admin_Settings;
 use WC_Monei_IPN;
 use WC_Monei_Payment_Gateway_Hosted;
-use WC_Admin_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,7 +22,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WC_Gateway_Monei_Bizum
  */
 class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
-
 
 	const PAYMENT_METHOD = 'bizum';
 
@@ -49,7 +48,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$this->id                 = MONEI_GATEWAY_ID . '_bizum';
 		$this->method_title       = __( 'MONEI - Bizum', 'monei' );
 		$this->method_description = __( 'Accept Bizum payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -109,7 +108,6 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	 * @since 3.4.0
 	 */
 	public function needs_setup() {
-
 		if ( ! $this->account_id || ! $this->api_key ) {
 			return true;
 		}
@@ -180,8 +178,8 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_token() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false;  // WPCS: CSRF ok.
 	}
 
 	public function payment_fields() {
@@ -191,13 +189,13 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		}
 		// Only render Bizum button if not using redirect flow
 		if ( ! $this->redirect_flow ) {
-			echo '<fieldset id="monei-bizum-form" class="monei-fieldset monei-payment-request-fieldset">
+			echo "<fieldset id=\"monei-bizum-form\" class=\"monei-fieldset monei-payment-request-fieldset\">
 					<div
-						id="bizum-container"
-						class="monei-payment-request-container"
-	                        >
+						id=\"bizum-container\"
+						class=\"monei-payment-request-container\"
+\t                        >
 					</div>
-				</fieldset>';
+				</fieldset>";
 		}
 	}
 
@@ -239,7 +237,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 			'wc_bizum_params',
 			array(
 				'accountId'  => $this->getAccountId(),
-				'sessionId'  => WC()->session->get_customer_id(),
+				'sessionId'  => WC()->session !== null ? WC()->session->get_customer_id() : '',
 				'total'      => monei_price_format( $total ),
 				'currency'   => get_woocommerce_currency(),
 				'language'   => locale_iso_639_1_code(),

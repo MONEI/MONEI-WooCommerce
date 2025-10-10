@@ -7,7 +7,6 @@ use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 
 final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 
-
 	private $gateway;
 	protected $name = 'monei_paypal';
 
@@ -87,19 +86,17 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 			$paypal_style = '{}';
 		}
 		$data = array(
-
 			'title'        => $this->gateway->title,
 			'logo'         => WC_Monei()->plugin_url() . '/public/images/paypal-logo.svg',
 			'supports'     => $this->get_supported_features(),
 			'currency'     => get_woocommerce_currency(),
 			'total'        => $total,
 			'language'     => locale_iso_639_1_code(),
-
 			// yes: test mode.
 			// no:  live,
 			'testMode'     => $this->gateway->getTestmode() ?? false,
 			'accountId'    => $this->gateway->getAccountId() ?? false,
-			'sessionId'    => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'sessionId'    => WC()->session !== null ? WC()->session->get_customer_id() : '',
 			'paypalStyle'  => json_decode( $paypal_style ),
 			'redirectFlow' => $redirect_flow,
 			'description'  => $this->get_setting( 'description' ),

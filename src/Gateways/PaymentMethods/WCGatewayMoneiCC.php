@@ -2,19 +2,19 @@
 
 namespace Monei\Gateways\PaymentMethods;
 
-use Exception;
 use Monei\Features\Subscriptions\SubscriptionHandlerInterface;
 use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
 use Monei\Helpers\CardBrandHelper;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\ApiKeyService;
 use Monei\Services\MoneiStatusCodeHandler;
-use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
+use Exception;
+use WC_Admin_Settings;
 use WC_Geolocation;
 use WC_Monei_IPN;
-use WC_Admin_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -38,7 +38,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WC_Gateway_Monei_CC
  */
 class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
-	const PAYMENT_METHOD               = 'card';
+
+	const PAYMENT_METHOD = 'card';
+
 	protected static $scripts_enqueued = false;
 
 	/**
@@ -50,8 +52,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * @var bool
 	 */
 	protected $apple_google_pay;
+
 	protected SubscriptionService $subscriptions_service;
+
 	protected ?SubscriptionHandlerInterface $handler;
+
 	protected CardBrandHelper $cardBrandHelper;
 
 	/**
@@ -74,7 +79,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->id                 = MONEI_GATEWAY_ID;
 		$this->method_title       = __( 'MONEI - Credit Card', 'monei' );
 		$this->method_description = __( 'Accept credit card payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -178,7 +183,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 		return false;
 	}
-
 
 	/**
 	 * Initialise Gateway Settings Form Fields
@@ -284,9 +288,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 */
 	protected function create_zero_eur_payload() {
 		$current_user_id = (string) get_current_user_id();
-		/**
-		 * Create 0 EUR Payment Payload
-		 */
+		/** Create 0 EUR Payment Payload */
 		$payload = array(
 			'amount'                => 0,
 			'currency'              => get_woocommerce_currency(),
@@ -309,7 +311,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$monei_token = $this->get_frontend_generated_monei_token();
 		if ( MONEI_GATEWAY_ID === $this->id && $monei_token ) {
 			$payload['paymentToken'] = $monei_token;
-			$payload['sessionId']    = (string) WC()->session->get_customer_id();
+			$payload['sessionId']    = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
 		}
 
 		return $payload;
@@ -375,7 +377,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		ob_end_flush();
 	}
 
-
 	/**
 	 * Form where MONEI JS will render CC Component.
 	 */
@@ -420,8 +421,9 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			return;
 		}
 
-		// If merchant wants Component CC or is_add_payment_method_page that always use this component method.
-		if ( $this->redirect_flow || ( ! is_checkout() && ! is_checkout_pay_page() && ! is_add_payment_method_page() && ( $this->handler && ! $this->handler->is_subscription_change_payment_page() ) ) ) {
+		// Return early if redirect flow (doesn't need component scripts)
+		// OR if not on a page that needs scripts
+		if ( $this->redirect_flow || ( ! is_checkout() && ! is_checkout_pay_page() && ! is_add_payment_method_page() ) ) {
 			return;
 		}
 
@@ -446,7 +448,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
 			wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '1.0', true );
-
 		}
 		wp_register_script(
 			'woocommerce_monei',
@@ -467,7 +468,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			'wc_monei_params',
 			array(
 				'accountId'       => $this->getAccountId(),
-				'sessionId'       => WC()->session->get_customer_id(),
+				'sessionId'       => WC()->session !== null ? WC()->session->get_customer_id() : '',
 				'total'           => monei_price_format( $total ),
 				'currency'        => get_woocommerce_currency(),
 				'appleLogo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
@@ -481,8 +482,8 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		$this->tokenization_script();
 		self::$scripts_enqueued = true;
 	}
+
 	protected function should_load_scripts() {
-		return is_checkout() || is_checkout_pay_page() || is_cart() || is_product() || is_add_payment_method_page();
+		return is_checkout() || is_checkout_pay_page() || is_add_payment_method_page();
 	}
 }
-

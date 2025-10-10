@@ -65,7 +65,7 @@ return apply_filters(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
-			'default'     => __( 'You will be redirected to PayPal to complete the payment. Powered by MONEI.	', 'monei' ),
+			'default'     => __( 'You will be redirected to PayPal to complete the payment. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-paypal-description-field',
 		),
 		'paypal_style' => array(

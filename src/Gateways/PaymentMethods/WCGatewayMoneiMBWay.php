@@ -43,7 +43,7 @@ class WCGatewayMoneiMBWay extends WCMoneiPaymentGatewayHosted {
 		$this->id                 = MONEI_GATEWAY_ID . '_mbway';
 		$this->method_title       = __( 'MONEI - MBWay', 'monei' );
 		$this->method_description = __( 'Accept MBWay payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
 
 		// Load the form fields.
 		$this->init_form_fields();

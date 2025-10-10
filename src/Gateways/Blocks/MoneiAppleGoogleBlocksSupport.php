@@ -119,7 +119,7 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 			// no:  live,
 			'testMode'            => $this->gateway->getTestmode(),
 			'accountId'           => $this->gateway->getAccountId() ?? false,
-			'sessionId'           => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'sessionId'           => WC()->session !== null ? WC()->session->get_customer_id() : '',
 			'currency'            => get_woocommerce_currency(),
 			'total'               => $total,
 			'language'            => locale_iso_639_1_code(),

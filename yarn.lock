@@ -4866,6 +4866,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@wordpress/prettier-config@npm:^3.0.0":
+  version: 3.15.0
+  resolution: "@wordpress/prettier-config@npm:3.15.0"
+  peerDependencies:
+    prettier: ">=3"
+  checksum: 10c0/118b72048b5c5e9e95f346205e7455cadaa3440fcdb868d11db6cdcb155d7fcc24dded71b9e6b15873d7aeb7e0cdb9d56942d0e054ca7708d5b7c072636dbf53
+  languageName: node
+  linkType: hard
+
 "@wordpress/prettier-config@npm:^4.31.0":
   version: 4.31.0
   resolution: "@wordpress/prettier-config@npm:4.31.0"
@@ -12442,6 +12451,7 @@ __metadata:
     "@commitlint/config-conventional": "npm:^20.0.0"
     "@release-it/bumper": "npm:^7.0.5"
     "@release-it/conventional-changelog": "npm:^10.0.1"
+    "@wordpress/prettier-config": "npm:^3.0.0"
     "@wordpress/scripts": "npm:^30.24.0"
     conventional-changelog-cli: "npm:^5.0.0"
     husky: "npm:^9.1.7"

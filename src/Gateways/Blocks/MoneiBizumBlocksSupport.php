@@ -9,7 +9,6 @@ use Monei\Gateways\PaymentMethods\WCGatewayMoneiBizum;
 
 final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 
-
 	private $gateway;
 	protected $name = 'monei_bizum';
 	protected $handler;
@@ -93,19 +92,17 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 			$bizum_style = '{}';
 		}
 		$data = array(
-
 			'title'               => $this->gateway->title,
 			'logo'                => WC_Monei()->plugin_url() . '/public/images/bizum-logo.svg',
 			'supports'            => $this->get_supported_features(),
 			'currency'            => get_woocommerce_currency(),
 			'total'               => $total,
 			'language'            => locale_iso_639_1_code(),
-
 			// yes: test mode.
 			// no:  live,
 			'testMode'            => $this->gateway->getTestmode() ?? false,
 			'accountId'           => $this->gateway->getAccountId() ?? false,
-			'sessionId'           => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'sessionId'           => WC()->session !== null ? WC()->session->get_customer_id() : '',
 			'cartHasSubscription' => $cart_has_subscription,
 			'bizumStyle'          => json_decode( $bizum_style ),
 			'redirectFlow'        => $redirect_flow,

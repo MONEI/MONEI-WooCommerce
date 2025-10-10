@@ -42,7 +42,7 @@ class WCGatewayMoneiMultibanco extends WCMoneiPaymentGatewayHosted {
 		$this->id                 = MONEI_GATEWAY_ID . '_multibanco';
 		$this->method_title       = __( 'MONEI - Multibanco', 'monei' );
 		$this->method_description = __( 'Accept Multibanco payments.', 'monei' );
-		$this->enabled            = ( 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
 
 		// Load the form fields.
 		$this->init_form_fields();

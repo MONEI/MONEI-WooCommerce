@@ -2,15 +2,15 @@
 
 namespace Monei\Gateways\Abstracts;
 
-use Exception;
-use Monei\ApiException;
 use Monei\Model\PaymentStatus;
-use WC_Geolocation;
+use Monei\ApiException;
+use Exception;
 use MoneiPaymentServices;
+use WC_Blocks_Utils;
+use WC_Geolocation;
+use WC_Monei_Logger;
 use WC_Order;
 use WC_Payment_Tokens;
-use WC_Monei_Logger;
-use WC_Blocks_Utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -23,6 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 5.0
  */
 abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
+
 	const APPLE_GOOGLE_ID = 'monei_apple_google';
 
 	/**
@@ -61,8 +62,8 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 				return array(
 					'result'      => 'success',
 					'redirect'    => false,
-					'paymentId'   => $create_payment->getId(), // Send the paymentId back to the client
-					'token'       => $this->get_frontend_generated_monei_token(), // Send the token back to the client
+					'paymentId'   => $create_payment->getId(),  // Send the paymentId back to the client
+					'token'       => $this->get_frontend_generated_monei_token(),  // Send the token back to the client
 					'completeUrl' => $payload['completeUrl'],
 					'failUrl'     => $payload['failUrl'],
 					'orderId'     => $order_id,
@@ -90,9 +91,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 				$this->log( $confirm_payment, 'debug' );
 			}
 
-			/**
-			 * Depends if we came in 1 step or 2.
-			 */
+			/** Depends if we came in 1 step or 2. */
 			$payment_result = $confirm_payment ?: $create_payment;
 			// Get redirect URL from nextAction, or fall back to order received page
 			$next_action = $payment_result->getNextAction();
@@ -124,7 +123,6 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 				'result'   => 'success',
 				'redirect' => $next_action_redirect,
 			);
-
 		} catch ( ApiException $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
 			// Parse API exception and get user-friendly error message
@@ -168,17 +166,11 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		$user_email  = $order->get_billing_email();
 		$description = $this->shop_name . ' - #' . $order_id;
 
-		/**
-		 * The URL to which a payment result should be sent asynchronously.
-		 */
+		/** The URL to which a payment result should be sent asynchronously. */
 		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
-		/**
-		 * The URL the customer will be directed to if the payment failed.
-		 */
+		/** The URL the customer will be directed to if the payment failed. */
 		$fail_url = esc_url_raw( $order->get_checkout_payment_url( false ) );
-		/**
-		 * The URL the customer will be directed to after transaction completed (successful or failed).
-		 */
+		/** The URL the customer will be directed to after transaction completed (successful or failed). */
 		$complete_url = wp_sanitize_redirect(
 			esc_url_raw(
 				add_query_arg(
@@ -191,9 +183,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			)
 		);
 
-		/**
-		 * Create Payment Payload
-		 */
+		/** Create Payment Payload */
 		$payload = array(
 			'amount'                => $amount,
 			'currency'              => $currency,
@@ -266,7 +256,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		$componentGateways = array( MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID );
 		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
 		if ( in_array( $this->id, $componentGateways, true ) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
-			$payload['sessionId'] = (string) WC()->session->get_customer_id();
+			$payload['sessionId'] = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
 		}
 
 		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
@@ -279,8 +269,8 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	public function get_frontend_generated_monei_token() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false;  // WPCS: CSRF ok.
 	}
 
 	/**
@@ -289,8 +279,8 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return boolean
 	 */
 	public function isBlockCheckout() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false;  // WPCS: CSRF ok.
 	}
 
 	/**
@@ -328,8 +318,8 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 */
 	public function get_frontend_generated_monei_cardholder( $order ) {
 		$defaultName = $order->get_formatted_billing_full_name();
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_cardholder_name'] ) ) ? wc_clean( wp_unslash( $_POST['monei_cardholder_name'] ) ) : $defaultName; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_cardholder_name'] ) ) ? wc_clean( wp_unslash( $_POST['monei_cardholder_name'] ) ) : $defaultName;  // WPCS: CSRF ok.
 	}
 
 	/**
@@ -339,7 +329,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_monei_apple_google_token() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false;  // WPCS: CSRF ok.
 	}
 }

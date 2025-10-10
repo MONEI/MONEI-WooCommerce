@@ -10,9 +10,7 @@ use WC_Settings_Page;
 class MoneiSettings extends WC_Settings_Page {
 
 	protected ContainerInterface $container;
-	/**
-	 * @var ApiKeyService
-	 */
+	/** @var ApiKeyService */
 	private $apiKeyService;
 
 	public function __construct( ContainerInterface $container ) {
@@ -65,7 +63,7 @@ class MoneiSettings extends WC_Settings_Page {
 			),
 			array(
 				'title'       => __( 'Test API Key *', 'monei' ),
-				'type'        => 'text',
+				'type'        => 'password',
 				'desc'        => __( 'Enter your MONEI Test API Key here.', 'monei' ),
 				'desc_tip'    => true,
 				'id'          => 'monei_test_apikey',
@@ -75,7 +73,7 @@ class MoneiSettings extends WC_Settings_Page {
 			),
 			array(
 				'title'       => __( 'Live API Key *', 'monei' ),
-				'type'        => 'text',
+				'type'        => 'password',
 				'desc'        => __( 'Enter your MONEI Live API Key here.', 'monei' ),
 				'desc_tip'    => true,
 				'id'          => 'monei_live_apikey',
@@ -98,7 +96,7 @@ class MoneiSettings extends WC_Settings_Page {
 				'title'       => __( 'Pre-Authorize', 'monei' ),
 				'type'        => 'checkbox',
 				'label'       => __( 'Manually capture payments', 'monei' ),
-				'description' => __( 'Place a hold on the funds when the customer authorizes the payment, but don\'t capture the funds until later. Only works with payment methods that support authorization (Credit Card, PayPal).<br>You can capture the payment by changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br>You can cancel the payment by changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.', 'monei' ),
+				'description' => __( "Place a hold on the funds when the customer authorizes the payment, but don't capture the funds until later. Only works with payment methods that support authorization (Credit Card, PayPal).<br>You can capture the payment by changing order status to <strong>Completed</strong> or <strong>Processing</strong>.<br>You can cancel the payment by changing order to <strong>Cancelled</strong> or <strong>Refunded</strong>.", 'monei' ),
 				'default'     => 'no',
 				'id'          => 'monei_pre_authorize',
 			),
@@ -132,7 +130,6 @@ class MoneiSettings extends WC_Settings_Page {
 		$templateManager = $this->container->get( 'Monei\Templates\TemplateManager' );
 		$template        = $templateManager->getTemplate( 'monei-settings-header' );
 		if ( $template ) {
-
 			$template->render( $data );
 		}
 		$settings = $this->get_settings();

@@ -4,8 +4,8 @@ namespace Monei\Services;
 
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\ApiException;
-use WC_Monei_Logger;
 use WC_Admin_Settings;
+use WC_Monei_Logger;
 
 /**
  * Class to verify Apple Pay Registration.
@@ -17,12 +17,13 @@ class MoneiApplePayVerificationService {
 
 	const DOMAIN_ASSOCIATION_FILE_NAME = 'apple-developer-merchantid-domain-association';
 	const DOMAIN_ASSOCIATION_DIR       = '.well-known';
+
 	private MoneiPaymentServices $moneiPaymentServices;
 
 	public function __construct( MoneiPaymentServices $moneiPaymentServices ) {
 		$this->moneiPaymentServices = $moneiPaymentServices;
 		add_action( 'parse_request', array( $this, 'expose_on_domain_association_request' ), 1 );
-		add_filter( 'woocommerce_update_options_payment_gateways_monei_apple_google', array( $this, 'apple_domain_register' ) );
+		add_action( 'woocommerce_update_options_payment_gateways_monei_apple_google', array( $this, 'apple_domain_register' ) );
 	}
 
 	/**
@@ -38,7 +39,7 @@ class MoneiApplePayVerificationService {
 		if ( ! isset( $_POST['woocommerce_monei_apple_google_enabled'] ) ) {
 			return;
 		}
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$enabled_value = wc_clean( wp_unslash( $_POST['woocommerce_monei_apple_google_enabled'] ) );
 
 		if ( 'yes' !== $enabled_value && '1' !== $enabled_value ) {
@@ -46,7 +47,7 @@ class MoneiApplePayVerificationService {
 		}
 
 		try {
-			$domain = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : str_replace( array( 'https://', 'http://' ), '', get_site_url() ); // @codingStandardsIgnoreLine
+			$domain = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field($_SERVER['HTTP_HOST']) : str_replace(array('https://', 'http://'), '', get_site_url());  // @codingStandardsIgnoreLine
 
 			$this->moneiPaymentServices->register_apple_domain( $domain );
 

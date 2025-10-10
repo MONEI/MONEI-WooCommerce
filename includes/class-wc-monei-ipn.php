@@ -1,13 +1,13 @@
 <?php
 
 use Monei\Core\ContainerProvider;
-use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
-use Monei\Services\PaymentMethodFormatter;
 use Monei\Services\sdk\MoneiSdkClientFactory;
+use Monei\Services\ApiKeyService;
+use Monei\Services\PaymentMethodFormatter;
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;  // Exit if accessed directly
 }
 
 /**
@@ -29,7 +29,7 @@ class WC_Monei_IPN {
 		$this->logging = $logging;
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
-		//TODO use the container
+		// TODO use the container
 		$apiKeyService                = new ApiKeyService();
 		$sdkClient                    = new MoneiSdkClientFactory( $apiKeyService );
 		$this->moneiPaymentServices   = new MoneiPaymentServices( $sdkClient );
@@ -45,9 +45,9 @@ class WC_Monei_IPN {
 	 */
 	public function check_ipn_request() {
 		// Enforce POST-only webhook endpoint.
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && ( 'POST' !== wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
-            //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			WC_Monei_Logger::log( '[MONEI] Webhook received non-POST request: ' . wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) );
 			http_response_code( 405 );
 			header( 'Allow: POST' );
@@ -72,8 +72,8 @@ class WC_Monei_IPN {
 		$payload = null;
 
 		try {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$payload = $this->verify_signature_get_payload( $raw_body, wc_clean( wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) );
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$payload = $this->verify_signature_get_payload( $raw_body, wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
 			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
 		} catch ( Throwable $e ) {
 			// Signature verification failed - this is a security issue, always log.
@@ -111,7 +111,6 @@ class WC_Monei_IPN {
 	 * @return void
 	 */
 	protected function handle_valid_ipn( $payload ) {
-
 		$order_id       = $payload['orderId'];
 		$monei_id       = $payload['id'];
 		$status         = $payload['status'];
@@ -126,9 +125,7 @@ class WC_Monei_IPN {
 			return;
 		}
 
-		/**
-		 * Saving related information into order meta.
-		 */
+		/** Saving related information into order meta. */
 		$order->update_meta_data( '_payment_order_number_monei', $monei_id );
 		$order->update_meta_data( '_payment_order_status_monei', $status );
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
@@ -210,7 +207,7 @@ class WC_Monei_IPN {
 				$order->update_status(
 					'on-hold',
 					sprintf(
-					/* translators: 1: Order amount, 2: Notification amount */
+						/* translators: 1: Order amount, 2: Notification amount */
 						__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
 						$amount,
 						monei_price_format( $order_total )

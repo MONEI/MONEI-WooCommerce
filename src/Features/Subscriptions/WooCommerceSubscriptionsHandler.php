@@ -2,12 +2,12 @@
 
 namespace Monei\Features\Subscriptions;
 
-use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
-use WC_Order;
+use Monei\Services\ApiKeyService;
 use Exception;
 use WC_Monei_Logger;
+use WC_Order;
 use WC_Subscriptions_Product;
 
 class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
@@ -35,7 +35,8 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		}
 		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription(
 			$order_id
-		) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );    }
+		) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );
+	}
 
 	/**
 	 * Checks if page is pay for order and change subs payment page.
@@ -43,11 +44,11 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 	 * @return bool
 	 */
 	public function is_subscription_change_payment_page(): bool {
-        return ( isset( $_GET['pay_for_order'] ) && isset( $_GET['change_payment_method'] ) ); // phpcs:ignore
+		return (isset($_GET['pay_for_order']) && isset($_GET['change_payment_method']));  // phpcs:ignore
 	}
 
 	public function get_subscriptions_for_order( int $order_id ): array {
-		//new WC_Subscription( $order_id );
+		// new WC_Subscription( $order_id );
 		return wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'any' ) ) );
 	}
 
@@ -67,30 +68,22 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 	 * @throws \Monei\ApiException
 	 */
 	public function subscription_after_payment_success( $confirm_payload, $confirm_payment, $order ): void {
-		/**
-		 * If order is not subscription, bail.
-		 */
+		/** If order is not subscription, bail. */
 		if ( ! $this->is_subscription_order( $order->get_id() ) ) {
 			return;
 		}
 
-		/**
-		 * If payment wasn't 1 cent, bail.
-		 */
+		/** If payment wasn't 1 cent, bail. */
 		if ( 1 !== $confirm_payload['amount'] ) {
 			return;
 		}
 
-		/**
-		 * If payment is not done with a tokenized card, bail.
-		 */
+		/** If payment is not done with a tokenized card, bail. */
 		if ( ! isset( $confirm_payload['paymentToken'] ) ) {
 			return;
 		}
 
-		/**
-		 * Refund that cent.
-		 */
+		/** Refund that cent. */
 		$this->moneiPaymentServices->refund_payment( $confirm_payment->getId(), 1 );
 	}
 
@@ -106,7 +99,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		$payload['sequence'] = array(
 			'type'      => 'recurring',
 			'recurring' => array(
-				'frequency' => 1, // Testing with 1 to know if we can modify subscription dates.
+				'frequency' => 1,  // Testing with 1 to know if we can modify subscription dates.
 			),
 		);
 
@@ -186,23 +179,20 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 				do_action( 'wc_gateway_monei_scheduled_subscription_payment_not_succeeded', $renewal_order, $amount_to_charge );
 			}
 			$renewal_order->save();
-
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
 			WC_Monei_Logger::log( $e, 'error' );
 			$renewal_order->update_status( 'failed' );
 			$renewal_order->add_order_note( __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . $e->getMessage() );
 			$renewal_order->save();
-			if ( isset( $_REQUEST['process_early_renewal'] ) && ! wp_doing_cron() ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( isset( $_REQUEST['process_early_renewal'] ) && ! wp_doing_cron() ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				wc_add_notice( $e->getMessage(), 'error' );
 			}
 		}
 	}
 
 	public function update_subscription_meta_data( $subscriptions, $payment ): void {
-		/**
-		 * Iterate all subscriptions contained in the order, and add sequence id and cc data individually.
-		 */
+		/** Iterate all subscriptions contained in the order, and add sequence id and cc data individually. */
 		foreach ( $subscriptions as $subscription_id => $subscription ) {
 			$subscription->update_meta_data( '_monei_sequence_id', $payment->getSequenceId() );
 			$subscription->update_meta_data( '_monei_payment_method_brand', $payment->getPaymentMethod()->getCard()->getBrand() );
@@ -210,7 +200,6 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 			$subscription->save_meta_data();
 		}
 	}
-
 
 	public function init_subscriptions( array $supports, string $gateway_id ): array {
 		add_action( 'wc_gateway_monei_create_payment_success', array( $this, 'subscription_after_payment_success' ), 1, 3 );
@@ -233,7 +222,11 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 			)
 		);
 	}
+
 	public function get_cart_subscription_interval_in_days() {
+		if ( WC()->cart === null ) {
+			return 0;
+		}
 		foreach ( WC()->cart->cart_contents as $cart_item ) {
 			if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 				$interval = WC_Subscriptions_Product::get_interval( $cart_item['data'] );
@@ -247,7 +240,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 				$interval_in_days = $interval * 365;
 				break;
 			case 'month':
-				$interval_in_days = $interval * 28; // Monei Needs minimun days, to be safe, 28.
+				$interval_in_days = $interval * 28;  // Monei Needs minimun days, to be safe, 28.
 				break;
 			case 'week':
 				$interval_in_days = $interval * 7;
@@ -278,6 +271,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 		}
 		return $parent_order;
 	}
+
 	/**
 	 * Retrieves parent order from a subscription order.
 	 *
@@ -321,6 +315,9 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 	 */
 	public function cart_has_subscription() {
 		if ( ! $this->is_subscriptions_addon_enabled() ) {
+			return false;
+		}
+		if ( WC()->cart === null ) {
 			return false;
 		}
 		return is_array( WC()->cart->recurring_carts ) && count( WC()->cart->recurring_carts ) > 0;

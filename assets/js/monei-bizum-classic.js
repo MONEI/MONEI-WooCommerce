@@ -180,11 +180,14 @@
 
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
 			// and we need to reset the counter in order to initiate again the monei component.
-			if (
-				wc_bizum_form.$container &&
-				0 === wc_bizum_form.$container.childElementCount
-			) {
-				wc_bizum_form.init_counter = 0;
+			if ( wc_bizum_form.$container ) {
+				// Reset if stored container differs from current (recreated) OR current is empty
+				if (
+					wc_bizum_form.$container !== container ||
+					container.childElementCount === 0
+				) {
+					wc_bizum_form.init_counter = 0;
+				}
 			}
 
 			// init monei just once, despite how many times this may be triggered.

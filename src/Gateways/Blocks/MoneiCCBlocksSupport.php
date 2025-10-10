@@ -8,6 +8,7 @@ use Monei\Gateways\PaymentMethods\WCGatewayMoneiCC;
 use Monei\Helpers\CardBrandHelper;
 
 final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
+
 	private $gateway;
 	protected $name = 'monei';
 	private CardBrandHelper $cardBrandHelper;
@@ -21,7 +22,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		$this->settings = get_option( 'woocommerce_monei_settings', array() );
 		add_filter( 'woocommerce_saved_payment_methods_list', array( $this, 'filter_saved_payment_methods_list' ), 10, 2 );
 	}
-
 
 	public function is_active() {
 		// Order-pay page always uses classic checkout
@@ -38,7 +38,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
 	}
 
-
 	/**
 	 * Removes all saved payment methods when the setting to save cards is disabled.
 	 *
@@ -52,7 +51,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		}
 		return $paymentMethods;
 	}
-
 
 	public function get_payment_method_script_handles() {
 		// Order-pay page uses classic checkout, not blocks
@@ -98,7 +96,6 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		return array( $script_name );
 	}
 
-
 	public function get_payment_method_data() {
 		if ( 'no' === $this->get_setting( 'tokenization' ) ) {
 			$supports = $this->gateway->supports;
@@ -109,7 +106,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 				'showSaveOption' => true,
 			);
 		}
-		$total            = WC()->cart->get_total( false );
+		$total            = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$card_input_style = $this->get_setting( 'card_input_style' );
 		if ( ! $card_input_style ) {
 			$card_input_style = '{"base": {"height": "50"}, "input": {"background": "none"}}';
@@ -131,20 +128,17 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			'tokenErrorString' => esc_html__( 'MONEI token could not be generated.', 'monei' ),
 			'redirected'       => esc_html__( 'You will be redirected to the payment page', 'monei' ),
 			'supports'         => $supports,
-
 			// yes: test mode.
 			// no:  live,
 			'testMode'         => $this->gateway->getTestmode(),
-
 			// yes: redirect the customer to the Hosted Payment Page.
 			// no:  credit card input will be rendered directly on the checkout page
 			'redirect'         => $redirect_mode,
-
 			// yes: Can save credit card and use saved cards.
 			// no:  Cannot save/use
 			'tokenization'     => $this->get_setting( 'tokenization' ) ?? 'no',
 			'accountId'        => $this->gateway->getAccountId() ?? false,
-			'sessionId'        => wc()->session !== null ? wc()->session->get_customer_id() : '',
+			'sessionId'        => WC()->session !== null ? WC()->session->get_customer_id() : '',
 			'currency'         => get_woocommerce_currency(),
 			'total'            => $total,
 			'language'         => locale_iso_639_1_code(),

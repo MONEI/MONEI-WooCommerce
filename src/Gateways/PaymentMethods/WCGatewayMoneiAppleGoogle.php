@@ -4,14 +4,14 @@ namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayComponent;
+use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\ApiKeyService;
 use Monei\Services\MoneiStatusCodeHandler;
-use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
+use WC_Admin_Settings;
 use WC_Blocks_Utils;
 use WC_Monei_IPN;
-use WC_Admin_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -23,6 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class MoneiAppleGoogleGateway
  */
 class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
+
 	const PAYMENT_METHOD = 'card';
 
 	/**
@@ -78,7 +79,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		}
 		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
 		$this->settings      = get_option( 'woocommerce_monei_apple_google_settings', array() );
-		$this->enabled       = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled       = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
 		$this->account_id    = $this->getAccountId();
 		$this->api_key       = $this->getApiKey();
 		$this->shop_name     = get_bloginfo( 'name' );
@@ -162,7 +163,6 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	 * Registering MONEI JS library and plugin js.
 	 */
 	public function monei_scripts() {
-
 		if ( 'no' === $this->enabled ) {
 			return;
 		}
@@ -187,7 +187,6 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
 			wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '1.0', true );
-
 		}
 		wp_register_script(
 			'woocommerce_monei_apple_google',
@@ -224,7 +223,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 			'wc_monei_apple_google_params',
 			array(
 				'accountId'           => $this->getAccountId(),
-				'sessionId'           => WC()->session->get_customer_id(),
+				'sessionId'           => WC()->session !== null ? WC()->session->get_customer_id() : '',
 				'total'               => monei_price_format( $total ),
 				'currency'            => get_woocommerce_currency(),
 				'appleLogo'           => WC_Monei()->image_url( 'apple-logo.svg' ),
@@ -237,7 +236,6 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		wp_enqueue_script( 'woocommerce_monei_apple_google' );
 		self::$scripts_enqueued = true;
 	}
-
 
 	/**
 	 * Hide Apple/Google Pay in WooCommerce Checkout
@@ -320,13 +318,13 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 
 	public function isGoogleAvailable() {
 		$googleInAPI = $this->paymentMethodsService->isGoogleEnabled();
-		$googleInWoo = $this->enabled;
+		$googleInWoo = 'yes' === $this->enabled;
 		return $googleInAPI && $googleInWoo;
 	}
 
 	public function isAppleAvailable() {
 		$appleInAPI = $this->paymentMethodsService->isAppleEnabled();
-		$appleInWoo = $this->enabled;
+		$appleInWoo = 'yes' === $this->enabled;
 		return $appleInAPI && $appleInWoo;
 	}
 
@@ -334,4 +332,3 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		return is_checkout() || is_checkout_pay_page();
 	}
 }
-

@@ -1,7 +1,7 @@
 import {
 	useCardholderName,
-	useMoneiCardInput,
 	useFormErrors,
+	useMoneiCardInput,
 } from '../helpers/monei-card-input-hooks';
 
 const { useEffect, useState, useRef, useCallback, useMemo, createPortal } =
@@ -223,6 +223,7 @@ export const MoneiCCContent = ( props ) => {
 		createPaymentToken,
 		responseTypes,
 		moneiData.tokenErrorString,
+		shouldSavePayment,
 	] );
 
 	// Setup checkout success hook
@@ -288,7 +289,12 @@ export const MoneiCCContent = ( props ) => {
 		);
 
 		return unsubscribe;
-	}, [ onCheckoutSuccess, cardholderName.value, shouldSavePayment ] );
+	}, [
+		onCheckoutSuccess,
+		cardholderName.value,
+		responseTypes,
+		props.emitResponse.noticeContexts,
+	] );
 
 	return (
 		<fieldset className="monei-fieldset monei-card-fieldset wc-block-components-form">
