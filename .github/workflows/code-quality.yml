@@ -27,14 +27,14 @@ jobs:
               with:
                   composer-options: --dev --optimize-autoloader
 
+            - name: Enable Corepack
+              run: corepack enable
+
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version-file: .nvmrc
                   cache: yarn
-
-            - name: Enable Corepack
-              run: corepack enable
 
             - name: Install dependencies
               run: yarn install --immutable
