@@ -338,6 +338,12 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		} elseif ( is_checkout_pay_page() ) {
 			// Order-pay page: Don't show saved cards (matches Stripe behavior)
 			// Always require new payment method for failed payment retries
+			// Show description in redirect mode
+			if ( $this->redirect_flow && $this->description ) {
+				echo '<div class="monei-redirect-description">';
+				echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
+				echo '</div>';
+			}
 			if ( ! $this->redirect_flow ) {
 				$this->render_monei_form();
 			}
@@ -358,7 +364,9 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			// Checkout screen.
 			// Show description only in redirect mode
 			if ( $this->redirect_flow && $this->description ) {
+				echo '<div class="monei-redirect-description">';
 				echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
+				echo '</div>';
 			}
 			if ( $this->tokenization ) {
 				$this->saved_payment_methods();

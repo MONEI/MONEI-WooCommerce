@@ -294,7 +294,9 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		ob_start();
 		// Show description only in redirect mode
 		if ( $this->redirect_flow && $this->description ) {
+			echo '<div class="monei-redirect-description">';
 			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
+			echo '</div>';
 		}
 		$this->render_google_pay_form();
 		ob_end_flush();

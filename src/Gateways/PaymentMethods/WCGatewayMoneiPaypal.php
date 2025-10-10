@@ -188,7 +188,9 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 	public function payment_fields() {
 		// Show description only in redirect mode
 		if ( $this->redirect_flow && $this->description ) {
+			echo '<div class="monei-redirect-description">';
 			echo wp_kses_post( wpautop( wptexturize( $this->description ) ) );
+			echo '</div>';
 		}
 
 		// Only render PayPal button if not using redirect flow
