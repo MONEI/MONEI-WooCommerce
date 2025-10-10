@@ -1,0 +1,1281 @@
+# Copyright (C) 2025 MONEI
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: MONEI Payments for WooCommerce 6.4.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/MONEI-"
+"WooCommerce\n"
+"POT-Creation-Date: 2025-10-10T12:34:56+00:00\n"
+"PO-Revision-Date: 2025-10-10T12:29:44+00:00\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: monei\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. Plugin Name of the plugin
+#: woocommerce-gateway-monei.php
+msgid "MONEI Payments for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: woocommerce-gateway-monei.php
+msgid "https://wordpress.org/plugins/monei/"
+msgstr ""
+
+#. Description of the plugin
+#: woocommerce-gateway-monei.php
+msgid ""
+"Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment "
+"methods in your store."
+msgstr "Принимайте платежи банковскими картами, Apple Pay, Google Pay, Bizum, PayPal и многими другими способами в вашем магазине."
+
+#. Author of the plugin
+#: woocommerce-gateway-monei.php
+msgid "MONEI"
+msgstr ""
+
+#. Author URI of the plugin
+#: woocommerce-gateway-monei.php
+msgid "https://www.monei.com/"
+msgstr ""
+
+#: class-woocommerce-gateway-monei.php:65
+msgid "Use Singleton."
+msgstr "Используйте Singleton."
+
+#: class-woocommerce-gateway-monei.php:321
+msgid "Settings"
+msgstr "Настройки"
+
+#: includes/addons/class-wc-monei-addons-redirect-hooks.php:80
+#: includes/addons/class-wc-monei-addons-redirect-hooks.php:118
+msgid "Error while saving sequence id. Please contact admin. Payment ID: "
+msgstr "Ошибка при сохранении идентификатора последовательности. Обратитесь к администратору. ID платежа: "
+
+#: includes/admin/monei-apple-google-settings.php:25
+#: includes/admin/monei-cc-settings.php:25
+#: src/Templates/NoticeGatewayNotAvailable.php:20
+#: src/Templates/NoticeGatewayNotAvailableApi.php:20
+#: src/Templates/NoticeGatewayNotAvailableApi.php:25
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:20
+msgid "Go to MONEI API Key Settings"
+msgstr "Перейти к настройкам API-ключа MONEI"
+
+#: includes/admin/monei-apple-google-settings.php:29
+#: includes/admin/monei-bizum-settings.php:29
+#: includes/admin/monei-cc-settings.php:29
+#: includes/admin/monei-mbway-settings.php:29
+#: includes/admin/monei-multibanco-settings.php:29
+#: includes/admin/monei-paypal-settings.php:29
+msgid "Enable/Disable"
+msgstr "Включить/Отключить"
+
+#: includes/admin/monei-apple-google-settings.php:31
+msgid "Enable Apple Pay and Google Pay by MONEI"
+msgstr "Включить Apple Pay и Google Pay от MONEI"
+
+#: includes/admin/monei-apple-google-settings.php:35
+#: includes/admin/monei-bizum-settings.php:42
+#: includes/admin/monei-cc-settings.php:46
+#: includes/admin/monei-mbway-settings.php:42
+#: includes/admin/monei-multibanco-settings.php:42
+#: includes/admin/monei-paypal-settings.php:42
+msgid "Title"
+msgstr "Название"
+
+#: includes/admin/monei-apple-google-settings.php:37
+msgid ""
+"Generic payment method name shown in order emails, order history, and admin "
+"areas. Not displayed on checkout (checkout shows Apple Pay or Google Pay "
+"based on device)."
+msgstr "Общее название способа оплаты, отображаемое в email-уведомлениях, истории заказов и административных разделах. Не отображается на странице оформления заказа (там показывается Apple Pay или Google Pay в зависимости от устройства)."
+
+#: includes/admin/monei-apple-google-settings.php:38
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:69
+msgid "Apple Pay / Google Pay"
+msgstr "Apple Pay / Google Pay"
+
+#: includes/admin/monei-apple-google-settings.php:42
+msgid "Apple Pay Title"
+msgstr "Название Apple Pay"
+
+#: includes/admin/monei-apple-google-settings.php:44
+msgid ""
+"Title shown on checkout page for Apple devices (iPhone, iPad, Mac with "
+"Safari)."
+msgstr "Название, отображаемое на странице оформления заказа для устройств Apple (iPhone, iPad, Mac с Safari)."
+
+#: includes/admin/monei-apple-google-settings.php:45
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:106
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:207
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:211
+#: src/Services/MoneiApplePayVerificationService.php:69
+msgid "Apple Pay"
+msgstr "Apple Pay"
+
+#: includes/admin/monei-apple-google-settings.php:49
+msgid "Google Pay Title"
+msgstr "Название Google Pay"
+
+#: includes/admin/monei-apple-google-settings.php:51
+msgid ""
+"Title shown on checkout page for non-Apple devices (Android, Chrome, etc)."
+msgstr "Название, отображаемое на странице оформления заказа для устройств, не являющихся продукцией Apple (Android, Chrome и т.д.)."
+
+#: includes/admin/monei-apple-google-settings.php:52
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:107
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:208
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:212
+msgid "Google Pay"
+msgstr "Google Pay"
+
+#: includes/admin/monei-apple-google-settings.php:56
+#: includes/admin/monei-bizum-settings.php:49
+#: includes/admin/monei-cc-settings.php:53
+#: includes/admin/monei-mbway-settings.php:49
+#: includes/admin/monei-multibanco-settings.php:49
+#: includes/admin/monei-paypal-settings.php:49
+msgid "Hide Title"
+msgstr "Скрыть название"
+
+#: includes/admin/monei-apple-google-settings.php:58
+#: includes/admin/monei-bizum-settings.php:51
+#: includes/admin/monei-cc-settings.php:55
+#: includes/admin/monei-mbway-settings.php:51
+#: includes/admin/monei-multibanco-settings.php:51
+#: includes/admin/monei-paypal-settings.php:51
+msgid "Hide payment method title"
+msgstr "Скрыть название способа оплаты"
+
+#: includes/admin/monei-apple-google-settings.php:60
+#: includes/admin/monei-bizum-settings.php:53
+#: includes/admin/monei-cc-settings.php:57
+#: includes/admin/monei-mbway-settings.php:53
+#: includes/admin/monei-multibanco-settings.php:53
+#: includes/admin/monei-paypal-settings.php:53
+msgid "Hide payment method title in the checkout, showing only the logo."
+msgstr "Скрыть название способа оплаты при оформлении заказа, показывая только логотип."
+
+#: includes/admin/monei-apple-google-settings.php:64
+#: includes/admin/monei-bizum-settings.php:57
+#: includes/admin/monei-cc-settings.php:61
+#: includes/admin/monei-mbway-settings.php:57
+#: includes/admin/monei-multibanco-settings.php:57
+#: includes/admin/monei-paypal-settings.php:57
+msgid "Hide Logo"
+msgstr "Скрыть логотип"
+
+#: includes/admin/monei-apple-google-settings.php:66
+#: includes/admin/monei-bizum-settings.php:59
+#: includes/admin/monei-cc-settings.php:63
+#: includes/admin/monei-mbway-settings.php:59
+#: includes/admin/monei-multibanco-settings.php:59
+#: includes/admin/monei-paypal-settings.php:59
+msgid "Hide payment method logo"
+msgstr "Скрыть логотип способа оплаты"
+
+#: includes/admin/monei-apple-google-settings.php:68
+#: includes/admin/monei-bizum-settings.php:61
+#: includes/admin/monei-cc-settings.php:65
+#: includes/admin/monei-mbway-settings.php:61
+#: includes/admin/monei-multibanco-settings.php:61
+#: includes/admin/monei-paypal-settings.php:61
+msgid "Hide payment method logo in the checkout."
+msgstr "Скрыть логотип способа оплаты при оформлении заказа."
+
+#: includes/admin/monei-apple-google-settings.php:72
+msgid "Apple Pay / Google Pay Style"
+msgstr "Стиль Apple Pay / Google Pay"
+
+#: includes/admin/monei-apple-google-settings.php:74
+msgid ""
+"Configure in JSON format the style of the Apple Pay / Google Pay component. "
+"Documentation: "
+msgstr "Настройте стиль компонента Apple Pay / Google Pay в формате JSON. Документация: "
+
+#: includes/admin/monei-bizum-settings.php:25
+#: includes/admin/monei-mbway-settings.php:25
+#: includes/admin/monei-multibanco-settings.php:25
+#: includes/admin/monei-paypal-settings.php:25
+msgid "Go to MONEI Api key Settings"
+msgstr "Перейти к настройкам Api-ключа MONEI"
+
+#: includes/admin/monei-bizum-settings.php:31
+msgid "Enable Bizum by MONEI"
+msgstr "Включить Bizum от MONEI"
+
+#: includes/admin/monei-bizum-settings.php:35
+#: includes/admin/monei-cc-settings.php:35
+#: includes/admin/monei-paypal-settings.php:35
+msgid "Use Redirect Flow"
+msgstr "Использовать перенаправление"
+
+#: includes/admin/monei-bizum-settings.php:37
+#: includes/admin/monei-cc-settings.php:37
+#: includes/admin/monei-paypal-settings.php:37
+msgid "This will redirect the customer to the Hosted Payment Page."
+msgstr "Клиент будет перенаправлен на размещенную страницу оплаты."
+
+#: includes/admin/monei-bizum-settings.php:39
+msgid ""
+"If disabled the Bizum button will be rendered directly on the checkout page. "
+"It is recommended to enable redirection in cases where Bizum payments do not "
+"function correctly."
+msgstr "При отключении кнопка Bizum будет отображаться непосредственно на странице оформления заказа. Рекомендуется включить перенаправление, если платежи Bizum работают некорректно."
+
+#: includes/admin/monei-bizum-settings.php:44
+#: includes/admin/monei-cc-settings.php:48
+#: includes/admin/monei-mbway-settings.php:44
+#: includes/admin/monei-multibanco-settings.php:44
+#: includes/admin/monei-paypal-settings.php:44
+msgid "The payment method title a user sees during checkout."
+msgstr "Название способа оплаты, которое пользователь видит при оформлении заказа."
+
+#: includes/admin/monei-bizum-settings.php:45
+msgid "Bizum"
+msgstr "Bizum"
+
+#: includes/admin/monei-bizum-settings.php:65
+#: includes/admin/monei-cc-settings.php:69
+#: includes/admin/monei-mbway-settings.php:35
+#: includes/admin/monei-multibanco-settings.php:35
+#: includes/admin/monei-paypal-settings.php:65
+msgid "Description"
+msgstr "Описание"
+
+#: includes/admin/monei-bizum-settings.php:67
+#: includes/admin/monei-cc-settings.php:71
+#: includes/admin/monei-paypal-settings.php:67
+msgid ""
+"This description is only displayed when using redirect mode. It will be "
+"shown to customers before they are redirected to the payment page."
+msgstr "Это описание отображается только при использовании режима перенаправления. Оно будет показано клиентам перед перенаправлением на страницу оплаты."
+
+#: includes/admin/monei-bizum-settings.php:68
+msgid ""
+"You will be redirected to Bizum to complete the payment. Powered by MONEI."
+msgstr "Вы будете перенаправлены в Bizum для завершения оплаты. При поддержке MONEI."
+
+#: includes/admin/monei-bizum-settings.php:72
+msgid "Bizum Style"
+msgstr "Стиль Bizum"
+
+#: includes/admin/monei-bizum-settings.php:74
+msgid ""
+"Configure in JSON format the style of the Bizum component. Documentation: "
+msgstr "Настройте стиль компонента Bizum в формате JSON. Документация: "
+
+#: includes/admin/monei-cc-settings.php:31
+msgid "Enable Credit Card by MONEI"
+msgstr "Включить банковские карты от MONEI"
+
+#: includes/admin/monei-cc-settings.php:39
+msgid ""
+"If disabled the credit card input will be rendered directly on the checkout "
+"page.<br>It is recommended to enable redirection in cases where card "
+"payments do not function correctly."
+msgstr "При отключении поле ввода банковской карты будет отображаться непосредственно на странице оформления заказа.<br>Рекомендуется включить перенаправление, если платежи картой работают некорректно."
+
+#: includes/admin/monei-cc-settings.php:49
+msgid "Credit Card"
+msgstr "Банковская карта"
+
+#: includes/admin/monei-cc-settings.php:72
+msgid ""
+"You will be redirected to Credit Card to complete the payment. Powered by "
+"MONEI."
+msgstr "Вы будете перенаправлены на страницу оплаты банковской картой. При поддержке MONEI."
+
+#: includes/admin/monei-cc-settings.php:76
+msgid "Card Input Style"
+msgstr "Стиль поля ввода карты"
+
+#: includes/admin/monei-cc-settings.php:78
+msgid ""
+"Configure in JSON format the style of the Card Input component. "
+"Documentation: "
+msgstr "Настройте стиль компонента ввода карты в формате JSON. Документация: "
+
+#: includes/admin/monei-cc-settings.php:83
+msgid "Saved cards"
+msgstr "Сохраненные карты"
+
+#: includes/admin/monei-cc-settings.php:85
+msgid "Enable payments via saved cards"
+msgstr "Включить оплату сохраненными картами"
+
+#: includes/admin/monei-cc-settings.php:87
+msgid ""
+"If enabled, customers will be able to pay with a saved card during checkout. "
+"Card details are saved on MONEI servers, not on your store."
+msgstr "При включении клиенты смогут оплачивать заказы сохраненной картой. Данные карты хранятся на серверах MONEI, а не в вашем магазине."
+
+#: includes/admin/monei-mbway-settings.php:31
+msgid "Enable MBWay by MONEI"
+msgstr "Включить MBWay от MONEI"
+
+#: includes/admin/monei-mbway-settings.php:37
+#: includes/admin/monei-multibanco-settings.php:37
+msgid "Payment method description shown to customers during checkout."
+msgstr "Описание способа оплаты, отображаемое клиентам при оформлении заказа."
+
+#: includes/admin/monei-mbway-settings.php:38
+msgid ""
+"You will be redirected to MBWay to complete the payment. Powered by MONEI."
+msgstr "Вы будете перенаправлены в MBWay для завершения оплаты. При поддержке MONEI."
+
+#: includes/admin/monei-mbway-settings.php:45
+msgid "MBWay"
+msgstr "MBWay"
+
+#: includes/admin/monei-multibanco-settings.php:31
+msgid "Enable Multibanco by MONEI"
+msgstr "Включить Multibanco от MONEI"
+
+#: includes/admin/monei-multibanco-settings.php:38
+msgid ""
+"You will be redirected to Multibanco to complete the payment. Powered by "
+"MONEI."
+msgstr "Вы будете перенаправлены в Multibanco для завершения оплаты. При поддержке MONEI."
+
+#: includes/admin/monei-multibanco-settings.php:45
+msgid "Multibanco"
+msgstr "Multibanco"
+
+#: includes/admin/monei-paypal-settings.php:31
+msgid "Enable PayPal by MONEI"
+msgstr "Включить PayPal от MONEI"
+
+#: includes/admin/monei-paypal-settings.php:39
+msgid ""
+"If disabled the PayPal button will be rendered directly on the checkout "
+"page. It is recommended to enable redirection in cases where PayPal payments "
+"do not function correctly."
+msgstr "При отключении кнопка PayPal будет отображаться непосредственно на странице оформления заказа. Рекомендуется включить перенаправление, если платежи PayPal работают некорректно."
+
+#: includes/admin/monei-paypal-settings.php:45
+msgid "PayPal"
+msgstr "PayPal"
+
+#: includes/admin/monei-paypal-settings.php:68
+msgid ""
+"You will be redirected to PayPal to complete the payment. Powered by MONEI."
+msgstr "Вы будете перенаправлены в PayPal для завершения оплаты. При поддержке MONEI."
+
+#: includes/admin/monei-paypal-settings.php:72
+msgid "PayPal Style"
+msgstr "Стиль PayPal"
+
+#: includes/admin/monei-paypal-settings.php:74
+msgid ""
+"Configure in JSON format the style of the PayPal component. Documentation: "
+msgstr "Настройте стиль компонента PayPal в формате JSON. Документация: "
+
+#: includes/class-wc-monei-ipn.php:151
+msgid "HTTP Notification received - <strong>Payment Pending</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж в обработке</strong> "
+
+#: includes/class-wc-monei-ipn.php:152 includes/class-wc-monei-ipn.php:189
+#: includes/class-wc-monei-ipn.php:220 includes/class-wc-monei-ipn.php:236
+#: includes/class-wc-monei-ipn.php:247
+#: includes/class-wc-monei-redirect-hooks.php:251
+#: includes/class-wc-monei-redirect-hooks.php:258
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:167
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:174
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:227
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:234
+msgid "MONEI Transaction id: "
+msgstr "ID транзакции MONEI: "
+
+#: includes/class-wc-monei-ipn.php:153 includes/class-wc-monei-ipn.php:190
+#: includes/class-wc-monei-ipn.php:221 includes/class-wc-monei-ipn.php:237
+#: includes/class-wc-monei-ipn.php:249
+#: includes/class-wc-monei-redirect-hooks.php:252
+#: includes/class-wc-monei-redirect-hooks.php:259
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:168
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:175
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:228
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:235
+msgid "MONEI Status Message: "
+msgstr "Сообщение статуса MONEI: "
+
+#: includes/class-wc-monei-ipn.php:155
+msgid "Payment pending confirmation"
+msgstr "Платеж ожидает подтверждения"
+
+#: includes/class-wc-monei-ipn.php:161
+msgid "HTTP Notification received - <strong>Payment Failed</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж не выполнен</strong> "
+
+#: includes/class-wc-monei-ipn.php:168
+msgid "HTTP Notification received - <strong>Payment Cancelled</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж отменен</strong> "
+
+#: includes/class-wc-monei-ipn.php:169
+msgid "Cancelled by MONEI: "
+msgstr "Отменено через MONEI: "
+
+#: includes/class-wc-monei-ipn.php:177
+msgid "HTTP Notification received - <strong>Payment Expired</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж истек</strong> "
+
+#: includes/class-wc-monei-ipn.php:178
+msgid "Payment expired: "
+msgstr "Платеж истек: "
+
+#: includes/class-wc-monei-ipn.php:188
+msgid "HTTP Notification received - <strong>Payment Authorized</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж авторизован</strong> "
+
+#: includes/class-wc-monei-ipn.php:192
+#: includes/class-wc-monei-redirect-hooks.php:254
+msgid "Order On-Hold by MONEI"
+msgstr "Заказ приостановлен через MONEI"
+
+#. translators: 1: Order amount, 2: Notification amount
+#: includes/class-wc-monei-ipn.php:211
+#, php-format
+msgid ""
+"Validation error: Order vs. Notification amounts do not match (order: %1$s - "
+"received: %2$s)."
+msgstr "Ошибка проверки: суммы заказа и уведомления не совпадают (заказ: %1$s - получено: %2$s)."
+
+#: includes/class-wc-monei-ipn.php:219
+msgid "HTTP Notification received - <strong>Payment Completed</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж выполнен</strong> "
+
+#: includes/class-wc-monei-ipn.php:228
+#: includes/class-wc-monei-redirect-hooks.php:264
+msgid "Order Completed by MONEI"
+msgstr "Заказ выполнен через MONEI"
+
+#: includes/class-wc-monei-ipn.php:235
+msgid "HTTP Notification received - <strong>Payment Refunded</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж возвращен</strong> "
+
+#: includes/class-wc-monei-ipn.php:239
+msgid "Payment refunded by MONEI"
+msgstr "Платеж возвращен через MONEI"
+
+#: includes/class-wc-monei-ipn.php:246
+msgid ""
+"HTTP Notification received - <strong>Payment Partially Refunded</strong> "
+msgstr "Получено HTTP-уведомление - <strong>Платеж частично возвращен</strong> "
+
+#: includes/class-wc-monei-ipn.php:248
+msgid "Refunded amount: "
+msgstr "Возвращенная сумма: "
+
+#: includes/class-wc-monei-payment-method-display.php:78
+msgid "MONEI Payment Details"
+msgstr "Детали платежа MONEI"
+
+#: includes/class-wc-monei-payment-method-display.php:80
+msgid "Payment Method:"
+msgstr "Способ оплаты:"
+
+#: includes/class-wc-monei-payment-method-display.php:85
+msgid "Transaction ID:"
+msgstr "ID транзакции:"
+
+#: includes/class-wc-monei-payment-method-display.php:91
+msgid "Payment Status:"
+msgstr "Статус платежа:"
+
+#: includes/class-wc-monei-redirect-hooks.php:57
+msgid "The payment failed. Please try again"
+msgstr "Платеж не выполнен. Пожалуйста, попробуйте еще раз"
+
+#: includes/class-wc-monei-redirect-hooks.php:78
+#: includes/class-wc-monei-redirect-hooks.php:84
+msgid "MONEI Status: "
+msgstr "Статус MONEI: "
+
+#: includes/class-wc-monei-redirect-hooks.php:79
+#: includes/class-wc-monei-redirect-hooks.php:85
+msgid "MONEI message: "
+msgstr "Сообщение MONEI: "
+
+#: includes/class-wc-monei-redirect-hooks.php:83
+msgid "Order Cancelled: "
+msgstr "Заказ отменен: "
+
+#: includes/class-wc-monei-redirect-hooks.php:122
+msgid "Unable to add payment method to your account."
+msgstr "Не удалось добавить способ оплаты в вашу учетную запись."
+
+#: includes/class-wc-monei-redirect-hooks.php:184
+msgid "Error while adding your payment method to MONEI. Payment ID: "
+msgstr "Ошибка при добавлении способа оплаты в MONEI. ID платежа: "
+
+#. translators: 1: Order amount, 2: Payment amount
+#: includes/class-wc-monei-redirect-hooks.php:228
+#, php-format
+msgid ""
+"Validation error: Order vs. Payment amounts do not match (order: %1$s - "
+"received: %2$s)."
+msgstr "Ошибка проверки: суммы заказа и платежа не совпадают (заказ: %1$s - получено: %2$s)."
+
+#: includes/class-wc-monei-redirect-hooks.php:250
+msgid "Payment verified via redirect - <strong>Payment Authorized</strong>"
+msgstr "Платеж проверен через перенаправление - <strong>Платеж авторизован</strong>"
+
+#: includes/class-wc-monei-redirect-hooks.php:257
+msgid "Payment verified via redirect - <strong>Payment Completed</strong>"
+msgstr "Платеж проверен через перенаправление - <strong>Платеж выполнен</strong>"
+
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:129
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:183
+msgid "Payment Method Subscription Change"
+msgstr "Изменение способа оплаты подписки"
+
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:166
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:226
+msgid "Success Renewal scheduled_subscription_payment."
+msgstr "Успешное продление scheduled_subscription_payment."
+
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:173
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:186
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:233
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:247
+msgid "Error Renewal scheduled_subscription_payment. Reason: "
+msgstr "Ошибка продления scheduled_subscription_payment. Причина: "
+
+#. translators: 1) card brand 2) last 4 digits
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:308
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:307
+#, php-format
+msgid "%1$s card ending in %2$s"
+msgstr "Карта %1$s, оканчивающаяся на %2$s"
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:246
+msgid "MONEI Refund Approved:"
+msgstr "Возврат MONEI одобрен:"
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:252
+msgid "Refund error: "
+msgstr "Ошибка возврата: "
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:267
+msgid "Save payment information to my account for future purchases."
+msgstr "Сохранить платежную информацию в моей учетной записи для будущих покупок."
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:339
+msgid "MONEI needs an API Key in order to work. Disabling the gateway."
+msgstr "Для работы MONEI требуется API-ключ. Шлюз отключен."
+
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:111
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:78
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:216
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:70
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:110
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:64
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:63
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:69
+msgid "Test Mode"
+msgstr "Тестовый режим"
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:125
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:402
+msgid "Cardholder Name"
+msgstr "Имя держателя карты"
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:126
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:490
+msgid "Please enter a valid name. Special characters are not allowed."
+msgstr "Введите действительное имя. Специальные символы не разрешены."
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:127
+msgid "Please check your card details."
+msgstr "Пожалуйста, проверьте данные вашей карты."
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:128
+#: assets/js/monei-block-checkout-bizum.js:213
+#: assets/js/monei-block-checkout-paypal.js:236
+#: public/js/monei-block-checkout-bizum.min.js:263
+#: public/js/monei-block-checkout-paypal.min.js:286
+msgid "MONEI token could not be generated."
+msgstr "Не удалось создать токен MONEI."
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:129
+msgid "You will be redirected to the payment page"
+msgstr "Вы будете перенаправлены на страницу оплаты"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:66
+msgid "MONEI - Apple Pay / Google Pay"
+msgstr "MONEI - Apple Pay / Google Pay"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:67
+msgid "Accept Apple Pay and Google Pay payments."
+msgstr "Принимать платежи Apple Pay и Google Pay."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:151
+#, php-format
+msgid "Apple Pay / Google Pay Style field contains invalid JSON: %s"
+msgstr "Поле стиля Apple Pay / Google Pay содержит недействительный JSON: %s"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:49
+msgid "MONEI - Bizum"
+msgstr "MONEI - Bizum"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:50
+msgid "Accept Bizum payments."
+msgstr "Принимать платежи Bizum."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:152
+#, php-format
+msgid "Bizum Style field contains invalid JSON: %s"
+msgstr "Поле стиля Bizum содержит недействительный JSON: %s"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:80
+msgid "MONEI - Credit Card"
+msgstr "MONEI - Банковская карта"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:81
+msgid "Accept credit card payments."
+msgstr "Принимать платежи банковскими картами."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:221
+#, php-format
+msgid "Card Input Style field contains invalid JSON: %s"
+msgstr "Поле стиля ввода карты содержит недействительный JSON: %s"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:335
+msgid "Pay via MONEI: you can add your payment method for future payments."
+msgstr "Оплата через MONEI: вы можете добавить свой способ оплаты для будущих платежей."
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:44
+msgid "MONEI - MBWay"
+msgstr "MONEI - MBWay"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:45
+msgid "Accept MBWay payments."
+msgstr "Принимать платежи MBWay."
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:43
+msgid "MONEI - Multibanco"
+msgstr "MONEI - Multibanco"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:44
+msgid "Accept Multibanco payments."
+msgstr "Принимать платежи Multibanco."
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:48
+msgid "MONEI - PayPal"
+msgstr "MONEI - PayPal"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:49
+msgid "Accept PayPal payments."
+msgstr "Принимать платежи PayPal."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:155
+#, php-format
+msgid "PayPal Style field contains invalid JSON: %s"
+msgstr "Поле стиля PayPal содержит недействительный JSON: %s"
+
+#: src/Helpers/CardBrandHelper.php:38
+msgid "Card"
+msgstr "Карта"
+
+#: src/Services/MoneiApplePayVerificationService.php:57
+msgid "Apple Pay domain registration failed: unable to determine domain."
+msgstr "Регистрация домена Apple Pay не удалась: не удалось определить домен."
+
+#: src/Services/MoneiApplePayVerificationService.php:64
+msgid "Apple Pay domain registered successfully."
+msgstr "Домен Apple Pay успешно зарегистрирован."
+
+#: src/Services/MoneiApplePayVerificationService.php:71
+msgid "Apple Pay domain registration failed. Please check the logs."
+msgstr "Регистрация домена Apple Pay не удалась. Пожалуйста, проверьте журналы."
+
+#: src/Services/MoneiStatusCodeHandler.php:22
+msgid "Transaction approved"
+msgstr "Транзакция одобрена"
+
+#: src/Services/MoneiStatusCodeHandler.php:24
+msgid "Service internal error. Please contact support"
+msgstr "Внутренняя ошибка сервиса. Обратитесь в службу поддержки"
+
+#: src/Services/MoneiStatusCodeHandler.php:26
+msgid ""
+"Error with payment processor configuration. Check this in your dashboard or "
+"contact MONEI for support"
+msgstr "Ошибка конфигурации платежного процессора. Проверьте это в вашей панели управления или обратитесь в службу поддержки MONEI"
+
+#: src/Services/MoneiStatusCodeHandler.php:28
+msgid "Invalid or inactive MID. Please contact the acquiring entity"
+msgstr "Недействительный или неактивный MID. Обратитесь в банк-эквайер"
+
+#: src/Services/MoneiStatusCodeHandler.php:30
+msgid ""
+"Operation not allowed/configured for this merchant. Please contact the "
+"acquiring entity or MONEI for support"
+msgstr "Операция не разрешена/не настроена для этого мерчанта. Обратитесь в банк-эквайер или службу поддержки MONEI"
+
+#: src/Services/MoneiStatusCodeHandler.php:32
+msgid ""
+"Partial captures are not enabled in your account, please contact MONEI "
+"support"
+msgstr "Частичные захваты не включены в вашей учетной записи, обратитесь в службу поддержки MONEI"
+
+#: src/Services/MoneiStatusCodeHandler.php:34
+msgid ""
+"MOTO Payment are not enabled in your account, please contact MONEI support"
+msgstr "Платежи MOTO не включены в вашей учетной записи, обратитесь в службу поддержки MONEI"
+
+#: src/Services/MoneiStatusCodeHandler.php:36
+msgid "Invalid or malformed request. Please check the message format"
+msgstr "Неверный или некорректный запрос. Проверьте формат сообщения"
+
+#: src/Services/MoneiStatusCodeHandler.php:38
+msgid "Missing or malformed signature/auth"
+msgstr "Отсутствует или некорректна подпись/авторизация"
+
+#: src/Services/MoneiStatusCodeHandler.php:40
+msgid "Error while decrypting request"
+msgstr "Ошибка при расшифровке запроса"
+
+#: src/Services/MoneiStatusCodeHandler.php:42
+msgid "Pre-authorization is expired and cannot be canceled or captured"
+msgstr "Срок предавторизации истек, и её нельзя отменить или захватить"
+
+#: src/Services/MoneiStatusCodeHandler.php:44
+msgid "The payment date cannot be less than the cancellation or capture date"
+msgstr "Дата платежа не может быть меньше даты отмены или захвата"
+
+#: src/Services/MoneiStatusCodeHandler.php:46
+msgid ""
+"The cancellation date exceeded the date allowed for pre-authorized operations"
+msgstr "Дата отмены превысила допустимую дату для предавторизованных операций"
+
+#: src/Services/MoneiStatusCodeHandler.php:48
+msgid "Transaction failed during payment processing"
+msgstr "Транзакция не выполнена во время обработки платежа"
+
+#: src/Services/MoneiStatusCodeHandler.php:50
+msgid "Transaction declined by the card-issuing bank"
+msgstr "Транзакция отклонена банком-эмитентом карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:52
+msgid "Transaction declined by the issuing bank"
+msgstr "Транзакция отклонена банком-эмитентом"
+
+#: src/Services/MoneiStatusCodeHandler.php:54
+msgid "Payment method not allowed"
+msgstr "Способ оплаты не разрешен"
+
+#: src/Services/MoneiStatusCodeHandler.php:56
+msgid "Wrong or not allowed currency"
+msgstr "Неправильная или недопустимая валюта"
+
+#: src/Services/MoneiStatusCodeHandler.php:58
+msgid "Incorrect reference / transaction does not exist"
+msgstr "Неверная ссылка / транзакция не существует"
+
+#: src/Services/MoneiStatusCodeHandler.php:60
+msgid "Transaction failed: process time exceeded"
+msgstr "Транзакция не выполнена: превышено время обработки"
+
+#: src/Services/MoneiStatusCodeHandler.php:62
+msgid "Transaction is currently being processed"
+msgstr "Транзакция в данный момент обрабатывается"
+
+#: src/Services/MoneiStatusCodeHandler.php:64
+msgid "Duplicated operation"
+msgstr "Дублированная операция"
+
+#: src/Services/MoneiStatusCodeHandler.php:66
+msgid "Wrong or not allowed payment amount"
+msgstr "Неправильная или недопустимая сумма платежа"
+
+#: src/Services/MoneiStatusCodeHandler.php:68
+msgid "Refund declined by processor"
+msgstr "Возврат отклонен процессором"
+
+#: src/Services/MoneiStatusCodeHandler.php:70
+msgid "Transaction has already been captured"
+msgstr "Транзакция уже была захвачена"
+
+#: src/Services/MoneiStatusCodeHandler.php:72
+msgid "Transaction has already been canceled"
+msgstr "Транзакция уже была отменена"
+
+#: src/Services/MoneiStatusCodeHandler.php:74
+msgid "The amount to be captured cannot exceed the pre-authorized amount"
+msgstr "Сумма к захвату не может превышать предавторизованную сумму"
+
+#: src/Services/MoneiStatusCodeHandler.php:76
+msgid "The transaction to be captured has not been pre-authorized yet"
+msgstr "Транзакция к захвату еще не была предавторизована"
+
+#: src/Services/MoneiStatusCodeHandler.php:78
+msgid "The transaction to be canceled has not been pre-authorized yet"
+msgstr "Транзакция к отмене еще не была предавторизована"
+
+#: src/Services/MoneiStatusCodeHandler.php:80
+msgid "Transaction denied by processor to avoid duplicated operations"
+msgstr "Транзакция отклонена процессором во избежание дублирования операций"
+
+#: src/Services/MoneiStatusCodeHandler.php:82
+msgid "Error during payment request validation"
+msgstr "Ошибка при проверке запроса на оплату"
+
+#: src/Services/MoneiStatusCodeHandler.php:84
+msgid "Refund declined due to exceeded amount"
+msgstr "Возврат отклонен из-за превышения суммы"
+
+#: src/Services/MoneiStatusCodeHandler.php:86
+msgid "Transaction has already been fully refunded"
+msgstr "Транзакция уже была полностью возвращена"
+
+#: src/Services/MoneiStatusCodeHandler.php:88
+msgid "Transaction declined due to insufficient funds"
+msgstr "Транзакция отклонена из-за недостаточности средств"
+
+#: src/Services/MoneiStatusCodeHandler.php:90
+msgid "The user has canceled the payment"
+msgstr "Пользователь отменил платеж"
+
+#: src/Services/MoneiStatusCodeHandler.php:92
+msgid "Waiting for the transaction to be completed"
+msgstr "Ожидание завершения транзакции"
+
+#: src/Services/MoneiStatusCodeHandler.php:94
+msgid "No reason to decline"
+msgstr "Нет причины для отклонения"
+
+#: src/Services/MoneiStatusCodeHandler.php:96
+msgid "Refund not allowed"
+msgstr "Возврат не разрешен"
+
+#: src/Services/MoneiStatusCodeHandler.php:98
+msgid "Transaction cannot be completed, violation of law"
+msgstr "Транзакция не может быть завершена, нарушение закона"
+
+#: src/Services/MoneiStatusCodeHandler.php:100
+msgid "Stop Payment Order"
+msgstr "Приостановка платежа"
+
+#: src/Services/MoneiStatusCodeHandler.php:102
+msgid "Strong Customer Authentication required"
+msgstr "Требуется усиленная аутентификация клиента"
+
+#: src/Services/MoneiStatusCodeHandler.php:104
+msgid "Transaction declined due to security restrictions"
+msgstr "Транзакция отклонена из-за ограничений безопасности"
+
+#: src/Services/MoneiStatusCodeHandler.php:106
+msgid "3D Secure authentication failed"
+msgstr "Аутентификация 3D Secure не удалась"
+
+#: src/Services/MoneiStatusCodeHandler.php:108
+msgid "Authentication process timed out. Please try again"
+msgstr "Время процесса аутентификации истекло. Попробуйте еще раз"
+
+#: src/Services/MoneiStatusCodeHandler.php:110
+msgid "An error occurred during the 3D Secure process"
+msgstr "Произошла ошибка во время процесса 3D Secure"
+
+#: src/Services/MoneiStatusCodeHandler.php:112
+msgid "Invalid or malformed 3D Secure request"
+msgstr "Неверный или некорректный запрос 3D Secure"
+
+#: src/Services/MoneiStatusCodeHandler.php:114
+msgid "Exemption not allowed"
+msgstr "Исключение не разрешено"
+
+#: src/Services/MoneiStatusCodeHandler.php:116
+msgid "Exemption error"
+msgstr "Ошибка исключения"
+
+#: src/Services/MoneiStatusCodeHandler.php:118
+msgid "Fraud control error"
+msgstr "Ошибка контроля мошенничества"
+
+#: src/Services/MoneiStatusCodeHandler.php:120
+msgid "External MPI received wrong. Please check the data"
+msgstr "Получен неверный внешний MPI. Проверьте данные"
+
+#: src/Services/MoneiStatusCodeHandler.php:122
+msgid "External MPI not enabled. Please contact support"
+msgstr "Внешний MPI не включен. Обратитесь в службу поддержки"
+
+#: src/Services/MoneiStatusCodeHandler.php:124
+msgid "Transaction confirmation rejected by the merchant"
+msgstr "Подтверждение транзакции отклонено мерчантом"
+
+#: src/Services/MoneiStatusCodeHandler.php:126
+msgid "Transaction declined during card payment process"
+msgstr "Транзакция отклонена во время процесса оплаты картой"
+
+#: src/Services/MoneiStatusCodeHandler.php:128
+msgid "Card rejected: invalid card number"
+msgstr "Карта отклонена: неверный номер карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:130
+msgid "Card rejected: wrong expiration date"
+msgstr "Карта отклонена: неверная дата истечения срока"
+
+#: src/Services/MoneiStatusCodeHandler.php:132
+msgid "Card rejected: wrong CVC/CVV2 number"
+msgstr "Карта отклонена: неверный номер CVC/CVV2"
+
+#: src/Services/MoneiStatusCodeHandler.php:134
+msgid "Card number not registered"
+msgstr "Номер карты не зарегистрирован"
+
+#: src/Services/MoneiStatusCodeHandler.php:136
+msgid "Card is expired"
+msgstr "Срок действия карты истек"
+
+#: src/Services/MoneiStatusCodeHandler.php:138
+msgid "Error during payment authorization. Please try again"
+msgstr "Ошибка при авторизации платежа. Попробуйте еще раз"
+
+#: src/Services/MoneiStatusCodeHandler.php:140
+msgid "Cardholder has canceled the payment"
+msgstr "Держатель карты отменил платеж"
+
+#: src/Services/MoneiStatusCodeHandler.php:142
+msgid "Transaction declined: AMEX cards not accepted by payment processor"
+msgstr "Транзакция отклонена: карты AMEX не принимаются платежным процессором"
+
+#: src/Services/MoneiStatusCodeHandler.php:144
+msgid "Card blocked temporarily or under suspicion of fraud"
+msgstr "Карта временно заблокирована или находится под подозрением в мошенничестве"
+
+#: src/Services/MoneiStatusCodeHandler.php:146
+msgid "Card does not allow pre-authorization operations"
+msgstr "Карта не поддерживает операции предавторизации"
+
+#: src/Services/MoneiStatusCodeHandler.php:148
+msgid "CVC/CVV2 number is required"
+msgstr "Требуется номер CVC/CVV2"
+
+#: src/Services/MoneiStatusCodeHandler.php:150
+msgid "Unsupported card type"
+msgstr "Неподдерживаемый тип карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:152
+msgid "Transaction type not allowed for this type of card"
+msgstr "Тип транзакции не разрешен для этого типа карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:154
+msgid "Transaction declined by card issuer"
+msgstr "Транзакция отклонена эмитентом карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:156
+msgid "Implausible card data"
+msgstr "Неправдоподобные данные карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:158
+msgid "Incorrect PIN"
+msgstr "Неверный PIN-код"
+
+#: src/Services/MoneiStatusCodeHandler.php:160
+msgid "Transaction not allowed for cardholder"
+msgstr "Транзакция не разрешена для держателя карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:162
+msgid "The amount exceeds the card limit"
+msgstr "Сумма превышает лимит карты"
+
+#: src/Services/MoneiStatusCodeHandler.php:164
+msgid "Transaction declined during ApplePay/GooglePay payment process"
+msgstr "Транзакция отклонена во время процесса оплаты ApplePay/GooglePay"
+
+#: src/Services/MoneiStatusCodeHandler.php:166
+msgid "Incorrect ApplePay or GooglePay configuration"
+msgstr "Неверная конфигурация ApplePay или GooglePay"
+
+#: src/Services/MoneiStatusCodeHandler.php:168
+msgid "Transaction declined during PayPal payment process"
+msgstr "Транзакция отклонена во время процесса оплаты PayPal"
+
+#: src/Services/MoneiStatusCodeHandler.php:170
+msgid "Transaction declined during PayPal payment process: invalid currency"
+msgstr "Транзакция отклонена во время процесса оплаты PayPal: недопустимая валюта"
+
+#: src/Services/MoneiStatusCodeHandler.php:172
+msgid "Bizum transaction declined after three authentication attempts"
+msgstr "Транзакция Bizum отклонена после трех попыток аутентификации"
+
+#: src/Services/MoneiStatusCodeHandler.php:174
+msgid "Bizum transaction declined due to failed authorization"
+msgstr "Транзакция Bizum отклонена из-за неудачной авторизации"
+
+#: src/Services/MoneiStatusCodeHandler.php:176
+msgid "Bizum transaction declined due to insufficient funds"
+msgstr "Транзакция Bizum отклонена из-за недостаточности средств"
+
+#: src/Services/MoneiStatusCodeHandler.php:178
+msgid "Bizum transaction canceled: the user does not want to continue"
+msgstr "Транзакция Bizum отменена: пользователь не хочет продолжать"
+
+#: src/Services/MoneiStatusCodeHandler.php:180
+msgid "Bizum transaction rejected by destination bank"
+msgstr "Транзакция Bizum отклонена банком получателя"
+
+#: src/Services/MoneiStatusCodeHandler.php:182
+msgid "Bizum transaction rejected by origin bank"
+msgstr "Транзакция Bizum отклонена банком отправителя"
+
+#: src/Services/MoneiStatusCodeHandler.php:184
+msgid "Bizum transaction rejected by processor"
+msgstr "Транзакция Bizum отклонена процессором"
+
+#: src/Services/MoneiStatusCodeHandler.php:186
+msgid ""
+"Bizum transaction failed while connecting with processor. Please try again"
+msgstr "Транзакция Bizum не удалась при подключении к процессору. Попробуйте еще раз"
+
+#: src/Services/MoneiStatusCodeHandler.php:188
+msgid "Bizum transaction failed, payee is not found"
+msgstr "Транзакция Bizum не удалась, получатель не найден"
+
+#: src/Services/MoneiStatusCodeHandler.php:190
+msgid "Bizum transaction failed, payer is not found"
+msgstr "Транзакция Bizum не удалась, плательщик не найден"
+
+#: src/Services/MoneiStatusCodeHandler.php:192
+msgid "Bizum REST not implemented"
+msgstr "Bizum REST не реализован"
+
+#: src/Services/MoneiStatusCodeHandler.php:194
+msgid "Bizum transaction declined due to failed authentication"
+msgstr "Транзакция Bizum отклонена из-за неудачной аутентификации"
+
+#: src/Services/MoneiStatusCodeHandler.php:196
+msgid "The customer has disabled Bizum, please use another payment method"
+msgstr "Клиент отключил Bizum, используйте другой способ оплаты"
+
+#: src/Services/MoneiStatusCodeHandler.php:198
+msgid "Transaction declined during ClickToPay payment process"
+msgstr "Транзакция отклонена во время процесса оплаты ClickToPay"
+
+#: src/Services/MoneiStatusCodeHandler.php:200
+msgid "Incorrect ClickToPay configuration"
+msgstr "Неверная конфигурация ClickToPay"
+
+#: src/Services/MoneiStatusCodeHandler.php:202
+msgid "Transaction declined during Cofidis payment process"
+msgstr "Транзакция отклонена во время процесса оплаты Cofidis"
+
+#. translators: %s is the status code from MONEI API.
+#: src/Services/MoneiStatusCodeHandler.php:205
+#, php-format
+msgid "Unknown status code: %s"
+msgstr "Неизвестный код состояния: %s"
+
+#: src/Settings/MoneiSettings.php:18 src/Settings/MoneiSettings.php:28
+msgid "MONEI Settings"
+msgstr "Настройки MONEI"
+
+#: src/Settings/MoneiSettings.php:33
+msgid "API Key Mode"
+msgstr "Режим API-ключа"
+
+#: src/Settings/MoneiSettings.php:35
+msgid "Set to Live to use the production environment."
+msgstr "Установите Live для использования производственной среды."
+
+#: src/Settings/MoneiSettings.php:39
+msgid "Test"
+msgstr "Тест"
+
+#: src/Settings/MoneiSettings.php:40
+msgid "Live"
+msgstr "Рабочий"
+
+#: src/Settings/MoneiSettings.php:44
+msgid "Test Account ID *"
+msgstr "Тестовый ID учетной записи *"
+
+#: src/Settings/MoneiSettings.php:46
+msgid "Your MONEI Test Account ID. Available at your MONEI dashboard."
+msgstr "Ваш тестовый ID учетной записи MONEI. Доступен в вашей панели MONEI."
+
+#: src/Settings/MoneiSettings.php:53
+msgid "Live Account ID *"
+msgstr "Рабочий ID учетной записи *"
+
+#: src/Settings/MoneiSettings.php:55
+msgid "Your MONEI Account ID. Available at your MONEI dashboard."
+msgstr "Ваш ID учетной записи MONEI. Доступен в вашей панели MONEI."
+
+#: src/Settings/MoneiSettings.php:62
+msgid "Test API Key *"
+msgstr "Тестовый API-ключ *"
+
+#: src/Settings/MoneiSettings.php:64
+msgid "Your MONEI Test API Key. Available at your MONEI dashboard."
+msgstr "Ваш тестовый API-ключ MONEI. Доступен в вашей панели MONEI."
+
+#: src/Settings/MoneiSettings.php:71
+msgid "Live API Key *"
+msgstr "Рабочий API-ключ *"
+
+#: src/Settings/MoneiSettings.php:73
+msgid "Your MONEI API Key. Available at your MONEI dashboard."
+msgstr "Ваш API-ключ MONEI. Доступен в вашей панели MONEI."
+
+#: src/Settings/MoneiSettings.php:80
+msgid "What to do after payment?"
+msgstr "Что делать после оплаты?"
+
+#: src/Settings/MoneiSettings.php:82
+msgid ""
+"Choose what to do after the customer pays the order. This setting applies to "
+"all MONEI payment methods."
+msgstr "Выберите, что делать после оплаты заказа клиентом. Эта настройка применяется ко всем способам оплаты MONEI."
+
+#: src/Settings/MoneiSettings.php:86
+msgid "Mark as Processing (Recommended)"
+msgstr "Отметить как «В обработке» (рекомендуется)"
+
+#: src/Settings/MoneiSettings.php:87
+msgid "Mark as Complete"
+msgstr "Отметить как «Выполнен»"
+
+#: src/Settings/MoneiSettings.php:91
+msgid "Payment Action"
+msgstr "Действие платежа"
+
+#: src/Settings/MoneiSettings.php:93
+msgid ""
+"Choose payment flow: Immediate charge or Pre-authorization.<br>Pre-"
+"authorization is supported for: Card, Apple Pay, Google Pay, PayPal.<br>Not "
+"supported for: MBWay, Multibanco."
+msgstr "Выберите процесс оплаты: немедленное списание или предавторизация.<br>Предавторизация поддерживается для: карты, Apple Pay, Google Pay, PayPal.<br>Не поддерживается для: MBWay, Multibanco."
+
+#: src/Settings/MoneiSettings.php:97
+msgid "Sale (Immediate charge)"
+msgstr "Продажа (немедленное списание)"
+
+#: src/Settings/MoneiSettings.php:98
+msgid "Authorization (Pre-authorization)"
+msgstr "Авторизация (предавторизация)"
+
+#: src/Settings/MoneiSettings.php:102
+msgid "Log Level"
+msgstr "Уровень журналирования"
+
+#: src/Settings/MoneiSettings.php:104
+msgid ""
+"Set minimum log level. Only messages at or above this level will be logged."
+"<br>Logs are available in WooCommerce > Status > Logs > Select MONEI Logs."
+"<br>WARNING: INFO level may impact performance."
+msgstr "Установите минимальный уровень журналирования. Будут записываться только сообщения этого уровня и выше.<br>Журналы доступны в WooCommerce > Состояние > Журналы > Выбрать журналы MONEI.<br>ВНИМАНИЕ: уровень INFO может повлиять на производительность."
+
+#: src/Settings/MoneiSettings.php:108
+msgid "INFO - All messages (Debug mode)"
+msgstr "INFO - Все сообщения (режим отладки)"
+
+#: src/Settings/MoneiSettings.php:109
+msgid "WARNING - Warnings and errors only"
+msgstr "WARNING - Только предупреждения и ошибки"
+
+#: src/Settings/MoneiSettings.php:110
+msgid "ERROR - Errors only (Recommended)"
+msgstr "ERROR - Только ошибки (рекомендуется)"
+
+#: src/Settings/MoneiSettings.php:111
+msgid "NONE - Disable logging"
+msgstr "NONE - Отключить журналирование"
+
+#: src/Settings/MoneiSettings.php:126
+msgid ""
+"Welcome to MONEI! Enhance your payment processing experience with our "
+"seamless integration"
+msgstr "Добро пожаловать в MONEI! Улучшите процесс обработки платежей с помощью нашей бесшовной интеграции"
+
+#: src/Settings/MoneiSettings.php:127
+msgid "Go to Dashboard"
+msgstr "Перейти к панели управления"
+
+#: src/Settings/MoneiSettings.php:128
+msgid "Support"
+msgstr "Поддержка"
+
+#: src/Settings/MoneiSettings.php:129
+msgid "Leave a review"
+msgstr "Оставить отзыв"
+
+#: src/Templates/NoticeAdminDependency.php:13
+msgid ""
+"MONEI Gateway is inactive because WooCommerce is not installed and active."
+msgstr "Шлюз MONEI неактивен, так как WooCommerce не установлен и не активирован."
+
+#: src/Templates/NoticeAdminNewInstall.php:13
+msgid "Dismiss"
+msgstr "Закрыть"
+
+#: src/Templates/NoticeAdminNewInstall.php:15
+msgid "Thank you for install MONEI for WooCommerce. Version: "
+msgstr "Спасибо за установку MONEI для WooCommerce. Версия: "
+
+#: src/Templates/NoticeAdminNewInstall.php:18
+msgid ""
+"The best payment gateway rates. The perfect solution to manage your digital "
+"payments."
+msgstr "Лучшие тарифы платежного шлюза. Идеальное решение для управления вашими цифровыми платежами."
+
+#: src/Templates/NoticeAdminNewInstall.php:22
+msgid "Sign up"
+msgstr "Зарегистрироваться"
+
+#: src/Templates/NoticeAdminNewInstall.php:24
+msgid "MONEI website"
+msgstr "Сайт MONEI"
+
+#: src/Templates/NoticeGatewayNotAvailable.php:24
+#: src/Templates/NoticeGatewayNotAvailableApi.php:24
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:24
+msgid "Gateway Disabled"
+msgstr "Шлюз отключен"
+
+#: src/Templates/NoticeGatewayNotAvailable.php:24
+msgid "MONEI only support EUROS, USD & GBP currencies."
+msgstr "MONEI поддерживает только валюты EUR, USD и GBP."
+
+#: src/Templates/NoticeGatewayNotAvailableApi.php:24
+msgid "MONEI API Key or Account ID is missing."
+msgstr "Отсутствует API-ключ или ID учетной записи MONEI."
+
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:24
+msgid ""
+"The selected payment method is not active in the MONEI dashboard. Or API Key "
+"is incorrect"
+msgstr "Выбранный способ оплаты не активен в панели MONEI. Или API-ключ неверен"
+
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:25
+msgid "Go to your MONEI Dashboard to activate it"
+msgstr "Перейдите в вашу панель MONEI, чтобы активировать его"
+
+#: assets/js/monei-block-checkout-apple-google.js:18
+#: public/js/monei-block-checkout-apple-google.min.js:486
+msgid "Apple/Google Pay Payment Gateway"
+msgstr "Платежный шлюз Apple/Google Pay"
+
+#: assets/js/monei-block-checkout-apple-google.js:20
+#: assets/js/monei-block-checkout-cc.js:19
+#: public/js/monei-block-checkout-apple-google.min.js:488
+#: public/js/monei-block-checkout-cc.min.js:765
+msgid "MONEI Payment Form (Edit Mode)"
+msgstr "Форма оплаты MONEI (режим редактирования)"
+
+#: assets/js/monei-block-checkout-cc.js:17
+#: public/js/monei-block-checkout-cc.min.js:763
+msgid "MONEI Payment Gateway"
+msgstr "Платежный шлюз MONEI"

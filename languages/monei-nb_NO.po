@@ -1,0 +1,1280 @@
+# Copyright (C) 2025 MONEI
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: MONEI Payments for WooCommerce 6.4.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/MONEI-"
+"WooCommerce\n"
+"POT-Creation-Date: 2025-10-10T12:34:56+00:00\n"
+"PO-Revision-Date: 2025-10-10T12:29:44+00:00\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: nb\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: monei\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Plugin Name of the plugin
+#: woocommerce-gateway-monei.php
+msgid "MONEI Payments for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: woocommerce-gateway-monei.php
+msgid "https://wordpress.org/plugins/monei/"
+msgstr ""
+
+#. Description of the plugin
+#: woocommerce-gateway-monei.php
+msgid ""
+"Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment "
+"methods in your store."
+msgstr "Godta kort, Apple Pay, Google Pay, Bizum, PayPal og mange flere betalingsmetoder i butikken din."
+
+#. Author of the plugin
+#: woocommerce-gateway-monei.php
+msgid "MONEI"
+msgstr ""
+
+#. Author URI of the plugin
+#: woocommerce-gateway-monei.php
+msgid "https://www.monei.com/"
+msgstr ""
+
+#: class-woocommerce-gateway-monei.php:65
+msgid "Use Singleton."
+msgstr "Bruk Singleton."
+
+#: class-woocommerce-gateway-monei.php:321
+msgid "Settings"
+msgstr "Innstillinger"
+
+#: includes/addons/class-wc-monei-addons-redirect-hooks.php:80
+#: includes/addons/class-wc-monei-addons-redirect-hooks.php:118
+msgid "Error while saving sequence id. Please contact admin. Payment ID: "
+msgstr "Feil ved lagring av sekvens-ID. Vennligst kontakt administrator. Betalings-ID: "
+
+#: includes/admin/monei-apple-google-settings.php:25
+#: includes/admin/monei-cc-settings.php:25
+#: src/Templates/NoticeGatewayNotAvailable.php:20
+#: src/Templates/NoticeGatewayNotAvailableApi.php:20
+#: src/Templates/NoticeGatewayNotAvailableApi.php:25
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:20
+msgid "Go to MONEI API Key Settings"
+msgstr "Gå til MONEI API-nøkkelinnstillinger"
+
+#: includes/admin/monei-apple-google-settings.php:29
+#: includes/admin/monei-bizum-settings.php:29
+#: includes/admin/monei-cc-settings.php:29
+#: includes/admin/monei-mbway-settings.php:29
+#: includes/admin/monei-multibanco-settings.php:29
+#: includes/admin/monei-paypal-settings.php:29
+msgid "Enable/Disable"
+msgstr "Aktiver/Deaktiver"
+
+#: includes/admin/monei-apple-google-settings.php:31
+msgid "Enable Apple Pay and Google Pay by MONEI"
+msgstr "Aktiver Apple Pay og Google Pay via MONEI"
+
+#: includes/admin/monei-apple-google-settings.php:35
+#: includes/admin/monei-bizum-settings.php:42
+#: includes/admin/monei-cc-settings.php:46
+#: includes/admin/monei-mbway-settings.php:42
+#: includes/admin/monei-multibanco-settings.php:42
+#: includes/admin/monei-paypal-settings.php:42
+msgid "Title"
+msgstr "Tittel"
+
+#: includes/admin/monei-apple-google-settings.php:37
+msgid ""
+"Generic payment method name shown in order emails, order history, and admin "
+"areas. Not displayed on checkout (checkout shows Apple Pay or Google Pay "
+"based on device)."
+msgstr "Generisk betalingsmetodenavn vist i ordre-e-poster, ordrehistorikk og admin-områder. Vises ikke ved kassen (kassen viser Apple Pay eller Google Pay basert på enhet)."
+
+#: includes/admin/monei-apple-google-settings.php:38
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:69
+msgid "Apple Pay / Google Pay"
+msgstr ""
+
+#: includes/admin/monei-apple-google-settings.php:42
+msgid "Apple Pay Title"
+msgstr "Apple Pay-tittel"
+
+#: includes/admin/monei-apple-google-settings.php:44
+msgid ""
+"Title shown on checkout page for Apple devices (iPhone, iPad, Mac with "
+"Safari)."
+msgstr "Tittel vist på kassesiden for Apple-enheter (iPhone, iPad, Mac med Safari)."
+
+#: includes/admin/monei-apple-google-settings.php:45
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:106
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:207
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:211
+#: src/Services/MoneiApplePayVerificationService.php:69
+msgid "Apple Pay"
+msgstr ""
+
+#: includes/admin/monei-apple-google-settings.php:49
+msgid "Google Pay Title"
+msgstr "Google Pay-tittel"
+
+#: includes/admin/monei-apple-google-settings.php:51
+msgid ""
+"Title shown on checkout page for non-Apple devices (Android, Chrome, etc)."
+msgstr "Tittel vist på kassesiden for ikke-Apple-enheter (Android, Chrome, osv.)."
+
+#: includes/admin/monei-apple-google-settings.php:52
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:107
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:208
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:212
+msgid "Google Pay"
+msgstr ""
+
+#: includes/admin/monei-apple-google-settings.php:56
+#: includes/admin/monei-bizum-settings.php:49
+#: includes/admin/monei-cc-settings.php:53
+#: includes/admin/monei-mbway-settings.php:49
+#: includes/admin/monei-multibanco-settings.php:49
+#: includes/admin/monei-paypal-settings.php:49
+msgid "Hide Title"
+msgstr "Skjul tittel"
+
+#: includes/admin/monei-apple-google-settings.php:58
+#: includes/admin/monei-bizum-settings.php:51
+#: includes/admin/monei-cc-settings.php:55
+#: includes/admin/monei-mbway-settings.php:51
+#: includes/admin/monei-multibanco-settings.php:51
+#: includes/admin/monei-paypal-settings.php:51
+msgid "Hide payment method title"
+msgstr "Skjul betalingsmetodetittel"
+
+#: includes/admin/monei-apple-google-settings.php:60
+#: includes/admin/monei-bizum-settings.php:53
+#: includes/admin/monei-cc-settings.php:57
+#: includes/admin/monei-mbway-settings.php:53
+#: includes/admin/monei-multibanco-settings.php:53
+#: includes/admin/monei-paypal-settings.php:53
+msgid "Hide payment method title in the checkout, showing only the logo."
+msgstr "Skjul betalingsmetodetittelen ved kassen og vis bare logoen."
+
+#: includes/admin/monei-apple-google-settings.php:64
+#: includes/admin/monei-bizum-settings.php:57
+#: includes/admin/monei-cc-settings.php:61
+#: includes/admin/monei-mbway-settings.php:57
+#: includes/admin/monei-multibanco-settings.php:57
+#: includes/admin/monei-paypal-settings.php:57
+msgid "Hide Logo"
+msgstr "Skjul logo"
+
+#: includes/admin/monei-apple-google-settings.php:66
+#: includes/admin/monei-bizum-settings.php:59
+#: includes/admin/monei-cc-settings.php:63
+#: includes/admin/monei-mbway-settings.php:59
+#: includes/admin/monei-multibanco-settings.php:59
+#: includes/admin/monei-paypal-settings.php:59
+msgid "Hide payment method logo"
+msgstr "Skjul betalingsmetodelogo"
+
+#: includes/admin/monei-apple-google-settings.php:68
+#: includes/admin/monei-bizum-settings.php:61
+#: includes/admin/monei-cc-settings.php:65
+#: includes/admin/monei-mbway-settings.php:61
+#: includes/admin/monei-multibanco-settings.php:61
+#: includes/admin/monei-paypal-settings.php:61
+msgid "Hide payment method logo in the checkout."
+msgstr "Skjul betalingsmetodelogoen ved kassen."
+
+#: includes/admin/monei-apple-google-settings.php:72
+msgid "Apple Pay / Google Pay Style"
+msgstr "Apple Pay / Google Pay stil"
+
+#: includes/admin/monei-apple-google-settings.php:74
+msgid ""
+"Configure in JSON format the style of the Apple Pay / Google Pay component. "
+"Documentation: "
+msgstr "Konfigurer i JSON-format stilen til Apple Pay / Google Pay-komponenten. Dokumentasjon: "
+
+#: includes/admin/monei-bizum-settings.php:25
+#: includes/admin/monei-mbway-settings.php:25
+#: includes/admin/monei-multibanco-settings.php:25
+#: includes/admin/monei-paypal-settings.php:25
+msgid "Go to MONEI Api key Settings"
+msgstr "Gå til MONEI API-nøkkelinnstillinger"
+
+#: includes/admin/monei-bizum-settings.php:31
+msgid "Enable Bizum by MONEI"
+msgstr "Aktiver Bizum via MONEI"
+
+#: includes/admin/monei-bizum-settings.php:35
+#: includes/admin/monei-cc-settings.php:35
+#: includes/admin/monei-paypal-settings.php:35
+msgid "Use Redirect Flow"
+msgstr "Bruk omdirigeringsflyt"
+
+#: includes/admin/monei-bizum-settings.php:37
+#: includes/admin/monei-cc-settings.php:37
+#: includes/admin/monei-paypal-settings.php:37
+msgid "This will redirect the customer to the Hosted Payment Page."
+msgstr "Dette vil omdirigere kunden til den hostede betalingssiden."
+
+#: includes/admin/monei-bizum-settings.php:39
+msgid ""
+"If disabled the Bizum button will be rendered directly on the checkout page. "
+"It is recommended to enable redirection in cases where Bizum payments do not "
+"function correctly."
+msgstr "Hvis deaktivert vil Bizum-knappen vises direkte på kassesiden. Det anbefales å aktivere omdirigering i tilfeller der Bizum-betalinger ikke fungerer korrekt."
+
+#: includes/admin/monei-bizum-settings.php:44
+#: includes/admin/monei-cc-settings.php:48
+#: includes/admin/monei-mbway-settings.php:44
+#: includes/admin/monei-multibanco-settings.php:44
+#: includes/admin/monei-paypal-settings.php:44
+msgid "The payment method title a user sees during checkout."
+msgstr "Betalingsmetodetittelen en bruker ser under utsjekking."
+
+#: includes/admin/monei-bizum-settings.php:45
+msgid "Bizum"
+msgstr "Bizum"
+
+#: includes/admin/monei-bizum-settings.php:65
+#: includes/admin/monei-cc-settings.php:69
+#: includes/admin/monei-mbway-settings.php:35
+#: includes/admin/monei-multibanco-settings.php:35
+#: includes/admin/monei-paypal-settings.php:65
+msgid "Description"
+msgstr "Beskrivelse"
+
+#: includes/admin/monei-bizum-settings.php:67
+#: includes/admin/monei-cc-settings.php:71
+#: includes/admin/monei-paypal-settings.php:67
+msgid ""
+"This description is only displayed when using redirect mode. It will be "
+"shown to customers before they are redirected to the payment page."
+msgstr "Denne beskrivelsen vises bare når omdirigeringsmodus brukes. Den vil vises til kunder før de omdirigeres til betalingssiden."
+
+#: includes/admin/monei-bizum-settings.php:68
+msgid ""
+"You will be redirected to Bizum to complete the payment. Powered by MONEI."
+msgstr "Du vil bli omdirigert til Bizum for å fullføre betalingen. Drevet av MONEI."
+
+#: includes/admin/monei-bizum-settings.php:72
+msgid "Bizum Style"
+msgstr "Bizum-stil"
+
+#: includes/admin/monei-bizum-settings.php:74
+msgid ""
+"Configure in JSON format the style of the Bizum component. Documentation: "
+msgstr "Konfigurer i JSON-format stilen til Bizum-komponenten. Dokumentasjon: "
+
+#: includes/admin/monei-cc-settings.php:31
+msgid "Enable Credit Card by MONEI"
+msgstr "Aktiver kredittkort via MONEI"
+
+#: includes/admin/monei-cc-settings.php:39
+msgid ""
+"If disabled the credit card input will be rendered directly on the checkout "
+"page.<br>It is recommended to enable redirection in cases where card "
+"payments do not function correctly."
+msgstr "Hvis deaktivert vil kredittkortinngangen vises direkte på kassesiden.<br>Det anbefales å aktivere omdirigering i tilfeller der kortbetalinger ikke fungerer korrekt."
+
+#: includes/admin/monei-cc-settings.php:49
+msgid "Credit Card"
+msgstr "Kredittkort"
+
+#: includes/admin/monei-cc-settings.php:72
+msgid ""
+"You will be redirected to Credit Card to complete the payment. Powered by "
+"MONEI."
+msgstr "Du vil bli omdirigert til kredittkort for å fullføre betalingen. Drevet av MONEI."
+
+#: includes/admin/monei-cc-settings.php:76
+msgid "Card Input Style"
+msgstr "Kortinngangs-stil"
+
+#: includes/admin/monei-cc-settings.php:78
+msgid ""
+"Configure in JSON format the style of the Card Input component. "
+"Documentation: "
+msgstr "Konfigurer i JSON-format stilen til kortinngangskomponenten. Dokumentasjon: "
+
+#: includes/admin/monei-cc-settings.php:83
+msgid "Saved cards"
+msgstr "Lagrede kort"
+
+#: includes/admin/monei-cc-settings.php:85
+msgid "Enable payments via saved cards"
+msgstr "Aktiver betaling via lagrede kort"
+
+#: includes/admin/monei-cc-settings.php:87
+msgid ""
+"If enabled, customers will be able to pay with a saved card during checkout. "
+"Card details are saved on MONEI servers, not on your store."
+msgstr "Hvis aktivert vil kunder kunne betale med et lagret kort ved kassen. Kortdetaljer lagres på MONEI-servere, ikke i butikken din."
+
+#: includes/admin/monei-mbway-settings.php:31
+msgid "Enable MBWay by MONEI"
+msgstr "Aktiver MBWay via MONEI"
+
+#: includes/admin/monei-mbway-settings.php:37
+#: includes/admin/monei-multibanco-settings.php:37
+msgid "Payment method description shown to customers during checkout."
+msgstr "Betalingsmetodebeskrivelse vist til kunder ved kassen."
+
+#: includes/admin/monei-mbway-settings.php:38
+msgid ""
+"You will be redirected to MBWay to complete the payment. Powered by MONEI."
+msgstr "Du vil bli omdirigert til MBWay for å fullføre betalingen. Drevet av MONEI."
+
+#: includes/admin/monei-mbway-settings.php:45
+msgid "MBWay"
+msgstr "MBWay"
+
+#: includes/admin/monei-multibanco-settings.php:31
+msgid "Enable Multibanco by MONEI"
+msgstr "Aktiver Multibanco via MONEI"
+
+#: includes/admin/monei-multibanco-settings.php:38
+msgid ""
+"You will be redirected to Multibanco to complete the payment. Powered by "
+"MONEI."
+msgstr "Du vil bli omdirigert til Multibanco for å fullføre betalingen. Drevet av MONEI."
+
+#: includes/admin/monei-multibanco-settings.php:45
+msgid "Multibanco"
+msgstr "Multibanco"
+
+#: includes/admin/monei-paypal-settings.php:31
+msgid "Enable PayPal by MONEI"
+msgstr "Aktiver PayPal via MONEI"
+
+#: includes/admin/monei-paypal-settings.php:39
+msgid ""
+"If disabled the PayPal button will be rendered directly on the checkout "
+"page. It is recommended to enable redirection in cases where PayPal payments "
+"do not function correctly."
+msgstr "Hvis deaktivert vil PayPal-knappen vises direkte på kassesiden. Det anbefales å aktivere omdirigering i tilfeller der PayPal-betalinger ikke fungerer korrekt."
+
+#: includes/admin/monei-paypal-settings.php:45
+msgid "PayPal"
+msgstr "PayPal"
+
+#: includes/admin/monei-paypal-settings.php:68
+msgid ""
+"You will be redirected to PayPal to complete the payment. Powered by MONEI."
+msgstr "Du vil bli omdirigert til PayPal for å fullføre betalingen. Drevet av MONEI."
+
+#: includes/admin/monei-paypal-settings.php:72
+msgid "PayPal Style"
+msgstr "PayPal-stil"
+
+#: includes/admin/monei-paypal-settings.php:74
+msgid ""
+"Configure in JSON format the style of the PayPal component. Documentation: "
+msgstr "Konfigurer i JSON-format stilen til PayPal-komponenten. Dokumentasjon: "
+
+#: includes/class-wc-monei-ipn.php:151
+msgid "HTTP Notification received - <strong>Payment Pending</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling venter</strong> "
+
+#: includes/class-wc-monei-ipn.php:152 includes/class-wc-monei-ipn.php:189
+#: includes/class-wc-monei-ipn.php:220 includes/class-wc-monei-ipn.php:236
+#: includes/class-wc-monei-ipn.php:247
+#: includes/class-wc-monei-redirect-hooks.php:251
+#: includes/class-wc-monei-redirect-hooks.php:258
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:167
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:174
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:227
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:234
+msgid "MONEI Transaction id: "
+msgstr "MONEI transaksjons-ID: "
+
+#: includes/class-wc-monei-ipn.php:153 includes/class-wc-monei-ipn.php:190
+#: includes/class-wc-monei-ipn.php:221 includes/class-wc-monei-ipn.php:237
+#: includes/class-wc-monei-ipn.php:249
+#: includes/class-wc-monei-redirect-hooks.php:252
+#: includes/class-wc-monei-redirect-hooks.php:259
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:168
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:175
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:228
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:235
+msgid "MONEI Status Message: "
+msgstr "MONEI statusmelding: "
+
+#: includes/class-wc-monei-ipn.php:155
+msgid "Payment pending confirmation"
+msgstr "Betaling venter på bekreftelse"
+
+#: includes/class-wc-monei-ipn.php:161
+msgid "HTTP Notification received - <strong>Payment Failed</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling mislyktes</strong> "
+
+#: includes/class-wc-monei-ipn.php:168
+msgid "HTTP Notification received - <strong>Payment Cancelled</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling kansellert</strong> "
+
+#: includes/class-wc-monei-ipn.php:169
+msgid "Cancelled by MONEI: "
+msgstr "Kansellert av MONEI: "
+
+#: includes/class-wc-monei-ipn.php:177
+msgid "HTTP Notification received - <strong>Payment Expired</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling utløpt</strong> "
+
+#: includes/class-wc-monei-ipn.php:178
+msgid "Payment expired: "
+msgstr "Betaling utløpt: "
+
+#: includes/class-wc-monei-ipn.php:188
+msgid "HTTP Notification received - <strong>Payment Authorized</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling autorisert</strong> "
+
+#: includes/class-wc-monei-ipn.php:192
+#: includes/class-wc-monei-redirect-hooks.php:254
+msgid "Order On-Hold by MONEI"
+msgstr "Ordre på vent av MONEI"
+
+#. translators: 1: Order amount, 2: Notification amount
+#: includes/class-wc-monei-ipn.php:211
+#, php-format
+msgid ""
+"Validation error: Order vs. Notification amounts do not match (order: %1$s - "
+"received: %2$s)."
+msgstr "Valideringsfeil: Ordre vs. varslingsbeløp stemmer ikke overens (ordre: %1$s - mottatt: %2$s)."
+
+#: includes/class-wc-monei-ipn.php:219
+msgid "HTTP Notification received - <strong>Payment Completed</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling fullført</strong> "
+
+#: includes/class-wc-monei-ipn.php:228
+#: includes/class-wc-monei-redirect-hooks.php:264
+msgid "Order Completed by MONEI"
+msgstr "Ordre fullført av MONEI"
+
+#: includes/class-wc-monei-ipn.php:235
+msgid "HTTP Notification received - <strong>Payment Refunded</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling refundert</strong> "
+
+#: includes/class-wc-monei-ipn.php:239
+msgid "Payment refunded by MONEI"
+msgstr "Betaling refundert av MONEI"
+
+#: includes/class-wc-monei-ipn.php:246
+msgid ""
+"HTTP Notification received - <strong>Payment Partially Refunded</strong> "
+msgstr "HTTP-varsling mottatt - <strong>Betaling delvis refundert</strong> "
+
+#: includes/class-wc-monei-ipn.php:248
+msgid "Refunded amount: "
+msgstr "Refundert beløp: "
+
+#: includes/class-wc-monei-payment-method-display.php:78
+msgid "MONEI Payment Details"
+msgstr "MONEI betalingsdetaljer"
+
+#: includes/class-wc-monei-payment-method-display.php:80
+msgid "Payment Method:"
+msgstr "Betalingsmetode:"
+
+#: includes/class-wc-monei-payment-method-display.php:85
+msgid "Transaction ID:"
+msgstr "Transaksjons-ID:"
+
+#: includes/class-wc-monei-payment-method-display.php:91
+msgid "Payment Status:"
+msgstr "Betalingsstatus:"
+
+#: includes/class-wc-monei-redirect-hooks.php:57
+msgid "The payment failed. Please try again"
+msgstr "Betalingen mislyktes. Vennligst prøv igjen"
+
+#: includes/class-wc-monei-redirect-hooks.php:78
+#: includes/class-wc-monei-redirect-hooks.php:84
+msgid "MONEI Status: "
+msgstr "MONEI status: "
+
+#: includes/class-wc-monei-redirect-hooks.php:79
+#: includes/class-wc-monei-redirect-hooks.php:85
+msgid "MONEI message: "
+msgstr "MONEI melding: "
+
+#: includes/class-wc-monei-redirect-hooks.php:83
+msgid "Order Cancelled: "
+msgstr "Ordre kansellert: "
+
+#: includes/class-wc-monei-redirect-hooks.php:122
+msgid "Unable to add payment method to your account."
+msgstr "Kunne ikke legge til betalingsmetode på kontoen din."
+
+#: includes/class-wc-monei-redirect-hooks.php:184
+msgid "Error while adding your payment method to MONEI. Payment ID: "
+msgstr "Feil ved tilføyelse av betalingsmetode til MONEI. Betalings-ID: "
+
+#. translators: 1: Order amount, 2: Payment amount
+#: includes/class-wc-monei-redirect-hooks.php:228
+#, php-format
+msgid ""
+"Validation error: Order vs. Payment amounts do not match (order: %1$s - "
+"received: %2$s)."
+msgstr "Valideringsfeil: Ordre vs. betalingsbeløp stemmer ikke overens (ordre: %1$s - mottatt: %2$s)."
+
+#: includes/class-wc-monei-redirect-hooks.php:250
+msgid "Payment verified via redirect - <strong>Payment Authorized</strong>"
+msgstr "Betaling verifisert via omdirigering - <strong>Betaling autorisert</strong>"
+
+#: includes/class-wc-monei-redirect-hooks.php:257
+msgid "Payment verified via redirect - <strong>Payment Completed</strong>"
+msgstr "Betaling verifisert via omdirigering - <strong>Betaling fullført</strong>"
+
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:129
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:183
+msgid "Payment Method Subscription Change"
+msgstr "Endring av betalingsmetode for abonnement"
+
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:166
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:226
+msgid "Success Renewal scheduled_subscription_payment."
+msgstr "Vellykket fornyelse scheduled_subscription_payment."
+
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:173
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:186
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:233
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:247
+msgid "Error Renewal scheduled_subscription_payment. Reason: "
+msgstr "Feil ved fornyelse scheduled_subscription_payment. Årsak: "
+
+#. translators: 1) card brand 2) last 4 digits
+#: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:308
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:307
+#, php-format
+msgid "%1$s card ending in %2$s"
+msgstr "%1$s kort som slutter på %2$s"
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:246
+msgid "MONEI Refund Approved:"
+msgstr "MONEI refusjon godkjent:"
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:252
+msgid "Refund error: "
+msgstr "Refusjonsfeil: "
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:267
+msgid "Save payment information to my account for future purchases."
+msgstr "Lagre betalingsinformasjon på kontoen min for fremtidige kjøp."
+
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:339
+msgid "MONEI needs an API Key in order to work. Disabling the gateway."
+msgstr "MONEI trenger en API-nøkkel for å fungere. Deaktiverer gateway."
+
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:111
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:78
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:216
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:70
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:110
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:64
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:63
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:69
+msgid "Test Mode"
+msgstr "Testmodus"
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:125
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:402
+msgid "Cardholder Name"
+msgstr "Kortholders navn"
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:126
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:490
+msgid "Please enter a valid name. Special characters are not allowed."
+msgstr "Vennligst skriv inn et gyldig navn. Spesialtegn er ikke tillatt."
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:127
+msgid "Please check your card details."
+msgstr "Vennligst sjekk kortdetaljene dine."
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:128
+#: assets/js/monei-block-checkout-bizum.js:213
+#: assets/js/monei-block-checkout-paypal.js:236
+#: public/js/monei-block-checkout-bizum.min.js:263
+#: public/js/monei-block-checkout-paypal.min.js:286
+msgid "MONEI token could not be generated."
+msgstr "MONEI-token kunne ikke genereres."
+
+#: src/Gateways/Blocks/MoneiCCBlocksSupport.php:129
+msgid "You will be redirected to the payment page"
+msgstr "Du vil bli omdirigert til betalingssiden"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:66
+msgid "MONEI - Apple Pay / Google Pay"
+msgstr "MONEI - Apple Pay / Google Pay"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:67
+msgid "Accept Apple Pay and Google Pay payments."
+msgstr "Godta Apple Pay og Google Pay betalinger."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:151
+#, php-format
+msgid "Apple Pay / Google Pay Style field contains invalid JSON: %s"
+msgstr "Apple Pay / Google Pay stil-feltet inneholder ugyldig JSON: %s"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:49
+msgid "MONEI - Bizum"
+msgstr "MONEI - Bizum"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:50
+msgid "Accept Bizum payments."
+msgstr "Godta Bizum-betalinger."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:152
+#, php-format
+msgid "Bizum Style field contains invalid JSON: %s"
+msgstr "Bizum stil-feltet inneholder ugyldig JSON: %s"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:80
+msgid "MONEI - Credit Card"
+msgstr "MONEI - Kredittkort"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:81
+msgid "Accept credit card payments."
+msgstr "Godta kredittkortbetalinger."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:221
+#, php-format
+msgid "Card Input Style field contains invalid JSON: %s"
+msgstr "Kortinngangs stil-feltet inneholder ugyldig JSON: %s"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:335
+msgid "Pay via MONEI: you can add your payment method for future payments."
+msgstr "Betal via MONEI: du kan legge til betalingsmetoden din for fremtidige betalinger."
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:44
+msgid "MONEI - MBWay"
+msgstr "MONEI - MBWay"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:45
+msgid "Accept MBWay payments."
+msgstr "Godta MBWay-betalinger."
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:43
+msgid "MONEI - Multibanco"
+msgstr "MONEI - Multibanco"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:44
+msgid "Accept Multibanco payments."
+msgstr "Godta Multibanco-betalinger."
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:48
+msgid "MONEI - PayPal"
+msgstr "MONEI - PayPal"
+
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:49
+msgid "Accept PayPal payments."
+msgstr "Godta PayPal-betalinger."
+
+#. translators: %s: JSON error message
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:155
+#, php-format
+msgid "PayPal Style field contains invalid JSON: %s"
+msgstr "PayPal stil-feltet inneholder ugyldig JSON: %s"
+
+#: src/Helpers/CardBrandHelper.php:38
+msgid "Card"
+msgstr "Kort"
+
+#: src/Services/MoneiApplePayVerificationService.php:57
+msgid "Apple Pay domain registration failed: unable to determine domain."
+msgstr "Apple Pay domeneregistrering mislyktes: kunne ikke fastslå domene."
+
+#: src/Services/MoneiApplePayVerificationService.php:64
+msgid "Apple Pay domain registered successfully."
+msgstr "Apple Pay domene registrert vellykket."
+
+#: src/Services/MoneiApplePayVerificationService.php:71
+msgid "Apple Pay domain registration failed. Please check the logs."
+msgstr "Apple Pay domeneregistrering mislyktes. Vennligst sjekk loggene."
+
+#: src/Services/MoneiStatusCodeHandler.php:22
+msgid "Transaction approved"
+msgstr "Transaksjon godkjent"
+
+#: src/Services/MoneiStatusCodeHandler.php:24
+msgid "Service internal error. Please contact support"
+msgstr "Intern tjenestefeil. Vennligst kontakt support"
+
+#: src/Services/MoneiStatusCodeHandler.php:26
+msgid ""
+"Error with payment processor configuration. Check this in your dashboard or "
+"contact MONEI for support"
+msgstr "Feil med betalingsprosessorkonfigurasjon. Sjekk dette i dashboardet ditt eller kontakt MONEI for support"
+
+#: src/Services/MoneiStatusCodeHandler.php:28
+msgid "Invalid or inactive MID. Please contact the acquiring entity"
+msgstr "Ugyldig eller inaktiv MID. Vennligst kontakt innløsende enhet"
+
+#: src/Services/MoneiStatusCodeHandler.php:30
+msgid ""
+"Operation not allowed/configured for this merchant. Please contact the "
+"acquiring entity or MONEI for support"
+msgstr "Operasjon ikke tillatt/konfigurert for denne forhandleren. Vennligst kontakt innløsende enhet eller MONEI for support"
+
+#: src/Services/MoneiStatusCodeHandler.php:32
+msgid ""
+"Partial captures are not enabled in your account, please contact MONEI "
+"support"
+msgstr "Delvise oppgjør er ikke aktivert på kontoen din, vennligst kontakt MONEI support"
+
+#: src/Services/MoneiStatusCodeHandler.php:34
+msgid ""
+"MOTO Payment are not enabled in your account, please contact MONEI support"
+msgstr "MOTO-betaling er ikke aktivert på kontoen din, vennligst kontakt MONEI support"
+
+#: src/Services/MoneiStatusCodeHandler.php:36
+msgid "Invalid or malformed request. Please check the message format"
+msgstr "Ugyldig eller feilformatert forespørsel. Vennligst sjekk meldingsformatet"
+
+#: src/Services/MoneiStatusCodeHandler.php:38
+msgid "Missing or malformed signature/auth"
+msgstr "Manglende eller feilformatert signatur/autentisering"
+
+#: src/Services/MoneiStatusCodeHandler.php:40
+msgid "Error while decrypting request"
+msgstr "Feil ved dekryptering av forespørsel"
+
+#: src/Services/MoneiStatusCodeHandler.php:42
+msgid "Pre-authorization is expired and cannot be canceled or captured"
+msgstr "Forhåndsautorisasjon er utløpt og kan ikke kanselleres eller gjennomføres"
+
+#: src/Services/MoneiStatusCodeHandler.php:44
+msgid "The payment date cannot be less than the cancellation or capture date"
+msgstr "Betalingsdatoen kan ikke være tidligere enn kansellerings- eller gjennomføringsdatoen"
+
+#: src/Services/MoneiStatusCodeHandler.php:46
+msgid ""
+"The cancellation date exceeded the date allowed for pre-authorized operations"
+msgstr "Kanselleringsdatoen overskred datoen tillatt for forhåndsautoriserte operasjoner"
+
+#: src/Services/MoneiStatusCodeHandler.php:48
+msgid "Transaction failed during payment processing"
+msgstr "Transaksjon mislyktes under betalingsbehandling"
+
+#: src/Services/MoneiStatusCodeHandler.php:50
+msgid "Transaction declined by the card-issuing bank"
+msgstr "Transaksjon avvist av kortutstedende bank"
+
+#: src/Services/MoneiStatusCodeHandler.php:52
+msgid "Transaction declined by the issuing bank"
+msgstr "Transaksjon avvist av utstedende bank"
+
+#: src/Services/MoneiStatusCodeHandler.php:54
+msgid "Payment method not allowed"
+msgstr "Betalingsmetode ikke tillatt"
+
+#: src/Services/MoneiStatusCodeHandler.php:56
+msgid "Wrong or not allowed currency"
+msgstr "Feil eller ikke tillatt valuta"
+
+#: src/Services/MoneiStatusCodeHandler.php:58
+msgid "Incorrect reference / transaction does not exist"
+msgstr "Feil referanse / transaksjon eksisterer ikke"
+
+#: src/Services/MoneiStatusCodeHandler.php:60
+msgid "Transaction failed: process time exceeded"
+msgstr "Transaksjon mislyktes: behandlingstid overskredet"
+
+#: src/Services/MoneiStatusCodeHandler.php:62
+msgid "Transaction is currently being processed"
+msgstr "Transaksjon behandles for øyeblikket"
+
+#: src/Services/MoneiStatusCodeHandler.php:64
+msgid "Duplicated operation"
+msgstr "Duplisert operasjon"
+
+#: src/Services/MoneiStatusCodeHandler.php:66
+msgid "Wrong or not allowed payment amount"
+msgstr "Feil eller ikke tillatt betalingsbeløp"
+
+#: src/Services/MoneiStatusCodeHandler.php:68
+msgid "Refund declined by processor"
+msgstr "Refusjon avvist av prosessor"
+
+#: src/Services/MoneiStatusCodeHandler.php:70
+msgid "Transaction has already been captured"
+msgstr "Transaksjon er allerede gjennomført"
+
+#: src/Services/MoneiStatusCodeHandler.php:72
+msgid "Transaction has already been canceled"
+msgstr "Transaksjon er allerede kansellert"
+
+#: src/Services/MoneiStatusCodeHandler.php:74
+msgid "The amount to be captured cannot exceed the pre-authorized amount"
+msgstr "Beløpet som skal gjennomføres kan ikke overstige det forhåndsautoriserte beløpet"
+
+#: src/Services/MoneiStatusCodeHandler.php:76
+msgid "The transaction to be captured has not been pre-authorized yet"
+msgstr "Transaksjonen som skal gjennomføres er ikke forhåndsautorisert ennå"
+
+#: src/Services/MoneiStatusCodeHandler.php:78
+msgid "The transaction to be canceled has not been pre-authorized yet"
+msgstr "Transaksjonen som skal kanselleres er ikke forhåndsautorisert ennå"
+
+#: src/Services/MoneiStatusCodeHandler.php:80
+msgid "Transaction denied by processor to avoid duplicated operations"
+msgstr "Transaksjon nektet av prosessor for å unngå dupliserte operasjoner"
+
+#: src/Services/MoneiStatusCodeHandler.php:82
+msgid "Error during payment request validation"
+msgstr "Feil under validering av betalingsforespørsel"
+
+#: src/Services/MoneiStatusCodeHandler.php:84
+msgid "Refund declined due to exceeded amount"
+msgstr "Refusjon avvist på grunn av overskredet beløp"
+
+#: src/Services/MoneiStatusCodeHandler.php:86
+msgid "Transaction has already been fully refunded"
+msgstr "Transaksjon er allerede fullstendig refundert"
+
+#: src/Services/MoneiStatusCodeHandler.php:88
+msgid "Transaction declined due to insufficient funds"
+msgstr "Transaksjon avvist på grunn av utilstrekkelige midler"
+
+#: src/Services/MoneiStatusCodeHandler.php:90
+msgid "The user has canceled the payment"
+msgstr "Brukeren har kansellert betalingen"
+
+#: src/Services/MoneiStatusCodeHandler.php:92
+msgid "Waiting for the transaction to be completed"
+msgstr "Venter på at transaksjonen skal fullføres"
+
+#: src/Services/MoneiStatusCodeHandler.php:94
+msgid "No reason to decline"
+msgstr "Ingen grunn til avvisning"
+
+#: src/Services/MoneiStatusCodeHandler.php:96
+msgid "Refund not allowed"
+msgstr "Refusjon ikke tillatt"
+
+#: src/Services/MoneiStatusCodeHandler.php:98
+msgid "Transaction cannot be completed, violation of law"
+msgstr "Transaksjon kan ikke fullføres, lovbrudd"
+
+#: src/Services/MoneiStatusCodeHandler.php:100
+msgid "Stop Payment Order"
+msgstr "Stopp betalingsordre"
+
+#: src/Services/MoneiStatusCodeHandler.php:102
+msgid "Strong Customer Authentication required"
+msgstr "Sterk kundeautentisering kreves"
+
+#: src/Services/MoneiStatusCodeHandler.php:104
+msgid "Transaction declined due to security restrictions"
+msgstr "Transaksjon avvist på grunn av sikkerhetsbegrensninger"
+
+#: src/Services/MoneiStatusCodeHandler.php:106
+msgid "3D Secure authentication failed"
+msgstr "3D Secure autentisering mislyktes"
+
+#: src/Services/MoneiStatusCodeHandler.php:108
+msgid "Authentication process timed out. Please try again"
+msgstr "Autentiseringsprosessen ble tidsavbrutt. Vennligst prøv igjen"
+
+#: src/Services/MoneiStatusCodeHandler.php:110
+msgid "An error occurred during the 3D Secure process"
+msgstr "En feil oppstod under 3D Secure-prosessen"
+
+#: src/Services/MoneiStatusCodeHandler.php:112
+msgid "Invalid or malformed 3D Secure request"
+msgstr "Ugyldig eller feilformatert 3D Secure-forespørsel"
+
+#: src/Services/MoneiStatusCodeHandler.php:114
+msgid "Exemption not allowed"
+msgstr "Unntak ikke tillatt"
+
+#: src/Services/MoneiStatusCodeHandler.php:116
+msgid "Exemption error"
+msgstr "Unntaksfeil"
+
+#: src/Services/MoneiStatusCodeHandler.php:118
+msgid "Fraud control error"
+msgstr "Svindelkontrollfeil"
+
+#: src/Services/MoneiStatusCodeHandler.php:120
+msgid "External MPI received wrong. Please check the data"
+msgstr "Ekstern MPI mottatt feil. Vennligst sjekk dataene"
+
+#: src/Services/MoneiStatusCodeHandler.php:122
+msgid "External MPI not enabled. Please contact support"
+msgstr "Ekstern MPI ikke aktivert. Vennligst kontakt support"
+
+#: src/Services/MoneiStatusCodeHandler.php:124
+msgid "Transaction confirmation rejected by the merchant"
+msgstr "Transaksjonsbekreftelse avvist av forhandler"
+
+#: src/Services/MoneiStatusCodeHandler.php:126
+msgid "Transaction declined during card payment process"
+msgstr "Transaksjon avvist under kortbetalingsprosess"
+
+#: src/Services/MoneiStatusCodeHandler.php:128
+msgid "Card rejected: invalid card number"
+msgstr "Kort avvist: ugyldig kortnummer"
+
+#: src/Services/MoneiStatusCodeHandler.php:130
+msgid "Card rejected: wrong expiration date"
+msgstr "Kort avvist: feil utløpsdato"
+
+#: src/Services/MoneiStatusCodeHandler.php:132
+msgid "Card rejected: wrong CVC/CVV2 number"
+msgstr "Kort avvist: feil CVC/CVV2-nummer"
+
+#: src/Services/MoneiStatusCodeHandler.php:134
+msgid "Card number not registered"
+msgstr "Kortnummer ikke registrert"
+
+#: src/Services/MoneiStatusCodeHandler.php:136
+msgid "Card is expired"
+msgstr "Kortet er utløpt"
+
+#: src/Services/MoneiStatusCodeHandler.php:138
+msgid "Error during payment authorization. Please try again"
+msgstr "Feil under betalingsautorisasjon. Vennligst prøv igjen"
+
+#: src/Services/MoneiStatusCodeHandler.php:140
+msgid "Cardholder has canceled the payment"
+msgstr "Kortholder har kansellert betalingen"
+
+#: src/Services/MoneiStatusCodeHandler.php:142
+msgid "Transaction declined: AMEX cards not accepted by payment processor"
+msgstr "Transaksjon avvist: AMEX-kort ikke akseptert av betalingsprosessor"
+
+#: src/Services/MoneiStatusCodeHandler.php:144
+msgid "Card blocked temporarily or under suspicion of fraud"
+msgstr "Kort midlertidig blokkert eller under mistanke om svindel"
+
+#: src/Services/MoneiStatusCodeHandler.php:146
+msgid "Card does not allow pre-authorization operations"
+msgstr "Kort tillater ikke forhåndsautorisasjonsoperasjoner"
+
+#: src/Services/MoneiStatusCodeHandler.php:148
+msgid "CVC/CVV2 number is required"
+msgstr "CVC/CVV2-nummer er påkrevd"
+
+#: src/Services/MoneiStatusCodeHandler.php:150
+msgid "Unsupported card type"
+msgstr "Ikke-støttet korttype"
+
+#: src/Services/MoneiStatusCodeHandler.php:152
+msgid "Transaction type not allowed for this type of card"
+msgstr "Transaksjonstype ikke tillatt for denne korttypen"
+
+#: src/Services/MoneiStatusCodeHandler.php:154
+msgid "Transaction declined by card issuer"
+msgstr "Transaksjon avvist av kortutsteder"
+
+#: src/Services/MoneiStatusCodeHandler.php:156
+msgid "Implausible card data"
+msgstr "Usannsynlige kortdata"
+
+#: src/Services/MoneiStatusCodeHandler.php:158
+msgid "Incorrect PIN"
+msgstr "Feil PIN-kode"
+
+#: src/Services/MoneiStatusCodeHandler.php:160
+msgid "Transaction not allowed for cardholder"
+msgstr "Transaksjon ikke tillatt for kortholder"
+
+#: src/Services/MoneiStatusCodeHandler.php:162
+msgid "The amount exceeds the card limit"
+msgstr "Beløpet overskrider kortgrensen"
+
+#: src/Services/MoneiStatusCodeHandler.php:164
+msgid "Transaction declined during ApplePay/GooglePay payment process"
+msgstr "Transaksjon avvist under ApplePay/GooglePay betalingsprosess"
+
+#: src/Services/MoneiStatusCodeHandler.php:166
+msgid "Incorrect ApplePay or GooglePay configuration"
+msgstr "Feil ApplePay eller GooglePay-konfigurasjon"
+
+#: src/Services/MoneiStatusCodeHandler.php:168
+msgid "Transaction declined during PayPal payment process"
+msgstr "Transaksjon avvist under PayPal betalingsprosess"
+
+#: src/Services/MoneiStatusCodeHandler.php:170
+msgid "Transaction declined during PayPal payment process: invalid currency"
+msgstr "Transaksjon avvist under PayPal betalingsprosess: ugyldig valuta"
+
+#: src/Services/MoneiStatusCodeHandler.php:172
+msgid "Bizum transaction declined after three authentication attempts"
+msgstr "Bizum-transaksjon avvist etter tre autentiseringsforsøk"
+
+#: src/Services/MoneiStatusCodeHandler.php:174
+msgid "Bizum transaction declined due to failed authorization"
+msgstr "Bizum-transaksjon avvist på grunn av mislykket autorisasjon"
+
+#: src/Services/MoneiStatusCodeHandler.php:176
+msgid "Bizum transaction declined due to insufficient funds"
+msgstr "Bizum-transaksjon avvist på grunn av utilstrekkelige midler"
+
+#: src/Services/MoneiStatusCodeHandler.php:178
+msgid "Bizum transaction canceled: the user does not want to continue"
+msgstr "Bizum-transaksjon kansellert: brukeren ønsker ikke å fortsette"
+
+#: src/Services/MoneiStatusCodeHandler.php:180
+msgid "Bizum transaction rejected by destination bank"
+msgstr "Bizum-transaksjon avvist av mottakerbank"
+
+#: src/Services/MoneiStatusCodeHandler.php:182
+msgid "Bizum transaction rejected by origin bank"
+msgstr "Bizum-transaksjon avvist av avsenderbank"
+
+#: src/Services/MoneiStatusCodeHandler.php:184
+msgid "Bizum transaction rejected by processor"
+msgstr "Bizum-transaksjon avvist av prosessor"
+
+#: src/Services/MoneiStatusCodeHandler.php:186
+msgid ""
+"Bizum transaction failed while connecting with processor. Please try again"
+msgstr "Bizum-transaksjon mislyktes ved tilkobling til prosessor. Vennligst prøv igjen"
+
+#: src/Services/MoneiStatusCodeHandler.php:188
+msgid "Bizum transaction failed, payee is not found"
+msgstr "Bizum-transaksjon mislyktes, mottaker ikke funnet"
+
+#: src/Services/MoneiStatusCodeHandler.php:190
+msgid "Bizum transaction failed, payer is not found"
+msgstr "Bizum-transaksjon mislyktes, betaler ikke funnet"
+
+#: src/Services/MoneiStatusCodeHandler.php:192
+msgid "Bizum REST not implemented"
+msgstr "Bizum REST ikke implementert"
+
+#: src/Services/MoneiStatusCodeHandler.php:194
+msgid "Bizum transaction declined due to failed authentication"
+msgstr "Bizum-transaksjon avvist på grunn av mislykket autentisering"
+
+#: src/Services/MoneiStatusCodeHandler.php:196
+msgid "The customer has disabled Bizum, please use another payment method"
+msgstr "Kunden har deaktivert Bizum, vennligst bruk en annen betalingsmetode"
+
+#: src/Services/MoneiStatusCodeHandler.php:198
+msgid "Transaction declined during ClickToPay payment process"
+msgstr "Transaksjon avvist under ClickToPay betalingsprosess"
+
+#: src/Services/MoneiStatusCodeHandler.php:200
+msgid "Incorrect ClickToPay configuration"
+msgstr "Feil ClickToPay-konfigurasjon"
+
+#: src/Services/MoneiStatusCodeHandler.php:202
+msgid "Transaction declined during Cofidis payment process"
+msgstr "Transaksjon avvist under Cofidis betalingsprosess"
+
+#. translators: %s is the status code from MONEI API.
+#: src/Services/MoneiStatusCodeHandler.php:205
+#, php-format
+msgid "Unknown status code: %s"
+msgstr "Ukjent statuskode: %s"
+
+#: src/Settings/MoneiSettings.php:18 src/Settings/MoneiSettings.php:28
+msgid "MONEI Settings"
+msgstr "MONEI innstillinger"
+
+#: src/Settings/MoneiSettings.php:33
+msgid "API Key Mode"
+msgstr "API-nøkkelmodus"
+
+#: src/Settings/MoneiSettings.php:35
+msgid "Set to Live to use the production environment."
+msgstr "Sett til Live for å bruke produksjonsmiljøet."
+
+#: src/Settings/MoneiSettings.php:39
+msgid "Test"
+msgstr "Test"
+
+#: src/Settings/MoneiSettings.php:40
+msgid "Live"
+msgstr "Live"
+
+#: src/Settings/MoneiSettings.php:44
+msgid "Test Account ID *"
+msgstr "Test konto-ID *"
+
+#: src/Settings/MoneiSettings.php:46
+msgid "Your MONEI Test Account ID. Available at your MONEI dashboard."
+msgstr "Din MONEI test konto-ID. Tilgjengelig i MONEI-dashboardet ditt."
+
+#: src/Settings/MoneiSettings.php:53
+msgid "Live Account ID *"
+msgstr "Live konto-ID *"
+
+#: src/Settings/MoneiSettings.php:55
+msgid "Your MONEI Account ID. Available at your MONEI dashboard."
+msgstr "Din MONEI konto-ID. Tilgjengelig i MONEI-dashboardet ditt."
+
+#: src/Settings/MoneiSettings.php:62
+msgid "Test API Key *"
+msgstr "Test API-nøkkel *"
+
+#: src/Settings/MoneiSettings.php:64
+msgid "Your MONEI Test API Key. Available at your MONEI dashboard."
+msgstr "Din MONEI test API-nøkkel. Tilgjengelig i MONEI-dashboardet ditt."
+
+#: src/Settings/MoneiSettings.php:71
+msgid "Live API Key *"
+msgstr "Live API-nøkkel *"
+
+#: src/Settings/MoneiSettings.php:73
+msgid "Your MONEI API Key. Available at your MONEI dashboard."
+msgstr "Din MONEI API-nøkkel. Tilgjengelig i MONEI-dashboardet ditt."
+
+#: src/Settings/MoneiSettings.php:80
+msgid "What to do after payment?"
+msgstr "Hva skal gjøres etter betaling?"
+
+#: src/Settings/MoneiSettings.php:82
+msgid ""
+"Choose what to do after the customer pays the order. This setting applies to "
+"all MONEI payment methods."
+msgstr "Velg hva som skal gjøres etter at kunden betaler ordren. Denne innstillingen gjelder for alle MONEI betalingsmetoder."
+
+#: src/Settings/MoneiSettings.php:86
+msgid "Mark as Processing (Recommended)"
+msgstr "Merk som behandler (Anbefalt)"
+
+#: src/Settings/MoneiSettings.php:87
+msgid "Mark as Complete"
+msgstr "Merk som fullført"
+
+#: src/Settings/MoneiSettings.php:91
+msgid "Payment Action"
+msgstr "Betalingshandling"
+
+#: src/Settings/MoneiSettings.php:93
+msgid ""
+"Choose payment flow: Immediate charge or Pre-authorization.<br>Pre-"
+"authorization is supported for: Card, Apple Pay, Google Pay, PayPal.<br>Not "
+"supported for: MBWay, Multibanco."
+msgstr "Velg betalingsflyt: Umiddelbar belastning eller forhåndsautorisasjon.<br>Forhåndsautorisasjon støttes for: Kort, Apple Pay, Google Pay, PayPal.<br>Ikke støttet for: MBWay, Multibanco."
+
+#: src/Settings/MoneiSettings.php:97
+msgid "Sale (Immediate charge)"
+msgstr "Salg (Umiddelbar belastning)"
+
+#: src/Settings/MoneiSettings.php:98
+msgid "Authorization (Pre-authorization)"
+msgstr "Autorisasjon (Forhåndsautorisasjon)"
+
+#: src/Settings/MoneiSettings.php:102
+msgid "Log Level"
+msgstr "Loggnivå"
+
+#: src/Settings/MoneiSettings.php:104
+msgid ""
+"Set minimum log level. Only messages at or above this level will be logged."
+"<br>Logs are available in WooCommerce > Status > Logs > Select MONEI Logs."
+"<br>WARNING: INFO level may impact performance."
+msgstr "Angi minimum loggnivå. Kun meldinger på eller over dette nivået blir logget.<br>Logger er tilgjengelige i WooCommerce > Status > Logger > Velg MONEI Logger.<br>ADVARSEL: INFO-nivå kan påvirke ytelsen."
+
+#: src/Settings/MoneiSettings.php:108
+msgid "INFO - All messages (Debug mode)"
+msgstr "INFO - Alle meldinger (Feilsøkingsmodus)"
+
+#: src/Settings/MoneiSettings.php:109
+msgid "WARNING - Warnings and errors only"
+msgstr "WARNING - Bare advarsler og feil"
+
+#: src/Settings/MoneiSettings.php:110
+msgid "ERROR - Errors only (Recommended)"
+msgstr "ERROR - Bare feil (Anbefalt)"
+
+#: src/Settings/MoneiSettings.php:111
+msgid "NONE - Disable logging"
+msgstr "NONE - Deaktiver logging"
+
+#: src/Settings/MoneiSettings.php:126
+msgid ""
+"Welcome to MONEI! Enhance your payment processing experience with our "
+"seamless integration"
+msgstr "Velkommen til MONEI! Forbedre betalingsbehandlingsopplevelsen din med vår sømløse integrasjon"
+
+#: src/Settings/MoneiSettings.php:127
+msgid "Go to Dashboard"
+msgstr "Gå til Dashboard"
+
+#: src/Settings/MoneiSettings.php:128
+msgid "Support"
+msgstr "Support"
+
+#: src/Settings/MoneiSettings.php:129
+msgid "Leave a review"
+msgstr "Gi en anmeldelse"
+
+#: src/Templates/NoticeAdminDependency.php:13
+msgid ""
+"MONEI Gateway is inactive because WooCommerce is not installed and active."
+msgstr "MONEI Gateway er inaktiv fordi WooCommerce ikke er installert og aktivert."
+
+#: src/Templates/NoticeAdminNewInstall.php:13
+msgid "Dismiss"
+msgstr "Avvis"
+
+#: src/Templates/NoticeAdminNewInstall.php:15
+msgid "Thank you for install MONEI for WooCommerce. Version: "
+msgstr "Takk for at du installerte MONEI for WooCommerce. Versjon: "
+
+#: src/Templates/NoticeAdminNewInstall.php:18
+msgid ""
+"The best payment gateway rates. The perfect solution to manage your digital "
+"payments."
+msgstr "De beste betalingsgateway-prisene. Den perfekte løsningen for å administrere dine digitale betalinger."
+
+#: src/Templates/NoticeAdminNewInstall.php:22
+msgid "Sign up"
+msgstr "Registrer deg"
+
+#: src/Templates/NoticeAdminNewInstall.php:24
+msgid "MONEI website"
+msgstr "MONEI nettsted"
+
+#: src/Templates/NoticeGatewayNotAvailable.php:24
+#: src/Templates/NoticeGatewayNotAvailableApi.php:24
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:24
+msgid "Gateway Disabled"
+msgstr "Gateway deaktivert"
+
+#: src/Templates/NoticeGatewayNotAvailable.php:24
+msgid "MONEI only support EUROS, USD & GBP currencies."
+msgstr "MONEI støtter kun EURO, USD og GBP valutaer."
+
+#: src/Templates/NoticeGatewayNotAvailableApi.php:24
+msgid "MONEI API Key or Account ID is missing."
+msgstr "MONEI API-nøkkel eller konto-ID mangler."
+
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:24
+msgid ""
+"The selected payment method is not active in the MONEI dashboard. Or API Key "
+"is incorrect"
+msgstr "Den valgte betalingsmetoden er ikke aktiv i MONEI-dashboardet. Eller API-nøkkelen er feil"
+
+#: src/Templates/NoticeGatewayNotEnabledMonei.php:25
+msgid "Go to your MONEI Dashboard to activate it"
+msgstr "Gå til MONEI-dashboardet ditt for å aktivere det"
+
+#: assets/js/monei-block-checkout-apple-google.js:18
+#: public/js/monei-block-checkout-apple-google.min.js:486
+msgid "Apple/Google Pay Payment Gateway"
+msgstr "Apple/Google Pay betalingsgateway"
+
+#: assets/js/monei-block-checkout-apple-google.js:20
+#: assets/js/monei-block-checkout-cc.js:19
+#: public/js/monei-block-checkout-apple-google.min.js:488
+#: public/js/monei-block-checkout-cc.min.js:765
+msgid "MONEI Payment Form (Edit Mode)"
+msgstr "MONEI betalingsskjema (Redigeringsmodus)"
+
+#: assets/js/monei-block-checkout-cc.js:17
+#: public/js/monei-block-checkout-cc.min.js:763
+msgid "MONEI Payment Gateway"
+msgstr "MONEI betalingsgateway"

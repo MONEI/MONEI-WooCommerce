@@ -17,7 +17,8 @@
 		"php-stubs/wordpress-stubs": "^6.6",
 		"php-stubs/woocommerce-stubs": "^9.0",
 		"phpstan/extension-installer": "*",
-		"slevomat/coding-standard": "^8.22"
+		"slevomat/coding-standard": "^8.22",
+		"wp-cli/i18n-command": "^2.6"
 	},
 	"scripts": {
 		"phpcs": "phpcs -n",

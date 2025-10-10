@@ -258,8 +258,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 			new MoneiApplePayVerificationService( $moneiPaymentServices );
 
-			// todo: not translation yet.
-			//$this->load_plugin_textdomain();
+			$this->load_plugin_textdomain();
 
 			add_filter( 'option_woocommerce_monei_bizum_settings', array( $this, 'monei_settings_by_default' ), 1 );
 			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
@@ -342,8 +341,35 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			return $methods;
 		}
 
-		/**private function load_plugin_textdomain() {
-		}**/
+		/**
+		 * Load plugin text domain for translations.
+		 *
+		 * @since 6.4.0
+		 */
+		private function load_plugin_textdomain() {
+			// Use local translations only if they're newer than WordPress.org translations or if WP.org version doesn't exist
+			add_filter(
+				'load_textdomain_mofile',
+				function ( $mofile, $domain ) {
+					if ( 'monei' === $domain ) {
+						$locale        = determine_locale();
+						$custom_mofile = WP_PLUGIN_DIR . '/' . dirname( plugin_basename( MONEI_MAIN_FILE ) ) . '/languages/monei-' . $locale . '.mo';
+
+						if ( file_exists( $custom_mofile ) ) {
+							// Use local file if WordPress.org version doesn't exist OR if local is newer
+							if ( ! file_exists( $mofile ) || filemtime( $custom_mofile ) > filemtime( $mofile ) ) {
+								return $custom_mofile;
+							}
+						}
+					}
+					return $mofile;
+				},
+				10,
+				2
+			);
+
+			load_plugin_textdomain( 'monei', false, dirname( plugin_basename( MONEI_MAIN_FILE ) ) . '/languages/' );
+		}
 
 		/**
 		 * Get installed version. For retro compat we keep "hide-new-version-monei-notice"
