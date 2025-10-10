@@ -30,7 +30,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		/**
 		 * The single instance of the class.
 		 *
-		 * @var Woocommerce_Gateway_Monei
+		 * @var Woocommerce_Gateway_Monei|null
 		 * @since 1.0.0
 		 */
 		protected static $_instance = null;
@@ -129,7 +129,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$this->define( 'MONEI_WEB', 'https://monei.com/' );
 			$this->define( 'MONEI_REVIEW', 'https://wordpress.org/support/plugin/monei/reviews/?rate=5#new-post' );
 			$this->define( 'MONEI_SUPPORT', 'https://support.monei.com/' );
-			$this->define( 'MONEI_MAIN_FILE', __FILE__ );
+			// MONEI_MAIN_FILE now defined in woocommerce-gateway-monei.php bootstrap file
 		}
 
 		/**
@@ -140,6 +140,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/woocommerce-gateway-monei-core-functions.php';
 			include_once 'includes/class-wc-monei-ipn.php';
 			include_once 'includes/class-wc-monei-logger.php';
+			include_once 'includes/class-wc-monei-payment-method-display.php';
 
 			if ( $this->is_request( 'admin' ) ) {
 				include_once 'includes/class-wc-monei-pre-auth.php';
@@ -242,6 +243,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				case 'frontend':
 					return ( ! is_admin() || defined( 'DOING_AJAX' ) ) && ! defined( 'DOING_CRON' );
 			}
+			return false;
 		}
 
 		/**
@@ -256,8 +258,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 			new MoneiApplePayVerificationService( $moneiPaymentServices );
 
-			// todo: not translation yet.
-			//$this->load_plugin_textdomain();
+			$this->load_plugin_textdomain();
 
 			add_filter( 'option_woocommerce_monei_bizum_settings', array( $this, 'monei_settings_by_default' ), 1 );
 			add_filter( 'option_woocommerce_monei_paypal_settings', array( $this, 'monei_settings_by_default' ), 1 );
@@ -266,22 +267,9 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
 			// Init action.
 			do_action( 'woocommerce_gateway_monei_init' );
-			wp_register_style(
-				'monei-icons',
-				$this->plugin_url() . '/public/css/monei-icons-classic.css',
-				array(),
-				filemtime( $this->plugin_path() . '/public/css/monei-icons-classic.css' ),
-				'screen'
-			);
-			wp_enqueue_style( 'monei-icons' );
-			wp_register_style(
-				'monei-blocks-checkout-cc',
-				WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
-				array(),
-				WC_Monei()->version,
-				'all'
-			);
-			wp_enqueue_style( 'monei-blocks-checkout-cc' );
+			// CSS is now enqueued by:
+			// - Classic checkout: In gateway classes' monei_scripts() methods (monei-classic-checkout.css)
+			// - Blocks checkout: In blocks support classes' get_payment_method_script_handles() methods (monei-blocks-checkout.css)
 		}
 
 
@@ -325,7 +313,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
         public function plugins_loaded()
         {
             add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
-            add_filter('plugin_action_links_' . plugin_basename(MONEI_PLUGIN_FILE), array($this, 'plugin_action_links'));
+            add_filter('plugin_action_links_' . plugin_basename(MONEI_MAIN_FILE), array($this, 'plugin_action_links'));
         }
 
         public function plugin_action_links($links)
@@ -353,8 +341,35 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			return $methods;
 		}
 
-		/**private function load_plugin_textdomain() {
-		}**/
+		/**
+		 * Load plugin text domain for translations.
+		 *
+		 * @since 6.4.0
+		 */
+		private function load_plugin_textdomain() {
+			// Use local translations only if they're newer than WordPress.org translations or if WP.org version doesn't exist
+			add_filter(
+				'load_textdomain_mofile',
+				function ( $mofile, $domain ) {
+					if ( 'monei' === $domain ) {
+						$locale        = determine_locale();
+						$custom_mofile = WP_PLUGIN_DIR . '/' . dirname( plugin_basename( MONEI_MAIN_FILE ) ) . '/languages/monei-' . $locale . '.mo';
+
+						if ( file_exists( $custom_mofile ) ) {
+							// Use local file if WordPress.org version doesn't exist OR if local is newer
+							if ( ! file_exists( $mofile ) || filemtime( $custom_mofile ) > filemtime( $mofile ) ) {
+								return $custom_mofile;
+							}
+						}
+					}
+					return $mofile;
+				},
+				10,
+				2
+			);
+
+			load_plugin_textdomain( 'monei', false, dirname( plugin_basename( MONEI_MAIN_FILE ) ) . '/languages/' );
+		}
 
 		/**
 		 * Get installed version. For retro compat we keep "hide-new-version-monei-notice"

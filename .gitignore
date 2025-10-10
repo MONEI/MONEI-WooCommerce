@@ -32,3 +32,7 @@ node_modules/
 # Authentication state files
 /tests/auth/*.json
 /tests/auth/
+.phpcs.cache
+
+# Translation files
+*.mo

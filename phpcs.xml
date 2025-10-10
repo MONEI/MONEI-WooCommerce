@@ -5,6 +5,11 @@
     <arg name="extensions" value="php"/>
     <arg name="parallel" value="10"/><!-- Enables parallel processing when available for faster results. -->
     <arg name="cache" value=".phpcs.cache"/>
+
+    <!-- Files to check -->
+    <file>src/</file>
+    <file>includes/</file>
+
     <rule ref="WordPress">
         <exclude name="Squiz.Commenting" />
         <exclude name="WordPress.PHP.YodaConditions.NotYoda" />
@@ -15,5 +20,16 @@
         <exclude name="Universal.Operators.DisallowShortTernary.Found" />
         <exclude name="Generic.PHP.DisallowShortOpenTag.EchoFound" />
         <exclude name="Generic.Commenting.DocComment" />
+    </rule>
+
+    <!-- Require use statements instead of fully qualified names -->
+    <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
+        <properties>
+            <property name="allowFullyQualifiedGlobalClasses" value="false"/>
+            <property name="allowFullyQualifiedGlobalFunctions" value="false"/>
+            <property name="allowFullyQualifiedGlobalConstants" value="false"/>
+            <property name="allowFallbackGlobalFunctions" value="true"/>
+            <property name="allowFallbackGlobalConstants" value="true"/>
+        </properties>
     </rule>
 </ruleset>

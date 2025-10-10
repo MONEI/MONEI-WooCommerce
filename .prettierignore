@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+public/
+build/
+dist/
+
+# Version control
+.git/
+
+# Package manager files
+package-lock.json
+yarn.lock
+composer.lock
+
+# WordPress
+*.pot
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store

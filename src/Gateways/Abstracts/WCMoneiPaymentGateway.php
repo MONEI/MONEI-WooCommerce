@@ -2,12 +2,15 @@
 
 namespace Monei\Gateways\Abstracts;
 
-use Exception;
-use Monei\Services\ApiKeyService;
+use Monei\Model\PaymentStatus;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
+use Exception;
 use WC_Admin_Settings;
+use WC_Blocks_Utils;
 use WC_Monei_Logger;
 use WC_Payment_Gateway;
 
@@ -17,8 +20,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Abstract class that will be inherited by all payment methods.
- *
- * @extends WC_Payment_Gateway
  *
  * @since 5.0
  */
@@ -105,9 +106,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 */
 	public $logging;
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	public $notify_url;
 
 	/**
@@ -121,17 +120,21 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	private TemplateManager $templateManager;
 	private ApiKeyService $apiKeyService;
 	protected MoneiPaymentServices $moneiPaymentServices;
+	/** @var MoneiStatusCodeHandler */
+	protected $statusCodeHandler;
 
 	public function __construct(
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
-		MoneiPaymentServices $moneiPaymentServices
+		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler
 	) {
 		$this->paymentMethodsService = $paymentMethodsService;
 		$this->templateManager       = $templateManager;
 		$this->apiKeyService         = $apiKeyService;
 		$this->moneiPaymentServices  = $moneiPaymentServices;
+		$this->statusCodeHandler     = $statusCodeHandler;
 	}
 
 	/**
@@ -160,7 +163,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 
 	public function is_available() {
 		$isEnabled      = $this->enabled === 'yes' && $this->is_valid_for_use();
-		$billingCountry = WC()->customer && ! empty( WC()->customer->get_billing_country() )
+		$billingCountry = WC()->customer !== null && ! empty( WC()->customer->get_billing_country() )
 			? WC()->customer->get_billing_country()
 			: wc_get_base_location()['country'];
 
@@ -180,7 +183,6 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 		return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
 	}
 
-
 	/**
 	 * Admin Panel Options
 	 *
@@ -199,7 +201,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 				}
 				return;
 			}
-			$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id, $this->getAccountId() );
+			$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id );
 			if ( ! $methodAvailability ) {
 				$template = $this->templateManager->getTemplate( 'notice-admin-gateway-not-enabled-monei' );
 				if ( $template ) {
@@ -222,30 +224,28 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
 			return false;
 		}
 
-		if ( ! $amount ) {
+		if ( null === $amount ) {
 			$amount = $order->get_total();
 		}
 
 		$payment_id = $order->get_meta( '_payment_order_number_monei', true );
 
 		try {
-
 			$result = $this->moneiPaymentServices->refund_payment( $payment_id, monei_price_format( $amount ) );
 
-			if ( 'REFUNDED' === $result->getStatus() || 'PARTIALLY_REFUNDED' === $result->getStatus() ) {
-
+			// SDK PHPDoc is misleading - getStatus() returns string, not PaymentStatus object
+			// @phpstan-ignore-next-line
+			if ( PaymentStatus::REFUNDED === $result->getStatus() || PaymentStatus::PARTIALLY_REFUNDED === $result->getStatus() ) {
 				$this->log( $amount . ' Refund approved.', 'debug' );
 
 				$order->add_order_note( __( 'MONEI Refund Approved:', 'monei' ) . wc_price( $amount ) . '<br/>Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() );
 
 				return true;
-
 			}
 		} catch ( Exception $e ) {
 			$this->log( 'Refund error: ' . $e->getMessage(), 'error' );
@@ -274,8 +274,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return int|false
 	 */
 	protected function get_payment_token_id_if_selected() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-payment-token' ] ), FILTER_SANITIZE_NUMBER_INT ) : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-payment-token' ] ), FILTER_SANITIZE_NUMBER_INT ) : false;  // WPCS: CSRF ok.
 	}
 
 	/**
@@ -284,8 +284,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	protected function get_save_payment_card_checkbox() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce handles nonce verification before process_payment()
+		return isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) && filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );  // WPCS: CSRF ok.
 	}
 
 	/**
@@ -296,7 +296,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	protected function add_cart_total_fragments( $fragments ) {
-		if ( ! WC()->cart ) {
+		if ( null === WC()->cart ) {
 			return $fragments;
 		}
 
@@ -304,10 +304,23 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 		return $fragments;
 	}
 
+	/**
+	 * Log a message using the appropriate log level
+	 *
+	 * @param string|array|callable $message Message to log, or callable for lazy evaluation.
+	 * @param string                $level Legacy level parameter ('debug'|'warning'|'error') - mapped to new severity levels.
+	 */
 	protected function log( $message, $level = 'debug' ) {
-		if ( 'yes' === get_option( 'monei_debug' ) || 'error' === $level ) {
-			WC_Monei_Logger::log( $message, $level );
-		}
+		// Map legacy string levels to new severity levels
+		$severity_map = array(
+			'debug'   => WC_Monei_Logger::LEVEL_INFO,
+			'info'    => WC_Monei_Logger::LEVEL_INFO,
+			'warning' => WC_Monei_Logger::LEVEL_WARNING,
+			'error'   => WC_Monei_Logger::LEVEL_ERROR,
+		);
+
+		$severity = isset( $severity_map[ $level ] ) ? $severity_map[ $level ] : WC_Monei_Logger::LEVEL_INFO;
+		WC_Monei_Logger::log( $message, $severity );
 	}
 
 	/**
@@ -348,8 +361,36 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return boolean
 	 */
 	public function isBlockCheckout() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_is_block_checkout'] ) ) ? wc_clean( wp_unslash( $_POST['monei_is_block_checkout'] ) ) === 'yes' : false;  // WPCS: CSRF ok.
+	}
+
+	/**
+	 * Check if the checkout page is using WooCommerce Blocks.
+	 * Used for script enqueuing to differentiate between classic and blocks checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_block_checkout_page() {
+		// Order-pay and add payment method pages are always classic
+		if ( is_checkout_pay_page() || is_add_payment_method_page() ) {
+			return false;
+		}
+		if ( ! is_checkout() ) {
+			return false;
+		}
+		if ( ! class_exists( 'WC_Blocks_Utils' ) ) {
+			return false;
+		}
+		// Check if the checkout block is present
+		$has_block = WC_Blocks_Utils::has_block_in_page( wc_get_page_id( 'checkout' ), 'woocommerce/checkout' );
+
+		// Additional check: see if the traditional checkout shortcode is present
+		$checkout_page = get_post( wc_get_page_id( 'checkout' ) );
+		$has_shortcode = $checkout_page ? has_shortcode( $checkout_page->post_content, 'woocommerce_checkout' ) : false;
+
+		// If the block is present and the shortcode is not, we can be more confident it's a block checkout
+		return $has_block && ! $has_shortcode;
 	}
 
 	/**
@@ -358,8 +399,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return false|string
 	 */
 	public function get_frontend_generated_monei_token() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false; // WPCS: CSRF ok.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false;  // WPCS: CSRF ok.
 	}
 
 	/**
@@ -367,10 +408,10 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 */
 	public function determineTheTotalAmountToBePassed() {
 		$total = null;
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( is_wc_endpoint_url( 'order-pay' ) && isset( $_GET['key'] ) ) {
 			// If on the pay for order page, get the order total
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$order_id = wc_get_order_id_by_order_key( wc_clean( wp_unslash( $_GET['key'] ) ) );
 			if ( $order_id ) {
 				$order = wc_get_order( $order_id );
@@ -378,7 +419,7 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 			}
 		} else {
 			// Otherwise, use the cart total
-			$total = WC()->cart->get_total( false );
+			$total = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		}
 		return $total;
 	}

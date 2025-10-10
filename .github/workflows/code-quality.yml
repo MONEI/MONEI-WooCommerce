@@ -1,0 +1,58 @@
+name: Code Quality
+on: [push]
+
+# Concurrency to prevent multiple jobs from running at the same time
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    code-quality:
+        name: Code Quality Checks
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '7.4'
+                  coverage: none
+                  tools: composer
+
+            - name: Install Composer dependencies
+              uses: ramsey/composer-install@v3
+              with:
+                  composer-options: --dev --optimize-autoloader
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: yarn
+
+            - name: Install dependencies
+              run: yarn install --immutable
+
+            - name: Check code formatting
+              run: yarn format:check
+
+            - name: Lint JavaScript
+              run: yarn lint:js
+
+            - name: Lint CSS
+              run: yarn lint:css
+
+            - name: Lint PHP (PHPCS)
+              run: yarn lint:php:phpcs
+
+            - name: Lint PHP (PHPStan)
+              run: yarn lint:php:phpstan
+
+            - name: Build assets
+              run: yarn build

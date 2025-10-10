@@ -4,6 +4,7 @@ namespace Monei\Gateways\PaymentMethods;
 
 use Monei\Gateways\Abstracts\WCMoneiPaymentGatewayHosted;
 use Monei\Services\ApiKeyService;
+use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
@@ -34,14 +35,15 @@ class WCGatewayMoneiMBWay extends WCMoneiPaymentGatewayHosted {
 		PaymentMethodsService $paymentMethodsService,
 		TemplateManager $templateManager,
 		ApiKeyService $apiKeyService,
-		MoneiPaymentServices $moneiPaymentServices
+		MoneiPaymentServices $moneiPaymentServices,
+		MoneiStatusCodeHandler $statusCodeHandler
 	) {
-		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices );
+		parent::__construct( $paymentMethodsService, $templateManager, $apiKeyService, $moneiPaymentServices, $statusCodeHandler );
 
 		$this->id                 = MONEI_GATEWAY_ID . '_mbway';
 		$this->method_title       = __( 'MONEI - MBWay', 'monei' );
 		$this->method_description = __( 'Accept MBWay payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) && 'yes' === $this->get_option( 'enabled' ) ) && $this->is_valid_for_use() ) ? 'yes' : false;
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -53,11 +55,18 @@ class WCGatewayMoneiMBWay extends WCMoneiPaymentGatewayHosted {
 		$iconUrl          = apply_filters( 'woocommerce_monei_mbway_icon', WC_Monei()->image_url( 'mbway-logo.svg' ) );
 		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
-		$this->hide_logo            = ( ! empty( $this->get_option( 'hide_logo' ) && 'yes' === $this->get_option( 'hide_logo' ) ) ) ? true : false;
-		$this->icon                 = ( $this->hide_logo ) ? '' : $iconMarkup;
-		$this->title                = ( ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
-		$this->description          = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '&nbsp;';
-		$this->status_after_payment = ( ! empty( $this->get_option( 'orderdo' ) ) ) ? $this->get_option( 'orderdo' ) : '';
+		$this->hide_logo = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
+		$this->icon      = ( $this->hide_logo ) ? '' : $iconMarkup;
+		$this->testmode  = $this->getTestmode();
+		$hide_title      = ( ! empty( $this->get_option( 'hide_title' ) ) && 'yes' === $this->get_option( 'hide_title' ) ) ? true : false;
+		$this->title     = ( ! $hide_title && ! empty( $this->get_option( 'title' ) ) ) ? $this->get_option( 'title' ) : '';
+		if ( $this->testmode && ! empty( $this->title ) ) {
+			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';
+		}
+		$this->description = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
+		// Backward compatible: try local setting first, then global setting
+		$local_orderdo              = $this->get_option( 'orderdo' );
+		$this->status_after_payment = ! empty( $local_orderdo ) ? $local_orderdo : get_option( 'monei_orderdo', 'processing' );
 		$this->api_key              = $this->getApiKey();
 		$this->account_id           = $this->getAccountId();
 		$this->shop_name            = get_bloginfo( 'name' );

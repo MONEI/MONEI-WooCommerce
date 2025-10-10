@@ -5,13 +5,12 @@ namespace Monei\Settings;
 use Monei\Services\ApiKeyService;
 use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
+use WC_Settings_Page;
 
-class MoneiSettings extends \WC_Settings_Page {
+class MoneiSettings extends WC_Settings_Page {
 
 	protected ContainerInterface $container;
-	/**
-	 * @var ApiKeyService
-	 */
+	/** @var ApiKeyService */
 	private $apiKeyService;
 
 	public function __construct( ContainerInterface $container ) {
@@ -31,61 +30,86 @@ class MoneiSettings extends \WC_Settings_Page {
 				'id'    => 'monei_settings_title',
 			),
 			array(
-				'title'    => __( 'API Key Mode', 'monei' ),
-				'type'     => 'select',
-				'desc'     => __( 'Choose between Test or Live API Key.', 'monei' ),
-				'desc_tip' => true,
-				'id'       => 'monei_apikey_mode',
-				'default'  => 'test',
-				'options'  => array(
-					'test' => __( 'Test API Key', 'monei' ),
-					'live' => __( 'Live API Key', 'monei' ),
+				'title'   => __( 'API Key Mode', 'monei' ),
+				'type'    => 'select',
+				'desc'    => __( 'Set to Live to use the production environment.', 'monei' ),
+				'id'      => 'monei_apikey_mode',
+				'default' => 'test',
+				'options' => array(
+					'test' => __( 'Test', 'monei' ),
+					'live' => __( 'Live', 'monei' ),
 				),
 			),
-            array(
-                'title'    => __( 'Test Account ID *', 'monei' ),
-                'type'     => 'text',
-                'desc'     => __( 'Enter your MONEI Test Account ID here.', 'monei' ),
-                'desc_tip' => true,
-                'id'       => 'monei_test_accountid',
-                'default'  => '',
-                'class'    => 'monei-api-key-field monei-test-api-key-field',
-            ),
-            array(
-                'title'    => __( 'Live Account ID *', 'monei' ),
-                'type'     => 'text',
-                'desc'     => __( 'Enter your MONEI Live Account ID here.', 'monei' ),
-                'desc_tip' => true,
-                'id'       => 'monei_live_accountid',
-                'default'  => '',
-                'class'    => 'monei-api-key-field monei-live-api-key-field',
-            ),
 			array(
-				'title'    => __( 'Test API Key *', 'monei' ),
-				'type'     => 'text',
-				'desc'     => __( 'Enter your MONEI Test API Key here.', 'monei' ),
-				'desc_tip' => true,
-				'id'       => 'monei_test_apikey',
-				'default'  => '',
-				'class'    => 'monei-api-key-field monei-test-api-key-field',
+				'title'       => __( 'Test Account ID *', 'monei' ),
+				'type'        => 'text',
+				'desc'        => __( 'Your MONEI Test Account ID. Available at your MONEI dashboard.', 'monei' ),
+				'id'          => 'monei_test_accountid',
+				'default'     => '',
+				'class'       => 'monei-account-id-field monei-test-account-id-field',
+				'placeholder' => '9b1deb4d-3b7d-4bad-9bdd-2b0c11b3dcb6d',
 			),
 			array(
-				'title'    => __( 'Live API Key *', 'monei' ),
-				'type'     => 'text',
-				'desc'     => __( 'Enter your MONEI Live API Key here.', 'monei' ),
-				'desc_tip' => true,
-				'id'       => 'monei_live_apikey',
-				'default'  => '',
-				'class'    => 'monei-api-key-field monei-live-api-key-field',
+				'title'       => __( 'Live Account ID *', 'monei' ),
+				'type'        => 'text',
+				'desc'        => __( 'Your MONEI Account ID. Available at your MONEI dashboard.', 'monei' ),
+				'id'          => 'monei_live_accountid',
+				'default'     => '',
+				'class'       => 'monei-account-id-field monei-live-account-id-field',
+				'placeholder' => 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
 			),
 			array(
-				'title'    => __( 'Debug Log', 'monei' ),
-				'type'     => 'checkbox',
-				'label'    => __( 'Enable logging', 'monei' ),
-				'default'  => 'no',
-				'desc'     => __( 'Log MONEI events inside WooCommerce > Status > Logs > Select MONEI Logs.', 'monei' ),
-				'desc_tip' => __( 'Enable logging to track events such as notifications requests.', 'monei' ),
-				'id'       => 'monei_debug',
+				'title'       => __( 'Test API Key *', 'monei' ),
+				'type'        => 'password',
+				'desc'        => __( 'Your MONEI Test API Key. Available at your MONEI dashboard.', 'monei' ),
+				'id'          => 'monei_test_apikey',
+				'default'     => '',
+				'class'       => 'monei-api-key-field monei-test-api-key-field',
+				'placeholder' => 'pk_test_d3m0t3stk3yf0rd3v3l0pm3ntus4g3',
+			),
+			array(
+				'title'       => __( 'Live API Key *', 'monei' ),
+				'type'        => 'password',
+				'desc'        => __( 'Your MONEI API Key. Available at your MONEI dashboard.', 'monei' ),
+				'id'          => 'monei_live_apikey',
+				'default'     => '',
+				'class'       => 'monei-api-key-field monei-live-api-key-field',
+				'placeholder' => 'pk_live_7h3m4n1f3st0k3yf0r3x4mpl3purp0s3',
+			),
+			array(
+				'title'   => __( 'What to do after payment?', 'monei' ),
+				'type'    => 'select',
+				'desc'    => __( 'Choose what to do after the customer pays the order. This setting applies to all MONEI payment methods.', 'monei' ),
+				'default' => 'processing',
+				'id'      => 'monei_orderdo',
+				'options' => array(
+					'processing' => __( 'Mark as Processing (Recommended)', 'monei' ),
+					'completed'  => __( 'Mark as Complete', 'monei' ),
+				),
+			),
+			array(
+				'title'   => __( 'Payment Action', 'monei' ),
+				'type'    => 'select',
+				'desc'    => __( 'Choose payment flow: Immediate charge or Pre-authorization.<br>Pre-authorization is supported for: Card, Apple Pay, Google Pay, PayPal.<br>Not supported for: MBWay, Multibanco.', 'monei' ),
+				'default' => 'no',
+				'id'      => 'monei_pre_authorize',
+				'options' => array(
+					'no'  => __( 'Sale (Immediate charge)', 'monei' ),
+					'yes' => __( 'Authorization (Pre-authorization)', 'monei' ),
+				),
+			),
+			array(
+				'title'   => __( 'Log Level', 'monei' ),
+				'type'    => 'select',
+				'desc'    => __( 'Set minimum log level. Only messages at or above this level will be logged.<br>Logs are available in WooCommerce > Status > Logs > Select MONEI Logs.<br>WARNING: INFO level may impact performance.', 'monei' ),
+				'id'      => 'monei_log_level',
+				'default' => '3',
+				'options' => array(
+					'1' => __( 'INFO - All messages (Debug mode)', 'monei' ),
+					'2' => __( 'WARNING - Warnings and errors only', 'monei' ),
+					'3' => __( 'ERROR - Errors only (Recommended)', 'monei' ),
+					'4' => __( 'NONE - Disable logging', 'monei' ),
+				),
 			),
 			array(
 				'type' => 'sectionend',
@@ -108,7 +132,6 @@ class MoneiSettings extends \WC_Settings_Page {
 		$templateManager = $this->container->get( 'Monei\Templates\TemplateManager' );
 		$template        = $templateManager->getTemplate( 'monei-settings-header' );
 		if ( $template ) {
-
 			$template->render( $data );
 		}
 		$settings = $this->get_settings();
@@ -138,7 +161,7 @@ class MoneiSettings extends \WC_Settings_Page {
 			'monei-admin-css',
 			$plugin_url . 'public/css/monei-admin.css',
 			array(),
-			'1.0.0'
+			MONEI_VERSION
 		);
 		wp_register_script(
 			'monei-admin-script',

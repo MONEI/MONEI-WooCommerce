@@ -8,17 +8,32 @@ use Monei\Gateways\PaymentMethods\WCGatewayMoneiMBWay;
 
 final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 
-
 	private $gateway;
 	protected $name = 'monei_mbway';
+
 	public function __construct( WCMoneiPaymentGateway $gateway ) {
 		$this->gateway = $gateway;
 	}
+
 	public function initialize() {
 		$this->settings = get_option( 'woocommerce_monei_mbway_settings', array() );
 	}
 
 	public function get_payment_method_script_handles() {
+		// Order-pay page uses classic checkout, not blocks
+		if ( is_checkout_pay_page() ) {
+			return array();
+		}
+
+		// Register and enqueue blocks checkout CSS
+		wp_register_style(
+			'monei-blocks-checkout',
+			WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
+			array(),
+			WC_Monei()->version,
+			'all'
+		);
+		wp_enqueue_style( 'monei-blocks-checkout' );
 
 		$script_name = 'wc-monei-mbway-blocks-integration';
 
@@ -45,6 +60,10 @@ final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function is_active() {
+		// Order-pay page always uses classic checkout
+		if ( is_checkout_pay_page() ) {
+			return false;
+		}
 
 		$id = $this->gateway->getAccountId() ?? false;
 
@@ -58,9 +77,8 @@ final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_data() {
-		$total = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+		$total = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$data  = array(
-
 			'title'       => $this->gateway->title,
 			'description' => $this->gateway->description,
 			'logo'        => WC_Monei()->plugin_url() . '/public/images/mbway-logo.svg',
@@ -68,18 +86,16 @@ final class MoneiMBWayBlocksSupport extends AbstractPaymentMethodType {
 			'currency'    => get_woocommerce_currency(),
 			'total'       => $total,
 			'language'    => locale_iso_639_1_code(),
-
 			// yes: test mode.
 			// no:  live,
-			'test_mode'   => $this->gateway->getTestmode() ?? false,
+			'testMode'    => $this->gateway->getTestmode() ?? false,
 			'accountId'   => $this->gateway->getAccountId() ?? false,
-			'sessionId'   => ( wc()->session ) ? wc()->session->get_customer_id() : '',
+			'sessionId'   => WC()->session !== null ? WC()->session->get_customer_id() : '',
 		);
 
-		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
-
+		$hide_logo = $this->get_setting( 'hide_logo' ) ?? 'no';
+		if ( 'yes' === $hide_logo ) {
 			unset( $data['logo'] );
-
 		}
 
 		return $data;

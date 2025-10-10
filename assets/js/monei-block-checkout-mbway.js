@@ -6,9 +6,11 @@
 	const mbwayLabel = () => {
 		return (
 			<div className="monei-label-container">
-				<span className="monei-text">
-					{ __( mbwayData.title, 'monei' ) }
-				</span>
+				{ mbwayData.title && (
+					<span className="monei-text">
+						{ __( mbwayData.title, 'monei' ) }
+					</span>
+				) }
 				{ mbwayData?.logo && (
 					<div className="monei-logo">
 						<img src={ mbwayData.logo } alt="" />
@@ -20,14 +22,14 @@
 
 	const MoneiMbwayPaymentMethod = {
 		name: 'monei_mbway',
-		label: <div> {mbwayLabel()} </div>,
-		ariaLabel: __(mbwayData.title, 'monei'),
-		content: <div> {__(mbwayData.description, 'monei')}</div>,
-		edit: <div> {__(mbwayData.title, 'monei')}</div>,
-		canMakePayment: ({billingData}) => {
+		label: mbwayLabel(),
+		ariaLabel: __( mbwayData.title, 'monei' ),
+		content: <div> { __( mbwayData.description, 'monei' ) }</div>,
+		edit: <div> { __( mbwayData.title, 'monei' ) }</div>,
+		canMakePayment: ( { billingData } ) => {
 			return billingData.country === 'PT';
 		},
 		supports: mbwayData.supports,
 	};
-	registerPaymentMethod(MoneiMbwayPaymentMethod );
+	registerPaymentMethod( MoneiMbwayPaymentMethod );
 } )();

@@ -3,21 +3,23 @@
 .monei-settings-header-logo,
 .monei-settings-header-welcome,
 .monei-settings-header-buttons {
-    text-align: left;
-    margin-bottom: 20px;
+	text-align: left;
+	margin-bottom: 20px;
 }
 
 .monei-settings-header-logo img {
-    max-width: 200px;
-    height: auto;
+	max-width: 200px;
+	height: auto;
 }
 
 .monei-settings-header-welcome p {
-    font-size: 16px;
+	font-size: 16px;
 }
+
 .wc-settings-sub-nav a[href*="tab=monei_settings"] {
-    display: none !important;
+	display: none !important;
 }
+
 .nav-tab-wrapper a.nav-tab[href*="tab=monei_settings"] {
-    display: none !important;
+	display: none !important;
 }

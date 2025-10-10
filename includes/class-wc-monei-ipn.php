@@ -1,11 +1,13 @@
 <?php
 
-use Monei\Services\ApiKeyService;
+use Monei\Core\ContainerProvider;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
+use Monei\Services\ApiKeyService;
+use Monei\Services\PaymentMethodFormatter;
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;  // Exit if accessed directly
 }
 
 /**
@@ -18,6 +20,7 @@ class WC_Monei_IPN {
 
 	private $logging;
 	private MoneiPaymentServices $moneiPaymentServices;
+	private PaymentMethodFormatter $paymentMethodFormatter;
 
 	/**
 	 * Constructor.
@@ -26,10 +29,12 @@ class WC_Monei_IPN {
 		$this->logging = $logging;
 		// Handles request from MONEI.
 		add_action( 'woocommerce_api_monei_ipn', array( $this, 'check_ipn_request' ) );
-		//TODO use the container
-		$apiKeyService              = new ApiKeyService();
-		$sdkClient                  = new MoneiSdkClientFactory( $apiKeyService );
-		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
+		// TODO use the container
+		$apiKeyService                = new ApiKeyService();
+		$sdkClient                    = new MoneiSdkClientFactory( $apiKeyService );
+		$this->moneiPaymentServices   = new MoneiPaymentServices( $sdkClient );
+		$container                    = ContainerProvider::getContainer();
+		$this->paymentMethodFormatter = $container->get( PaymentMethodFormatter::class );
 	}
 
 	/**
@@ -39,33 +44,63 @@ class WC_Monei_IPN {
 	 * @return void
 	 */
 	public function check_ipn_request() {
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// Enforce POST-only webhook endpoint.
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && ( 'POST' !== wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
-			return;
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			WC_Monei_Logger::log( '[MONEI] Webhook received non-POST request: ' . wc_clean( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) );
+			http_response_code( 405 );
+			header( 'Allow: POST' );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Method Not Allowed';
+			exit;
 		}
 
 		$headers  = $this->get_all_headers();
 		$raw_body = file_get_contents( 'php://input' );
 		$this->log_ipn_request( $headers, $raw_body );
 
+		// Check for signature header.
+		if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) {
+			WC_Monei_Logger::log( '[MONEI] Webhook missing signature header from IP: ' . WC_Geolocation::get_ip_address() );
+			http_response_code( 401 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Unauthorized';
+			exit;
+		}
+
+		$payload = null;
+
 		try {
-			if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) {
-				return;
-			}
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$payload = $this->verify_signature_get_payload( $raw_body, wc_clean( wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) );
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$payload = $this->verify_signature_get_payload( $raw_body, wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
 			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
+		} catch ( Throwable $e ) {
+			// Signature verification failed - this is a security issue, always log.
+			WC_Monei_Logger::log( '[MONEI] Webhook signature verification failed: ' . $e->getMessage() );
+			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
+			http_response_code( 401 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Unauthorized';
+			exit;
+		}
+
+		try {
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
 			http_response_code( 200 );
-			exit();
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
-			$this->logging && WC_Monei_Logger::log( 'Failed IPN request: ' . $e->getMessage() );
-			// Invalid signature
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'OK';
+		} catch ( Throwable $e ) {
+			// Processing error - always log.
+			WC_Monei_Logger::log( '[MONEI] Webhook processing error: ' . $e->getMessage() );
+			do_action( 'woocommerce_monei_handle_processing_error', $payload, $e );
 			http_response_code( 400 );
-			exit();
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'Bad Request';
 		}
+
+		exit;
 	}
 
 	/**
@@ -76,7 +111,6 @@ class WC_Monei_IPN {
 	 * @return void
 	 */
 	protected function handle_valid_ipn( $payload ) {
-
 		$order_id       = $payload['orderId'];
 		$monei_id       = $payload['id'];
 		$status         = $payload['status'];
@@ -91,18 +125,41 @@ class WC_Monei_IPN {
 			return;
 		}
 
-		/**
-		 * Saving related information into order meta.
-		 */
+		/** Saving related information into order meta. */
 		$order->update_meta_data( '_payment_order_number_monei', $monei_id );
 		$order->update_meta_data( '_payment_order_status_monei', $status );
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
 		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
 
+		// Fetch payment from API to get payment method information
+		try {
+			$this->moneiPaymentServices->set_order( $order );
+			$payment                = $this->moneiPaymentServices->get_payment( $monei_id );
+			$payment_method_display = $this->paymentMethodFormatter->get_payment_method_display_from_payment( $payment );
+			if ( $payment_method_display ) {
+				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );
+			}
+		} catch ( Exception $e ) {
+			// Log but don't fail - payment method display is not critical
+			WC_Monei_Logger::log( '[MONEI] Failed to get payment method display: ' . $e->getMessage(), 'warning' );
+		}
+
+		$order->save();
+
+		if ( 'PENDING' === $status ) {
+			// Payment is pending (e.g., Multibanco waiting for payment).
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Pending</strong> ', 'monei' ) . '. <br><br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			$order->add_order_note( $order_note );
+			$order->update_status( 'on-hold', __( 'Payment pending confirmation', 'monei' ) );
+			return;
+		}
+
 		if ( 'FAILED' === $status ) {
 			// Order failed.
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Failed</strong> ', 'monei' ) . $status );
-			$order->update_status( 'pending', 'Failed MONEI payment: ' . $status_message );
+			$order->update_status( 'failed', 'Failed MONEI payment: ' . $status_message );
 			return;
 		}
 
@@ -111,6 +168,16 @@ class WC_Monei_IPN {
 			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Cancelled</strong> ', 'monei' ) . $status );
 			$message = __( 'Cancelled by MONEI: ', 'monei' ) . $status_message;
 			$order->add_order_note( $message );
+			$order->update_status( 'cancelled', $message );
+			return;
+		}
+
+		if ( 'EXPIRED' === $status ) {
+			// Payment expired.
+			$order->add_order_note( __( 'HTTP Notification received - <strong>Payment Expired</strong> ', 'monei' ) . $status );
+			$message = __( 'Payment expired: ', 'monei' ) . $status_message;
+			$order->add_order_note( $message );
+			$order->update_status( 'failed', $message );
 			return;
 		}
 
@@ -130,20 +197,23 @@ class WC_Monei_IPN {
 			$order_total = $order->get_total();
 
 			/**
-			 * If amounts don't match, we mark the order on-hold for manual validation.
-			 * 1 cent exception, for subscriptions when 0 sing ups are done.
+			 * If amounts don't match (within 1 cent tolerance), mark order on-hold for manual validation.
+			 * Absolute difference check allows subscription validation (0 EUR + 1 cent) while preventing
+			 * replay attacks with mismatched amounts.
 			 */
-			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
+			$expected_amount = monei_price_format( $order_total );
+			$amount_diff     = abs( (int) $amount - $expected_amount );
+			if ( $amount_diff > 1 ) {
 				$order->update_status(
 					'on-hold',
 					sprintf(
-					/* translators: 1: Order amount, 2: Notification amount */
+						/* translators: 1: Order amount, 2: Notification amount */
 						__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
 						$amount,
 						monei_price_format( $order_total )
 					)
 				);
-				exit;
+				return;
 			}
 
 			$order_note  = __( 'HTTP Notification received - <strong>Payment Completed</strong> ', 'monei' ) . '. <br><br>';
@@ -157,18 +227,42 @@ class WC_Monei_IPN {
 			if ( 'completed' === monei_get_settings( 'orderdo', monei_get_option_key_from_order( $order ) ) ) {
 				$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 			}
+			return;
+		}
+
+		if ( 'REFUNDED' === $status ) {
+			// Payment fully refunded.
+			$order_note  = __( 'HTTP Notification received - <strong>Payment Refunded</strong> ', 'monei' ) . '. <br><br>';
+			$order_note .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			$order->add_order_note( $order_note );
+			$order->update_status( 'refunded', __( 'Payment refunded by MONEI', 'monei' ) );
+			return;
+		}
+
+		if ( 'PARTIALLY_REFUNDED' === $status ) {
+			// Payment partially refunded.
+			$refunded_amount = $payload['refundedAmount'] ?? 0;
+			$order_note      = __( 'HTTP Notification received - <strong>Payment Partially Refunded</strong> ', 'monei' ) . '. <br><br>';
+			$order_note     .= __( 'MONEI Transaction id: ', 'monei' ) . $monei_id . '. <br><br>';
+			$order_note     .= __( 'Refunded amount: ', 'monei' ) . wc_price( $refunded_amount / 100 ) . '. <br><br>';
+			$order_note     .= __( 'MONEI Status Message: ', 'monei' ) . $status_message;
+			$order->add_order_note( $order_note );
+			// Note: WooCommerce doesn't have a built-in 'partially-refunded' status.
+			// The order remains in its current status with a note about the partial refund.
+			return;
 		}
 	}
 
 	/**
 	 * Verify signature, if all good returns payload.
-	 * Throws Exception if Signaturit not valid.
+	 * Throws Exception if signature is not valid.
 	 *
-	 * @param $request_body
-	 * @param $monei_signature
+	 * @param string $request_body    The request body.
+	 * @param string $monei_signature The MONEI signature header.
 	 *
 	 * @return array
-	 * @throws \OpenAPI\Client\ApiException
+	 * @throws \Monei\ApiException
 	 */
 	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
 		$decoded_body = json_decode( $request_body );
@@ -182,7 +276,7 @@ class WC_Monei_IPN {
 	 * getallheaders is only available for apache, we need a fallback in case of nginx or others,
 	 * http://php.net/manual/es/function.getallheaders.php
 	 *
-	 * @return array|false
+	 * @return array
 	 */
 	private function get_all_headers() {
 		if ( ! function_exists( 'getallheaders' ) ) {
@@ -194,7 +288,7 @@ class WC_Monei_IPN {
 			}
 			return $headers;
 		} else {
-			return getallheaders();
+			return getallheaders() ?: array();
 		}
 	}
 

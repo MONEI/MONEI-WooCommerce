@@ -2,8 +2,9 @@
 
 namespace Monei\Gateways\Abstracts;
 
-use Exception;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\ApiException;
+use Exception;
 use WC_Geolocation;
 use WC_Order;
 use WC_Payment_Tokens;
@@ -16,7 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Abstract class that will be inherited by all Hosted payment methods.
  * Class WC_Monei_Payment_Gateway_Hosted
  *
- * @extends WCMoneiPaymentGateway
  * @since 5.0
  */
 abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
@@ -30,29 +30,20 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
-
 		$order       = new WC_Order( $order_id );
 		$amount      = monei_price_format( $order->get_total() );
 		$currency    = get_woocommerce_currency();
 		$user_email  = $order->get_billing_email();
 		$description = $this->shop_name . ' - #' . $order_id;
 
-		/**
-		 * The URL to which a payment result should be sent asynchronously.
-		 */
+		/** The URL to which a payment result should be sent asynchronously. */
 		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
-		/**
-		 * The URL the customer will be directed to if the payment failed.
-		 */
+		/** The URL the customer will be directed to if the payment failed. */
 		$fail_url = esc_url_raw( $order->get_checkout_payment_url( false ) );
-		/**
-		 * The URL the customer will be directed to after transaction completed (successful or failed).
-		 */
+		/** The URL the customer will be directed to after transaction completed (successful or failed). */
 		$complete_url = wp_sanitize_redirect( esc_url_raw( add_query_arg( 'utm_nooverride', '1', $this->get_return_url( $order ) ) ) );
 
-		/**
-		 * Create Payment Payload
-		 */
+		/** Create Payment Payload */
 		$payload = array(
 			'amount'                => $amount,
 			'currency'              => $currency,
@@ -82,7 +73,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 					'city'    => ( $order->get_billing_city() ) ?: null,
 					'line1'   => ( $order->get_billing_address_1() ) ?: null,
 					'line2'   => ( $order->get_billing_address_2() ) ?: null,
-					'zip'     => ( $order->get_billing_postcode() ) ?? null,
+					'zip'     => ( $order->get_billing_postcode() ) ?: null,
 					'state'   => ( $order->get_billing_state() ) ?: null,
 				),
 			),
@@ -119,7 +110,10 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			if ( ! $this->isBlockCheckout() ) {
 				$payload['paymentToken'] = $token_id;
 			}
-			$payload['sessionId'] = (string) WC()->session->get_customer_id();
+			$payload['sessionId'] = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
+			// When using component flow (with token), don't set allowedPaymentMethods
+			// The token already identifies the payment method
+			unset( $payload['allowedPaymentMethods'] );
 		}
 
 		// Filter to enable external changes on payload.
@@ -135,20 +129,46 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			$this->log( $payment, 'debug' );
 			do_action( 'wc_gateway_monei_process_payment_success', $payload, $payment, $order );
 
-			if ( $this->isBlockCheckout() ) {
+			// Block checkout with component mode (Bizum/PayPal button)
+			// Return paymentId for frontend confirmation
+			$redirect_flow = property_exists( $this, 'redirect_flow' ) ? $this->redirect_flow : true;
+			$has_token     = $this->get_frontend_generated_token();
+			$is_block      = $this->isBlockCheckout();
+
+			if ( $is_block && ! $redirect_flow && $has_token ) {
 				return array(
 					'result'      => 'success',
 					'redirect'    => false,
-					'paymentId'   => $payment->getId(), // Send the paymentId back to the client
-					'token'       => $this->get_frontend_generated_token(), // Send the token back to the client
+					'paymentId'   => $payment->getId(),
+					'token'       => $has_token,
 					'completeUrl' => $payload['completeUrl'],
 					'failUrl'     => $payload['failUrl'],
 					'orderId'     => $order_id,
 				);
 			}
+			// Classic checkout or Block checkout in redirect mode
+			// Return redirect URL to MONEI hosted page
 			return array(
 				'result'   => 'success',
 				'redirect' => $payment->getNextAction()->getRedirectUrl(),
+			);
+		} catch ( ApiException $e ) {
+			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
+			// Parse API exception and get user-friendly error message
+			$error_info = $this->statusCodeHandler->parse_api_exception( $e );
+
+			// Log the technical details
+			if ( $error_info['statusCode'] ) {
+				$this->log( sprintf( 'Payment error - Status Code: %s, Raw Message: %s', $error_info['statusCode'], $error_info['rawMessage'] ), 'error' );
+			} else {
+				$this->log( sprintf( 'Payment error - Raw Message: %s', $error_info['rawMessage'] ?? $e->getMessage() ), 'error' );
+			}
+
+			// Show user-friendly error message to customer
+			wc_add_notice( $error_info['message'], 'error' );
+
+			return array(
+				'result' => 'failure',
 			);
 		} catch ( Exception $e ) {
 			$this->log( $e->getMessage(), 'error' );
@@ -166,10 +186,10 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 	 * @return false|string
 	 */
 	protected function get_frontend_generated_token() {
-		if ( $this->id === 'monei_bizum' || $this->id === 'monei_paypal') {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false; // WPCS: CSRF ok.
+		if ( $this->id === 'monei_bizum' || $this->id === 'monei_paypal' ) {
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			return ( isset( $_POST['monei_payment_request_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_request_token'] ) ) : false;  // WPCS: CSRF ok.
 		}
-        return false;
+		return false;
 	}
 }

@@ -20,9 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Monei_Addons_Redirect_Hooks {
 
 	private MoneiPaymentServices $moneiPaymentServices;
-    private SubscriptionService $subscriptionService;
+	private SubscriptionService $subscriptionService;
 
-    /**
+	/**
 	 * Hooks on redirects.
 	 */
 	public function __construct() {
@@ -50,7 +50,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 		if ( ! isset( $_GET['id'] ) ) {
 			return;
 		}
-        WC_Monei_Logger::log( 'Changing the method, updating the sequence id for subscriptions' );
+		WC_Monei_Logger::log( 'Changing the method, updating the sequence id for subscriptions' );
 
 		$payment_id = filter_input( INPUT_GET, 'id', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 		$order_id   = filter_input( INPUT_GET, 'orderId', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
@@ -72,9 +72,9 @@ class WC_Monei_Addons_Redirect_Hooks {
 			/**
 			 * We need to update parent from subscription, where sequence id is stored.
 			 */
-			$payment      = $this->moneiPaymentServices->get_payment( $payment_id );
-			$subscriptions = $handler->get_subscriptions_for_order( $order_id);
-            $handler->update_subscription_meta_data($subscriptions, $payment);
+			$payment       = $this->moneiPaymentServices->get_payment( $payment_id );
+			$subscriptions = $handler->get_subscriptions_for_order( $order_id );
+			$handler->update_subscription_meta_data( $subscriptions, $payment );
 
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );

@@ -6,9 +6,11 @@
 	const multibancoLabel = () => {
 		return (
 			<div className="monei-label-container">
-				<span className="monei-text">
-					{ __( multibancoData.title, 'monei' ) }
-				</span>
+				{ multibancoData.title && (
+					<span className="monei-text">
+						{ __( multibancoData.title, 'monei' ) }
+					</span>
+				) }
 				{ multibancoData?.logo && (
 					<div className="monei-logo">
 						<img src={ multibancoData.logo } alt="" />
@@ -20,14 +22,14 @@
 
 	const MoneiMultibancoPaymentMethod = {
 		name: 'monei_multibanco',
-		label: <div> {multibancoLabel()} </div>,
-		ariaLabel: __(multibancoData.title, 'monei'),
-		content: <div> {__(multibancoData.description, 'monei')}</div>,
-		edit: <div> {__(multibancoData.title, 'monei')}</div>,
-		canMakePayment: ({billingData}) => {
+		label: multibancoLabel(),
+		ariaLabel: __( multibancoData.title, 'monei' ),
+		content: <div> { __( multibancoData.description, 'monei' ) }</div>,
+		edit: <div> { __( multibancoData.title, 'monei' ) }</div>,
+		canMakePayment: ( { billingData } ) => {
 			return billingData.country === 'PT';
 		},
 		supports: multibancoData.supports,
 	};
-	registerPaymentMethod(MoneiMultibancoPaymentMethod );
+	registerPaymentMethod( MoneiMultibancoPaymentMethod );
 } )();

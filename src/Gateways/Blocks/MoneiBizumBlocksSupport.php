@@ -9,7 +9,6 @@ use Monei\Gateways\PaymentMethods\WCGatewayMoneiBizum;
 
 final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 
-
 	private $gateway;
 	protected $name = 'monei_bizum';
 	protected $handler;
@@ -26,6 +25,20 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_script_handles() {
+		// Order-pay page uses classic checkout, not blocks
+		if ( is_checkout_pay_page() ) {
+			return array();
+		}
+
+		// Register and enqueue blocks checkout CSS
+		wp_register_style(
+			'monei-blocks-checkout',
+			WC_Monei()->plugin_url() . '/public/css/monei-blocks-checkout.css',
+			array(),
+			WC_Monei()->version,
+			'all'
+		);
+		wp_enqueue_style( 'monei-blocks-checkout' );
 
 		$script_name = 'wc-monei-bizum-blocks-integration';
 
@@ -52,6 +65,10 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function is_active() {
+		// Order-pay page always uses classic checkout
+		if ( is_checkout_pay_page() ) {
+			return false;
+		}
 
 		$id = $this->gateway->getAccountId() ?? false;
 
@@ -65,30 +82,36 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 	}
 
 	public function get_payment_method_data() {
-		$total                 = isset( WC()->cart ) ? WC()->cart->get_total( false ) : 0;
+		$total                 = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$cart_has_subscription = $this->handler ? $this->handler->cart_has_subscription() : false;
-		$data                  = array(
+		$bizum_style           = $this->get_setting( 'bizum_style' );
+		$bizum_mode            = $this->get_setting( 'mode' );
+		$redirect_flow         = ( ! empty( $bizum_mode ) && 'yes' === $bizum_mode );
 
-			'title'                 => $this->gateway->title,
-			'description'           => $this->gateway->description,
-			'logo'                  => WC_Monei()->plugin_url() . '/public/images/bizum-logo.svg',
-			'supports'              => $this->get_supported_features(),
-			'currency'              => get_woocommerce_currency(),
-			'total'                 => $total,
-			'language'              => locale_iso_639_1_code(),
-
+		if ( ! $bizum_style ) {
+			$bizum_style = '{}';
+		}
+		$data = array(
+			'title'               => $this->gateway->title,
+			'logo'                => WC_Monei()->plugin_url() . '/public/images/bizum-logo.svg',
+			'supports'            => $this->get_supported_features(),
+			'currency'            => get_woocommerce_currency(),
+			'total'               => $total,
+			'language'            => locale_iso_639_1_code(),
 			// yes: test mode.
 			// no:  live,
-			'test_mode'             => $this->gateway->getTestmode() ?? false,
-			'accountId'             => $this->gateway->getAccountId() ?? false,
-			'sessionId'             => ( wc()->session ) ? wc()->session->get_customer_id() : '',
-			'cart_has_subscription' => $cart_has_subscription,
+			'testMode'            => $this->gateway->getTestmode() ?? false,
+			'accountId'           => $this->gateway->getAccountId() ?? false,
+			'sessionId'           => WC()->session !== null ? WC()->session->get_customer_id() : '',
+			'cartHasSubscription' => $cart_has_subscription,
+			'bizumStyle'          => json_decode( $bizum_style ),
+			'redirectFlow'        => $redirect_flow,
+			'description'         => $this->get_setting( 'description' ),
 		);
 
-		if ( 'yes' === $this->get_setting( 'hide_logo' ) ?? 'no' ) {
-
+		$hide_logo = $this->get_setting( 'hide_logo' );
+		if ( 'yes' === $hide_logo ) {
 			unset( $data['logo'] );
-
 		}
 
 		return $data;
