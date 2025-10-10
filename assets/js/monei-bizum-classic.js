@@ -226,9 +226,20 @@
 			hiddenInput.setAttribute( 'name', id );
 			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
+
+			// Try primary form ID first, then fall back to order-pay form ID
 			wc_bizum_form.$paymentForm =
-				document.getElementById( 'monei-bizum-form' );
-			wc_bizum_form.$paymentForm.appendChild( hiddenInput );
+				document.getElementById( 'monei-bizum-form' ) ||
+				document.getElementById( 'wc-monei_bizum-cc-form' );
+
+			// Only append if we found a target element
+			if ( wc_bizum_form.$paymentForm ) {
+				wc_bizum_form.$paymentForm.appendChild( hiddenInput );
+			} else {
+				console.error(
+					'Bizum form container not found. Cannot append payment token.'
+				);
+			}
 		},
 	};
 
