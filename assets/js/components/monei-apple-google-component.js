@@ -40,10 +40,12 @@ export const createAppleGoogleLabel = ( moneiData ) => {
  * @return {*} JSX Element
  */
 export const MoneiAppleGoogleContent = ( props ) => {
-	const { useEffect, useRef, useState, createPortal } = wp.element;
+	const { useEffect, useRef, useState, createPortal, useMemo, useCallback } =
+		wp.element;
 	const { useSelect } = wp.data;
 	const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
-	const { activePaymentMethod } = props;
+	const { activePaymentMethod, emitResponse } = props;
+	const { responseTypes, noticeContexts } = emitResponse;
 	const moneiData =
 		props.moneiData ||
 		// eslint-disable-next-line no-undef
@@ -63,94 +65,25 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		activePaymentMethod ===
 		( props.paymentMethodId || 'monei_apple_google' );
 
-	const buttonManager = useButtonStateManager( {
-		isActive,
-		emitResponse: props.emitResponse,
-		tokenFieldName: 'monei_payment_request_token',
-		errorMessage: moneiData.tokenErrorString,
-	} );
+	// Memoize buttonManager config to ensure stability
+	const buttonManagerConfig = useMemo(
+		() => ( {
+			isActive,
+			emitResponse,
+			tokenFieldName: 'monei_payment_request_token',
+			errorMessage: moneiData.tokenErrorString,
+		} ),
+		[ isActive, emitResponse, moneiData.tokenErrorString ]
+	);
+
+	const buttonManager = useButtonStateManager( buttonManagerConfig );
 
 	/**
-	 * Initialize MONEI Payment Request
+	 * Create or re-render MONEI Payment Request with specified amount
+	 * @param {number} amount - Payment amount in cents
 	 */
-	const initPaymentRequest = () => {
-		// eslint-disable-next-line no-undef
-		if ( typeof monei === 'undefined' || ! monei.PaymentRequest ) {
-			console.error( 'MONEI SDK is not available' );
-			return;
-		}
-
-		const currentTotal = cartTotals?.total_price
-			? parseInt( cartTotals.total_price )
-			: Math.round( moneiData.total * 100 );
-
-		lastAmountRef.current = currentTotal;
-
-		// Clean up existing instance
-		if ( paymentRequestRef.current?.close ) {
-			try {
-				paymentRequestRef.current.close();
-			} catch ( e ) {
-				// Silent fail
-			}
-		}
-
-		const container = document.getElementById(
-			'payment-request-container'
-		);
-		if ( ! container ) {
-			console.error( 'Payment request container not found' );
-			return;
-		}
-
-		// Clear container
-		container.innerHTML = '';
-
-		// eslint-disable-next-line no-undef
-		const paymentRequest = monei.PaymentRequest( {
-			accountId: moneiData.accountId,
-			sessionId: moneiData.sessionId,
-			language: moneiData.language,
-			amount: currentTotal,
-			currency: moneiData.currency,
-			style: moneiData.paymentRequestStyle || {},
-			onSubmit( result ) {
-				if ( result.token ) {
-					setError( '' );
-					buttonManager.enableCheckout( result.token );
-				}
-			},
-			onError( error ) {
-				const errorMessage =
-					error.message ||
-					`${ error.status || 'Error' } ${
-						error.statusCode ? `(${ error.statusCode })` : ''
-					}`;
-				setError( errorMessage );
-				console.error( 'Payment Request error:', error );
-			},
-		} );
-
-		paymentRequest.render( container );
-		paymentRequestRef.current = paymentRequest;
-	};
-
-	/**
-	 * Update the amount in the existing Payment Request instance
-	 */
-	const updatePaymentRequestAmount = () => {
-		const currentTotal = cartTotals?.total_price
-			? parseInt( cartTotals.total_price )
-			: Math.round( moneiData.total * 100 );
-
-		// Only update if amount actually changed
-		if ( currentTotal === lastAmountRef.current ) {
-			return;
-		}
-
-		lastAmountRef.current = currentTotal;
-
-		if ( paymentRequestRef.current ) {
+	const createOrRenderPaymentRequest = useCallback(
+		( amount ) => {
 			// Clean up existing instance
 			if ( paymentRequestRef.current?.close ) {
 				try {
@@ -164,6 +97,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				'payment-request-container'
 			);
 			if ( ! container ) {
+				console.error( 'Payment request container not found' );
 				return;
 			}
 
@@ -175,7 +109,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				accountId: moneiData.accountId,
 				sessionId: moneiData.sessionId,
 				language: moneiData.language,
-				amount: currentTotal,
+				amount,
 				currency: moneiData.currency,
 				style: moneiData.paymentRequestStyle || {},
 				onSubmit( result ) {
@@ -197,8 +131,46 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 			paymentRequest.render( container );
 			paymentRequestRef.current = paymentRequest;
+		},
+		[ moneiData, setError, buttonManager ]
+	);
+
+	/**
+	 * Initialize MONEI Payment Request
+	 */
+	const initPaymentRequest = useCallback( () => {
+		// eslint-disable-next-line no-undef
+		if ( typeof monei === 'undefined' || ! monei.PaymentRequest ) {
+			console.error( 'MONEI SDK is not available' );
+			return;
 		}
-	};
+
+		const currentTotal = cartTotals?.total_price
+			? parseInt( cartTotals.total_price )
+			: Math.round( moneiData.total * 100 );
+
+		lastAmountRef.current = currentTotal;
+
+		createOrRenderPaymentRequest( currentTotal );
+	}, [ cartTotals, moneiData.total, createOrRenderPaymentRequest ] );
+
+	/**
+	 * Update the amount in the existing Payment Request instance
+	 */
+	const updatePaymentRequestAmount = useCallback( () => {
+		const currentTotal = cartTotals?.total_price
+			? parseInt( cartTotals.total_price )
+			: Math.round( moneiData.total * 100 );
+
+		// Only update if amount actually changed
+		if ( currentTotal === lastAmountRef.current ) {
+			return;
+		}
+
+		lastAmountRef.current = currentTotal;
+
+		createOrRenderPaymentRequest( currentTotal );
+	}, [ cartTotals, moneiData.total, createOrRenderPaymentRequest ] );
 
 	// Initialize on mount
 	useEffect( () => {
@@ -213,7 +185,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		} else if ( ! monei || ! monei.PaymentRequest ) {
 			console.error( 'MONEI SDK is not available' );
 		}
-	}, [] );
+	}, [ initPaymentRequest ] );
 
 	// Update amount when cart totals change
 	useEffect( () => {
@@ -224,7 +196,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		) {
 			updatePaymentRequestAmount();
 		}
-	}, [ cartTotals ] );
+	}, [ cartTotals, updatePaymentRequestAmount ] );
 
 	// Cleanup on unmount
 	useEffect( () => {
@@ -246,7 +218,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		} );
 
 		return () => unsubscribe();
-	}, [ onPaymentSetup ] );
+	}, [ onPaymentSetup, buttonManager ] );
 
 	// Setup checkout success hook
 	useEffect( () => {
@@ -257,7 +229,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				// If no paymentId, backend handles everything (redirect flow)
 				if ( ! paymentDetails?.paymentId ) {
 					return {
-						type: props.emitResponse.responseTypes.SUCCESS,
+						type: responseTypes.SUCCESS,
 					};
 				}
 
@@ -275,7 +247,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 					if ( result.nextAction && result.nextAction.mustRedirect ) {
 						return {
-							type: props.emitResponse.responseTypes.SUCCESS,
+							type: responseTypes.SUCCESS,
 							redirectUrl: result.nextAction.redirectUrl,
 						};
 					}
@@ -283,7 +255,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 						const failUrl = new URL( paymentDetails.failUrl );
 						failUrl.searchParams.set( 'status', 'FAILED' );
 						return {
-							type: props.emitResponse.responseTypes.SUCCESS,
+							type: responseTypes.SUCCESS,
 							redirectUrl: failUrl.toString(),
 						};
 					} else {
@@ -295,7 +267,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 						url.searchParams.set( 'status', result.status );
 
 						return {
-							type: props.emitResponse.responseTypes.SUCCESS,
+							type: responseTypes.SUCCESS,
 							redirectUrl: url.toString(),
 						};
 					}
@@ -306,17 +278,16 @@ export const MoneiAppleGoogleContent = ( props ) => {
 					);
 					setIsConfirming( false );
 					return {
-						type: props.emitResponse.responseTypes.ERROR,
+						type: responseTypes.ERROR,
 						message: error.message || 'Payment confirmation failed',
-						messageContext:
-							props.emitResponse.noticeContexts.PAYMENTS,
+						messageContext: noticeContexts.PAYMENTS,
 					};
 				}
 			}
 		);
 
 		return () => unsubscribe();
-	}, [ onCheckoutSuccess ] );
+	}, [ onCheckoutSuccess, responseTypes, noticeContexts ] );
 
 	return (
 		<fieldset className="monei-fieldset monei-payment-request-fieldset">

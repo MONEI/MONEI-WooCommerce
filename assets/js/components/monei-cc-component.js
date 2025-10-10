@@ -13,7 +13,7 @@ const { useEffect, useState, useRef, useCallback, useMemo, createPortal } =
  * @return {React.Element}
  */
 export const MoneiCCContent = ( props ) => {
-	const { responseTypes } = props.emitResponse;
+	const { responseTypes, noticeContexts } = props.emitResponse;
 	const { onPaymentSetup, onCheckoutValidation, onCheckoutSuccess } =
 		props.eventRegistration;
 
@@ -62,14 +62,6 @@ export const MoneiCCContent = ( props ) => {
 
 	// Card input management
 	const cardInput = useMoneiCardInput( cardInputConfig );
-	// If hosted workflow, show redirect message
-	if ( isHostedWorkflow ) {
-		return (
-			<div className="monei-redirect-description">
-				{ moneiData.description }
-			</div>
-		);
-	}
 
 	/**
 	 * Create payment token
@@ -94,7 +86,7 @@ export const MoneiCCContent = ( props ) => {
 			} );
 
 		return tokenPromiseRef.current;
-	}, [ cardInput.createToken ] );
+	}, [ cardInput ] );
 
 	/**
 	 * Validate form
@@ -116,13 +108,7 @@ export const MoneiCCContent = ( props ) => {
 		}
 
 		return isValid;
-	}, [
-		cardholderName.validate,
-		cardInput.isValid,
-		formErrors.setError,
-		formErrors.clearError,
-		moneiData.cardErrorString,
-	] );
+	}, [ cardholderName, cardInput, formErrors, moneiData.cardErrorString ] );
 
 	// Setup validation hook
 	useEffect( () => {
@@ -164,11 +150,8 @@ export const MoneiCCContent = ( props ) => {
 		return unsubscribe;
 	}, [
 		onCheckoutValidation,
-		cardholderName.validate,
-		cardholderName.error,
-		cardInput.error,
-		cardInput.isValid,
-		cardInput.token,
+		cardholderName,
+		cardInput,
 		createPaymentToken,
 		moneiData.cardErrorString,
 		moneiData.tokenErrorString,
@@ -218,8 +201,8 @@ export const MoneiCCContent = ( props ) => {
 		return unsubscribe;
 	}, [
 		onPaymentSetup,
-		cardholderName.value,
-		cardInput.token,
+		cardholderName,
+		cardInput,
 		createPaymentToken,
 		responseTypes,
 		moneiData.tokenErrorString,
@@ -281,20 +264,23 @@ export const MoneiCCContent = ( props ) => {
 					return {
 						type: responseTypes.ERROR,
 						message: error.message || 'Payment confirmation failed',
-						messageContext:
-							props.emitResponse.noticeContexts.PAYMENTS,
+						messageContext: noticeContexts.PAYMENTS,
 					};
 				}
 			}
 		);
 
 		return unsubscribe;
-	}, [
-		onCheckoutSuccess,
-		cardholderName.value,
-		responseTypes,
-		props.emitResponse.noticeContexts,
-	] );
+	}, [ onCheckoutSuccess, cardholderName, responseTypes, noticeContexts ] );
+
+	// If hosted workflow, show redirect message only
+	if ( isHostedWorkflow ) {
+		return (
+			<div className="monei-redirect-description">
+				{ moneiData.description }
+			</div>
+		);
+	}
 
 	return (
 		<fieldset className="monei-fieldset monei-card-fieldset wc-block-components-form">
