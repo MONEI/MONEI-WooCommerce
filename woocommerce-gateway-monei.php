@@ -85,6 +85,9 @@ register_activation_hook(__FILE__, 'delete_payment_methods_transients');
 
 add_action('upgrader_process_complete', 'delete_payment_methods_transients_on_update', 10, 2);
 
+// Define main plugin file constant for plugin_action_links filter
+define( 'MONEI_MAIN_FILE', __FILE__ );
+
 require_once 'class-woocommerce-gateway-monei.php';
 function WC_Monei() {
     return Woocommerce_Gateway_Monei::instance();

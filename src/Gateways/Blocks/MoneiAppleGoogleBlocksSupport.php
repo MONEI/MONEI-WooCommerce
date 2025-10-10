@@ -9,22 +9,19 @@ use Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle;
 final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
 	protected $name = 'monei_apple_google';
-	/**
-	 * @var WCGatewayMoneiAppleGoogle
-	 */
-	public WCMoneiPaymentGateway $gateway;
+	/** @var WCGatewayMoneiAppleGoogle */
+	public WCGatewayMoneiAppleGoogle $gateway;
 
 	/**
 	 * @param WCGatewayMoneiAppleGoogle $gateway
 	 */
-	public function __construct( WCMoneiPaymentGateway $gateway ) {
+	public function __construct( WCGatewayMoneiAppleGoogle $gateway ) {
 		$this->gateway = $gateway;
 	}
 
 	public function initialize() {
 		$this->settings = get_option( 'woocommerce_monei_apple_google_settings', array() );
 	}
-
 
 	public function is_active() {
 		// Order-pay page always uses classic checkout
@@ -42,7 +39,6 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
 		return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
 	}
-
 
 	public function get_payment_method_script_handles() {
 		// Order-pay page uses classic checkout, not blocks
@@ -88,7 +84,6 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 		return array( $script_name );
 	}
 
-
 	public function get_payment_method_data() {
 		$supports              = $this->gateway->supports;
 		$total                 = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
@@ -120,7 +115,6 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 			'logoGoogle'          => $isGoogleEnabled ? $logoGoogle : false,
 			'logoApple'           => $isAppleEnabled ? $logoApple : false,
 			'supports'            => $supports,
-
 			// yes: test mode.
 			// no:  live,
 			'testMode'            => $this->gateway->getTestmode(),

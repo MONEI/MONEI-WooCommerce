@@ -129,7 +129,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$this->define( 'MONEI_WEB', 'https://monei.com/' );
 			$this->define( 'MONEI_REVIEW', 'https://wordpress.org/support/plugin/monei/reviews/?rate=5#new-post' );
 			$this->define( 'MONEI_SUPPORT', 'https://support.monei.com/' );
-			$this->define( 'MONEI_MAIN_FILE', __FILE__ );
+			// MONEI_MAIN_FILE now defined in woocommerce-gateway-monei.php bootstrap file
 		}
 
 		/**
