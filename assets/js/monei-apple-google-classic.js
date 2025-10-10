@@ -10,6 +10,8 @@
 			data.fragments.monei_new_total
 		) {
 			wc_monei_form.total = data.fragments.monei_new_total;
+			// Reset to allow re-initialization
+			wc_monei_form.init_apple_counter = 0;
 		}
 
 		if ( wc_monei_form.is_apple_selected() ) {
@@ -183,13 +185,20 @@
 				);
 			}
 
-			wc_monei_form.instantiate_payment_request();
+			wc_monei_form.init_apple_google_component();
 			wc_monei_form.$payment_request_container = document.getElementById(
 				'payment-request-container'
 			);
 
 			// We already init the button.
 			this.init_apple_counter++;
+		},
+		init_apple_google_component() {
+			if ( window.paymentRequest ) {
+				window.paymentRequest.close();
+			}
+			// Total amount updated
+			wc_monei_form.instantiate_payment_request();
 		},
 		instantiate_payment_request() {
 			const paymentRequest = monei.PaymentRequest( {

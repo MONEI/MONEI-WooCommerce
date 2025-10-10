@@ -41,6 +41,7 @@ export const createAppleGoogleLabel = ( moneiData ) => {
  */
 export const MoneiAppleGoogleContent = ( props ) => {
 	const { useEffect, useRef, useState, createPortal } = wp.element;
+	const { useSelect } = wp.data;
 	const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 	const { activePaymentMethod } = props;
 	const moneiData =
@@ -49,8 +50,15 @@ export const MoneiAppleGoogleContent = ( props ) => {
 		wc.wcSettings.getSetting( 'monei_apple_google_data' );
 
 	const paymentRequestRef = useRef( null );
+	const lastAmountRef = useRef( null );
+	const isInitializedRef = useRef( false );
 	const [ isConfirming, setIsConfirming ] = useState( false );
 	const [ error, setError ] = useState( '' );
+
+	// Subscribe to cart totals
+	const cartTotals = useSelect( ( select ) => {
+		return select( 'wc/store/cart' ).getCartTotals();
+	}, [] );
 	const isActive =
 		activePaymentMethod ===
 		( props.paymentMethodId || 'monei_apple_google' );
@@ -72,6 +80,12 @@ export const MoneiAppleGoogleContent = ( props ) => {
 			return;
 		}
 
+		const currentTotal = cartTotals?.total_price
+			? parseInt( cartTotals.total_price )
+			: Math.round( moneiData.total * 100 );
+
+		lastAmountRef.current = currentTotal;
+
 		// Clean up existing instance
 		if ( paymentRequestRef.current?.close ) {
 			try {
@@ -81,12 +95,23 @@ export const MoneiAppleGoogleContent = ( props ) => {
 			}
 		}
 
+		const container = document.getElementById(
+			'payment-request-container'
+		);
+		if ( ! container ) {
+			console.error( 'Payment request container not found' );
+			return;
+		}
+
+		// Clear container
+		container.innerHTML = '';
+
 		// eslint-disable-next-line no-undef
 		const paymentRequest = monei.PaymentRequest( {
 			accountId: moneiData.accountId,
 			sessionId: moneiData.sessionId,
 			language: moneiData.language,
-			amount: Math.round( moneiData.total * 100 ),
+			amount: currentTotal,
 			currency: moneiData.currency,
 			style: moneiData.paymentRequestStyle || {},
 			onSubmit( result ) {
@@ -106,10 +131,70 @@ export const MoneiAppleGoogleContent = ( props ) => {
 			},
 		} );
 
-		const container = document.getElementById(
-			'payment-request-container'
-		);
-		if ( container ) {
+		paymentRequest.render( container );
+		paymentRequestRef.current = paymentRequest;
+	};
+
+	/**
+	 * Update the amount in the existing Payment Request instance
+	 */
+	const updatePaymentRequestAmount = () => {
+		const currentTotal = cartTotals?.total_price
+			? parseInt( cartTotals.total_price )
+			: Math.round( moneiData.total * 100 );
+
+		// Only update if amount actually changed
+		if ( currentTotal === lastAmountRef.current ) {
+			return;
+		}
+
+		lastAmountRef.current = currentTotal;
+
+		if ( paymentRequestRef.current ) {
+			// Clean up existing instance
+			if ( paymentRequestRef.current?.close ) {
+				try {
+					paymentRequestRef.current.close();
+				} catch ( e ) {
+					// Silent fail
+				}
+			}
+
+			const container = document.getElementById(
+				'payment-request-container'
+			);
+			if ( ! container ) {
+				return;
+			}
+
+			// Clear container
+			container.innerHTML = '';
+
+			// eslint-disable-next-line no-undef
+			const paymentRequest = monei.PaymentRequest( {
+				accountId: moneiData.accountId,
+				sessionId: moneiData.sessionId,
+				language: moneiData.language,
+				amount: currentTotal,
+				currency: moneiData.currency,
+				style: moneiData.paymentRequestStyle || {},
+				onSubmit( result ) {
+					if ( result.token ) {
+						setError( '' );
+						buttonManager.enableCheckout( result.token );
+					}
+				},
+				onError( error ) {
+					const errorMessage =
+						error.message ||
+						`${ error.status || 'Error' } ${
+							error.statusCode ? `(${ error.statusCode })` : ''
+						}`;
+					setError( errorMessage );
+					console.error( 'Payment Request error:', error );
+				},
+			} );
+
 			paymentRequest.render( container );
 			paymentRequestRef.current = paymentRequest;
 		}
@@ -117,8 +202,32 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 	// Initialize on mount
 	useEffect( () => {
-		initPaymentRequest();
+		// eslint-disable-next-line no-undef
+		if (
+			typeof monei !== 'undefined' &&
+			monei.PaymentRequest &&
+			! isInitializedRef.current
+		) {
+			initPaymentRequest();
+			isInitializedRef.current = true;
+		} else if ( ! monei || ! monei.PaymentRequest ) {
+			console.error( 'MONEI SDK is not available' );
+		}
+	}, [] );
 
+	// Update amount when cart totals change
+	useEffect( () => {
+		if (
+			isInitializedRef.current &&
+			paymentRequestRef.current &&
+			cartTotals
+		) {
+			updatePaymentRequestAmount();
+		}
+	}, [ cartTotals ] );
+
+	// Cleanup on unmount
+	useEffect( () => {
 		return () => {
 			if ( paymentRequestRef.current?.close ) {
 				try {

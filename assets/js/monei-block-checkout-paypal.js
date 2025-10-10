@@ -1,17 +1,20 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect, useState, createPortal } = wp.element;
+	const { useEffect, useState, createPortal, useRef } = wp.element;
+	const { useSelect } = wp.data;
 	const paypalData = wc.wcSettings.getSetting( 'monei_paypal_data' );
 
 	const MoneiPayPalContent = ( props ) => {
-		let counter = 0;
 		const { responseTypes } = props.emitResponse;
 		const { onPaymentSetup, onCheckoutSuccess } = props.eventRegistration;
 		const { activePaymentMethod } = props;
-		let requestToken = null;
-		let paypalInstance = null;
-		let paypalContainer = null;
+
+		// Use refs instead of plain variables
+		const requestTokenRef = useRef( null );
+		const paypalInstanceRef = useRef( null );
+		const lastAmountRef = useRef( null );
+		const isInitializedRef = useRef( false );
 
 		// Check if redirect flow is enabled
 		const isRedirectFlow = paypalData.redirectFlow === true;
@@ -19,6 +22,11 @@
 		// State for confirmation overlay and error handling
 		const [ isConfirming, setIsConfirming ] = useState( false );
 		const [ error, setError ] = useState( '' );
+
+		// Subscribe to cart totals
+		const cartTotals = useSelect( ( select ) => {
+			return select( 'wc/store/cart' ).getCartTotals();
+		}, [] );
 
 		useEffect( () => {
 			// Don't modify the Place Order button if using redirect flow
@@ -38,10 +46,9 @@
 				}
 			}
 			return () => {
-				if ( paypalInstance ) {
-					paypalInstance.close();
-					paypalInstance = null;
-					paypalContainer.innerHtml = '';
+				if ( paypalInstanceRef.current ) {
+					paypalInstanceRef.current.close();
+					paypalInstanceRef.current = null;
 				}
 				if ( placeOrderButton ) {
 					placeOrderButton.style.color = '';
@@ -50,39 +57,54 @@
 				}
 			};
 		}, [ activePaymentMethod ] );
-		useEffect( () => {
-			// Don't initialize PayPal component if using redirect flow
-			if ( isRedirectFlow ) {
+
+		/**
+		 * Initialize MONEI PayPal component and handle token creation.
+		 */
+		const initMoneiPayPal = () => {
+			// eslint-disable-next-line no-undef
+			if ( typeof monei === 'undefined' || ! monei.PayPal ) {
+				console.error( 'MONEI SDK is not available' );
 				return;
 			}
 
-			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
-			if ( typeof monei !== 'undefined' && monei.PayPal ) {
-				if ( counter === 0 ) {
-					initMoneiCard();
-				}
-			} else {
-				console.error( 'MONEI SDK is not available' );
-			}
-		}, [] ); // Empty dependency array ensures this runs only once when the component mounts.
-		/**
-		 * Initialize MONEI card input and handle token creation.
-		 */
-		const initMoneiCard = () => {
-			paypalContainer = document.getElementById( 'paypal-container' );
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: Math.round( paypalData.total * 100 );
 
-			// Render the PayPal button
-			paypalInstance = monei.PayPal( {
+			lastAmountRef.current = currentTotal;
+
+			// Clean up existing instance
+			if ( paypalInstanceRef.current?.close ) {
+				try {
+					paypalInstanceRef.current.close();
+				} catch ( e ) {
+					// Silent fail
+				}
+			}
+
+			const paypalContainer =
+				document.getElementById( 'paypal-container' );
+			if ( ! paypalContainer ) {
+				console.error( 'PayPal container not found' );
+				return;
+			}
+
+			// Clear container
+			paypalContainer.innerHTML = '';
+
+			// eslint-disable-next-line no-undef
+			const paypalInstance = monei.PayPal( {
 				accountId: paypalData.accountId,
 				sessionId: paypalData.sessionId,
 				language: paypalData.language,
-				amount: parseInt( paypalData.total * 100 ),
+				amount: currentTotal,
 				currency: paypalData.currency,
 				style: paypalData.paypalStyle || {},
 				onSubmit( result ) {
 					if ( result.token ) {
 						setError( '' ); // Clear any previous errors
-						requestToken = result.token;
+						requestTokenRef.current = result.token;
 						const placeOrderButton = document.querySelector(
 							'.wc-block-components-checkout-place-order-button'
 						);
@@ -106,10 +128,131 @@
 					console.error( 'PayPal error:', error );
 				},
 			} );
-			paypalInstance.render( paypalContainer );
 
-			counter += 1;
+			paypalInstance.render( paypalContainer );
+			paypalInstanceRef.current = paypalInstance;
 		};
+
+		/**
+		 * Update the amount in the existing PayPal instance
+		 */
+		const updatePaypalAmount = () => {
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: Math.round( paypalData.total * 100 );
+
+			// Only update if amount actually changed
+			if ( currentTotal === lastAmountRef.current ) {
+				return;
+			}
+
+			lastAmountRef.current = currentTotal;
+
+			if ( paypalInstanceRef.current ) {
+				// Clean up existing instance
+				if ( paypalInstanceRef.current?.close ) {
+					try {
+						paypalInstanceRef.current.close();
+					} catch ( e ) {
+						// Silent fail
+					}
+				}
+
+				const paypalContainer =
+					document.getElementById( 'paypal-container' );
+				if ( ! paypalContainer ) {
+					return;
+				}
+
+				// Clear container
+				paypalContainer.innerHTML = '';
+
+				// eslint-disable-next-line no-undef
+				const paypalInstance = monei.PayPal( {
+					accountId: paypalData.accountId,
+					sessionId: paypalData.sessionId,
+					language: paypalData.language,
+					amount: currentTotal,
+					currency: paypalData.currency,
+					style: paypalData.paypalStyle || {},
+					onSubmit( result ) {
+						if ( result.token ) {
+							setError( '' );
+							requestTokenRef.current = result.token;
+							const placeOrderButton = document.querySelector(
+								'.wc-block-components-checkout-place-order-button'
+							);
+							if ( placeOrderButton ) {
+								placeOrderButton.style.color = '';
+								placeOrderButton.style.backgroundColor = '';
+								placeOrderButton.disabled = false;
+								placeOrderButton.click();
+							} else {
+								console.error(
+									'Place Order button not found.'
+								);
+							}
+						}
+					},
+					onError( error ) {
+						const errorMessage =
+							error.message ||
+							`${ error.status || 'Error' } - ${
+								error.statusMessage || 'Payment failed'
+							}`;
+						setError( errorMessage );
+						console.error( 'PayPal error:', error );
+					},
+				} );
+
+				paypalInstance.render( paypalContainer );
+				paypalInstanceRef.current = paypalInstance;
+			}
+		};
+
+		// Initialize on mount
+		useEffect( () => {
+			// Don't initialize PayPal component if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
+			// eslint-disable-next-line no-undef
+			if (
+				typeof monei !== 'undefined' &&
+				monei.PayPal &&
+				! isInitializedRef.current
+			) {
+				initMoneiPayPal();
+				isInitializedRef.current = true;
+			} else if ( ! monei || ! monei.PayPal ) {
+				console.error( 'MONEI SDK is not available' );
+			}
+		}, [] );
+
+		// Update amount when cart totals change
+		useEffect( () => {
+			if (
+				isInitializedRef.current &&
+				paypalInstanceRef.current &&
+				cartTotals
+			) {
+				updatePaypalAmount();
+			}
+		}, [ cartTotals ] );
+
+		// Cleanup on unmount
+		useEffect( () => {
+			return () => {
+				if ( paypalInstanceRef.current?.close ) {
+					try {
+						paypalInstanceRef.current.close();
+					} catch ( e ) {
+						// Silent cleanup
+					}
+				}
+			};
+		}, [] );
 
 		// Hook into the payment setup
 		useEffect( () => {
@@ -127,7 +270,7 @@
 				}
 
 				// If no token was created, fail
-				if ( ! requestToken ) {
+				if ( ! requestTokenRef.current ) {
 					return {
 						type: responseTypes.ERROR,
 						message: __(
@@ -140,7 +283,8 @@
 					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
-							monei_payment_request_token: requestToken,
+							monei_payment_request_token:
+								requestTokenRef.current,
 							monei_is_block_checkout: 'yes',
 						},
 					},
@@ -151,6 +295,7 @@
 				unsubscribePaymentSetup();
 			};
 		}, [ onPaymentSetup ] );
+
 		useEffect( () => {
 			const unsubscribe = onCheckoutSuccess(
 				async ( { processingResponse } ) => {
@@ -225,6 +370,7 @@
 				unsubscribe();
 			};
 		}, [ onCheckoutSuccess ] );
+
 		// In redirect mode, show description instead of PayPal button
 		if ( isRedirectFlow ) {
 			return (
@@ -251,6 +397,7 @@
 			</fieldset>
 		);
 	};
+
 	const paypalLabel = () => {
 		return (
 			<div className="monei-label-container">
