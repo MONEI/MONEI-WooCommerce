@@ -30,7 +30,10 @@
 		"test:e2e": "wp-scripts test-e2e",
 		"test:unit": "wp-scripts test-unit-js",
 		"release": "release-it",
-		"prepare": "husky"
+		"prepare": "husky",
+		"i18n:make-pot": "vendor/bin/wp i18n make-pot . languages/monei.pot --domain=monei --exclude=node_modules,vendor,tests",
+		"i18n:make-mo": "for po_file in languages/*.po; do vendor/bin/wp i18n make-mo \"$po_file\"; done",
+		"i18n:update": "yarn i18n:make-pot && yarn i18n:make-mo"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.1.0",

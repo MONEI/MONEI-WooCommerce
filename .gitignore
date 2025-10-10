@@ -33,3 +33,6 @@ node_modules/
 /tests/auth/*.json
 /tests/auth/
 .phpcs.cache
+
+# Translation files
+*.mo
