@@ -353,8 +353,8 @@ export const MoneiCCContent = ( props ) => {
  */
 export const CreditCardLabel = ( moneiData ) => {
 	const cardBrands = moneiData?.cardBrands
-		? Object.values( moneiData.cardBrands ).filter(
-				( brand ) => brand.title !== 'Card'
+		? Object.keys( moneiData.cardBrands ).filter(
+				( key ) => key !== 'default'
 		  )
 		: [];
 
@@ -365,14 +365,17 @@ export const CreditCardLabel = ( moneiData ) => {
 			) }
 			{ cardBrands.length > 0 ? (
 				<span className="monei-card-brands">
-					{ cardBrands.map( ( brand, index ) => (
-						<img
-							key={ index }
-							src={ brand.url }
-							alt={ brand.title }
-							className="card-brand-icon"
-						/>
-					) ) }
+					{ cardBrands.map( ( key ) => {
+						const brand = moneiData.cardBrands[ key ];
+						return (
+							<img
+								key={ key }
+								src={ brand.url }
+								alt={ brand.title }
+								className="card-brand-icon"
+							/>
+						);
+					} ) }
 				</span>
 			) : (
 				moneiData?.logo && (

@@ -99,7 +99,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 		// Hide logo if card brands are available
 		$cardBrands    = $this->cardBrandHelper->getCardBrandsConfig();
-		$hasCardBrands = ! empty( $cardBrands ) && count( array_filter( $cardBrands, fn( $b ) => $b['title'] !== 'Card' ) ) > 0;
+		$hasCardBrands = ! empty( $cardBrands ) && count( array_filter( array_keys( $cardBrands ), fn( $key ) => $key !== 'default' ) ) > 0;
 
 		$this->icon          = ( $this->hide_logo || $hasCardBrands ) ? '' : $iconMarkup;
 		$this->redirect_flow = ( ! empty( $this->get_option( 'cc_mode' ) ) && 'yes' === $this->get_option( 'cc_mode' ) ) ? true : false;
@@ -430,8 +430,13 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		}
 
 		// Return early if redirect flow (doesn't need component scripts)
-		// OR if not on a page that needs scripts
-		if ( $this->redirect_flow || ( ! is_checkout() && ! is_checkout_pay_page() && ! is_add_payment_method_page() ) ) {
+		if ( $this->redirect_flow ) {
+			return;
+		}
+
+		// Return early if not on a page that needs scripts
+		$is_required_page = is_checkout() || is_checkout_pay_page() || is_add_payment_method_page();
+		if ( ! $is_required_page ) {
 			return;
 		}
 

@@ -151,7 +151,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		}
 
 		// Remove logo when card brands are available
-		if ( ! empty( $data['cardBrands'] ) && count( array_filter( $data['cardBrands'], fn( $b ) => $b['title'] !== 'Card' ) ) > 0 ) {
+		if ( ! empty( $data['cardBrands'] ) && count( array_filter( array_keys( $data['cardBrands'] ), fn( $key ) => $key !== 'default' ) ) > 0 ) {
 			unset( $data['logo'] );
 		}
 
