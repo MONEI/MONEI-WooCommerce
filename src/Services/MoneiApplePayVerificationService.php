@@ -47,16 +47,9 @@ class MoneiApplePayVerificationService {
 		}
 
 		try {
-			// Extract domain from HTTP_HOST or get_site_url()
-			if ( isset( $_SERVER['HTTP_HOST'] ) ) {
-				// Parse HTTP_HOST to remove port portion and get host only
-				$host_parts = explode( ':', $_SERVER['HTTP_HOST'] );
-				$domain     = sanitize_text_field( $host_parts[0] );
-			} else {
-				// Use wp_parse_url to extract host from get_site_url()
-				$parsed_url = wp_parse_url( get_site_url() );
-				$domain     = isset( $parsed_url['host'] ) ? sanitize_text_field( $parsed_url['host'] ) : '';
-			}
+			// Extract domain from site URL (WordPress best practice)
+			$parsed_url = wp_parse_url( home_url() );
+			$domain     = isset( $parsed_url['host'] ) ? $parsed_url['host'] : '';
 
 			// Ensure domain is not empty before registering
 			if ( empty( $domain ) ) {

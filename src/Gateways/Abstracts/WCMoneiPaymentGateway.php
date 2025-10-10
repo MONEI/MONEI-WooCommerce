@@ -284,9 +284,8 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	protected function get_save_payment_card_checkbox() {
-		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) &&
-			filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce handles nonce verification before process_payment()
+		return isset( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ) && filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );  // WPCS: CSRF ok.
 	}
 
 	/**
