@@ -30,6 +30,78 @@
 			return select( 'wc/store/cart' ).getCartTotals();
 		}, [] );
 
+		/**
+		 * Create or re-render PayPal instance with specified amount
+		 * @param {number} amount - Payment amount in cents
+		 */
+		const createOrRenderPayPal = useCallback( ( amount ) => {
+			// Clean up existing instance
+			if ( paypalInstanceRef.current?.close ) {
+				try {
+					paypalInstanceRef.current.close();
+				} catch ( e ) {
+					// Silent fail
+				}
+			}
+
+			const paypalContainer =
+				document.getElementById( 'paypal-container' );
+			if ( ! paypalContainer ) {
+				console.error( 'PayPal container not found' );
+				return;
+			}
+
+			// Show skeleton loading state
+			setIsLoading( true );
+
+			// Clear container
+			paypalContainer.innerHTML = '';
+
+			// eslint-disable-next-line no-undef
+			const paypalInstance = monei.PayPal( {
+				accountId: paypalData.accountId,
+				sessionId: paypalData.sessionId,
+				language: paypalData.language,
+				amount,
+				currency: paypalData.currency,
+				style: paypalData.paypalStyle || {},
+				onSubmit( result ) {
+					if ( result.token ) {
+						setError( '' );
+						requestTokenRef.current = result.token;
+						const placeOrderButton = document.querySelector(
+							'.wc-block-components-checkout-place-order-button'
+						);
+						if ( placeOrderButton ) {
+							placeOrderButton.style.color = '';
+							placeOrderButton.style.backgroundColor = '';
+							placeOrderButton.disabled = false;
+							placeOrderButton.click();
+						} else {
+							console.error( 'Place Order button not found.' );
+						}
+					}
+				},
+				onError( error ) {
+					const errorMessage =
+						error.message ||
+						`${ error.status || 'Error' } - ${
+							error.statusMessage || 'Payment failed'
+						}`;
+					setError( errorMessage );
+					console.error( 'PayPal error:', error );
+				},
+			} );
+
+			paypalInstance.render( paypalContainer );
+			paypalInstanceRef.current = paypalInstance;
+
+			// Remove skeleton loading state after rendering
+			setTimeout( () => {
+				setIsLoading( false );
+			}, 1000 );
+		}, [] );
+
 		useEffect( () => {
 			// Don't modify the Place Order button if using redirect flow
 			if ( isRedirectFlow ) {
@@ -75,73 +147,8 @@
 				: Math.round( paypalData.total * 100 );
 
 			lastAmountRef.current = currentTotal;
-
-			// Clean up existing instance
-			if ( paypalInstanceRef.current?.close ) {
-				try {
-					paypalInstanceRef.current.close();
-				} catch ( e ) {
-					// Silent fail
-				}
-			}
-
-			const paypalContainer =
-				document.getElementById( 'paypal-container' );
-			if ( ! paypalContainer ) {
-				console.error( 'PayPal container not found' );
-				return;
-			}
-
-			// Show skeleton loading state
-			setIsLoading( true );
-
-			// Clear container
-			paypalContainer.innerHTML = '';
-
-			// eslint-disable-next-line no-undef
-			const paypalInstance = monei.PayPal( {
-				accountId: paypalData.accountId,
-				sessionId: paypalData.sessionId,
-				language: paypalData.language,
-				amount: currentTotal,
-				currency: paypalData.currency,
-				style: paypalData.paypalStyle || {},
-				onSubmit( result ) {
-					if ( result.token ) {
-						setError( '' ); // Clear any previous errors
-						requestTokenRef.current = result.token;
-						const placeOrderButton = document.querySelector(
-							'.wc-block-components-checkout-place-order-button'
-						);
-						if ( placeOrderButton ) {
-							placeOrderButton.style.color = '';
-							placeOrderButton.style.backgroundColor = '';
-							placeOrderButton.disabled = false;
-							placeOrderButton.click();
-						} else {
-							console.error( 'Place Order button not found.' );
-						}
-					}
-				},
-				onError( error ) {
-					const errorMessage =
-						error.message ||
-						`${ error.status || 'Error' } - ${
-							error.statusMessage || 'Payment failed'
-						}`;
-					setError( errorMessage );
-					console.error( 'PayPal error:', error );
-				},
-			} );
-
-			paypalInstance.render( paypalContainer );
-			paypalInstanceRef.current = paypalInstance;
-
-			// Remove skeleton loading state after rendering
-			setTimeout( () => {
-				setIsLoading( false );
-			}, 1000 );
-		}, [ cartTotals ] );
+			createOrRenderPayPal( currentTotal );
+		}, [ cartTotals, createOrRenderPayPal ] );
 
 		/**
 		 * Update the amount in the existing PayPal instance
@@ -159,74 +166,9 @@
 			lastAmountRef.current = currentTotal;
 
 			if ( paypalInstanceRef.current ) {
-				// Clean up existing instance
-				if ( paypalInstanceRef.current?.close ) {
-					try {
-						paypalInstanceRef.current.close();
-					} catch ( e ) {
-						// Silent fail
-					}
-				}
-
-				const paypalContainer =
-					document.getElementById( 'paypal-container' );
-				if ( ! paypalContainer ) {
-					return;
-				}
-
-				// Show skeleton loading state
-				setIsLoading( true );
-
-				// Clear container
-				paypalContainer.innerHTML = '';
-
-				// eslint-disable-next-line no-undef
-				const paypalInstance = monei.PayPal( {
-					accountId: paypalData.accountId,
-					sessionId: paypalData.sessionId,
-					language: paypalData.language,
-					amount: currentTotal,
-					currency: paypalData.currency,
-					style: paypalData.paypalStyle || {},
-					onSubmit( result ) {
-						if ( result.token ) {
-							setError( '' );
-							requestTokenRef.current = result.token;
-							const placeOrderButton = document.querySelector(
-								'.wc-block-components-checkout-place-order-button'
-							);
-							if ( placeOrderButton ) {
-								placeOrderButton.style.color = '';
-								placeOrderButton.style.backgroundColor = '';
-								placeOrderButton.disabled = false;
-								placeOrderButton.click();
-							} else {
-								console.error(
-									'Place Order button not found.'
-								);
-							}
-						}
-					},
-					onError( error ) {
-						const errorMessage =
-							error.message ||
-							`${ error.status || 'Error' } - ${
-								error.statusMessage || 'Payment failed'
-							}`;
-						setError( errorMessage );
-						console.error( 'PayPal error:', error );
-					},
-				} );
-
-				paypalInstance.render( paypalContainer );
-				paypalInstanceRef.current = paypalInstance;
-
-				// Remove skeleton loading state after rendering
-				setTimeout( () => {
-					setIsLoading( false );
-				}, 1000 );
+				createOrRenderPayPal( currentTotal );
 			}
-		}, [ cartTotals ] );
+		}, [ cartTotals, createOrRenderPayPal ] );
 
 		// Initialize on mount
 		useEffect( () => {

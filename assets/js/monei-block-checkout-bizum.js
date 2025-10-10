@@ -31,14 +31,17 @@
 		}, [] );
 
 		/**
-		 * Initialize MONEI Bizum instance once.
+		 * Create or re-render Bizum instance with specified amount
+		 * @param {number} amount - Payment amount in cents
 		 */
-		const initMoneiBizum = useCallback( () => {
-			const currentTotal = cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: parseInt( bizumData.total * 100 );
-
-			lastAmountRef.current = currentTotal;
+		const createOrRenderBizum = useCallback( ( amount ) => {
+			// Clean up existing instance
+			if (
+				currentBizumInstanceRef.current &&
+				typeof currentBizumInstanceRef.current.destroy === 'function'
+			) {
+				currentBizumInstanceRef.current.destroy();
+			}
 
 			const container = document.getElementById( 'bizum-container' );
 			if ( ! container ) {
@@ -56,7 +59,7 @@
 				accountId: bizumData.accountId,
 				sessionId: bizumData.sessionId,
 				language: bizumData.language,
-				amount: currentTotal,
+				amount,
 				currency: bizumData.currency,
 				style: bizumData.bizumStyle || {},
 				onSubmit( result ) {
@@ -93,7 +96,19 @@
 			setTimeout( () => {
 				setIsLoading( false );
 			}, 1000 );
-		}, [ cartTotals ] );
+		}, [] );
+
+		/**
+		 * Initialize MONEI Bizum instance once.
+		 */
+		const initMoneiBizum = useCallback( () => {
+			const currentTotal = cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: parseInt( bizumData.total * 100 );
+
+			lastAmountRef.current = currentTotal;
+			createOrRenderBizum( currentTotal );
+		}, [ cartTotals, createOrRenderBizum ] );
 
 		/**
 		 * Update the amount in the existing Bizum instance.
@@ -111,70 +126,9 @@
 			lastAmountRef.current = currentTotal;
 
 			if ( currentBizumInstanceRef.current ) {
-				const preservedToken = requestTokenRef.current;
-
-				if (
-					typeof currentBizumInstanceRef.current.destroy ===
-					'function'
-				) {
-					currentBizumInstanceRef.current.destroy();
-				}
-
-				// Clear container
-				const container = document.getElementById( 'bizum-container' );
-				if ( container ) {
-					// Show skeleton loading state
-					setIsLoading( true );
-					container.innerHTML = '';
-				}
-
-				// Recreate with new amount
-				currentBizumInstanceRef.current = monei.Bizum( {
-					accountId: bizumData.accountId,
-					sessionId: bizumData.sessionId,
-					language: bizumData.language,
-					amount: currentTotal,
-					currency: bizumData.currency,
-					onSubmit( result ) {
-						if ( result.token ) {
-							setError( '' );
-							requestTokenRef.current = result.token;
-							const placeOrderButton = document.querySelector(
-								'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
-							);
-							if ( placeOrderButton ) {
-								placeOrderButton.style.color = '';
-								placeOrderButton.style.backgroundColor = '';
-								placeOrderButton.disabled = false;
-								placeOrderButton.click();
-							} else {
-								console.error(
-									'Place Order button not found.'
-								);
-							}
-						}
-					},
-					onError( error ) {
-						const errorMessage =
-							error.message ||
-							`${ error.status || 'Error' } ${
-								error.statusCode
-									? `(${ error.statusCode })`
-									: ''
-							}`;
-						setError( errorMessage );
-						console.error( 'Bizum error:', error );
-					},
-				} );
-
-				currentBizumInstanceRef.current.render( container );
-
-				// Remove skeleton loading state after rendering
-				setTimeout( () => {
-					setIsLoading( false );
-				}, 100 );
+				createOrRenderBizum( currentTotal );
 			}
-		}, [ cartTotals ] );
+		}, [ cartTotals, createOrRenderBizum ] );
 
 		useEffect( () => {
 			// Don't modify the Place Order button if using redirect flow
