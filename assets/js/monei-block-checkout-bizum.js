@@ -30,71 +30,10 @@
 			return select( 'wc/store/cart' ).getCartTotals();
 		}, [] );
 
-		useEffect( () => {
-			// Don't modify the Place Order button if using redirect flow
-			if ( isRedirectFlow ) {
-				return;
-			}
-
-			const placeOrderButton = document.querySelector(
-				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
-			);
-			if ( activePaymentMethod === 'monei_bizum' ) {
-				if ( placeOrderButton ) {
-					//on hover over the button the text should not change color to white
-					placeOrderButton.style.color = 'black';
-					placeOrderButton.style.backgroundColor = '#ccc';
-					placeOrderButton.disabled = true;
-				}
-			}
-			return () => {
-				if ( placeOrderButton ) {
-					placeOrderButton.style.color = '';
-					placeOrderButton.style.backgroundColor = '';
-					placeOrderButton.disabled = false;
-				}
-			};
-		}, [ activePaymentMethod, isRedirectFlow ] );
-
-		useEffect( () => {
-			// Don't initialize Bizum component if using redirect flow
-			if ( isRedirectFlow ) {
-				return;
-			}
-
-			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
-			if (
-				typeof monei !== 'undefined' &&
-				monei.Bizum &&
-				! isInitializedRef.current
-			) {
-				initMoneiCard();
-				isInitializedRef.current = true;
-			} else if ( ! monei || ! monei.Bizum ) {
-				console.error( 'MONEI SDK is not available' );
-			}
-		}, [ initMoneiCard, isRedirectFlow ] );
-
-		useEffect( () => {
-			// Don't update amount if using redirect flow
-			if ( isRedirectFlow ) {
-				return;
-			}
-
-			// Only update amount if instance exists and cart totals changed
-			if (
-				isInitializedRef.current &&
-				currentBizumInstanceRef.current &&
-				cartTotals
-			) {
-				updateBizumAmount();
-			}
-		}, [ cartTotals, updateBizumAmount, isRedirectFlow ] );
-
 		/**
 		 * Initialize MONEI Bizum instance once.
 		 */
-		const initMoneiCard = useCallback( () => {
+		const initMoneiBizum = useCallback( () => {
 			const currentTotal = cartTotals?.total_price
 				? parseInt( cartTotals.total_price )
 				: parseInt( bizumData.total * 100 );
@@ -236,6 +175,67 @@
 				}, 100 );
 			}
 		}, [ cartTotals ] );
+
+		useEffect( () => {
+			// Don't modify the Place Order button if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
+			const placeOrderButton = document.querySelector(
+				'.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.wc-block-components-checkout-place-order-button'
+			);
+			if ( activePaymentMethod === 'monei_bizum' ) {
+				if ( placeOrderButton ) {
+					//on hover over the button the text should not change color to white
+					placeOrderButton.style.color = 'black';
+					placeOrderButton.style.backgroundColor = '#ccc';
+					placeOrderButton.disabled = true;
+				}
+			}
+			return () => {
+				if ( placeOrderButton ) {
+					placeOrderButton.style.color = '';
+					placeOrderButton.style.backgroundColor = '';
+					placeOrderButton.disabled = false;
+				}
+			};
+		}, [ activePaymentMethod, isRedirectFlow ] );
+
+		useEffect( () => {
+			// Don't initialize Bizum component if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
+			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
+			if (
+				typeof monei !== 'undefined' &&
+				monei.Bizum &&
+				! isInitializedRef.current
+			) {
+				initMoneiBizum();
+				isInitializedRef.current = true;
+			} else if ( ! monei || ! monei.Bizum ) {
+				console.error( 'MONEI SDK is not available' );
+			}
+		}, [ initMoneiBizum, isRedirectFlow ] );
+
+		useEffect( () => {
+			// Don't update amount if using redirect flow
+			if ( isRedirectFlow ) {
+				return;
+			}
+
+			// Only update amount if instance exists and cart totals changed
+			if (
+				isInitializedRef.current &&
+				currentBizumInstanceRef.current &&
+				cartTotals
+			) {
+				updateBizumAmount();
+			}
+		}, [ cartTotals, updateBizumAmount, isRedirectFlow ] );
 
 		// Hook into the payment setup
 		useEffect( () => {
