@@ -150,12 +150,6 @@
 	margin: 0 0 1em 0 !important;
 }
 
-/* Place Order Button States */
-.wc-block-components-checkout-place-order-button:disabled {
-	cursor: not-allowed;
-	opacity: 0.6;
-}
-
 /* Responsive Design */
 @media (max-width: 480px) {
 

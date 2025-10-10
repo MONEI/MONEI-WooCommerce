@@ -31,16 +31,19 @@ export const useButtonStateManager = ( props ) => {
 			return;
 		}
 
+		const originalDisabled = button.disabled;
+		const originalColor = button.style.color;
+		const originalBackgroundColor = button.style.backgroundColor;
+
 		if ( ! buttonReady ) {
-			button.style.color = 'black';
-			button.style.backgroundColor = '#ccc';
-			button.disabled = true;
+			button.classList.add( 'monei-disabled' );
 		}
 
 		return () => {
-			button.style.color = '';
-			button.style.backgroundColor = '';
-			button.disabled = false;
+			button.classList.remove( 'monei-disabled' );
+			button.disabled = originalDisabled;
+			button.style.color = originalColor;
+			button.style.backgroundColor = originalBackgroundColor;
 		};
 	}, [ props.isActive, buttonReady ] );
 
@@ -50,9 +53,7 @@ export const useButtonStateManager = ( props ) => {
 
 		const button = getPlaceOrderButton();
 		if ( button ) {
-			button.style.color = '';
-			button.style.backgroundColor = '';
-			button.disabled = false;
+			button.classList.remove( 'monei-disabled' );
 			button.click();
 		}
 	}, [] );
