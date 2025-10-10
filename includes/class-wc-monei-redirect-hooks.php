@@ -258,8 +258,7 @@ class WC_Monei_Redirect_Hooks {
 				$order->add_order_note( $order_note );
 				$order->payment_complete();
 
-				$payment_method_woo_id = $order->get_payment_method();
-				if ( 'completed' === monei_get_settings( 'orderdo', $payment_method_woo_id ) ) {
+				if ( 'completed' === monei_get_settings( 'orderdo', monei_get_option_key_from_order( $order ) ) ) {
 					$order->update_status( 'completed', __( 'Order Completed by MONEI', 'monei' ) );
 				}
 			}
