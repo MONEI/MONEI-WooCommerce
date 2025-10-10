@@ -85,21 +85,6 @@ class WC_Monei_IPN {
 			exit;
 		}
 
-		// Acquire lock to prevent concurrent processing of the same payment.
-		// IMPORTANT: Must use same lock key pattern as redirect verification to prevent race conditions.
-		$payment_id = $payload['id'] ?? '';
-		$lock_key   = WC_Monei_Lock_Helper::get_payment_lock_key( $payment_id );
-		$lock_value = wp_rand();
-
-		if ( ! WC_Monei_Lock_Helper::acquire_lock( $lock_key, $lock_value ) ) {
-			// Another process is handling this payment.
-			$this->logging && WC_Monei_Logger::log( '[MONEI] Webhook already being processed [payment_id=' . $payment_id . ']', 'debug' );
-			http_response_code( 200 );
-			header( 'Content-Type: text/plain; charset=utf-8' );
-			echo 'OK';
-			exit;
-		}
-
 		try {
 			$this->handle_valid_ipn( $payload );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
@@ -113,9 +98,6 @@ class WC_Monei_IPN {
 			http_response_code( 400 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
 			echo 'Bad Request';
-		} finally {
-			// Always release the lock.
-			WC_Monei_Lock_Helper::release_lock( $lock_key, $lock_value );
 		}
 
 		exit;
@@ -144,14 +126,6 @@ class WC_Monei_IPN {
 			return;
 		}
 
-		// Check if this payment was already processed (idempotency check).
-		$processed_payment_id = $order->get_meta( '_monei_payment_id_processed', true );
-		if ( $processed_payment_id === $monei_id ) {
-			// Payment already processed, skip to prevent duplicate processing.
-			$this->logging && WC_Monei_Logger::log( '[MONEI] Payment already processed [payment_id=' . $monei_id . ', order_id=' . $order_id . ']', 'debug' );
-			return;
-		}
-
 		/**
 		 * Saving related information into order meta.
 		 */
@@ -159,7 +133,6 @@ class WC_Monei_IPN {
 		$order->update_meta_data( '_payment_order_status_monei', $status );
 		$order->update_meta_data( '_payment_order_status_code_monei', $status_code );
 		$order->update_meta_data( '_payment_order_status_message_monei', $status_message );
-		$order->update_meta_data( '_monei_payment_id_processed', $monei_id );
 
 		// Fetch payment from API to get payment method information
 		try {
