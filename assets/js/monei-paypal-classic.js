@@ -227,9 +227,20 @@
 			hiddenInput.setAttribute( 'name', id );
 			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
+
+			// Try primary form ID first, then fall back to order-pay form ID
 			wc_paypal_form.$paymentForm =
-				document.getElementById( 'monei-paypal-form' );
-			wc_paypal_form.$paymentForm.appendChild( hiddenInput );
+				document.getElementById( 'monei-paypal-form' ) ||
+				document.getElementById( 'wc-monei_paypal-form' );
+
+			// Only append if we found a target element
+			if ( wc_paypal_form.$paymentForm ) {
+				wc_paypal_form.$paymentForm.appendChild( hiddenInput );
+			} else {
+				console.error(
+					'PayPal form container not found. Cannot append payment token.'
+				);
+			}
 		},
 	};
 

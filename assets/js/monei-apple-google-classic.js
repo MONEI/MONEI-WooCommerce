@@ -244,7 +244,15 @@
 			hiddenInput.setAttribute( 'id', id );
 			hiddenInput.setAttribute( 'value', token );
 			wc_monei_form.$paymentForm = document.getElementById( form );
-			wc_monei_form.$paymentForm.appendChild( hiddenInput );
+
+			// Only append if we found a target element
+			if ( wc_monei_form.$paymentForm ) {
+				wc_monei_form.$paymentForm.appendChild( hiddenInput );
+			} else {
+				console.error(
+					`Apple/Google Pay form container "${ form }" not found. Cannot append payment token.`
+				);
+			}
 		},
 		/**
 		 * If Apple can make payments then we need to show the apple logo and title instead of Google
