@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 6.4.0
+Stable tag: 7.0.0
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,14 +103,14 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v6.4.0 - 2025-10-01 =
+= v7.0.0 - 2025-10-01 =
 * fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
 * fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
 * fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
 * fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
 * chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
 * chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
-* chore: release v6.4.0 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
+* chore: release v7.0.0 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
 * chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 
 = v6.3.9 - 2025-10-01 =
@@ -276,7 +276,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 * Use correct locator for place order button ([abb570d](https://github.com/MONEI/MONEI-WooCommerce/commit/abb570d))
 
 = v6.1.2 - 2024-12-26 =
-* Add assets to distignore ([02644f0](https://github.com/MONEI/MONEI-WooCommerce/commit/02644f0))
+* Add assets to distignore ([027.0.0](https://github.com/MONEI/MONEI-WooCommerce/commit/027.0.0))
 * Add changelog ([50ce762](https://github.com/MONEI/MONEI-WooCommerce/commit/50ce762))
 * Add translated strings in moneiData ([799179a](https://github.com/MONEI/MONEI-WooCommerce/commit/799179a))
 * Fix errors ([cdd5602](https://github.com/MONEI/MONEI-WooCommerce/commit/cdd5602))
