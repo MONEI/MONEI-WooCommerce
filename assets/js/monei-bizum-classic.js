@@ -173,6 +173,8 @@
 
 				container = document.createElement( 'div' );
 				container.id = 'bizum-container';
+				container.className =
+					'monei-payment-request-container wc-block-components-skeleton__element';
 
 				fieldset.appendChild( container );
 				paymentMethodLi.appendChild( fieldset );

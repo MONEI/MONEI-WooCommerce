@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef, useCallback } = wp.element;
+const { useState, useEffect, useRef, useCallback, useMemo } = wp.element;
 
 /**
  * Hook for managing cardholder name validation
@@ -8,7 +8,10 @@ const { useState, useEffect, useRef, useCallback } = wp.element;
  * @return {Object}
  */
 export const useCardholderName = ( config = {} ) => {
-	const pattern = config.pattern || /^[A-Za-zÀ-ú\s-]{5,50}$/;
+	const pattern = useMemo(
+		() => config.pattern || /^[A-Za-zÀ-ú\s-]{5,50}$/,
+		[ config.pattern ]
+	);
 	const [ value, setValue ] = useState( '' );
 	const [ error, setError ] = useState( '' );
 	const [ touched, setTouched ] = useState( false );
@@ -73,6 +76,41 @@ export const useMoneiCardInput = ( config ) => {
 	const cardInputRef = useRef( null );
 	const containerRef = useRef( null );
 	const hasInitialized = useRef( false );
+
+	/**
+	 * Create payment token
+	 */
+	const createToken = useCallback( async () => {
+		if ( ! cardInputRef.current || ! monei?.createToken ) {
+			setError( 'Card input not initialized' );
+			return null;
+		}
+
+		setIsCreatingToken( true );
+		setError( '' );
+
+		try {
+			const result = await monei.createToken( cardInputRef.current );
+
+			if ( result.error ) {
+				const errorMessage =
+					result.error.message ||
+					( typeof result.error === 'string'
+						? result.error
+						: 'Token creation failed' );
+				setError( errorMessage );
+				return null;
+			}
+
+			setToken( result.token );
+			return result.token;
+		} catch ( err ) {
+			setError( err.message || 'Token creation failed' );
+			return null;
+		} finally {
+			setIsCreatingToken( false );
+		}
+	}, [] );
 
 	/**
 	 * Initialize MONEI Card Input
@@ -149,42 +187,7 @@ export const useMoneiCardInput = ( config ) => {
 			setError( err.message || 'Failed to initialize card input' );
 			setIsReady( false );
 		}
-	}, [ config ] );
-
-	/**
-	 * Create payment token
-	 */
-	const createToken = useCallback( async () => {
-		if ( ! cardInputRef.current || ! monei?.createToken ) {
-			setError( 'Card input not initialized' );
-			return null;
-		}
-
-		setIsCreatingToken( true );
-		setError( '' );
-
-		try {
-			const result = await monei.createToken( cardInputRef.current );
-
-			if ( result.error ) {
-				const errorMessage =
-					result.error.message ||
-					( typeof result.error === 'string'
-						? result.error
-						: 'Token creation failed' );
-				setError( errorMessage );
-				return null;
-			}
-
-			setToken( result.token );
-			return result.token;
-		} catch ( err ) {
-			setError( err.message || 'Token creation failed' );
-			return null;
-		} finally {
-			setIsCreatingToken( false );
-		}
-	}, [] );
+	}, [ config, createToken ] );
 
 	/**
 	 * Reset card input
@@ -207,7 +210,7 @@ export const useMoneiCardInput = ( config ) => {
 			}, 500 );
 			return () => clearTimeout( timer );
 		}
-	}, [] );
+	}, [ initializeCardInput ] );
 
 	// Cleanup on unmount
 	useEffect( () => {

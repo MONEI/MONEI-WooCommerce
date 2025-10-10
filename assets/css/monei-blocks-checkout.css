@@ -58,10 +58,10 @@
 
 /* Payment Request Container */
 .monei-payment-request-container {
-	min-height: 3.125em;
+	height: 3.125em;
 	justify-content: center;
-	background: #fff;
 	width: 100%;
+	border-radius: 0.25em;
 	margin: 0.5em 0 0;
 }
 
@@ -150,7 +150,6 @@
 	margin: 0 0 1em 0 !important;
 }
 
-
 /* Place Order Button States */
 .wc-block-components-checkout-place-order-button:disabled {
 	cursor: not-allowed;
@@ -168,5 +167,4 @@
 	.monei-payment-request-container {
 		min-height: 3.75em;
 	}
-
 }

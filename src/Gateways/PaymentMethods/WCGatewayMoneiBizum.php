@@ -192,12 +192,12 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		// Only render Bizum button if not using redirect flow
 		if ( ! $this->redirect_flow ) {
 			echo "<fieldset id=\"monei-bizum-form\" class=\"monei-fieldset monei-payment-request-fieldset\">
-					<div
-						id=\"bizum-container\"
-						class=\"monei-payment-request-container\"
+				<div
+					id=\"bizum-container\"
+					class=\"monei-payment-request-container wc-block-components-skeleton__element\"
 \t                        >
-					</div>
-				</fieldset>";
+				</div>
+			</fieldset>";
 		}
 	}
 

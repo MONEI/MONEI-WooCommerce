@@ -308,10 +308,9 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	 */
 	protected function render_google_pay_form() {
 		?>
-		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-payment-request-form" class="wc-payment-request-form"
-					style="background:transparent; border:none;">
+		<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-payment-request-form" class="monei-fieldset monei-payment-request-fieldset">
 			<div id="payment-request-form">
-				<div id="payment-request-container">
+				<div id="payment-request-container" class="monei-payment-request-container wc-block-components-skeleton__element">
 				</div>
 			</div>
 		</fieldset>

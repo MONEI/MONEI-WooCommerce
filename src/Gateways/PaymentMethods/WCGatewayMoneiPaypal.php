@@ -196,12 +196,12 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 		// Only render PayPal button if not using redirect flow
 		if ( ! $this->redirect_flow ) {
 			echo '<fieldset id="monei-paypal-form" class="monei-fieldset monei-payment-request-fieldset">
-					<div
-						id="paypal-container"
-						class="monei-payment-request-container"
+				<div
+					id="paypal-container"
+					class="monei-payment-request-container wc-block-components-skeleton__element"
                         >
-					</div>
-				</fieldset>';
+				</div>
+			</fieldset>';
 		}
 	}
 

@@ -15,12 +15,14 @@
 		}
 
 		if ( wc_monei_form.is_apple_selected() ) {
+			wc_monei_form.init_checkout_apple_google();
 			wc_monei_form.init_apple_google_pay();
 		}
 	} );
 	// On Pay for order form.
 	$( 'form#order_review' ).on( 'click', function () {
 		if ( wc_monei_form.is_apple_selected() ) {
+			wc_monei_form.init_checkout_apple_google();
 			wc_monei_form.init_apple_google_pay();
 		}
 	} );
@@ -81,12 +83,14 @@
 				this.form = this.$order_pay_form;
 
 				if ( wc_monei_form.is_apple_selected() ) {
+					wc_monei_form.init_checkout_apple_google();
 					wc_monei_form.init_apple_google_pay();
 				}
 
 				$( 'input[name="payment_method"]' ).on( 'change', function () {
 					// Check if the apple google pay method is selected
 					if ( wc_monei_form.is_apple_selected() ) {
+						wc_monei_form.init_checkout_apple_google();
 						wc_monei_form.init_apple_google_pay();
 					}
 				} );
@@ -108,6 +112,7 @@
 		},
 		on_payment_selected() {
 			if ( wc_monei_form.is_apple_selected() ) {
+				wc_monei_form.init_checkout_apple_google();
 				wc_monei_form.init_apple_google_pay();
 				// Apple/Google Pay initialized
 				if ( wc_monei_form.is_checkout ) {
@@ -130,40 +135,12 @@
 			return $( '#payment_method_monei_apple_google' ).is( ':checked' );
 		},
 		init_apple_google_pay() {
-			// Check if container exists, create if needed (for order-pay page)
-			let container = document.getElementById(
-				'payment-request-container'
-			);
-			if ( ! container ) {
-				// Create container structure if it doesn't exist
-				const paymentMethodLi = document
-					.querySelector( '#payment_method_monei_apple_google' )
-					?.closest( 'li' );
-				if ( ! paymentMethodLi ) {
-					return;
-				}
-
-				// Create the container structure
-				const fieldset = document.createElement( 'fieldset' );
-				fieldset.id = 'wc-monei_apple_google-payment-request-form';
-				fieldset.className = 'wc-payment-request-form';
-				fieldset.style.background = 'transparent';
-				fieldset.style.border = 'none';
-
-				const formDiv = document.createElement( 'div' );
-				formDiv.id = 'payment-request-form';
-
-				container = document.createElement( 'div' );
-				container.id = 'payment-request-container';
-
-				formDiv.appendChild( container );
-				fieldset.appendChild( formDiv );
-				paymentMethodLi.appendChild( fieldset );
-			}
-
 			// If checkout is updated (and monei was initiated already), ex, selecting new shipping methods, checkout is re-render by the ajax call.
 			// and we need to reset the counter in order to initiate again the monei component.
 			if ( wc_monei_form.$payment_request_container ) {
+				const container = document.getElementById(
+					'payment-request-container'
+				);
 				// Reset if stored container differs from current (recreated) OR current is empty
 				if (
 					wc_monei_form.$payment_request_container !== container ||
@@ -193,6 +170,39 @@
 			// We already init the button.
 			this.init_apple_counter++;
 		},
+		init_checkout_apple_google() {
+			// Check if container exists, create if needed (for order-pay page)
+			let container = document.getElementById(
+				'payment-request-container'
+			);
+			if ( ! container ) {
+				// Create container structure if it doesn't exist
+				const paymentMethodLi = document
+					.querySelector( '#payment_method_monei_apple_google' )
+					?.closest( 'li' );
+				if ( ! paymentMethodLi ) {
+					return;
+				}
+
+				// Create the container structure
+				const fieldset = document.createElement( 'fieldset' );
+				fieldset.id = 'wc-monei_apple_google-payment-request-form';
+				fieldset.className =
+					'monei-fieldset monei-payment-request-fieldset';
+
+				container = document.createElement( 'div' );
+				container.id = 'payment-request-container';
+				container.className =
+					'monei-payment-request-container wc-block-components-skeleton__element';
+
+				fieldset.appendChild( container );
+				paymentMethodLi.appendChild( fieldset );
+			} else {
+				// Ensure existing container has the correct class
+				container.className =
+					'monei-payment-request-container wc-block-components-skeleton__element';
+			}
+		},
 		init_apple_google_component() {
 			if ( window.paymentRequest ) {
 				window.paymentRequest.close();
@@ -221,7 +231,7 @@
 			$( '#place_order' ).prop( 'disabled', false );
 			wc_monei_form.create_hidden_input(
 				'monei_payment_request_token',
-				'payment-request-form',
+				'wc-monei_apple_google-payment-request-form',
 				token
 			);
 			// Once Token is created, submit form.

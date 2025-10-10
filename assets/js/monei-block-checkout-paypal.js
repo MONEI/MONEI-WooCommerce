@@ -22,6 +22,7 @@
 		// State for confirmation overlay and error handling
 		const [ isConfirming, setIsConfirming ] = useState( false );
 		const [ error, setError ] = useState( '' );
+		const [ isLoading, setIsLoading ] = useState( false );
 
 		// Subscribe to cart totals
 		const cartTotals = useSelect( ( select ) => {
@@ -90,6 +91,9 @@
 				return;
 			}
 
+			// Show skeleton loading state
+			setIsLoading( true );
+
 			// Clear container
 			paypalContainer.innerHTML = '';
 
@@ -131,6 +135,11 @@
 
 			paypalInstance.render( paypalContainer );
 			paypalInstanceRef.current = paypalInstance;
+
+			// Remove skeleton loading state after rendering
+			setTimeout( () => {
+				setIsLoading( false );
+			}, 1000 );
 		};
 
 		/**
@@ -163,6 +172,9 @@
 				if ( ! paypalContainer ) {
 					return;
 				}
+
+				// Show skeleton loading state
+				setIsLoading( true );
 
 				// Clear container
 				paypalContainer.innerHTML = '';
@@ -207,6 +219,11 @@
 
 				paypalInstance.render( paypalContainer );
 				paypalInstanceRef.current = paypalInstance;
+
+				// Remove skeleton loading state after rendering
+				setTimeout( () => {
+					setIsLoading( false );
+				}, 1000 );
 			}
 		};
 
@@ -389,7 +406,11 @@
 					) }
 				<div
 					id="paypal-container"
-					className="monei-payment-request-container"
+					className={ `monei-payment-request-container${
+						isLoading
+							? ' wc-block-components-skeleton__element'
+							: ''
+					}` }
 				>
 					{ /* PayPal button will be inserted here */ }
 				</div>

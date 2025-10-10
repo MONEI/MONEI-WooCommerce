@@ -174,6 +174,8 @@
 
 				container = document.createElement( 'div' );
 				container.id = 'paypal-container';
+				container.className =
+					'monei-payment-request-container wc-block-components-skeleton__element';
 
 				fieldset.appendChild( container );
 				paymentMethodLi.appendChild( fieldset );

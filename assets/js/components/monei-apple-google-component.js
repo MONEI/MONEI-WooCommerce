@@ -56,6 +56,7 @@ export const MoneiAppleGoogleContent = ( props ) => {
 	const isInitializedRef = useRef( false );
 	const [ isConfirming, setIsConfirming ] = useState( false );
 	const [ error, setError ] = useState( '' );
+	const [ isLoading, setIsLoading ] = useState( false );
 
 	// Subscribe to cart totals
 	const cartTotals = useSelect( ( select ) => {
@@ -101,6 +102,9 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				return;
 			}
 
+			// Show skeleton loading state
+			setIsLoading( true );
+
 			// Clear container
 			container.innerHTML = '';
 
@@ -131,6 +135,11 @@ export const MoneiAppleGoogleContent = ( props ) => {
 
 			paymentRequest.render( container );
 			paymentRequestRef.current = paymentRequest;
+
+			// Remove skeleton loading state after rendering
+			setTimeout( () => {
+				setIsLoading( false );
+			}, 1000 );
 		},
 		[ moneiData, setError, buttonManager ]
 	);
@@ -298,7 +307,9 @@ export const MoneiAppleGoogleContent = ( props ) => {
 				) }
 			<div
 				id="payment-request-container"
-				className="monei-payment-request-container"
+				className={ `monei-payment-request-container${
+					isLoading ? ' wc-block-components-skeleton__element' : ''
+				}` }
 			>
 				{ /* Payment button will be rendered here */ }
 			</div>

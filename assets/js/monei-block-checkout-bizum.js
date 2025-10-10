@@ -16,6 +16,7 @@
 		// State for confirmation overlay
 		const [ isConfirming, setIsConfirming ] = useState( false );
 		const [ error, setError ] = useState( '' );
+		const [ isLoading, setIsLoading ] = useState( false );
 
 		// Use useRef to persist values across re-renders
 		const requestTokenRef = useRef( null );
@@ -105,6 +106,9 @@
 				return;
 			}
 
+			// Show skeleton loading state
+			setIsLoading( true );
+
 			// Clear container
 			container.innerHTML = '';
 
@@ -144,6 +148,11 @@
 			} );
 
 			currentBizumInstanceRef.current.render( container );
+
+			// Remove skeleton loading state after rendering
+			setTimeout( () => {
+				setIsLoading( false );
+			}, 1000 );
 		};
 
 		/**
@@ -174,6 +183,8 @@
 				// Clear container
 				const container = document.getElementById( 'bizum-container' );
 				if ( container ) {
+					// Show skeleton loading state
+					setIsLoading( true );
 					container.innerHTML = '';
 				}
 
@@ -217,6 +228,11 @@
 				} );
 
 				currentBizumInstanceRef.current.render( container );
+
+				// Remove skeleton loading state after rendering
+				setTimeout( () => {
+					setIsLoading( false );
+				}, 100 );
 			}
 		};
 
@@ -370,7 +386,11 @@
 					) }
 				<div
 					id="bizum-container"
-					className="monei-payment-request-container"
+					className={ `monei-payment-request-container${
+						isLoading
+							? ' wc-block-components-skeleton__element'
+							: ''
+					}` }
 				>
 					{ /* Bizum button will be inserted here */ }
 				</div>
