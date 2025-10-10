@@ -200,10 +200,13 @@ class WC_Monei_IPN {
 			$order_total = $order->get_total();
 
 			/**
-			 * If amounts don't match, we mark the order on-hold for manual validation.
-			 * 1 cent exception, for subscriptions when 0 sign ups are done.
+			 * If amounts don't match (within 1 cent tolerance), mark order on-hold for manual validation.
+			 * Absolute difference check allows subscription validation (0 EUR + 1 cent) while preventing
+			 * replay attacks with mismatched amounts.
 			 */
-			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
+			$expected_amount = monei_price_format( $order_total );
+			$amount_diff     = abs( (int) $amount - $expected_amount );
+			if ( $amount_diff > 1 ) {
 				$order->update_status(
 					'on-hold',
 					sprintf(

@@ -217,8 +217,10 @@ class WC_Monei_Redirect_Hooks {
 			$amount      = $payment->getAmount();
 			$order_total = $order->get_total();
 
-			// Verify amounts match (with 1 cent exception for subscriptions)
-			if ( ( (int) $amount !== monei_price_format( $order_total ) ) && ( 1 !== $amount ) ) {
+			// Verify amounts match (within 1 cent tolerance for subscriptions)
+			$expected_amount = monei_price_format( $order_total );
+			$amount_diff     = abs( (int) $amount - $expected_amount );
+			if ( $amount_diff > 1 ) {
 				$order->update_status(
 					'on-hold',
 					sprintf(
