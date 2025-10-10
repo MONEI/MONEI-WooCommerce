@@ -37,6 +37,11 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 			return false;
 		}
 
+		// Hide when neither Apple nor Google is available
+		if ( ! $this->gateway->isAppleAvailable() && ! $this->gateway->isGoogleAvailable() ) {
+			return false;
+		}
+
 		return 'yes' === ( $this->get_setting( 'enabled' ) ?? 'no' );
 	}
 

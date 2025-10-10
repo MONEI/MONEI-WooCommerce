@@ -106,7 +106,12 @@ export const useMoneiCardInput = ( config ) => {
 				},
 				onChange( event ) {
 					if ( event.isTouched && event.error ) {
-						setError( event.error );
+						const errorMessage =
+							event.error.message ||
+							( typeof event.error === 'string'
+								? event.error
+								: 'Validation error' );
+						setError( errorMessage );
 						setIsValid( false );
 						if ( containerRef.current ) {
 							containerRef.current.classList.add( 'is-invalid' );
@@ -162,7 +167,12 @@ export const useMoneiCardInput = ( config ) => {
 			const result = await monei.createToken( cardInputRef.current );
 
 			if ( result.error ) {
-				setError( result.error );
+				const errorMessage =
+					result.error.message ||
+					( typeof result.error === 'string'
+						? result.error
+						: 'Token creation failed' );
+				setError( errorMessage );
 				return null;
 			}
 

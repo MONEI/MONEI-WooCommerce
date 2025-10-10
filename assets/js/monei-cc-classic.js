@@ -193,7 +193,12 @@
 				onChange( event ) {
 					// Handle real-time validation errors.
 					if ( event.isTouched && event.error ) {
-						wc_monei_form.print_errors( event.error );
+						const errorMessage =
+							event.error.message ||
+							( typeof event.error === 'string'
+								? event.error
+								: 'Validation error' );
+						wc_monei_form.print_errors( errorMessage );
 					} else {
 						wc_monei_form.clear_errors();
 					}
@@ -233,7 +238,12 @@
 						if ( result.error ) {
 							// Error displayed via print_errors
 							// Inform the user if there was an error.
-							wc_monei_form.print_errors( result.error );
+							const errorMessage =
+								result.error.message ||
+								( typeof result.error === 'string'
+									? result.error
+									: 'Payment error' );
+							wc_monei_form.print_errors( errorMessage );
 						} else {
 							// Token created successfully
 							// Create monei token and append it to DOM
@@ -267,7 +277,12 @@
 						if ( result.error ) {
 							// Error displayed via print_errors
 							// Inform the user if there was an error.
-							wc_monei_form.print_errors( result.error );
+							const errorMessage =
+								result.error.message ||
+								( typeof result.error === 'string'
+									? result.error
+									: 'Payment error' );
+							wc_monei_form.print_errors( errorMessage );
 						} else {
 							// Token created successfully
 							// Create monei token and append it to DOM
