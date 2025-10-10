@@ -318,34 +318,6 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	}
 
 	/**
-	 * Check if the checkout page is using WooCommerce Blocks.
-	 * Used for script enqueuing to differentiate between classic and blocks checkout.
-	 *
-	 * @return bool
-	 */
-	public function is_block_checkout_page() {
-		// Order-pay and add payment method pages are always classic
-		if ( is_checkout_pay_page() || is_add_payment_method_page() ) {
-			return false;
-		}
-		if ( ! is_checkout() ) {
-			return false;
-		}
-		if ( ! class_exists( 'WC_Blocks_Utils' ) ) {
-			return false;
-		}
-		// Check if the checkout block is present
-		$has_block = WC_Blocks_Utils::has_block_in_page( wc_get_page_id( 'checkout' ), 'woocommerce/checkout' );
-
-		// Additional check: see if the traditional checkout shortcode is present
-		$checkout_page = get_post( wc_get_page_id( 'checkout' ) );
-		$has_shortcode = $checkout_page ? has_shortcode( $checkout_page->post_content, 'woocommerce_checkout' ) : false;
-
-		// If the block is present and the shortcode is not, we can be more confident it's a block checkout
-		return $has_block && ! $has_shortcode;
-	}
-
-	/**
 	 * Frontend MONEI cardholderName.
 	 *
 	 * @return false|string

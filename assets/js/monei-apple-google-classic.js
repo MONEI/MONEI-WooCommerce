@@ -19,13 +19,6 @@
 			wc_monei_form.init_apple_google_pay();
 		}
 	} );
-	// On Pay for order form.
-	$( 'form#order_review' ).on( 'click', function () {
-		if ( wc_monei_form.is_apple_selected() ) {
-			wc_monei_form.init_checkout_apple_google();
-			wc_monei_form.init_apple_google_pay();
-		}
-	} );
 
 	const targetNode = document.getElementById( 'order_review' );
 
@@ -211,6 +204,17 @@
 			wc_monei_form.instantiate_payment_request();
 		},
 		instantiate_payment_request() {
+			// Check if MONEI SDK is loaded
+			if (
+				typeof window.monei === 'undefined' ||
+				typeof monei === 'undefined'
+			) {
+				console.error(
+					'MONEI SDK is not loaded. Cannot initialize Apple/Google Pay.'
+				);
+				return;
+			}
+
 			const paymentRequest = monei.PaymentRequest( {
 				accountId: wc_monei_apple_google_params.accountId,
 				sessionId: wc_monei_apple_google_params.sessionId,
