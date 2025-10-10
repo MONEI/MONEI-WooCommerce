@@ -46,7 +46,7 @@ class MoneiSettings extends WC_Settings_Page {
 				'desc'        => __( 'Your MONEI Test Account ID. Available at your MONEI dashboard.', 'monei' ),
 				'id'          => 'monei_test_accountid',
 				'default'     => '',
-				'class'       => 'monei-api-key-field monei-test-api-key-field',
+				'class'       => 'monei-account-id-field monei-test-account-id-field',
 				'placeholder' => '9b1deb4d-3b7d-4bad-9bdd-2b0c11b3dcb6d',
 			),
 			array(
@@ -55,7 +55,7 @@ class MoneiSettings extends WC_Settings_Page {
 				'desc'        => __( 'Your MONEI Account ID. Available at your MONEI dashboard.', 'monei' ),
 				'id'          => 'monei_live_accountid',
 				'default'     => '',
-				'class'       => 'monei-api-key-field monei-live-api-key-field',
+				'class'       => 'monei-account-id-field monei-live-account-id-field',
 				'placeholder' => 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
 			),
 			array(

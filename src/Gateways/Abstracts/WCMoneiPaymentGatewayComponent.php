@@ -298,16 +298,6 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	}
 
 	/**
-	 * Frontend MONEI generated token.
-	 *
-	 * @return false|string
-	 */
-	public function get_frontend_generated_monei_token() {
-		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return ( isset( $_POST['monei_payment_token'] ) ) ? wc_clean( wp_unslash( $_POST['monei_payment_token'] ) ) : false;  // WPCS: CSRF ok.
-	}
-
-	/**
 	 * Frontend MONEI generated flag for block checkout processing.
 	 *
 	 * @return boolean

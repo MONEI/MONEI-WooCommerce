@@ -1,13 +1,21 @@
 jQuery( document ).ready( function ( $ ) {
-	// Function to toggle API key fields
+	// Function to toggle API key and Account ID fields
 	function toggleApiKeyFields() {
 		const mode = $( '#monei_apikey_mode' ).val();
 		if ( mode === 'test' ) {
-			$( '.monei-test-api-key-field' ).closest( 'tr' ).show();
-			$( '.monei-live-api-key-field' ).closest( 'tr' ).hide();
+			$( '.monei-test-api-key-field, .monei-test-account-id-field' )
+				.closest( 'tr' )
+				.show();
+			$( '.monei-live-api-key-field, .monei-live-account-id-field' )
+				.closest( 'tr' )
+				.hide();
 		} else {
-			$( '.monei-test-api-key-field' ).closest( 'tr' ).hide();
-			$( '.monei-live-api-key-field' ).closest( 'tr' ).show();
+			$( '.monei-test-api-key-field, .monei-test-account-id-field' )
+				.closest( 'tr' )
+				.hide();
+			$( '.monei-live-api-key-field, .monei-live-account-id-field' )
+				.closest( 'tr' )
+				.show();
 		}
 	}
 
