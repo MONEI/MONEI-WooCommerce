@@ -36,7 +36,7 @@ return apply_filters(
 			'type'        => 'checkbox',
 			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
 			'default'     => 'no',
-			'description' => sprintf( __( 'If disabled the credit card input will be rendered directly on the checkout page.', 'monei' ) ),
+			'description' => __( 'If disabled the credit card input will be rendered directly on the checkout page. It is recommended to enable redirection in cases where card payments do not function correctly.', 'monei' ),
 		),
 		'title'            => array(
 			'title'       => __( 'Title', 'monei' ),
