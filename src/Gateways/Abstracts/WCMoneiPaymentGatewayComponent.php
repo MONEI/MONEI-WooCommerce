@@ -51,9 +51,23 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			$create_payment = $this->moneiPaymentServices->create_payment( $payload );
 			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
 
-			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
-			$this->log( $payload, 'debug' );
-			$this->log( $create_payment, 'debug' );
+			$this->log(
+				function () use ( $allowed_payment_method ) {
+					return 'WC_Monei_API::create_payment ' . $allowed_payment_method; },
+				'debug'
+			);
+			$this->log(
+				function () use ( $payload ) {
+					return $payload;
+				},
+				'debug'
+			);
+			$this->log(
+				function () use ( $create_payment ) {
+					return $create_payment;
+				},
+				'debug'
+			);
 
 			$confirm_payment = false;
 			// We need to return the payment ID to the frontend and confirm payment there if we arrive from block checkout
@@ -85,10 +99,30 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 				$confirm_payment = $this->moneiPaymentServices->confirm_payment( $create_payment->getId(), $confirm_payload );
 				do_action( 'wc_gateway_monei_confirm_payment_success', $confirm_payload, $confirm_payment, $order );
 
-				$this->log( 'WC_Monei_API::confirm_payment ' . $allowed_payment_method, 'debug' );
-				$this->log( $create_payment->getId(), 'debug' );
-				$this->log( $confirm_payload, 'debug' );
-				$this->log( $confirm_payment, 'debug' );
+				$this->log(
+					function () use ( $allowed_payment_method ) {
+						return 'WC_Monei_API::confirm_payment ' . $allowed_payment_method;
+					},
+					'debug'
+				);
+				$this->log(
+					function () use ( $create_payment ) {
+						return $create_payment->getId();
+					},
+					'debug'
+				);
+				$this->log(
+					function () use ( $confirm_payload ) {
+						return $confirm_payload;
+					},
+					'debug'
+				);
+				$this->log(
+					function () use ( $confirm_payment ) {
+						return $confirm_payment;
+					},
+					'debug'
+				);
 			}
 
 			/** Depends if we came in 1 step or 2. */
@@ -128,11 +162,11 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			// Parse API exception and get user-friendly error message
 			$error_info = $this->statusCodeHandler->parse_api_exception( $e );
 
-			// Log the technical details
+				// Log the technical details
 			if ( $error_info['statusCode'] ) {
-				WC_Monei_Logger::log( sprintf( 'Payment error - Status Code: %s, Raw Message: %s', $error_info['statusCode'], $error_info['rawMessage'] ), 'error' );
+				WC_Monei_Logger::logError( sprintf( 'Payment error - Status Code: %s, Raw Message: %s', $error_info['statusCode'], $error_info['rawMessage'] ) );
 			} else {
-				WC_Monei_Logger::log( sprintf( 'Payment error - Raw Message: %s', $error_info['rawMessage'] ?? $e->getMessage() ), 'error' );
+				WC_Monei_Logger::logError( sprintf( 'Payment error - Raw Message: %s', $error_info['rawMessage'] ?? $e->getMessage() ) );
 			}
 
 			// Show user-friendly error message to customer
@@ -143,7 +177,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			);
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_process_payment_error', $e, $order );
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( $e->getMessage() );
 			wc_add_notice( $e->getMessage(), 'error' );
 			return array(
 				'result' => 'failure',

@@ -305,10 +305,23 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 		return $fragments;
 	}
 
+	/**
+	 * Log a message using the appropriate log level
+	 *
+	 * @param string|array|callable $message Message to log, or callable for lazy evaluation.
+	 * @param string                $level Legacy level parameter ('debug'|'warning'|'error') - mapped to new severity levels.
+	 */
 	protected function log( $message, $level = 'debug' ) {
-		if ( 'yes' === get_option( 'monei_debug' ) || 'error' === $level ) {
-			WC_Monei_Logger::log( $message, $level );
-		}
+		// Map legacy string levels to new severity levels
+		$severity_map = array(
+			'debug'   => WC_Monei_Logger::LEVEL_INFO,
+			'info'    => WC_Monei_Logger::LEVEL_INFO,
+			'warning' => WC_Monei_Logger::LEVEL_WARNING,
+			'error'   => WC_Monei_Logger::LEVEL_ERROR,
+		);
+
+		$severity = isset( $severity_map[ $level ] ) ? $severity_map[ $level ] : WC_Monei_Logger::LEVEL_INFO;
+		WC_Monei_Logger::log( $message, $severity );
 	}
 
 	/**

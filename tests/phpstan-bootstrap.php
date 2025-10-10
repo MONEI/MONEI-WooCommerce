@@ -181,7 +181,15 @@ if ( ! class_exists( 'WC_Monei_Logger' ) ) {
 	 * Mock WC_Monei_Logger class for PHPStan
 	 */
 	class WC_Monei_Logger {
-		public static function log( $message, $level = 'info' ) {}
+		const LEVEL_INFO    = 1;
+		const LEVEL_WARNING = 2;
+		const LEVEL_ERROR   = 3;
+		const LEVEL_NONE    = 4;
+
+		public static function log( $message, $severity = 1 ) {}
+		public static function logDebug( $message ) {}
+		public static function logWarning( $message ) {}
+		public static function logError( $message ) {}
 	}
 }
 
