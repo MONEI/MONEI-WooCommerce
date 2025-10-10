@@ -46,20 +46,25 @@ export const useCardholderName = ( config = {} ) => {
 		validate();
 	}, [ validate ] );
 
-	return {
-		value,
-		error,
-		touched,
-		isValid: ! error && touched,
-		handleChange,
-		handleBlur,
-		validate,
-		reset: () => {
-			setValue( '' );
-			setError( '' );
-			setTouched( false );
-		},
-	};
+	const reset = useCallback( () => {
+		setValue( '' );
+		setError( '' );
+		setTouched( false );
+	}, [] );
+
+	return useMemo(
+		() => ( {
+			value,
+			error,
+			touched,
+			isValid: ! error && touched,
+			handleChange,
+			handleBlur,
+			validate,
+			reset,
+		} ),
+		[ value, error, touched, handleChange, handleBlur, validate, reset ]
+	);
 };
 
 /**
@@ -225,16 +230,28 @@ export const useMoneiCardInput = ( config ) => {
 		};
 	}, [] );
 
-	return {
-		isReady,
-		error,
-		isValid,
-		token,
-		isCreatingToken,
-		containerRef,
-		createToken,
-		reset,
-	};
+	return useMemo(
+		() => ( {
+			isReady,
+			error,
+			isValid,
+			token,
+			isCreatingToken,
+			containerRef,
+			createToken,
+			reset,
+		} ),
+		[
+			isReady,
+			error,
+			isValid,
+			token,
+			isCreatingToken,
+			containerRef,
+			createToken,
+			reset,
+		]
+	);
 };
 
 /**
@@ -274,12 +291,15 @@ export const useFormErrors = () => {
 		[ errors ]
 	);
 
-	return {
-		errors,
-		setError,
-		clearError,
-		clearAllErrors,
-		hasErrors,
-		getError,
-	};
+	return useMemo(
+		() => ( {
+			errors,
+			setError,
+			clearError,
+			clearAllErrors,
+			hasErrors,
+			getError,
+		} ),
+		[ errors, setError, clearError, clearAllErrors, hasErrors, getError ]
+	);
 };

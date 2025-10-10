@@ -17,7 +17,7 @@ export const getPlaceOrderButton = () => {
  * @return {Object}
  */
 export const useButtonStateManager = ( props ) => {
-	const { useEffect, useState, useRef } = wp.element;
+	const { useEffect, useState, useRef, useCallback, useMemo } = wp.element;
 	const [ buttonReady, setButtonReady ] = useState( false );
 	const tokenRef = useRef( null );
 
@@ -44,7 +44,7 @@ export const useButtonStateManager = ( props ) => {
 		};
 	}, [ props.isActive, buttonReady ] );
 
-	const enableCheckout = ( token ) => {
+	const enableCheckout = useCallback( ( token ) => {
 		tokenRef.current = token;
 		setButtonReady( true );
 
@@ -55,9 +55,9 @@ export const useButtonStateManager = ( props ) => {
 			button.disabled = false;
 			button.click();
 		}
-	};
+	}, [] );
 
-	const getPaymentData = () => {
+	const getPaymentData = useCallback( () => {
 		if ( ! tokenRef.current ) {
 			return {
 				type: props.emitResponse.responseTypes.ERROR,
@@ -73,11 +73,18 @@ export const useButtonStateManager = ( props ) => {
 				},
 			},
 		};
-	};
+	}, [
+		props.emitResponse.responseTypes,
+		props.errorMessage,
+		props.tokenFieldName,
+	] );
 
-	return {
-		enableCheckout,
-		getPaymentData,
-		tokenRef,
-	};
+	return useMemo(
+		() => ( {
+			enableCheckout,
+			getPaymentData,
+			tokenRef,
+		} ),
+		[ enableCheckout, getPaymentData ]
+	);
 };

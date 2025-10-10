@@ -1,7 +1,8 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect, useRef, useState, createPortal } = wp.element;
+	const { useEffect, useRef, useState, createPortal, useCallback } =
+		wp.element;
 	const { useSelect } = wp.data;
 	const bizumData = wc.wcSettings.getSetting( 'monei_bizum_data' );
 
@@ -53,7 +54,7 @@
 					placeOrderButton.disabled = false;
 				}
 			};
-		}, [ activePaymentMethod ] );
+		}, [ activePaymentMethod, isRedirectFlow ] );
 
 		useEffect( () => {
 			// Don't initialize Bizum component if using redirect flow
@@ -72,7 +73,7 @@
 			} else if ( ! monei || ! monei.Bizum ) {
 				console.error( 'MONEI SDK is not available' );
 			}
-		}, [] ); // Only initialize once on mount
+		}, [ initMoneiCard, isRedirectFlow ] );
 
 		useEffect( () => {
 			// Don't update amount if using redirect flow
@@ -88,12 +89,12 @@
 			) {
 				updateBizumAmount();
 			}
-		}, [ cartTotals ] ); // Update amount when cart totals change
+		}, [ cartTotals, updateBizumAmount, isRedirectFlow ] );
 
 		/**
 		 * Initialize MONEI Bizum instance once.
 		 */
-		const initMoneiCard = () => {
+		const initMoneiCard = useCallback( () => {
 			const currentTotal = cartTotals?.total_price
 				? parseInt( cartTotals.total_price )
 				: parseInt( bizumData.total * 100 );
@@ -153,12 +154,12 @@
 			setTimeout( () => {
 				setIsLoading( false );
 			}, 1000 );
-		};
+		}, [ cartTotals ] );
 
 		/**
 		 * Update the amount in the existing Bizum instance.
 		 */
-		const updateBizumAmount = () => {
+		const updateBizumAmount = useCallback( () => {
 			const currentTotal = cartTotals?.total_price
 				? parseInt( cartTotals.total_price )
 				: parseInt( bizumData.total * 100 );
@@ -234,7 +235,7 @@
 					setIsLoading( false );
 				}, 100 );
 			}
-		};
+		}, [ cartTotals ] );
 
 		// Hook into the payment setup
 		useEffect( () => {
@@ -276,7 +277,12 @@
 			return () => {
 				unsubscribePaymentSetup();
 			};
-		}, [ onPaymentSetup ] );
+		}, [
+			onPaymentSetup,
+			isRedirectFlow,
+			responseTypes.SUCCESS,
+			responseTypes.ERROR,
+		] );
 
 		useEffect( () => {
 			const unsubscribe = onCheckoutSuccess(
@@ -351,7 +357,11 @@
 			return () => {
 				unsubscribe();
 			};
-		}, [ onCheckoutSuccess ] );
+		}, [
+			onCheckoutSuccess,
+			responseTypes,
+			props.emitResponse.noticeContexts,
+		] );
 
 		// Cleanup on unmount
 		useEffect( () => {

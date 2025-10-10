@@ -1,7 +1,8 @@
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
-	const { useEffect, useState, createPortal, useRef } = wp.element;
+	const { useEffect, useState, createPortal, useRef, useCallback } =
+		wp.element;
 	const { useSelect } = wp.data;
 	const paypalData = wc.wcSettings.getSetting( 'monei_paypal_data' );
 
@@ -57,12 +58,12 @@
 					placeOrderButton.disabled = false;
 				}
 			};
-		}, [ activePaymentMethod ] );
+		}, [ activePaymentMethod, isRedirectFlow ] );
 
 		/**
 		 * Initialize MONEI PayPal component and handle token creation.
 		 */
-		const initMoneiPayPal = () => {
+		const initMoneiPayPal = useCallback( () => {
 			// eslint-disable-next-line no-undef
 			if ( typeof monei === 'undefined' || ! monei.PayPal ) {
 				console.error( 'MONEI SDK is not available' );
@@ -140,12 +141,12 @@
 			setTimeout( () => {
 				setIsLoading( false );
 			}, 1000 );
-		};
+		}, [ cartTotals ] );
 
 		/**
 		 * Update the amount in the existing PayPal instance
 		 */
-		const updatePaypalAmount = () => {
+		const updatePaypalAmount = useCallback( () => {
 			const currentTotal = cartTotals?.total_price
 				? parseInt( cartTotals.total_price )
 				: Math.round( paypalData.total * 100 );
@@ -225,7 +226,7 @@
 					setIsLoading( false );
 				}, 1000 );
 			}
-		};
+		}, [ cartTotals ] );
 
 		// Initialize on mount
 		useEffect( () => {
@@ -245,7 +246,7 @@
 			} else if ( ! monei || ! monei.PayPal ) {
 				console.error( 'MONEI SDK is not available' );
 			}
-		}, [] );
+		}, [ initMoneiPayPal, isRedirectFlow ] );
 
 		// Update amount when cart totals change
 		useEffect( () => {
@@ -256,7 +257,7 @@
 			) {
 				updatePaypalAmount();
 			}
-		}, [ cartTotals ] );
+		}, [ cartTotals, updatePaypalAmount ] );
 
 		// Cleanup on unmount
 		useEffect( () => {
@@ -311,7 +312,12 @@
 			return () => {
 				unsubscribePaymentSetup();
 			};
-		}, [ onPaymentSetup ] );
+		}, [
+			onPaymentSetup,
+			isRedirectFlow,
+			responseTypes.SUCCESS,
+			responseTypes.ERROR,
+		] );
 
 		useEffect( () => {
 			const unsubscribe = onCheckoutSuccess(
@@ -386,7 +392,12 @@
 			return () => {
 				unsubscribe();
 			};
-		}, [ onCheckoutSuccess ] );
+		}, [
+			onCheckoutSuccess,
+			props.emitResponse.noticeContexts.PAYMENTS,
+			responseTypes.SUCCESS,
+			responseTypes.ERROR,
+		] );
 
 		// In redirect mode, show description instead of PayPal button
 		if ( isRedirectFlow ) {
