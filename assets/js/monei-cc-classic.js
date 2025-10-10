@@ -367,19 +367,19 @@
 			}
 
 			let html = '<span class="monei-card-brands">';
-			const brands = Object.values( wc_monei_params.cardBrands );
+			const brandKeys = Object.keys( wc_monei_params.cardBrands ).filter(
+				( key ) => key !== 'default'
+			);
 
-			// Skip the 'default' brand
-			for ( let i = 0; i < brands.length; i++ ) {
-				if ( brands[ i ].title === 'Card' ) {
-					continue;
-				}
+			// Render each brand icon
+			for ( let i = 0; i < brandKeys.length; i++ ) {
+				const brand = wc_monei_params.cardBrands[ brandKeys[ i ] ];
 				html +=
 					'<img src="' +
-					brands[ i ].url +
+					brand.url +
 					'" ' +
 					'alt="' +
-					brands[ i ].title +
+					brand.title +
 					'" ' +
 					'class="card-brand-icon" />';
 			}
