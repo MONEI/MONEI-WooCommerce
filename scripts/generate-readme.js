@@ -80,9 +80,8 @@ function parseChangelog( changelogContent ) {
  * @param limit
  */
 function formatForReadme( versions, limit ) {
-	// CHANGELOG.md has oldest first, newest last - so reverse to get newest first
-	const reversed = [ ...versions ].reverse();
-	const limited = reversed.slice( 0, limit );
+	// CHANGELOG.md has newest first, oldest last - take first N versions
+	const limited = versions.slice( 0, limit );
 
 	const formatted = limited.map( ( version, index ) => {
 		const header = `= v${ version.version } - ${ version.date } =`;
