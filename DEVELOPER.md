@@ -5,36 +5,40 @@ Official WordPress plugin for accepting payments through MONEI's payment gateway
 ## Description
 
 MONEI is an e-commerce payment gateway for WooCommerce that enables merchants to accept:
-- Credit/Debit Cards (230+ currencies)
-- Apple Pay & Google Pay
-- Bizum (Spain)
-- PayPal
-- SEPA Direct Debit (EU)
-- Multibanco & MBWay (Portugal)
+
+-   Credit/Debit Cards (230+ currencies)
+-   Apple Pay & Google Pay
+-   Bizum (Spain)
+-   PayPal
+-   SEPA Direct Debit (EU)
+-   Multibanco & MBWay (Portugal)
 
 ## Development Setup
 
 ### Prerequisites
 
-- PHP 7.4 or higher
-- Node.js 18 or higher
-- Composer
-- Yarn 4 (managed via Corepack)
+-   PHP 8.0 or higher
+-   Node.js 18 or higher
+-   Composer
+-   Yarn 4 (managed via Corepack)
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone git@github.com:MONEI/MONEI-WooCommerce.git
 cd MONEI-WooCommerce
 ```
 
 2. Install PHP dependencies:
+
 ```bash
 composer install
 ```
 
 3. Install Node dependencies and build assets:
+
 ```bash
 yarn install
 yarn build
@@ -54,18 +58,20 @@ This project uses **conventional commits** to enable automated changelog generat
 ```
 
 **Types:**
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation changes
-- `style:` - Code style changes (formatting, etc.)
-- `refactor:` - Code refactoring
-- `perf:` - Performance improvements
-- `test:` - Adding or updating tests
-- `build:` - Build system changes
-- `ci:` - CI/CD changes
-- `chore:` - Other changes (dependencies, etc.)
+
+-   `feat:` - New feature
+-   `fix:` - Bug fix
+-   `docs:` - Documentation changes
+-   `style:` - Code style changes (formatting, etc.)
+-   `refactor:` - Code refactoring
+-   `perf:` - Performance improvements
+-   `test:` - Adding or updating tests
+-   `build:` - Build system changes
+-   `ci:` - CI/CD changes
+-   `chore:` - Other changes (dependencies, etc.)
 
 **Examples:**
+
 ```bash
 git commit -m "feat: add support for new payment method"
 git commit -m "fix: resolve checkout error on mobile devices"
@@ -89,6 +95,7 @@ yarn build
 ### Automated Release with Conventional Commits
 
 1. **Ensure all changes are committed** with proper conventional commit messages:
+
 ```bash
 git add .
 git commit -m "feat: add new payment gateway"
@@ -96,34 +103,38 @@ git push
 ```
 
 2. **Run the release command**:
+
 ```bash
 yarn release
 ```
 
 This will automatically:
-- ✅ Bump version in `package.json`, `readme.txt`, `.readme-template`, `woocommerce-gateway-monei.php`, and `class-woocommerce-gateway-monei.php`
-- ✅ Generate changelog from git conventional commits
-- ✅ Update `readme.txt` with new changelog entries above manual entries
-- ✅ Generate `CHANGELOG.md` with full git history
-- ✅ Create git tag (e.g., `6.3.9`)
-- ✅ Generate GitHub release notes
-- ✅ Push changes and tags to GitHub
+
+-   ✅ Bump version in `package.json`, `readme.txt`, `.readme-template`, `woocommerce-gateway-monei.php`, and `class-woocommerce-gateway-monei.php`
+-   ✅ Generate changelog from git conventional commits
+-   ✅ Update `readme.txt` with new changelog entries above manual entries
+-   ✅ Generate `CHANGELOG.md` with full git history
+-   ✅ Create git tag (e.g., `6.3.9`)
+-   ✅ Generate GitHub release notes
+-   ✅ Push changes and tags to GitHub
 
 **Changelog System:**
-- New releases with conventional commits → auto-generated entries at the top
-- Historical releases → manual entries preserved below
-- `.readme-template` contains `{{__PLUGIN_CHANGELOG__}}` placeholder
-- `generate-wp-readme` replaces placeholder with git commit history
-- Manual changelog entries remain intact below the auto-generated section
+
+-   New releases with conventional commits → auto-generated entries at the top
+-   Historical releases → manual entries preserved below
+-   `.readme-template` contains `{{__PLUGIN_CHANGELOG__}}` placeholder
+-   `generate-wp-readme` replaces placeholder with git commit history
+-   Manual changelog entries remain intact below the auto-generated section
 
 3. **CI/CD takes over**:
-   - GitHub Actions builds the plugin
-   - Deploys to WordPress.org
-   - Attaches plugin ZIP to GitHub release
+    - GitHub Actions builds the plugin
+    - Deploys to WordPress.org
+    - Attaches plugin ZIP to GitHub release
 
 ### Dry Run (Testing)
 
 Test the release process without making changes:
+
 ```bash
 yarn release --dry-run
 ```
@@ -131,6 +142,7 @@ yarn release --dry-run
 ### Manual Version Bump
 
 To specify a version manually:
+
 ```bash
 yarn release --increment patch   # 6.3.8 → 6.3.9
 yarn release --increment minor   # 6.3.8 → 6.4.0
@@ -164,25 +176,28 @@ yarn release 6.4.0              # Specific version
 
 The project uses automated linting and code quality tools to maintain consistent code style and catch bugs early:
 
-- **JavaScript/CSS**: ESLint + Stylelint (via `@wordpress/scripts`)
-- **PHP**: PHPCS (WordPress Coding Standards) + PHPStan (static analysis)
-- **Git Hooks**: Husky + lint-staged for automatic fixing
-- **Commit Messages**: Commitlint (conventional commits)
+-   **JavaScript/CSS**: ESLint + Stylelint (via `@wordpress/scripts`)
+-   **PHP**: PHPCS (WordPress Coding Standards) + PHPStan (static analysis)
+-   **Git Hooks**: Husky + lint-staged for automatic fixing
+-   **Commit Messages**: Commitlint (conventional commits)
 
 ### Git Hooks
 
 **Pre-commit Hook**:
-- Auto-fixes staged files with `lint-staged`
-- PHP: `phpcbf` (auto-fix code style) + `phpstan` (static analysis)
-- JavaScript: `eslint --fix`
-- CSS: `stylelint --fix`
-- **Prevents committing broken code** by running PHPStan
+
+-   Auto-fixes staged files with `lint-staged`
+-   PHP: `phpcbf` (auto-fix code style) + `phpstan` (static analysis)
+-   JavaScript: `eslint --fix`
+-   CSS: `stylelint --fix`
+-   **Prevents committing broken code** by running PHPStan
 
 **Commit-msg Hook**:
-- Validates commit message format (conventional commits)
+
+-   Validates commit message format (conventional commits)
 
 **Pre-push Hook**:
-- **Branch Protection**: Blocks direct pushes to `master`/`main` branches
+
+-   **Branch Protection**: Blocks direct pushes to `master`/`main` branches
 
 ### Linting Commands
 
@@ -213,13 +228,13 @@ yarn lint:php:phpstan # Check PHP static analysis only
 
 ### Configuration Files
 
-- `.lintstagedrc.json` - Auto-fix configuration for staged files
-- `.eslintrc.js` - JavaScript linting rules
-- `.eslintignore` - Exclude `public/` build outputs from JS linting
-- `.stylelintignore` - Exclude `public/` build outputs from CSS linting
-- `phpcs.xml` - PHP code style rules (WordPress standards)
-- `phpstan.neon` - PHP static analysis configuration (Level 4)
-- `commitlint.config.js` - Commit message validation rules
+-   `.lintstagedrc.json` - Auto-fix configuration for staged files
+-   `.eslintrc.js` - JavaScript linting rules
+-   `.eslintignore` - Exclude `public/` build outputs from JS linting
+-   `.stylelintignore` - Exclude `public/` build outputs from CSS linting
+-   `phpcs.xml` - PHP code style rules (WordPress standards)
+-   `phpstan.neon` - PHP static analysis configuration (Level 4)
+-   `commitlint.config.js` - Commit message validation rules
 
 ### PHPStan (Static Analysis)
 
@@ -234,14 +249,16 @@ yarn lint:php:phpstan
 ```
 
 **Common PHPStan errors:**
-- Missing type hints in docblocks
-- Calling undefined methods
-- Type mismatches in function parameters
-- Unreachable code
+
+-   Missing type hints in docblocks
+-   Calling undefined methods
+-   Type mismatches in function parameters
+-   Unreachable code
 
 **Configuration**: `phpstan.neon` (Level 4)
-- WordPress/WooCommerce function stubs included
-- Bootstrap file for plugin constants
+
+-   WordPress/WooCommerce function stubs included
+-   Bootstrap file for plugin constants
 
 ### PHPCS (Code Style)
 
@@ -258,9 +275,10 @@ yarn lint:php:fix
 ```
 
 **Configuration**: `phpcs.xml`
-- WordPress-Core ruleset
-- Tabs for indentation
-- PSR-4 autoloading compatible
+
+-   WordPress-Core ruleset
+-   Tabs for indentation
+-   PSR-4 autoloading compatible
 
 ### Branch Protection
 
@@ -279,38 +297,39 @@ git push origin feat/my-feature
 
 ## Scripts
 
-- `yarn build` - Build production assets
-- `yarn start` - Development build with watch mode
-- `yarn release` - Create new release (automated versioning)
-- `yarn lint` - Lint all files (JS + CSS + PHP)
-- `yarn lint:fix` - Auto-fix all linting issues
-- `yarn lint:js` - Lint JavaScript
-- `yarn lint:js-fix` - Fix JavaScript linting issues
-- `yarn lint:css` - Lint CSS
-- `yarn lint:css-fix` - Fix CSS linting issues
-- `yarn lint:php` - Lint PHP (PHPCS + PHPStan)
-- `yarn lint:php:fix` - Fix PHP code style issues
+-   `yarn build` - Build production assets
+-   `yarn start` - Development build with watch mode
+-   `yarn release` - Create new release (automated versioning)
+-   `yarn lint` - Lint all files (JS + CSS + PHP)
+-   `yarn lint:fix` - Auto-fix all linting issues
+-   `yarn lint:js` - Lint JavaScript
+-   `yarn lint:js-fix` - Fix JavaScript linting issues
+-   `yarn lint:css` - Lint CSS
+-   `yarn lint:css-fix` - Fix CSS linting issues
+-   `yarn lint:php` - Lint PHP (PHPCS + PHPStan)
+-   `yarn lint:php:fix` - Fix PHP code style issues
 
 ## Tech Stack
 
-- **Build Tool**: Webpack (via @wordpress/scripts)
-- **Package Manager**: Yarn 4 (Berry)
-- **Commit Linting**: Commitlint + Husky
-- **Release Automation**: release-it + generate-wp-readme
-- **Changelog**: Auto-generated from conventional commits
+-   **Build Tool**: Webpack (via @wordpress/scripts)
+-   **Package Manager**: Yarn 4 (Berry)
+-   **Commit Linting**: Commitlint + Husky
+-   **Release Automation**: release-it + generate-wp-readme
+-   **Changelog**: Auto-generated from conventional commits
 
 ## CI/CD
 
 ### GitHub Actions Workflows
 
 1. **WordPress.org Deployment** (`.github/workflows/main.yml`)
-   - Triggers on GitHub release creation
-   - Builds assets, deploys to WordPress.org
-   - Attaches ZIP to GitHub release
+
+    - Triggers on GitHub release creation
+    - Builds assets, deploys to WordPress.org
+    - Attaches ZIP to GitHub release
 
 2. **Manual Package Creation** (`.github/workflows/create-package.yml`)
-   - Manually triggered via Actions UI
-   - Creates installable plugin ZIP
+    - Manually triggered via Actions UI
+    - Creates installable plugin ZIP
 
 ## Contributing
 
@@ -321,9 +340,9 @@ git push origin feat/my-feature
 
 ## Support
 
-- Documentation: https://support.monei.com
-- Email: support@monei.com
-- WordPress.org: https://wordpress.org/plugins/monei/
+-   Documentation: https://support.monei.com
+-   Email: support@monei.com
+-   WordPress.org: https://wordpress.org/plugins/monei/
 
 ## License
 
