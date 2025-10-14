@@ -1,5 +1,16 @@
 # Changelog
 
+## <small>7.0.1 (2025-10-14)</small>
+
+-   fix: upgrade to PHP 8.0+ to resolve PHP-DI compatibility issue ([95f9ffd](https://github.com/MONEI/MONEI-WooCommerce/commit/95f9ffd))
+
+### BREAKING CHANGE
+
+-   PHP 7.4 users cannot upgrade. PHP 8.0 is now the
+    minimum required version. PHP 7.4 reached end-of-life in November
+
+2022. WordPress 6.8 officially supports PHP 8.0-8.3.
+
 ## 7.0.0 (2025-10-10)
 
 -   chore: add PHPCS rule to enforce namespace use statements ([248d8bb](https://github.com/MONEI/MONEI-WooCommerce/commit/248d8bb))

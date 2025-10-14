@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 7.0.0
+Stable tag: 7.0.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -102,6 +102,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+= v7.0.1 - 2025-10-14 =
+-   fix: upgrade to PHP 8.0+ to resolve PHP-DI compatibility issue ([95f9ffd](https://github.com/MONEI/MONEI-WooCommerce/commit/95f9ffd))
+-   PHP 7.4 users cannot upgrade. PHP 8.0 is now the
+    minimum required version. PHP 7.4 reached end-of-life in November
+2022. WordPress 6.8 officially supports PHP 8.0-8.3.
 
 = v7.0.0 - 2025-10-10 =
 -   chore: add PHPCS rule to enforce namespace use statements ([248d8bb](https://github.com/MONEI/MONEI-WooCommerce/commit/248d8bb))
@@ -358,42 +364,3 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Update release action to use composer no-dev ([0063b26](https://github.com/MONEI/MONEI-WooCommerce/commit/0063b26))
 -   Update SDK version to V2 ([5cc7cb8](https://github.com/MONEI/MONEI-WooCommerce/commit/5cc7cb8))
 -   Use ramsey/composer-install ([8927c67](https://github.com/MONEI/MONEI-WooCommerce/commit/8927c67))
-
-= v6.2.0 - 2025-02-18 =
--   Add autoload and container ([eb943be](https://github.com/MONEI/MONEI-WooCommerce/commit/eb943be))
--   Add notice if gateway disabled in dashboard ([2ad3517](https://github.com/MONEI/MONEI-WooCommerce/commit/2ad3517))
--   Add PayPal in blocks ([c163d58](https://github.com/MONEI/MONEI-WooCommerce/commit/c163d58))
--   Add Requires php to readme ([51a6877](https://github.com/MONEI/MONEI-WooCommerce/commit/51a6877))
--   Add services to handle blocks creation ([c79e774](https://github.com/MONEI/MONEI-WooCommerce/commit/c79e774))
--   Add services to handle paymentmethods API call ([35174dd](https://github.com/MONEI/MONEI-WooCommerce/commit/35174dd))
--   Add wp cs standard rules and run cbf ([d54055c](https://github.com/MONEI/MONEI-WooCommerce/commit/d54055c))
--   Bail if no nonce ([c260fee](https://github.com/MONEI/MONEI-WooCommerce/commit/c260fee))
--   Button renders and closes ([f460e47](https://github.com/MONEI/MONEI-WooCommerce/commit/f460e47))
--   Check directory is string before using ([aba5560](https://github.com/MONEI/MONEI-WooCommerce/commit/aba5560))
--   Check file before including ([59af5fb](https://github.com/MONEI/MONEI-WooCommerce/commit/59af5fb))
--   Fix card message in hosted ([b4fa074](https://github.com/MONEI/MONEI-WooCommerce/commit/b4fa074))
--   Fix CS ([19d9441](https://github.com/MONEI/MONEI-WooCommerce/commit/19d9441))
--   Fix CS ([24e498c](https://github.com/MONEI/MONEI-WooCommerce/commit/24e498c))
--   Fix error when index missing ([a5a357e](https://github.com/MONEI/MONEI-WooCommerce/commit/a5a357e))
--   Fix errors ([95fb7ff](https://github.com/MONEI/MONEI-WooCommerce/commit/95fb7ff))
--   Fix errors and warnings ([f5566cc](https://github.com/MONEI/MONEI-WooCommerce/commit/f5566cc))
--   Fix icon url ([6f0299a](https://github.com/MONEI/MONEI-WooCommerce/commit/6f0299a))
--   Fix place order button locator ([1123995](https://github.com/MONEI/MONEI-WooCommerce/commit/1123995))
--   Fix template path error ([46071b0](https://github.com/MONEI/MONEI-WooCommerce/commit/46071b0))
--   Fix webhooks ([c10bb15](https://github.com/MONEI/MONEI-WooCommerce/commit/c10bb15))
--   Hide settings tab ([d58ed31](https://github.com/MONEI/MONEI-WooCommerce/commit/d58ed31))
--   Import classes ([752a907](https://github.com/MONEI/MONEI-WooCommerce/commit/752a907))
--   Load css script in admin ([f4611f9](https://github.com/MONEI/MONEI-WooCommerce/commit/f4611f9))
--   Move to src folders and standard names ([7a24a42](https://github.com/MONEI/MONEI-WooCommerce/commit/7a24a42))
--   Put review link in header ([c8e0fe6](https://github.com/MONEI/MONEI-WooCommerce/commit/c8e0fe6))
--   Remove extra links in banner ([cf50738](https://github.com/MONEI/MONEI-WooCommerce/commit/cf50738))
--   Remove includes and use classes and container ([a9c2588](https://github.com/MONEI/MONEI-WooCommerce/commit/a9c2588))
--   Show correct icon w/ apple google ([0bf61ec](https://github.com/MONEI/MONEI-WooCommerce/commit/0bf61ec))
--   Show method only if enabled ([8afcd97](https://github.com/MONEI/MONEI-WooCommerce/commit/8afcd97))
--   Update branch with cs fixes ([494ec57](https://github.com/MONEI/MONEI-WooCommerce/commit/494ec57))
--   Update changelog in dedicated file ([a719a6c](https://github.com/MONEI/MONEI-WooCommerce/commit/a719a6c))
--   Update composer to ramain in php7.4 ([31c669f](https://github.com/MONEI/MONEI-WooCommerce/commit/31c669f))
--   Update filter input ([b4741ba](https://github.com/MONEI/MONEI-WooCommerce/commit/b4741ba))
--   Update readme and changelog for release ([172b629](https://github.com/MONEI/MONEI-WooCommerce/commit/172b629))
--   Update version and changelog ([dde3109](https://github.com/MONEI/MONEI-WooCommerce/commit/dde3109))
--   Use correct locator for place order button ([abb570d](https://github.com/MONEI/MONEI-WooCommerce/commit/abb570d))
