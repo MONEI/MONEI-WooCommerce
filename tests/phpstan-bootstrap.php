@@ -232,3 +232,19 @@ if (!class_exists('WC_Geolocation')) {
 		}
 	}
 }
+
+if (!class_exists('Woocommerce_Gateway_Monei')) {
+	/**
+	 * Mock Woocommerce_Gateway_Monei class for PHPStan
+	 */
+	class Woocommerce_Gateway_Monei
+	{
+		/**
+		 * @return self
+		 */
+		public static function instance()
+		{
+			return new self();
+		}
+	}
+}

@@ -16,7 +16,7 @@
  * Tested up to: 6.8
  * WC requires at least: 3.0
  * WC tested up to: 9.8
- * Requires PHP: 7.2
+ * Requires PHP: 8.0
  * Text Domain: monei
  * Domain Path: /languages/
  * Copyright: (C) 2021 MONEI.
