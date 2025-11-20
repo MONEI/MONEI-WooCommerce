@@ -88,6 +88,7 @@ function formatForReadme( versions, limit ) {
 		const body = version.body
 			.split( '\n' )
 			.filter( ( line ) => line.trim() && ! line.match( /^##/ ) ) // Remove headers
+			.filter( ( line ) => ! line.match( /chore:\s+release/ ) ) // Remove "chore: release" commits
 			.join( '\n' );
 
 		return index === 0
@@ -203,17 +204,20 @@ function generateReadmeMd( readmeTxt ) {
 	let readme = readmeTxt;
 
 	// Convert WordPress readme.txt format to Markdown
-	// Headers: === Title === -> # Title #
-	readme = readme.replace( /^===\s*(.+?)\s*===/gm, '# $1 #' );
+	// Headers: === Title === -> # Title
+	readme = readme.replace( /^===\s*(.+?)\s*===/gm, '# $1' );
 
-	// Subheaders: == Section == -> ## Section ##
-	readme = readme.replace( /^==\s*(.+?)\s*==/gm, '## $1 ##' );
+	// Subheaders: == Section == -> ## Section
+	readme = readme.replace( /^==\s*(.+?)\s*==/gm, '## $1' );
 
-	// Changelog versions: = v6.3.12 - 2025-10-01 = -> ### v6.3.12 - 2025-10-01 ###
+	// Changelog versions: = v6.3.12 - 2025-10-01 = -> ### v6.3.12 - 2025-10-01
 	readme = readme.replace(
 		/^=\s+(v\d+\.\d+\.\d+\s+-\s+\d{4}-\d{2}-\d{2})\s+=$/gm,
-		'### $1 ###'
+		'### $1'
 	);
+
+	// Subsections: = Subsection = -> ### Subsection
+	readme = readme.replace( /^=\s+(.+?)\s+=$/gm, '### $1' );
 
 	return readme;
 }

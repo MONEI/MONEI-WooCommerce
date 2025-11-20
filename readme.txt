@@ -103,7 +103,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.0.2 - 2025-10-14 =
+= v7.0.2 - 2025-11-20 =
+-   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
+
+= v7.0.1 - 2025-10-14 =
 -   fix: upgrade to PHP 8.0+ to resolve PHP-DI compatibility issue ([95f9ffd](https://github.com/MONEI/MONEI-WooCommerce/commit/95f9ffd))
 -   PHP 7.4 users cannot upgrade. PHP 8.0 is now the
     minimum required version. PHP 7.4 reached end-of-life in November
@@ -112,7 +115,6 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 = v7.0.0 - 2025-10-10 =
 -   chore: add PHPCS rule to enforce namespace use statements ([248d8bb](https://github.com/MONEI/MONEI-WooCommerce/commit/248d8bb))
 -   chore: add PHPCS rule to enforce use statements over fully qualified names ([eb53879](https://github.com/MONEI/MONEI-WooCommerce/commit/eb53879))
--   chore: release v6.4.0 ([d3f0067](https://github.com/MONEI/MONEI-WooCommerce/commit/d3f0067))
 -   chore: remove pre-push hook to prevent direct pushes to master/main branch ([abad3bf](https://github.com/MONEI/MONEI-WooCommerce/commit/abad3bf))
 -   chore: setup comprehensive linting workflow with lint-staged ([db39b8a](https://github.com/MONEI/MONEI-WooCommerce/commit/db39b8a))
 -   chore: update .gitignore and package.json for translation support ([f8b1cbe](https://github.com/MONEI/MONEI-WooCommerce/commit/f8b1cbe))
@@ -221,9 +223,6 @@ Any duplicate order notes are cosmetic and acceptable.
 = v6.4.0 - 2025-10-01 =
 -   feat: add custom readme generator to show latest 10 releases ([371e09c](https://github.com/MONEI/MONEI-WooCommerce/commit/371e09c))
 -   feat: configure GitHub release notes with conventional changelog ([226db8f](https://github.com/MONEI/MONEI-WooCommerce/commit/226db8f))
--   chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
--   chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
--   chore: release v6.3.12 ([e119cc1](https://github.com/MONEI/MONEI-WooCommerce/commit/e119cc1))
 -   chore: remove unused generate-wp-readme package ([4e06b1b](https://github.com/MONEI/MONEI-WooCommerce/commit/4e06b1b))
 -   chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 -   fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
@@ -237,9 +236,6 @@ Any duplicate order notes are cosmetic and acceptable.
 -   fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
 -   fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
 -   fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
--   chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
--   chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
--   chore: release v6.3.12 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
 -   chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 
 = v6.3.9 - 2025-10-01 =
@@ -251,7 +247,6 @@ Any duplicate order notes are cosmetic and acceptable.
 -   chore: add auto-generated CHANGELOG.md ([50e9983](https://github.com/MONEI/MONEI-WooCommerce/commit/50e9983))
 -   chore: auto-remove README.md after generation ([b299478](https://github.com/MONEI/MONEI-WooCommerce/commit/b299478))
 -   chore: modernize build and release pipeline ([21384f0](https://github.com/MONEI/MONEI-WooCommerce/commit/21384f0))
--   chore: release v6.3.9 ([79b2f41](https://github.com/MONEI/MONEI-WooCommerce/commit/79b2f41))
 -   chore: remove redundant changelog.txt ([1703044](https://github.com/MONEI/MONEI-WooCommerce/commit/1703044))
 -   chore: remove unnecessary README.md auto-deletion ([86c727e](https://github.com/MONEI/MONEI-WooCommerce/commit/86c727e))
 -   chore: setup automated changelog generation ([e83b384](https://github.com/MONEI/MONEI-WooCommerce/commit/e83b384))
@@ -315,7 +310,6 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Uppercase Key in API Key ([1d263b1](https://github.com/MONEI/MONEI-WooCommerce/commit/1d263b1))
 -   Use rounding ([cb79abd](https://github.com/MONEI/MONEI-WooCommerce/commit/cb79abd))
 -   Use Woo api client ([9c5362d](https://github.com/MONEI/MONEI-WooCommerce/commit/9c5362d))
--   chore: release v6.3.8 ([9bed803](https://github.com/MONEI/MONEI-WooCommerce/commit/9bed803))
 
 = v6.3.5 - 2025-06-04 =
 -   Add 30 seconds caching ([73a4d1a](https://github.com/MONEI/MONEI-WooCommerce/commit/73a4d1a))
@@ -357,10 +351,3 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Refactor to integrate with YITH subscriptions ([d94ea68](https://github.com/MONEI/MONEI-WooCommerce/commit/d94ea68))
 -   Update to release version to 6.3.0 ([790b5f6](https://github.com/MONEI/MONEI-WooCommerce/commit/790b5f6))
 -   Use 2 API keys ([97fdd93](https://github.com/MONEI/MONEI-WooCommerce/commit/97fdd93))
-
-= v6.2.1 - 2025-04-07 =
--   Modify composer dependency installation ([a8082b1](https://github.com/MONEI/MONEI-WooCommerce/commit/a8082b1))
--   Update plugin version ([caf01fb](https://github.com/MONEI/MONEI-WooCommerce/commit/caf01fb))
--   Update release action to use composer no-dev ([0063b26](https://github.com/MONEI/MONEI-WooCommerce/commit/0063b26))
--   Update SDK version to V2 ([5cc7cb8](https://github.com/MONEI/MONEI-WooCommerce/commit/5cc7cb8))
--   Use ramsey/composer-install ([8927c67](https://github.com/MONEI/MONEI-WooCommerce/commit/8927c67))

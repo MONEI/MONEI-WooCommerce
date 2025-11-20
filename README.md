@@ -1,10 +1,9 @@
 # MONEI Payments for WooCommerce
-
 Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 7.0.1
+Stable tag: 7.0.2
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -15,76 +14,83 @@ Accept Card, Apple Pay, Google Pay, Bizum, PayPal and many more payment methods 
 
 ## Description
 
-= ACCEPT ONLINE PAYMENTS WITH MONEI =
+### ACCEPT ONLINE PAYMENTS WITH MONEI
 MONEI is an e-commerce payment gateway for WooCommerce (and other e-commerce platforms).
+
 
 Its payment gateway is the choice of many Spain and Andorra based e-commerce businesses. Use MONEI's technology to accept and manage all major and alternative payment methods in a single platform.
 
+
 MONEI is dedicated to helping you simplify your digital payments so you can focus on growing your online business.
 
-= PAYMENT METHODS =
+### PAYMENT METHODS
 Use MONEI's payment gateway to accept debit and credit card payments from customers worldwide in 230+ currencies.
+
 
 Let shoppers pay from the convenience of their smartphone with digital wallets like Apple Pay, Google Pay, and PayPal. And accept local payment methods such as Bizum (Spain) and SEPA Direct Debit (EU).
 
+
 Offering customers [many payment methods](https://monei.com/es/online-payment-methods/) leads to an increase in sales and customer satisfaction. 🚀
 
-= WHY TO USE MONEI'S PAYMENT PLUGIN FOR WOOCOMMERCE =
+### WHY TO USE MONEI'S PAYMENT PLUGIN FOR WOOCOMMERCE
 
 MONEI's serverless architecture allows you to scale and process a high volume of transactions. Its dynamic pricing model means as you sell more your transaction fees decrease. Once you're an approved merchant, enjoy 1-day payment settlements.
 
+
 Payment security is crucial. MONEI is PCI DSS compliant, 3D Secure, and uses payment tokenization to make sure sensitive payment information is never compromised.
+
 
 Connect your custom domain to MONEI and customize the appearance of your checkout page to build trust and brand awareness.
 
+
 With MONEI's payment gateway for e-commerce, get real-time sales analytics via your customer dashboard.
+
 
 Please go to the 👉 [signup page](https://dashboard.monei.com/?action=signUp) 👈 to create a new MONEI account. Contact support@monei.com if you have any questions or feedback about this plugin.
 
-= PAYMENT GATEWAY FEATURES =
 
--   Merchant support for all available MONEI payment methods
--   Accept and manage all major and alternative payment methods in a single platform
--   Quickly and easily integrate with your WooCommerce website using MONEI's API
--   Connect your custom domain to MONEI and customize the appearance of your checkout page
--   Scale and process a high volume of transactions
--   Dynamic pricing model — as you sell more your transaction fees decrease
--   Verified merchants enjoy 1-day payment settlements
--   PCI-DSS compliant
--   Self-hosted flexible input fields
--   Supports 3D Secure and 3D Secure exemptions
--   Tokenization for deep integration of recurring billing + usage-based charges
--   Subscriptions support for various payment methods via WooCommerce Subscriptions
--   13 languages available with auto-detection based on browser language
--   Capture pre-authorized payments and process refunds within your WooCommerce admin Dashboard
--   Notifications via email or SMS for customer information and monitoring your store
--   Get real-time sales analytics via your customer dashboard
+### PAYMENT GATEWAY FEATURES
+* Merchant support for all available MONEI payment methods
+* Accept and manage all major and alternative payment methods in a single platform
+* Quickly and easily integrate with your WooCommerce website using MONEI's API
+* Connect your custom domain to MONEI and customize the appearance of your checkout page
+* Scale and process a high volume of transactions
+* Dynamic pricing model — as you sell more your transaction fees decrease
+* Verified merchants enjoy 1-day payment settlements
+* PCI-DSS compliant
+* Self-hosted flexible input fields
+* Supports 3D Secure and 3D Secure exemptions
+* Tokenization for deep integration of recurring billing + usage-based charges
+* Subscriptions support for various payment methods via WooCommerce Subscriptions
+* 13 languages available with auto-detection based on browser language
+* Capture pre-authorized payments and process refunds within your WooCommerce admin Dashboard
+* Notifications via email or SMS for customer information and monitoring your store
+* Get real-time sales analytics via your customer dashboard
 
-= GETTING STARTED WITH MONEI =
 
+### GETTING STARTED WITH MONEI
 1. How do I open my MONEI account so I can plug in with WooCommerce?
-   Learn how to [get started with MONEI here ››](https://support.monei.com/hc/en-us/articles/360017801677-Get-started-with-MONEI)
+Learn how to [get started with MONEI here ››](https://support.monei.com/hc/en-us/articles/360017801677-Get-started-with-MONEI)
 2. What countries does MONEI support?
-   Currently, MONEI is available in Spain and Andorra, but our global expansion is happening fast. [Join our newsletter here](https://client.moonmail.io/ac8e391c-8cfb-46e3-aed9-e7a84d0fd830/forms/6bafcdbf-442a-4e3b-874f-7e2ed30ee001) to get notified once we support your country!
+Currently, MONEI is available in Spain and Andorra, but our global expansion is happening fast. [Join our newsletter here](https://client.moonmail.io/ac8e391c-8cfb-46e3-aed9-e7a84d0fd830/forms/6bafcdbf-442a-4e3b-874f-7e2ed30ee001) to get notified once we support your country!
 3. I have different questions about this plugin.
-   Please contact support@monei.com with your MONEI ID. Describe your problem in detail and include screenshots when necessary.
+Please contact support@monei.com with your MONEI ID. Describe your problem in detail and include screenshots when necessary.
 
 ## Installation
+* Go to wp-admin > Plugins
+* Click Add new
+* Search for MONEI
+* Press Install
+* Press Activate now
+* Go to WooCommerce > Settings > Payments > MONEI
+* Add your API Key.
 
--   Go to wp-admin > Plugins
--   Click Add new
--   Search for MONEI
--   Press Install
--   Press Activate now
--   Go to WooCommerce > Settings > Payments > MONEI
--   Add your API Key.
+### If you don't have API Key
 
-= If you don't have API Key =
+* Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
+* Click on "Create API Key"
 
--   Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
--   Click on "Create API Key"
-
-= Use of 3rd Party Services =
+### Use of 3rd Party Services
 This plugin is using [MONEI API](https://docs.monei.com/api/) to process payments as well as
 [MONEI UI Components](https://docs.monei.com/docs/monei-js/overview/) to securely collect sensitive payment information during checkout.
 
@@ -97,19 +103,18 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 ## Changelog
 
-### v7.0.1 - 2025-10-14
+### v7.0.2 - 2025-11-20
+-   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
 
+### v7.0.1 - 2025-10-14
 -   fix: upgrade to PHP 8.0+ to resolve PHP-DI compatibility issue ([95f9ffd](https://github.com/MONEI/MONEI-WooCommerce/commit/95f9ffd))
 -   PHP 7.4 users cannot upgrade. PHP 8.0 is now the
     minimum required version. PHP 7.4 reached end-of-life in November
-
 2022. WordPress 6.8 officially supports PHP 8.0-8.3.
 
 ### v7.0.0 - 2025-10-10
-
 -   chore: add PHPCS rule to enforce namespace use statements ([248d8bb](https://github.com/MONEI/MONEI-WooCommerce/commit/248d8bb))
 -   chore: add PHPCS rule to enforce use statements over fully qualified names ([eb53879](https://github.com/MONEI/MONEI-WooCommerce/commit/eb53879))
--   chore: release v6.4.0 ([d3f0067](https://github.com/MONEI/MONEI-WooCommerce/commit/d3f0067))
 -   chore: remove pre-push hook to prevent direct pushes to master/main branch ([abad3bf](https://github.com/MONEI/MONEI-WooCommerce/commit/abad3bf))
 -   chore: setup comprehensive linting workflow with lint-staged ([db39b8a](https://github.com/MONEI/MONEI-WooCommerce/commit/db39b8a))
 -   chore: update .gitignore and package.json for translation support ([f8b1cbe](https://github.com/MONEI/MONEI-WooCommerce/commit/f8b1cbe))
@@ -202,28 +207,22 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   style: normalize CSS units to use em instead of px ([3fd55a1](https://github.com/MONEI/MONEI-WooCommerce/commit/3fd55a1))
 -   style: prevent payment method title text from wrapping ([9267c10](https://github.com/MONEI/MONEI-WooCommerce/commit/9267c10))
 -   Removed lock and \_monei_payment_id_processed flag
-    Analysis revealed WooCommerce creates orders BEFORE payment (unlike PrestaShop),
-    so duplicate order creation is impossible. The lock and processed flag were:
-
+Analysis revealed WooCommerce creates orders BEFORE payment (unlike PrestaShop),
+so duplicate order creation is impossible. The lock and processed flag were:
 1. Broken - wp_cache not persistent without external cache
 2. Harmful - flag blocked AUTHORIZED→SUCCEEDED and SUCCEEDED→REFUNDED transitions
 3. Unnecessary - WooCommerce's payment_complete() is already idempotent
-   Removed components:
-
+Removed components:
 -   WC_Monei_Lock_Helper class
 -   Lock acquisition/release in IPN and redirect handlers
 -   \_monei_payment_id_processed flag checks and setting
 -   wp_cache stubs from PHPStan bootstrap
-    The order status check provides sufficient protection against duplicate processing.
-    Any duplicate order notes are cosmetic and acceptable.
+The order status check provides sufficient protection against duplicate processing.
+Any duplicate order notes are cosmetic and acceptable.
 
 ### v6.4.0 - 2025-10-01
-
 -   feat: add custom readme generator to show latest 10 releases ([371e09c](https://github.com/MONEI/MONEI-WooCommerce/commit/371e09c))
 -   feat: configure GitHub release notes with conventional changelog ([226db8f](https://github.com/MONEI/MONEI-WooCommerce/commit/226db8f))
--   chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
--   chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
--   chore: release v6.3.12 ([e119cc1](https://github.com/MONEI/MONEI-WooCommerce/commit/e119cc1))
 -   chore: remove unused generate-wp-readme package ([4e06b1b](https://github.com/MONEI/MONEI-WooCommerce/commit/4e06b1b))
 -   chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 -   fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
@@ -233,18 +232,13 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   fix: show all changelog versions, remove manual entries ([dbd53a1](https://github.com/MONEI/MONEI-WooCommerce/commit/dbd53a1))
 
 ### v6.3.12 - 2025-10-01
-
 -   fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
 -   fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
 -   fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
 -   fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
--   chore: release v6.3.10 ([86d825a](https://github.com/MONEI/MONEI-WooCommerce/commit/86d825a))
--   chore: release v6.3.11 ([184814d](https://github.com/MONEI/MONEI-WooCommerce/commit/184814d))
--   chore: release v6.3.12 ([af4cda6](https://github.com/MONEI/MONEI-WooCommerce/commit/af4cda6))
 -   chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
 
 ### v6.3.9 - 2025-10-01
-
 -   Fix amount when checkout data is updated ([2013a03](https://github.com/MONEI/MONEI-WooCommerce/commit/2013a03))
 -   Fix card input style ([6c12a5a](https://github.com/MONEI/MONEI-WooCommerce/commit/6c12a5a))
 -   Remove minified assets from vcs ([5a6fd99](https://github.com/MONEI/MONEI-WooCommerce/commit/5a6fd99))
@@ -253,7 +247,6 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   chore: add auto-generated CHANGELOG.md ([50e9983](https://github.com/MONEI/MONEI-WooCommerce/commit/50e9983))
 -   chore: auto-remove README.md after generation ([b299478](https://github.com/MONEI/MONEI-WooCommerce/commit/b299478))
 -   chore: modernize build and release pipeline ([21384f0](https://github.com/MONEI/MONEI-WooCommerce/commit/21384f0))
--   chore: release v6.3.9 ([79b2f41](https://github.com/MONEI/MONEI-WooCommerce/commit/79b2f41))
 -   chore: remove redundant changelog.txt ([1703044](https://github.com/MONEI/MONEI-WooCommerce/commit/1703044))
 -   chore: remove unnecessary README.md auto-deletion ([86c727e](https://github.com/MONEI/MONEI-WooCommerce/commit/86c727e))
 -   chore: setup automated changelog generation ([e83b384](https://github.com/MONEI/MONEI-WooCommerce/commit/e83b384))
@@ -266,7 +259,6 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   docs: document changelog generation system ([3217a25](https://github.com/MONEI/MONEI-WooCommerce/commit/3217a25))
 
 ### v6.3.8 - 2025-09-10
-
 -   Add 3ds credit card automated tests ([0c7faf9](https://github.com/MONEI/MONEI-WooCommerce/commit/0c7faf9))
 -   Add api key and method visibility tests ([cf6615a](https://github.com/MONEI/MONEI-WooCommerce/commit/cf6615a))
 -   Add Bizum processor ([d266a94](https://github.com/MONEI/MONEI-WooCommerce/commit/d266a94))
@@ -318,10 +310,8 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   Uppercase Key in API Key ([1d263b1](https://github.com/MONEI/MONEI-WooCommerce/commit/1d263b1))
 -   Use rounding ([cb79abd](https://github.com/MONEI/MONEI-WooCommerce/commit/cb79abd))
 -   Use Woo api client ([9c5362d](https://github.com/MONEI/MONEI-WooCommerce/commit/9c5362d))
--   chore: release v6.3.8 ([9bed803](https://github.com/MONEI/MONEI-WooCommerce/commit/9bed803))
 
 ### v6.3.5 - 2025-06-04
-
 -   Add 30 seconds caching ([73a4d1a](https://github.com/MONEI/MONEI-WooCommerce/commit/73a4d1a))
 -   Change payment methods check to sdk ([5e045eb](https://github.com/MONEI/MONEI-WooCommerce/commit/5e045eb))
 -   Remove cofidis ([fef0d3b](https://github.com/MONEI/MONEI-WooCommerce/commit/fef0d3b))
@@ -329,7 +319,6 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   Update version to 6.3.5 for release ([ba2437a](https://github.com/MONEI/MONEI-WooCommerce/commit/ba2437a))
 
 ### v6.3.4 - 2025-05-30
-
 -   Copy old keys only when no new keys are there ([14b066f](https://github.com/MONEI/MONEI-WooCommerce/commit/14b066f))
 -   Declare $handler to avoid dynamic-property deprecation ([0a4aa60](https://github.com/MONEI/MONEI-WooCommerce/commit/0a4aa60))
 -   Delete old key options ([131f7f8](https://github.com/MONEI/MONEI-WooCommerce/commit/131f7f8))
@@ -356,18 +345,9 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   Use empty string if API option is missing ([74d88ca](https://github.com/MONEI/MONEI-WooCommerce/commit/74d88ca))
 
 ### v6.3.1 - 2025-04-24
-
 -   Bail on renewal if already processing ([718bc42](https://github.com/MONEI/MONEI-WooCommerce/commit/718bc42))
 -   Fix change payment method in my account ([48e2f07](https://github.com/MONEI/MONEI-WooCommerce/commit/48e2f07))
 -   Fix CS ([b84f8ed](https://github.com/MONEI/MONEI-WooCommerce/commit/b84f8ed))
 -   Refactor to integrate with YITH subscriptions ([d94ea68](https://github.com/MONEI/MONEI-WooCommerce/commit/d94ea68))
 -   Update to release version to 6.3.0 ([790b5f6](https://github.com/MONEI/MONEI-WooCommerce/commit/790b5f6))
 -   Use 2 API keys ([97fdd93](https://github.com/MONEI/MONEI-WooCommerce/commit/97fdd93))
-
-### v6.2.1 - 2025-04-07
-
--   Modify composer dependency installation ([a8082b1](https://github.com/MONEI/MONEI-WooCommerce/commit/a8082b1))
--   Update plugin version ([caf01fb](https://github.com/MONEI/MONEI-WooCommerce/commit/caf01fb))
--   Update release action to use composer no-dev ([0063b26](https://github.com/MONEI/MONEI-WooCommerce/commit/0063b26))
--   Update SDK version to V2 ([5cc7cb8](https://github.com/MONEI/MONEI-WooCommerce/commit/5cc7cb8))
--   Use ramsey/composer-install ([8927c67](https://github.com/MONEI/MONEI-WooCommerce/commit/8927c67))
