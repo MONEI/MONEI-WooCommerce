@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.0.2 (2025-11-20)</small>
+
+-   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
+-   chore: release v7.0.1 ([bcc62ab](https://github.com/MONEI/MONEI-WooCommerce/commit/bcc62ab))
+
 ## <small>7.0.1 (2025-10-14)</small>
 
 -   fix: upgrade to PHP 8.0+ to resolve PHP-DI compatibility issue ([95f9ffd](https://github.com/MONEI/MONEI-WooCommerce/commit/95f9ffd))
