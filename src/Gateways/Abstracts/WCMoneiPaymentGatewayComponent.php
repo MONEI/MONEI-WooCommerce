@@ -201,19 +201,17 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		$description = $this->shop_name . ' - #' . $order_id;
 
 		/** The URL to which a payment result should be sent asynchronously. */
-		$callback_url = wp_sanitize_redirect( esc_url_raw( $this->notify_url ) );
+		$callback_url = esc_url_raw( $this->notify_url );
 		/** The URL the customer will be directed to if the payment failed. */
 		$fail_url = esc_url_raw( $order->get_checkout_payment_url( false ) );
 		/** The URL the customer will be directed to after transaction completed (successful or failed). */
-		$complete_url = wp_sanitize_redirect(
-			esc_url_raw(
-				add_query_arg(
-					array(
-						'utm_nooverride' => '1',
-						'orderId'        => $order_id,
-					),
-					$this->get_return_url( $order )
-				)
+		$complete_url = esc_url_raw(
+			add_query_arg(
+				array(
+					'utm_nooverride' => '1',
+					'orderId'        => $order_id,
+				),
+				$this->get_return_url( $order )
 			)
 		);
 
