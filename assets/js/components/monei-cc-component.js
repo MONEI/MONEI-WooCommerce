@@ -113,6 +113,11 @@ export const MoneiCCContent = ( props ) => {
 	// Setup validation hook
 	useEffect( () => {
 		const unsubscribe = onCheckoutValidation( async () => {
+			// In redirect mode, no client-side validation needed
+			if ( isHostedWorkflow ) {
+				return true;
+			}
+
 			// Validate cardholder name
 			if ( ! cardholderName.validate() ) {
 				return {
@@ -150,6 +155,7 @@ export const MoneiCCContent = ( props ) => {
 		return unsubscribe;
 	}, [
 		onCheckoutValidation,
+		isHostedWorkflow,
 		cardholderName,
 		cardInput,
 		createPaymentToken,
@@ -160,6 +166,18 @@ export const MoneiCCContent = ( props ) => {
 	// Setup payment hook
 	useEffect( () => {
 		const unsubscribe = onPaymentSetup( async () => {
+			// In redirect mode, skip token creation — backend handles everything
+			if ( isHostedWorkflow ) {
+				return {
+					type: responseTypes.SUCCESS,
+					meta: {
+						paymentMethodData: {
+							monei_is_block_checkout: 'yes',
+						},
+					},
+				};
+			}
+
 			setIsProcessing( true );
 
 			try {
@@ -201,6 +219,7 @@ export const MoneiCCContent = ( props ) => {
 		return unsubscribe;
 	}, [
 		onPaymentSetup,
+		isHostedWorkflow,
 		cardholderName,
 		cardInput,
 		createPaymentToken,
