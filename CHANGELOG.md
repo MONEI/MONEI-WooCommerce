@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.0.3 (2026-03-26)</small>
+
+-   fix: filter release commits and standardize markdown headers in readme generator ([e9491b3](https://github.com/MONEI/MONEI-WooCommerce/commit/e9491b3))
+-   fix: skip token creation in CC block checkout redirect mode ([b8e1ff8](https://github.com/MONEI/MONEI-WooCommerce/commit/b8e1ff8))
+
 ## <small>7.0.2 (2025-11-20)</small>
 
 -   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
