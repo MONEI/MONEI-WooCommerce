@@ -103,7 +103,11 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.0.3 - 2025-11-20 =
+= v7.0.3 - 2026-03-26 =
+-   fix: filter release commits and standardize markdown headers in readme generator ([e9491b3](https://github.com/MONEI/MONEI-WooCommerce/commit/e9491b3))
+-   fix: skip token creation in CC block checkout redirect mode ([b8e1ff8](https://github.com/MONEI/MONEI-WooCommerce/commit/b8e1ff8))
+
+= v7.0.2 - 2025-11-20 =
 -   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
 
 = v7.0.1 - 2025-10-14 =
@@ -343,11 +347,3 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Use central API key for PayPal method ([0132a7c](https://github.com/MONEI/MONEI-WooCommerce/commit/0132a7c))
 -   Use different accountId depending on selector ([712c295](https://github.com/MONEI/MONEI-WooCommerce/commit/712c295))
 -   Use empty string if API option is missing ([74d88ca](https://github.com/MONEI/MONEI-WooCommerce/commit/74d88ca))
-
-= v6.3.1 - 2025-04-24 =
--   Bail on renewal if already processing ([718bc42](https://github.com/MONEI/MONEI-WooCommerce/commit/718bc42))
--   Fix change payment method in my account ([48e2f07](https://github.com/MONEI/MONEI-WooCommerce/commit/48e2f07))
--   Fix CS ([b84f8ed](https://github.com/MONEI/MONEI-WooCommerce/commit/b84f8ed))
--   Refactor to integrate with YITH subscriptions ([d94ea68](https://github.com/MONEI/MONEI-WooCommerce/commit/d94ea68))
--   Update to release version to 6.3.0 ([790b5f6](https://github.com/MONEI/MONEI-WooCommerce/commit/790b5f6))
--   Use 2 API keys ([97fdd93](https://github.com/MONEI/MONEI-WooCommerce/commit/97fdd93))
