@@ -41,6 +41,13 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 			$data = $this->fetchFromAPI();
 			if ( $data ) {
 				set_transient( $transientKey, $data, 30 );
+				set_transient( $this->fallbackKey( $transientKey ), $data, HOUR_IN_SECONDS );
+			} else {
+				// An empty answer marks every gateway unavailable, which takes
+				// the payment methods off the checkout. The 30 second cache
+				// makes that one failed call away at any moment, so fall back
+				// to the last answer that worked.
+				$data = get_transient( $this->fallbackKey( $transientKey ) );
 			}
 		}
 
@@ -52,5 +59,12 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	 */
 	private function generateTransientKey( string $key ): string {
 		return 'payment_methods_' . md5( $key );
+	}
+
+	/**
+	 * Key of the longer lived copy used when the API call fails.
+	 */
+	private function fallbackKey( string $transientKey ): string {
+		return $transientKey . '_last_ok';
 	}
 }
