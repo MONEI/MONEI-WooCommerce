@@ -36,3 +36,6 @@ node_modules/
 
 # Translation files
 *.mo
+
+# Implementation plans (local working notes, not for a public repo)
+docs/plans/
