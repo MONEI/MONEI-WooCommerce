@@ -19,19 +19,19 @@ $settings_link = esc_url(
 return apply_filters(
 	'wc_monei_cc_settings',
 	array(
-		'top_link'         => array(
+		'top_link'          => array(
 			'title'       => '',
 			'type'        => 'title',
 			'description' => '<a href="' . $settings_link . '" class="button">' . __( 'Go to MONEI API Key Settings', 'monei' ) . '</a>',
 			'id'          => 'cc_monei_top_link',
 		),
-		'enabled'          => array(
+		'enabled'           => array(
 			'title'   => __( 'Enable/Disable', 'monei' ),
 			'type'    => 'checkbox',
 			'label'   => __( 'Enable Credit Card by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'mode'             => array(
+		'mode'              => array(
 			'title'       => __( 'Use Redirect Flow', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
@@ -41,14 +41,14 @@ return apply_filters(
 				'monei'
 			),
 		),
-		'title'            => array(
+		'title'             => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
 			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
 			'default'     => __( 'Credit Card', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'hide_title'       => array(
+		'hide_title'        => array(
 			'title'       => __( 'Hide Title', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'Hide payment method title', 'monei' ),
@@ -56,7 +56,7 @@ return apply_filters(
 			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'hide_logo'        => array(
+		'hide_logo'         => array(
 			'title'       => __( 'Hide Logo', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'Hide payment method logo', 'monei' ),
@@ -64,21 +64,32 @@ return apply_filters(
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'description'      => array(
+		'description'       => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
 			'default'     => __( 'You will be redirected to Credit Card to complete the payment. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-cc-description-field',
 		),
-		'card_input_style' => array(
+		'card_field_layout' => array(
+			'title'       => __( 'Card Field Layout', 'monei' ),
+			'type'        => 'select',
+			'description' => __( 'Show the card fields on a single line, or as separate card number, expiry and CVC fields.', 'monei' ),
+			'default'     => 'single',
+			'desc_tip'    => true,
+			'options'     => array(
+				'single' => __( 'Single line', 'monei' ),
+				'split'  => __( 'Separate fields', 'monei' ),
+			),
+		),
+		'card_input_style'  => array(
 			'title'       => __( 'Card Input Style', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'Configure in JSON format the style of the Card Input component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
+			'description' => __( 'Configure in JSON format the style of the card fields. Applies to both the single line and the separate fields layouts. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
 			'default'     => '{"base": {"height": "50px"}, "input": {"background": "none"}}',
 			'css'         => 'min-height: 80px;',
 		),
-		'tokenization'     => array(
+		'tokenization'      => array(
 			'title'       => __( 'Saved cards', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'Enable payments via saved cards', 'monei' ),
