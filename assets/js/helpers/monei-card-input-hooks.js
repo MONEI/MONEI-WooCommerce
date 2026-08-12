@@ -1,3 +1,5 @@
+import { getMoneiErrorMessage } from './monei-shared-utils';
+
 const { useState, useEffect, useRef, useCallback, useMemo } = wp.element;
 
 /**
@@ -91,7 +93,7 @@ export const useMoneiCardInput = ( config, amount ) => {
 	 * Create payment token
 	 */
 	const createToken = useCallback( async () => {
-		if ( ! cardInputRef.current || ! monei?.createToken ) {
+		if ( ! cardInputRef.current || ! cardInputRef.current.submit ) {
 			setError( 'Card input not initialized' );
 			return null;
 		}
@@ -100,15 +102,15 @@ export const useMoneiCardInput = ( config, amount ) => {
 		setError( '' );
 
 		try {
-			const result = await monei.createToken( cardInputRef.current );
+			const result = await cardInputRef.current.submit();
 
 			if ( result.error ) {
-				const errorMessage =
-					result.error.message ||
-					( typeof result.error === 'string'
-						? result.error
-						: 'Token creation failed' );
-				setError( errorMessage );
+				setError(
+					getMoneiErrorMessage(
+						result.error,
+						'Token creation failed'
+					)
+				);
 				return null;
 			}
 
@@ -156,12 +158,12 @@ export const useMoneiCardInput = ( config, amount ) => {
 				},
 				onChange( event ) {
 					if ( event.isTouched && event.error ) {
-						const errorMessage =
-							event.error.message ||
-							( typeof event.error === 'string'
-								? event.error
-								: 'Validation error' );
-						setError( errorMessage );
+						setError(
+							getMoneiErrorMessage(
+								event.error,
+								'Validation error'
+							)
+						);
 						setIsValid( false );
 						if ( containerRef.current ) {
 							containerRef.current.classList.add( 'is-invalid' );

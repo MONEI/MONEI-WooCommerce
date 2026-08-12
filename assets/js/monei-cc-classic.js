@@ -1,3 +1,5 @@
+import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
+
 ( function ( $ ) {
 	'use strict';
 
@@ -196,12 +198,12 @@
 				onChange( event ) {
 					// Handle real-time validation errors.
 					if ( event.isTouched && event.error ) {
-						const errorMessage =
-							event.error.message ||
-							( typeof event.error === 'string'
-								? event.error
-								: 'Validation error' );
-						wc_monei_form.print_errors( errorMessage );
+						wc_monei_form.print_errors(
+							getMoneiErrorMessage(
+								event.error,
+								'Validation error'
+							)
+						);
 					} else {
 						wc_monei_form.clear_errors();
 					}
@@ -231,6 +233,37 @@
 				amount: parseInt( wc_monei_form.total ),
 			} );
 		},
+		submit_card_input() {
+			if ( ! wc_monei_form.$cardInput ) {
+				wc_monei_form.print_errors( 'Payment error' );
+				return;
+			}
+			// This will be trigger, when CC component is used and "Place order" has been clicked.
+			wc_monei_form.$cardInput
+				.submit()
+				.then( function ( result ) {
+					if ( result.error ) {
+						// Error displayed via print_errors
+						// Inform the user if there was an error.
+						wc_monei_form.print_errors(
+							getMoneiErrorMessage(
+								result.error,
+								'Payment error'
+							)
+						);
+					} else {
+						// Token created successfully
+						// Create monei token and append it to DOM
+						wc_monei_form.monei_token_handler( result.token );
+					}
+				} )
+				.catch( function ( error ) {
+					// Error displayed via print_errors
+					wc_monei_form.print_errors(
+						getMoneiErrorMessage( error, 'Payment error' )
+					);
+				} );
+		},
 		place_order( e ) {
 			const token = document.getElementById( 'monei_payment_token' );
 			if ( token ) {
@@ -244,29 +277,7 @@
 					return false;
 				}
 				//e.preventDefault();
-				// This will be trigger, when CC component is used and "Place order" has been clicked.
-				monei
-					.createToken( wc_monei_form.$cardInput )
-					.then( function ( result ) {
-						if ( result.error ) {
-							// Error displayed via print_errors
-							// Inform the user if there was an error.
-							const errorMessage =
-								result.error.message ||
-								( typeof result.error === 'string'
-									? result.error
-									: 'Payment error' );
-							wc_monei_form.print_errors( errorMessage );
-						} else {
-							// Token created successfully
-							// Create monei token and append it to DOM
-							wc_monei_form.monei_token_handler( result.token );
-						}
-					} )
-					.catch( function ( error ) {
-						// Error displayed via print_errors
-						wc_monei_form.print_errors( error.message );
-					} );
+				wc_monei_form.submit_card_input();
 				return false;
 			}
 		},
@@ -283,29 +294,7 @@
 					return false;
 				}
 				e.preventDefault();
-				// This will be trigger, when CC component is used and "Place order" has been clicked.
-				monei
-					.createToken( wc_monei_form.$cardInput )
-					.then( function ( result ) {
-						if ( result.error ) {
-							// Error displayed via print_errors
-							// Inform the user if there was an error.
-							const errorMessage =
-								result.error.message ||
-								( typeof result.error === 'string'
-									? result.error
-									: 'Payment error' );
-							wc_monei_form.print_errors( errorMessage );
-						} else {
-							// Token created successfully
-							// Create monei token and append it to DOM
-							wc_monei_form.monei_token_handler( result.token );
-						}
-					} )
-					.catch( function ( error ) {
-						// Error displayed via print_errors
-						wc_monei_form.print_errors( error.message );
-					} );
+				wc_monei_form.submit_card_input();
 				return false;
 			}
 		},
