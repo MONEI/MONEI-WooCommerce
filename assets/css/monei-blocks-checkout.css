@@ -28,7 +28,7 @@
 .monei-card-group {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 0.75em;
+	gap: 12px;
 }
 
 /* Card number takes the full row, expiry and CVC share the next one. */
@@ -36,16 +36,21 @@
 	grid-column: 1 / -1;
 }
 
+/*
+ * Structural values are in px on purpose. The mount points are plain divs that
+ * inherit the 14px font size of the blocks checkout, so em would resolve
+ * against 14px while the neighbouring form inputs are sized against 16px.
+ */
 .monei-card-group-field {
 	transition: border-color 0.2s ease;
 	background-color: #fff;
-	border: 0.0625em solid hsla(0, 0%, 7%, 0.8);
-	border-radius: 0.25em;
+	border: 1px solid hsla(0, 0%, 7%, 0.8);
+	border-radius: 4px;
 	box-sizing: border-box;
 	color: #2b2d2f;
 	font-family: inherit;
-	font-size: 1em;
-	height: 3.125em;
+	font-size: 16px;
+	height: 50px;
 	line-height: 1;
 	min-height: 0;
 	padding: 0;
@@ -53,11 +58,20 @@
 }
 
 /*
+ * monei.js gives the wrapper and iframe it mounts an inline height of its own.
+ * Overriding it keeps the rendered field the same height as this container.
+ */
+.monei-card-group-field > *,
+.monei-card-group-field iframe {
+	height: 100% !important;
+}
+
+/*
  * State classes below are set by monei.js on each mount container. They carry
  * equal specificity, so source order decides which wins: focus is last.
  */
 .monei-card-group-field.monei-component--empty {
-	border-color: hsla(0, 0%, 7%, 0.45);
+	border-color: hsla(0, 0%, 7%, 0.8);
 }
 
 .monei-card-group-field.monei-component--complete {
@@ -203,8 +217,7 @@
 @media (max-width: 480px) {
 
 	.monei-input,
-	.monei-card-input,
-	.monei-card-group-field {
+	.monei-card-input {
 		font-size: 1em; /* Prevents zoom on iOS */
 	}
 

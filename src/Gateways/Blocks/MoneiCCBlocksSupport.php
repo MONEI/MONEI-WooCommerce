@@ -109,7 +109,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 		$total            = WC()->cart !== null ? WC()->cart->get_total( false ) : 0;
 		$card_input_style = $this->get_setting( 'card_input_style' );
 		if ( ! $card_input_style ) {
-			$card_input_style = '{"base": {"height": "50"}, "input": {"background": "none"}}';
+			$card_input_style = WCGatewayMoneiCC::DEFAULT_CARD_INPUT_STYLE;
 		}
 
 		$redirect_mode = $this->get_setting( 'mode' ) ?? 'no';
