@@ -394,6 +394,46 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Express checkout surfaces, and the labels shown in the settings multiselect.
+	 *
+	 * Single source of truth for the location keys: the settings files build the
+	 * multiselect from it and the gating helper validates against it.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function get_express_location_options() {
+		return array(
+			'product'  => __( 'Product page', 'monei' ),
+			'cart'     => __( 'Cart page', 'monei' ),
+			'checkout' => __( 'Checkout page', 'monei' ),
+		);
+	}
+
+	/**
+	 * Whether express checkout is enabled for a given surface.
+	 *
+	 * Shared gating helper for every express checkout entry point. Returns false
+	 * unless the merchant opted in AND selected that location. Gateways without
+	 * express settings always return false, because both options resolve empty.
+	 *
+	 * @param string $location A key of self::get_express_location_options().
+	 * @return bool
+	 */
+	public function is_express_enabled_at( $location ) {
+		if ( ! isset( self::get_express_location_options()[ $location ] ) ) {
+			return false;
+		}
+
+		if ( 'yes' !== $this->get_option( 'express_enabled' ) ) {
+			return false;
+		}
+
+		$locations = (array) $this->get_option( 'express_locations', array() );
+
+		return in_array( $location, $locations, true );
+	}
+
+	/**
 	 * Frontend MONEI generated token.
 	 *
 	 * @return false|string

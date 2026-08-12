@@ -1,4 +1,7 @@
 <?php
+
+use Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -73,6 +76,33 @@ return apply_filters(
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the Apple Pay / Google Pay component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">MONEI Payment Request Style</a>',
 			'default'     => '{"height": "50px"}',
+			'css'         => 'min-height: 80px;',
+		),
+		'express_enabled'       => array(
+			'title'       => __( 'Express Checkout', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Enable Apple Pay / Google Pay express checkout', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Show an express checkout button that lets customers pay with their wallet address, without filling in the checkout form.', 'monei' ),
+			'desc_tip'    => true,
+		),
+		'express_locations'     => array(
+			'title'             => __( 'Express Checkout Button Locations', 'monei' ),
+			'type'              => 'multiselect',
+			'class'             => 'wc-enhanced-select',
+			'description'       => __( 'Select where the Apple Pay / Google Pay express checkout button is displayed.', 'monei' ),
+			'desc_tip'          => true,
+			'options'           => WCGatewayMoneiAppleGoogle::get_express_location_options(),
+			'default'           => array( 'product', 'cart', 'checkout' ),
+			'custom_attributes' => array(
+				'data-placeholder' => __( 'Select pages', 'monei' ),
+			),
+		),
+		'express_button_style'  => array(
+			'title'       => __( 'Express Checkout Button Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the Apple Pay / Google Pay express checkout button. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">MONEI Payment Request Style</a>',
+			'default'     => WCGatewayMoneiAppleGoogle::DEFAULT_EXPRESS_BUTTON_STYLE,
 			'css'         => 'min-height: 80px;',
 		),
 	)

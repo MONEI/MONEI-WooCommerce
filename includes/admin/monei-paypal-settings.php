@@ -1,4 +1,7 @@
 <?php
+
+use Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -19,33 +22,33 @@ $settings_link = esc_url(
 return apply_filters(
 	'wc_monei_paypal_settings',
 	array(
-		'top_link'     => array(
+		'top_link'             => array(
 			'title'       => '',
 			'type'        => 'title',
 			'description' => '<a href="' . $settings_link . '" class="button">' . __( 'Go to MONEI Api key Settings', 'monei' ) . '</a>',
 			'id'          => 'paypal_monei_top_link',
 		),
-		'enabled'      => array(
+		'enabled'              => array(
 			'title'   => __( 'Enable/Disable', 'monei' ),
 			'type'    => 'checkbox',
 			'label'   => __( 'Enable PayPal by MONEI', 'monei' ),
 			'default' => 'no',
 		),
-		'mode'         => array(
+		'mode'                 => array(
 			'title'       => __( 'Use Redirect Flow', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'This will redirect the customer to the Hosted Payment Page.', 'monei' ),
 			'default'     => 'no',
 			'description' => sprintf( __( 'If disabled the PayPal button will be rendered directly on the checkout page. It is recommended to enable redirection in cases where PayPal payments do not function correctly.', 'monei' ) ),
 		),
-		'title'        => array(
+		'title'                => array(
 			'title'       => __( 'Title', 'monei' ),
 			'type'        => 'text',
 			'description' => __( 'The payment method title a user sees during checkout.', 'monei' ),
 			'default'     => __( 'PayPal', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'hide_title'   => array(
+		'hide_title'           => array(
 			'title'       => __( 'Hide Title', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'Hide payment method title', 'monei' ),
@@ -53,7 +56,7 @@ return apply_filters(
 			'description' => __( 'Hide payment method title in the checkout, showing only the logo.', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'hide_logo'    => array(
+		'hide_logo'            => array(
 			'title'       => __( 'Hide Logo', 'monei' ),
 			'type'        => 'checkbox',
 			'label'       => __( 'Hide payment method logo', 'monei' ),
@@ -61,18 +64,45 @@ return apply_filters(
 			'description' => __( 'Hide payment method logo in the checkout.', 'monei' ),
 			'desc_tip'    => true,
 		),
-		'description'  => array(
+		'description'          => array(
 			'title'       => __( 'Description', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'This description is only displayed when using redirect mode. It will be shown to customers before they are redirected to the payment page.', 'monei' ),
 			'default'     => __( 'You will be redirected to PayPal to complete the payment. Powered by MONEI.', 'monei' ),
 			'class'       => 'monei-paypal-description-field',
 		),
-		'paypal_style' => array(
+		'paypal_style'         => array(
 			'title'       => __( 'PayPal Style', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the PayPal component. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paypal-options" target="_blank">MONEI PayPal Style</a>',
 			'default'     => '{"height": "50px", "disableMaxWidth": true}',
+			'css'         => 'min-height: 80px;',
+		),
+		'express_enabled'      => array(
+			'title'       => __( 'Express Checkout', 'monei' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Enable PayPal express checkout', 'monei' ),
+			'default'     => 'no',
+			'description' => __( 'Show an express checkout button that lets customers pay with their PayPal address, without filling in the checkout form.', 'monei' ),
+			'desc_tip'    => true,
+		),
+		'express_locations'    => array(
+			'title'             => __( 'Express Checkout Button Locations', 'monei' ),
+			'type'              => 'multiselect',
+			'class'             => 'wc-enhanced-select',
+			'description'       => __( 'Select where the PayPal express checkout button is displayed.', 'monei' ),
+			'desc_tip'          => true,
+			'options'           => WCGatewayMoneiPaypal::get_express_location_options(),
+			'default'           => array( 'product', 'cart', 'checkout' ),
+			'custom_attributes' => array(
+				'data-placeholder' => __( 'Select pages', 'monei' ),
+			),
+		),
+		'express_button_style' => array(
+			'title'       => __( 'Express Checkout Button Style', 'monei' ),
+			'type'        => 'textarea',
+			'description' => __( 'Configure in JSON format the style of the PayPal express checkout button. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paypal-options" target="_blank">MONEI PayPal Style</a>',
+			'default'     => WCGatewayMoneiPaypal::DEFAULT_EXPRESS_BUTTON_STYLE,
 			'css'         => 'min-height: 80px;',
 		),
 	)
