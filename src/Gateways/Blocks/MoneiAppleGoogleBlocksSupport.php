@@ -61,7 +61,7 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 		);
 		wp_enqueue_style( 'monei-blocks-checkout' );
 
-		wp_register_script( 'monei', 'https://js.monei.com/v2/monei.js', '', '2.0', true );
+		wp_register_script( 'monei', 'https://js.monei.com/v3/monei.js', '', '2.0', true );
 		wp_enqueue_script( 'monei' );
 
 		$script_name = 'wc-monei-apple-google-blocks-integration';
