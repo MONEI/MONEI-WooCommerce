@@ -38,6 +38,7 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 		$add_payment_form: $( 'form#add_payment_method' ),
 		$order_pay_form: $( 'form#order_review' ),
 		$cardInput: null,
+		$cardGroup: null,
 		$container: null,
 		$payment_request_container: null,
 		$errorContainer: null,
@@ -146,8 +147,30 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 				wc_monei_form.is_tokenized_cc_selected()
 			);
 		},
+		is_split_layout() {
+			return 'split' === wc_monei_params.cardFieldLayout;
+		},
+		/**
+		 * Mount container the init lifecycle keys on. In the split layout the
+		 * card number is the first of the three, so it stands in for the group.
+		 */
+		get_card_container() {
+			return document.getElementById(
+				wc_monei_form.is_split_layout()
+					? 'monei-card-number'
+					: 'monei-card-input'
+			);
+		},
+		/**
+		 * The live MONEI instance for the active layout.
+		 */
+		get_card_instance() {
+			return wc_monei_form.is_split_layout()
+				? wc_monei_form.$cardGroup
+				: wc_monei_form.$cardInput;
+		},
 		init_checkout_monei() {
-			const container = document.getElementById( 'monei-card-input' );
+			const container = wc_monei_form.get_card_container();
 			if ( container === null ) {
 				return;
 			}
@@ -184,10 +207,15 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 				wc_monei_form.validate_cardholder_name();
 			} );
 
-			wc_monei_form.$container =
-				document.getElementById( 'monei-card-input' );
+			wc_monei_form.$container = wc_monei_form.get_card_container();
 			wc_monei_form.$errorContainer =
 				document.getElementById( 'monei-card-error' );
+
+			if ( wc_monei_form.is_split_layout() ) {
+				wc_monei_form.init_card_group();
+				this.init_counter++;
+				return;
+			}
 
 			wc_monei_form.$cardInput = monei.CardInput( {
 				accountId: wc_monei_params.accountId,
@@ -223,23 +251,67 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 			// We already init CardInput.
 			this.init_counter++;
 		},
+		/**
+		 * Split layout: one CardGroup carrying the payment details, plus three
+		 * presentation only parts. Amount and currency belong on the group —
+		 * a part throws when given either.
+		 */
+		init_card_group() {
+			const group = monei.CardGroup( {
+				accountId: wc_monei_params.accountId,
+				sessionId: wc_monei_params.sessionId,
+				amount: parseInt( wc_monei_form.total ),
+				currency: wc_monei_params.currency,
+				style: wc_monei_params.cardInputStyle || {},
+				onChange( event ) {
+					// Handle real-time validation errors.
+					if ( event.error ) {
+						wc_monei_form.print_errors(
+							getMoneiErrorMessage(
+								event.error,
+								'Validation error'
+							)
+						);
+					} else {
+						wc_monei_form.clear_errors();
+					}
+				},
+				onEnter() {
+					wc_monei_form.form.submit();
+				},
+			} );
+
+			[
+				[ monei.CardNumber, 'monei-card-number' ],
+				[ monei.CardExpiry, 'monei-card-expiry' ],
+				[ monei.CardCvc, 'monei-card-cvc' ],
+			].forEach( function ( part ) {
+				part[ 0 ]( { group } ).render(
+					document.getElementById( part[ 1 ] )
+				);
+			} );
+
+			wc_monei_form.$cardGroup = group;
+		},
 		update_monei_amount() {
 			// Runs after init_checkout_monei(), which may have rebuilt the
 			// instance, so always target the current one.
-			if ( ! wc_monei_form.$cardInput ) {
+			const instance = wc_monei_form.get_card_instance();
+			if ( ! instance ) {
 				return;
 			}
-			wc_monei_form.$cardInput.updateProps( {
+			instance.updateProps( {
 				amount: parseInt( wc_monei_form.total ),
 			} );
 		},
 		submit_card_input() {
-			if ( ! wc_monei_form.$cardInput ) {
+			const instance = wc_monei_form.get_card_instance();
+			if ( ! instance ) {
 				wc_monei_form.print_errors( 'Payment error' );
 				return;
 			}
 			// This will be trigger, when CC component is used and "Place order" has been clicked.
-			wc_monei_form.$cardInput
+			instance
 				.submit()
 				.then( function ( result ) {
 					if ( result.error ) {
