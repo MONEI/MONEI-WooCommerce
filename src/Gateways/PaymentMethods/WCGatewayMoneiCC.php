@@ -409,8 +409,17 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			</div>
 			<!-- Card Input Container -->
 			<div id="payment-form" class="monei-input-container wc-block-components-text-input">
-				<div id="monei-card-input" class="monei-card-input">
-				</div>
+				<?php if ( 'split' === $this->get_option( 'card_field_layout', 'single' ) ) : ?>
+					<!-- Split Card Field Containers, in tab order -->
+					<div class="monei-card-group">
+						<div id="monei-card-number" class="monei-card-group-field monei-card-number"></div>
+						<div id="monei-card-expiry" class="monei-card-group-field monei-card-expiry"></div>
+						<div id="monei-card-cvc" class="monei-card-group-field monei-card-cvc"></div>
+					</div>
+				<?php else : ?>
+					<div id="monei-card-input" class="monei-card-input">
+					</div>
+				<?php endif; ?>
 				<div
 						id="monei-card-error"
 						class="wc-block-components-validation-error"
