@@ -70,9 +70,10 @@ export const useCardholderName = ( config = {} ) => {
 /**
  * Hook for managing MONEI Card Input
  * @param {Object} config - MONEI configuration
+ * @param {number} amount - Payment amount in minor units
  * @return {Object}
  */
-export const useMoneiCardInput = ( config ) => {
+export const useMoneiCardInput = ( config, amount ) => {
 	const [ isReady, setIsReady ] = useState( false );
 	const [ error, setError ] = useState( '' );
 	const [ isValid, setIsValid ] = useState( false );
@@ -81,6 +82,10 @@ export const useMoneiCardInput = ( config ) => {
 	const cardInputRef = useRef( null );
 	const containerRef = useRef( null );
 	const hasInitialized = useRef( false );
+	// Held in a ref so a moving amount never changes `config` identity, which
+	// would re-arm the delayed init effect below.
+	const amountRef = useRef( amount );
+	amountRef.current = amount;
 
 	/**
 	 * Create payment token
@@ -136,6 +141,8 @@ export const useMoneiCardInput = ( config ) => {
 				accountId: config.accountId,
 				sessionId: config.sessionId,
 				language: config.language,
+				amount: amountRef.current,
+				currency: config.currency,
 				style: config.style || {},
 				onFocus() {
 					if ( containerRef.current ) {
@@ -195,6 +202,17 @@ export const useMoneiCardInput = ( config ) => {
 	}, [ config, createToken ] );
 
 	/**
+	 * Update props on the live card input instance
+	 * @param {Object} props - Props to forward to the instance
+	 */
+	const updateProps = useCallback( ( props ) => {
+		if ( ! cardInputRef.current || ! cardInputRef.current.updateProps ) {
+			return;
+		}
+		cardInputRef.current.updateProps( props );
+	}, [] );
+
+	/**
 	 * Reset card input
 	 */
 	const reset = useCallback( () => {
@@ -239,6 +257,7 @@ export const useMoneiCardInput = ( config ) => {
 			isCreatingToken,
 			containerRef,
 			createToken,
+			updateProps,
 			reset,
 		} ),
 		[
@@ -249,6 +268,7 @@ export const useMoneiCardInput = ( config ) => {
 			isCreatingToken,
 			containerRef,
 			createToken,
+			updateProps,
 			reset,
 		]
 	);
