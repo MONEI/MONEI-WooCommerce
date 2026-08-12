@@ -6,3 +6,7 @@ dist/
 # Dependencies
 node_modules/
 vendor/
+
+# Playwright generated artifacts
+tests/playwright/playwright-report/
+tests/playwright/test-results/

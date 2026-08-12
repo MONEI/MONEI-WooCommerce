@@ -27,7 +27,7 @@
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
 		"start": "wp-scripts start",
-		"test:e2e": "wp-scripts test-e2e",
+		"test:e2e": "playwright test --config=tests/playwright/playwright.config.js",
 		"test:unit": "wp-scripts test-unit-js",
 		"release": "release-it",
 		"prepare": "husky",
@@ -38,6 +38,7 @@
 	"devDependencies": {
 		"@commitlint/cli": "^20.1.0",
 		"@commitlint/config-conventional": "^20.0.0",
+		"@playwright/test": "^1.62.1",
 		"@release-it/bumper": "^7.0.5",
 		"@release-it/conventional-changelog": "^10.0.1",
 		"@testing-library/dom": "^10.4.0",

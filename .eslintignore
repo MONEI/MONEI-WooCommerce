@@ -9,3 +9,7 @@ vendor/
 
 # Cache
 .phpcs.cache
+
+# Playwright generated artifacts
+tests/playwright/playwright-report/
+tests/playwright/test-results/
