@@ -1,4 +1,20 @@
 /**
+ * Get the display message of a MONEI error.
+ *
+ * Component events and `submit()` results both report `error` either as an
+ * object with a `message` or as a plain string.
+ * @param {Object|string} error    - Error reported by a MONEI component
+ * @param {string}        fallback - Message to use when the error carries none
+ * @return {string}
+ */
+export const getMoneiErrorMessage = ( error, fallback ) => {
+	if ( typeof error === 'string' ) {
+		return error;
+	}
+	return ( error && error.message ) || fallback;
+};
+
+/**
  * Get WooCommerce place order button
  * @return {HTMLElement|null}
  */
