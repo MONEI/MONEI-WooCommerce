@@ -1,4 +1,7 @@
 <?php
+
+use Monei\Gateways\PaymentMethods\WCGatewayMoneiCC;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -86,7 +89,7 @@ return apply_filters(
 			'title'       => __( 'Card Input Style', 'monei' ),
 			'type'        => 'textarea',
 			'description' => __( 'Configure in JSON format the style of the card fields. Applies to both the single line and the separate fields layouts. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#cardinput-style-object" target="_blank">MONEI Card Input Style</a>',
-			'default'     => '{"base": {"height": "50px"}, "input": {"background": "none"}}',
+			'default'     => WCGatewayMoneiCC::DEFAULT_CARD_INPUT_STYLE,
 			'css'         => 'min-height: 80px;',
 		),
 		'tokenization'      => array(

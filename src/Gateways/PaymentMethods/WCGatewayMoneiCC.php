@@ -41,6 +41,16 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 	const PAYMENT_METHOD = 'card';
 
+	/**
+	 * Default style for the card fields, shared by the single line and the
+	 * separate fields layouts.
+	 *
+	 * The fields render inside a cross origin iframe and cannot inherit page
+	 * CSS, so typography must be declared here to match the surrounding form.
+	 * `height` and `lineHeight` need a CSS unit, a bare number is ignored.
+	 */
+	const DEFAULT_CARD_INPUT_STYLE = '{"base": {"height": "50px", "lineHeight": "50px", "fontSize": "16px", "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif", "color": "#2b2d2f"}, "input": {"background": "none"}}';
+
 	protected static $scripts_enqueued = false;
 
 	/**
@@ -222,7 +232,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 					json_last_error_msg()
 				)
 			);
-			return $this->get_option( 'card_input_style', '{"base": {"height": "50px"}, "input": {"background": "none"}}' );
+			return $this->get_option( 'card_input_style', self::DEFAULT_CARD_INPUT_STYLE );
 		}
 
 		// Re-encode with pretty print for better readability in admin
@@ -484,7 +494,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		wp_enqueue_script( 'monei' );
 		// Determine the total amount to be passed
 		$total            = $this->determineTheTotalAmountToBePassed();
-		$card_input_style = $this->get_option( 'card_input_style', '{"base": {"height": "50px"}, "input": {"background": "none"}}' );
+		$card_input_style = $this->get_option( 'card_input_style', self::DEFAULT_CARD_INPUT_STYLE );
 		wp_localize_script(
 			'woocommerce_monei',
 			'wc_monei_params',
