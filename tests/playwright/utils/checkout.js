@@ -77,15 +77,23 @@ const cardInput = ( page, layout, part ) =>
 		.getByTestId( CARD_PART_TEST_ID[ part ] );
 
 /**
- * Wait until the MONEI card fields are mounted and accept typing.
- * @param {import('@playwright/test').Page} page   - Page under test
- * @param {'single'|'split'}                layout - Card field layout
+ * A first checkout paint pulls the cart over the network, then the MONEI SDK,
+ * then waits out the plugin init delay, so the first mount needs more room than
+ * a normal action.
  */
-const waitForCardFields = async ( page, layout ) => {
+const CARD_MOUNT_TIMEOUT = 60000;
+
+/**
+ * Wait until the MONEI card fields are mounted and accept typing.
+ * @param {import('@playwright/test').Page} page    - Page under test
+ * @param {'single'|'split'}                layout  - Card field layout
+ * @param {number}                          timeout - How long to wait per field
+ */
+const waitForCardFields = async ( page, layout, timeout ) => {
 	for ( const part of [ 'number', 'expiry', 'cvc' ] ) {
 		const input = cardInput( page, layout, part );
-		await input.waitFor( { state: 'visible' } );
-		await expect( input ).toBeEditable();
+		await input.waitFor( { state: 'visible', timeout } );
+		await expect( input ).toBeEditable( { timeout } );
 	}
 };
 
@@ -141,7 +149,13 @@ const addProductToCart = async ( page ) => {
  */
 const gotoCheckout = async ( page, path, layout ) => {
 	await page.goto( path, { waitUntil: 'domcontentloaded' } );
-	await waitForCardFields( page, layout );
+	// Separates "the checkout never rendered" from "the card fields never
+	// mounted" when this fails.
+	await expect(
+		page.getByTestId( 'cardholder-name-input' ),
+		'checkout rendered the MONEI card form'
+	).toBeVisible( { timeout: CARD_MOUNT_TIMEOUT } );
+	await waitForCardFields( page, layout, CARD_MOUNT_TIMEOUT );
 };
 
 /**
