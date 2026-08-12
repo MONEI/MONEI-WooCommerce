@@ -27,6 +27,12 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	const PAYMENT_METHOD = 'card';
 
 	/**
+	 * Default JSON style of the express checkout button.
+	 * ⚠️ Heights need a CSS unit — monei.js discards unitless values.
+	 */
+	const DEFAULT_EXPRESS_BUTTON_STYLE = '{"height": "50px"}';
+
+	/**
 	 * @var bool
 	 */
 	protected $redirect_flow;
@@ -153,6 +159,40 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 				)
 			);
 			return $this->get_option( 'payment_request_style', '{"height": "50px"}' );
+		}
+
+		// Re-encode with pretty print for better readability in admin
+		return wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	}
+
+	/**
+	 * Validate express_button_style field
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return string
+	 */
+	public function validate_express_button_style_field( $key, $value ) {
+		if ( empty( $value ) ) {
+			return $value;
+		}
+
+		// WordPress adds slashes to $_POST data, we need to remove them before validating JSON
+		$value = stripslashes( $value );
+
+		// Try to decode JSON
+		$decoded = json_decode( $value, true );
+
+		// Check for JSON errors
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			WC_Admin_Settings::add_error(
+				sprintf(
+					/* translators: %s: JSON error message */
+					__( 'Express Checkout Button Style field contains invalid JSON: %s', 'monei' ),
+					json_last_error_msg()
+				)
+			);
+			return $this->get_option( 'express_button_style', self::DEFAULT_EXPRESS_BUTTON_STYLE );
 		}
 
 		// Re-encode with pretty print for better readability in admin
