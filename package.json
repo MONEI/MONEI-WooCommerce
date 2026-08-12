@@ -40,12 +40,17 @@
 		"@commitlint/config-conventional": "^20.0.0",
 		"@release-it/bumper": "^7.0.5",
 		"@release-it/conventional-changelog": "^10.0.1",
+		"@testing-library/dom": "^10.4.0",
+		"@testing-library/react": "^16.3.2",
+		"@wordpress/jest-preset-default": "^14.0.0",
 		"@wordpress/prettier-config": "^3.0.0",
 		"@wordpress/scripts": "^30.24.0",
 		"conventional-changelog-cli": "^5.0.0",
 		"eslint-plugin-react-hooks": "^7.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.3",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
 		"release-it": "^19.0.5"
 	},
 	"packageManager": "yarn@4.10.3"
