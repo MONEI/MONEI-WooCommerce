@@ -24,6 +24,55 @@
 	border-color: #cc1818;
 }
 
+/* Split Card Fields */
+.monei-card-group {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.75em;
+}
+
+/* Card number takes the full row, expiry and CVC share the next one. */
+.monei-card-group .monei-card-number {
+	grid-column: 1 / -1;
+}
+
+.monei-card-group-field {
+	transition: border-color 0.2s ease;
+	background-color: #fff;
+	border: 0.0625em solid hsla(0, 0%, 7%, 0.8);
+	border-radius: 0.25em;
+	box-sizing: border-box;
+	color: #2b2d2f;
+	font-family: inherit;
+	font-size: 1em;
+	height: 3.125em;
+	line-height: 1;
+	min-height: 0;
+	padding: 0;
+	width: 100%;
+}
+
+/*
+ * State classes below are set by monei.js on each mount container. They carry
+ * equal specificity, so source order decides which wins: focus is last.
+ */
+.monei-card-group-field.monei-component--empty {
+	border-color: hsla(0, 0%, 7%, 0.45);
+}
+
+.monei-card-group-field.monei-component--complete {
+	border-color: #008a20;
+}
+
+.monei-card-group-field.monei-component--invalid {
+	border-color: #cc1818;
+}
+
+.monei-card-group-field.monei-component--focus {
+	border-color: #007cba;
+	box-shadow: 0 0 0 0.0625em #007cba;
+}
+
 /* Cardholder Name Input */
 .monei-input {
 	background-color: #fff;
@@ -154,8 +203,13 @@
 @media (max-width: 480px) {
 
 	.monei-input,
-	.monei-card-input {
+	.monei-card-input,
+	.monei-card-group-field {
 		font-size: 1em; /* Prevents zoom on iOS */
+	}
+
+	.monei-card-group {
+		grid-template-columns: 1fr;
 	}
 
 	.monei-payment-request-container {
