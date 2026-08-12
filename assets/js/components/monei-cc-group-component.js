@@ -1,20 +1,18 @@
 import {
 	useCardholderName,
 	useFormErrors,
-	useMoneiCardInput,
 } from '../helpers/monei-card-input-hooks';
-import { MoneiCCGroupContent } from './monei-cc-group-component';
+import { useMoneiCardGroup } from '../helpers/monei-card-group-hooks';
 
 const { useEffect, useState, useRef, useCallback, useMemo, createPortal } =
 	wp.element;
-const { useSelect } = wp.data;
 
 /**
- * MONEI Credit Card Content Component, single line layout
+ * MONEI Credit Card Content Component, split card fields layout
  * @param {Object} props - Component props
  * @return {React.Element}
  */
-const MoneiCCSingleContent = ( props ) => {
+export const MoneiCCGroupContent = ( props ) => {
 	const { responseTypes, noticeContexts } = props.emitResponse;
 	const { onPaymentSetup, onCheckoutValidation, onCheckoutSuccess } =
 		props.eventRegistration;
@@ -45,8 +43,8 @@ const MoneiCCSingleContent = ( props ) => {
 	);
 
 	// Amount is deliberately kept out of this memo: a moving total would change
-	// the config identity and re-arm the delayed card input mount.
-	const cardInputConfig = useMemo(
+	// the config identity and re-arm the delayed card group mount.
+	const cardGroupConfig = useMemo(
 		() => ( {
 			accountId: moneiData.accountId,
 			sessionId: moneiData.sessionId,
@@ -63,24 +61,11 @@ const MoneiCCSingleContent = ( props ) => {
 		]
 	);
 
-	const amount = props.amount;
-	const lastAmountRef = useRef( null );
-
 	// Cardholder name management
 	const cardholderName = useCardholderName( cardholderNameConfig );
 
-	// Card input management
-	const cardInput = useMoneiCardInput( cardInputConfig, amount );
-
-	// Keep the amount live without re-creating the card input, which would wipe
-	// the card number the shopper already typed.
-	useEffect( () => {
-		if ( lastAmountRef.current === amount ) {
-			return;
-		}
-		lastAmountRef.current = amount;
-		cardInput.updateProps( { amount } );
-	}, [ amount, cardInput ] );
+	// Card group management — the hook owns the amount sync
+	const cardGroup = useMoneiCardGroup( cardGroupConfig, props.amount );
 
 	/**
 	 * Create payment token
@@ -92,7 +77,7 @@ const MoneiCCSingleContent = ( props ) => {
 			return tokenPromiseRef.current;
 		}
 
-		tokenPromiseRef.current = cardInput
+		tokenPromiseRef.current = cardGroup
 			.createToken()
 			.then( ( newToken ) => {
 				if ( newToken ) {
@@ -105,29 +90,7 @@ const MoneiCCSingleContent = ( props ) => {
 			} );
 
 		return tokenPromiseRef.current;
-	}, [ cardInput ] );
-
-	/**
-	 * Validate form
-	 */
-	const validateForm = useCallback( () => {
-		let isValid = true;
-
-		// Validate cardholder name
-		if ( ! cardholderName.validate() ) {
-			isValid = false;
-		}
-
-		// Check card input validity
-		if ( ! cardInput.isValid ) {
-			formErrors.setError( 'card', moneiData.cardErrorString );
-			isValid = false;
-		} else {
-			formErrors.clearError( 'card' );
-		}
-
-		return isValid;
-	}, [ cardholderName, cardInput, formErrors, moneiData.cardErrorString ] );
+	}, [ cardGroup ] );
 
 	// Setup validation hook
 	useEffect( () => {
@@ -144,22 +107,22 @@ const MoneiCCSingleContent = ( props ) => {
 				};
 			}
 
-			// Check card input error
-			if ( cardInput.error ) {
+			// Check card group error
+			if ( cardGroup.error ) {
 				return {
-					errorMessage: cardInput.error,
+					errorMessage: cardGroup.error,
 				};
 			}
 
-			// Check card input validity
-			if ( ! cardInput.isValid ) {
+			// Check card group validity
+			if ( ! cardGroup.isValid ) {
 				return {
 					errorMessage: moneiData.cardErrorString,
 				};
 			}
 
 			// Try to create token if not exists
-			if ( ! tokenRef.current && ! cardInput.token ) {
+			if ( ! tokenRef.current && ! cardGroup.token ) {
 				const newToken = await createPaymentToken();
 				if ( ! newToken ) {
 					return {
@@ -176,7 +139,7 @@ const MoneiCCSingleContent = ( props ) => {
 		onCheckoutValidation,
 		isHostedWorkflow,
 		cardholderName,
-		cardInput,
+		cardGroup,
 		createPaymentToken,
 		moneiData.cardErrorString,
 		moneiData.tokenErrorString,
@@ -203,7 +166,7 @@ const MoneiCCSingleContent = ( props ) => {
 				// Get or create token
 				const paymentToken =
 					tokenRef.current ||
-					cardInput.token ||
+					cardGroup.token ||
 					( await createPaymentToken() );
 
 				if ( ! paymentToken ) {
@@ -240,7 +203,7 @@ const MoneiCCSingleContent = ( props ) => {
 		onPaymentSetup,
 		isHostedWorkflow,
 		cardholderName,
-		cardInput,
+		cardGroup,
 		createPaymentToken,
 		responseTypes,
 		moneiData.tokenErrorString,
@@ -280,19 +243,19 @@ const MoneiCCSingleContent = ( props ) => {
 							type: responseTypes.SUCCESS,
 							redirectUrl: failUrl.toString(),
 						};
-					} else {
-						// Always include payment ID in redirect URL for order verification
-						const { orderId, paymentId } = paymentDetails;
-						const url = new URL( paymentDetails.completeUrl );
-						url.searchParams.set( 'id', paymentId );
-						url.searchParams.set( 'orderId', orderId );
-						url.searchParams.set( 'status', result.status );
-
-						return {
-							type: responseTypes.SUCCESS,
-							redirectUrl: url.toString(),
-						};
 					}
+
+					// Always include payment ID in redirect URL for order verification
+					const { orderId, paymentId } = paymentDetails;
+					const url = new URL( paymentDetails.completeUrl );
+					url.searchParams.set( 'id', paymentId );
+					url.searchParams.set( 'orderId', orderId );
+					url.searchParams.set( 'status', result.status );
+
+					return {
+						type: responseTypes.SUCCESS,
+						redirectUrl: url.toString(),
+					};
 				} catch ( error ) {
 					console.error(
 						'Error during payment confirmation:',
@@ -352,25 +315,37 @@ const MoneiCCSingleContent = ( props ) => {
 				) }
 			</div>
 
-			{ /* Card Input Container */ }
-			<div
-				id="monei-card-input"
-				className="monei-card-input"
-				ref={ cardInput.containerRef }
-			/>
+			{ /* Split Card Field Containers, in tab order */ }
+			<div className="monei-card-group">
+				<div
+					id="monei-card-number"
+					className="monei-card-group-field monei-card-number"
+					ref={ cardGroup.cardNumberRef }
+				/>
+				<div
+					id="monei-card-expiry"
+					className="monei-card-group-field monei-card-expiry"
+					ref={ cardGroup.cardExpiryRef }
+				/>
+				<div
+					id="monei-card-cvc"
+					className="monei-card-group-field monei-card-cvc"
+					ref={ cardGroup.cardCvcRef }
+				/>
+			</div>
 
 			{ /* Hidden token input for form compatibility */ }
 			<input
 				type="hidden"
 				id="monei_payment_token"
 				name="monei_payment_token"
-				value={ cardInput.token || '' }
+				value={ cardGroup.token || '' }
 			/>
 
-			{ /* Card Input Error */ }
-			{ cardInput.error && (
+			{ /* Card Group Error */ }
+			{ cardGroup.error && (
 				<div className="wc-block-components-validation-error">
-					{ cardInput.error }
+					{ cardGroup.error }
 				</div>
 			) }
 
@@ -381,95 +356,5 @@ const MoneiCCSingleContent = ( props ) => {
 				</div>
 			) }
 		</fieldset>
-	);
-};
-
-/**
- * MONEI Credit Card Content Component
- *
- * Owns the single cart store subscription and selects the field layout. Both
- * layouts are fed the same amount, so neither adds its own subscription.
- * @param {Object} props - Component props
- * @return {React.Element}
- */
-export const MoneiCCContent = ( props ) => {
-	// Memoize moneiData to prevent infinite re-renders from wc.wcSettings.getSetting() returning new object
-	const moneiData = useMemo(
-		() => props.moneiData || wc.wcSettings.getSetting( 'monei_data' ),
-		[ props.moneiData ]
-	);
-
-	// Subscribe to cart totals so the amount tracks coupons and shipping.
-	const cartTotals = useSelect(
-		( select ) => select( 'wc/store/cart' ).getCartTotals(),
-		[]
-	);
-
-	const amount = useMemo(
-		() =>
-			cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: parseInt( moneiData.total * 100 ),
-		[ cartTotals, moneiData.total ]
-	);
-
-	if ( moneiData.cardFieldLayout === 'split' ) {
-		return (
-			<MoneiCCGroupContent
-				{ ...props }
-				moneiData={ moneiData }
-				amount={ amount }
-			/>
-		);
-	}
-
-	return (
-		<MoneiCCSingleContent
-			{ ...props }
-			moneiData={ moneiData }
-			amount={ amount }
-		/>
-	);
-};
-
-/**
- * Credit Card Label Component
- * @param {Object} moneiData - Configuration data
- * @return {React.Element}
- */
-export const CreditCardLabel = ( moneiData ) => {
-	const cardBrands = moneiData?.cardBrands
-		? Object.keys( moneiData.cardBrands ).filter(
-				( key ) => key !== 'default'
-		  )
-		: [];
-
-	return (
-		<div className="monei-label-container">
-			{ moneiData.title && (
-				<span className="monei-text">{ moneiData.title }</span>
-			) }
-			{ cardBrands.length > 0 ? (
-				<span className="monei-card-brands">
-					{ cardBrands.map( ( key ) => {
-						const brand = moneiData.cardBrands[ key ];
-						return (
-							<img
-								key={ key }
-								src={ brand.url }
-								alt={ brand.title }
-								className="card-brand-icon"
-							/>
-						);
-					} ) }
-				</span>
-			) : (
-				moneiData?.logo && (
-					<div className="monei-logo">
-						<img src={ moneiData.logo } alt="" />
-					</div>
-				)
-			) }
-		</div>
 	);
 };
