@@ -6,6 +6,7 @@ import {
 
 const { useEffect, useState, useRef, useCallback, useMemo, createPortal } =
 	wp.element;
+const { useSelect } = wp.data;
 
 /**
  * MONEI Credit Card Content Component
@@ -42,26 +43,55 @@ export const MoneiCCContent = ( props ) => {
 		[ moneiData.nameErrorString ]
 	);
 
+	// Amount is deliberately kept out of this memo: a moving total would change
+	// the config identity and re-arm the delayed card input mount.
 	const cardInputConfig = useMemo(
 		() => ( {
 			accountId: moneiData.accountId,
 			sessionId: moneiData.sessionId,
 			language: moneiData.language,
+			currency: moneiData.currency,
 			style: moneiData.cardInputStyle,
 		} ),
 		[
 			moneiData.accountId,
 			moneiData.sessionId,
 			moneiData.language,
+			moneiData.currency,
 			moneiData.cardInputStyle,
 		]
 	);
+
+	// Subscribe to cart totals so the amount tracks coupons and shipping.
+	const cartTotals = useSelect(
+		( select ) => select( 'wc/store/cart' ).getCartTotals(),
+		[]
+	);
+
+	const amount = useMemo(
+		() =>
+			cartTotals?.total_price
+				? parseInt( cartTotals.total_price )
+				: parseInt( moneiData.total * 100 ),
+		[ cartTotals, moneiData.total ]
+	);
+	const lastAmountRef = useRef( null );
 
 	// Cardholder name management
 	const cardholderName = useCardholderName( cardholderNameConfig );
 
 	// Card input management
-	const cardInput = useMoneiCardInput( cardInputConfig );
+	const cardInput = useMoneiCardInput( cardInputConfig, amount );
+
+	// Keep the amount live without re-creating the card input, which would wipe
+	// the card number the shopper already typed.
+	useEffect( () => {
+		if ( lastAmountRef.current === amount ) {
+			return;
+		}
+		lastAmountRef.current = amount;
+		cardInput.updateProps( { amount } );
+	}, [ amount, cardInput ] );
 
 	/**
 	 * Create payment token

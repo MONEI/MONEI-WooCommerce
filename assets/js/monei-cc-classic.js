@@ -13,6 +13,7 @@
 
 		if ( wc_monei_form.is_monei_selected() ) {
 			wc_monei_form.init_checkout_monei();
+			wc_monei_form.update_monei_amount();
 		}
 	} );
 
@@ -189,6 +190,8 @@
 			wc_monei_form.$cardInput = monei.CardInput( {
 				accountId: wc_monei_params.accountId,
 				sessionId: wc_monei_params.sessionId,
+				amount: parseInt( wc_monei_form.total ),
+				currency: wc_monei_params.currency,
 				style: wc_monei_params.cardInputStyle || {},
 				onChange( event ) {
 					// Handle real-time validation errors.
@@ -217,6 +220,16 @@
 
 			// We already init CardInput.
 			this.init_counter++;
+		},
+		update_monei_amount() {
+			// Runs after init_checkout_monei(), which may have rebuilt the
+			// instance, so always target the current one.
+			if ( ! wc_monei_form.$cardInput ) {
+				return;
+			}
+			wc_monei_form.$cardInput.updateProps( {
+				amount: parseInt( wc_monei_form.total ),
+			} );
 		},
 		place_order( e ) {
 			const token = document.getElementById( 'monei_payment_token' );
