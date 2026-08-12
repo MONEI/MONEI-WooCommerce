@@ -34,6 +34,9 @@ node_modules/
 /tests/auth/
 .phpcs.cache
 
+# PHPUnit
+/.phpunit.cache/
+
 # Translation files
 *.mo
 
