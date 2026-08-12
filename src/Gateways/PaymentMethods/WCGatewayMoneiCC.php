@@ -486,6 +486,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 				'currency'        => get_woocommerce_currency(),
 				'appleLogo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
 				'cardInputStyle'  => json_decode( $card_input_style ),
+				'cardFieldLayout' => $this->get_option( 'card_field_layout', 'single' ),
 				'cardBrands'      => $this->cardBrandHelper->getCardBrandsConfig(),
 				'nameErrorString' => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
 			)

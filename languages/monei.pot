@@ -1,15 +1,15 @@
-# Copyright (C) 2025 MONEI
+# Copyright (C) 2026 MONEI
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: MONEI Payments for WooCommerce 6.4.0\n"
+"Project-Id-Version: MONEI Payments for WooCommerce 7.0.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/MONEI-WooCommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-10-10T13:25:08+00:00\n"
+"POT-Creation-Date: 2026-08-12T16:08:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: monei\n"
@@ -263,22 +263,38 @@ msgid "You will be redirected to Credit Card to complete the payment. Powered by
 msgstr ""
 
 #: includes/admin/monei-cc-settings.php:75
-msgid "Card Input Style"
+msgid "Card Field Layout"
 msgstr ""
 
 #: includes/admin/monei-cc-settings.php:77
-msgid "Configure in JSON format the style of the Card Input component. Documentation: "
+msgid "Show the card fields on a single line, or as separate card number, expiry and CVC fields."
+msgstr ""
+
+#: includes/admin/monei-cc-settings.php:81
+msgid "Single line"
 msgstr ""
 
 #: includes/admin/monei-cc-settings.php:82
-msgid "Saved cards"
-msgstr ""
-
-#: includes/admin/monei-cc-settings.php:84
-msgid "Enable payments via saved cards"
+msgid "Separate fields"
 msgstr ""
 
 #: includes/admin/monei-cc-settings.php:86
+msgid "Card Input Style"
+msgstr ""
+
+#: includes/admin/monei-cc-settings.php:88
+msgid "Configure in JSON format the style of the card fields. Applies to both the single line and the separate fields layouts. Documentation: "
+msgstr ""
+
+#: includes/admin/monei-cc-settings.php:93
+msgid "Saved cards"
+msgstr ""
+
+#: includes/admin/monei-cc-settings.php:95
+msgid "Enable payments via saved cards"
+msgstr ""
+
+#: includes/admin/monei-cc-settings.php:97
 msgid "If enabled, customers will be able to pay with a saved card during checkout. Card details are saved on MONEI servers, not on your store."
 msgstr ""
 
@@ -540,7 +556,7 @@ msgid "Cardholder Name"
 msgstr ""
 
 #: src/Gateways/Blocks/MoneiCCBlocksSupport.php:126
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:490
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:491
 msgid "Please enter a valid name. Special characters are not allowed."
 msgstr ""
 
