@@ -103,8 +103,13 @@ const expressPost = ( page, endpoint, fields = {} ) =>
  * @param {string}                          sessionId - Express session id
  * @param {number}                          amount    - Cart total in minor units
  */
-const mountCardInput = ( page, sessionId, amount ) =>
-	page.evaluate(
+const mountCardInput = async ( page, sessionId, amount ) => {
+	// The localized params and the SDK script are separate resources, so params
+	// arriving does not mean `monei` exists yet. Without this the test fails with
+	// "monei is not defined" on slow networks instead of a real assertion.
+	await page.waitForFunction( () => typeof window.monei !== 'undefined' );
+
+	return page.evaluate(
 		( { session, total } ) => {
 			const mount = document.createElement( 'div' );
 			mount.id = 'monei-card-input';
@@ -122,6 +127,7 @@ const mountCardInput = ( page, sessionId, amount ) =>
 		},
 		{ session: sessionId, total: amount }
 	);
+};
 
 let previousSettings;
 

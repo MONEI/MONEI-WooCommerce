@@ -40,9 +40,23 @@ const fetchAccountId = async ( apiKey ) => {
 			// The API refuses requests without one when the caller is not an SDK.
 			'User-Agent': 'MONEI-WooCommerce-E2E',
 		},
+		// The seed is the first thing CI runs; an unanswered request here would
+		// hang the job rather than fail it.
+		signal: AbortSignal.timeout( 30000 ),
 	} );
 
-	const body = await response.json();
+	// A gateway error page or a WAF block is not JSON, and letting the parser
+	// throw would report a syntax error instead of the refusal that caused it.
+	let body = {};
+
+	try {
+		body = await response.json();
+	} catch ( parseError ) {
+		throw new Error(
+			`${ ALLOWED_PAYMENT_METHODS_URL } answered ${ response.status } with a ` +
+				'body that is not JSON.'
+		);
+	}
 
 	if ( ! response.ok || ! body.accountId ) {
 		// Describe the key without printing it. A stored secret pasted with a
@@ -249,5 +263,13 @@ const main = async () => {
 
 main().catch( ( error ) => {
 	process.stderr.write( `${ error.message }\n` );
+
+	// `execFileSync` puts only "Command failed: …" in the message and leaves
+	// WP-CLI's actual explanation on stderr, so without this a CI failure says
+	// that something broke without saying what.
+	if ( error.stderr ) {
+		process.stderr.write( `${ error.stderr }\n` );
+	}
+
 	process.exitCode = 1;
 } );
