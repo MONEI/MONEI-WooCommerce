@@ -1,0 +1,48 @@
+/**
+ * Express checkout buttons on the classic storefront.
+ *
+ * The block surfaces inherit WooCommerce's own express payment
+ * area, so only the button container carries styling there.
+ */
+
+.monei-express-checkout {
+	margin: 0 0 24px;
+}
+
+.monei-express-checkout.is-unavailable {
+	display: none;
+}
+
+.monei-express-checkout__title {
+	font-size: 14px;
+	font-weight: 600;
+	margin-bottom: 8px;
+	text-align: center;
+}
+
+/* The wallet has not reported itself supported yet, so nothing but the mount
+   container is shown — a heading above a button that never appears reads as a
+   broken checkout. */
+.monei-express-checkout.is-loading .monei-express-checkout__title {
+	visibility: hidden;
+}
+
+.monei-express-checkout__button {
+	margin: 0 auto;
+	max-width: 420px;
+}
+
+.monei-express-checkout__error {
+	color: #cc1818;
+	font-size: 13px;
+	margin-top: 8px;
+	text-align: center;
+}
+
+.monei-express-checkout__error:empty {
+	display: none;
+}
+
+.monei-express-checkout--blocks {
+	margin: 0;
+}

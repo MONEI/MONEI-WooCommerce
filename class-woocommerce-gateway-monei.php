@@ -12,6 +12,7 @@ use Monei\Core\ContainerProvider;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
 use Monei\Services\express\ExpressCheckoutAjaxHandler;
+use Monei\Services\express\ExpressCheckoutAssets;
 use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
@@ -263,6 +264,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// so its hooks never bind. Express endpoints must exist on every request, so
 			// resolve the handler here and register them.
 			ContainerProvider::getContainer()->get( ExpressCheckoutAjaxHandler::class )->init();
+			ContainerProvider::getContainer()->get( ExpressCheckoutAssets::class )->init();
 
 			$this->load_plugin_textdomain();
 
