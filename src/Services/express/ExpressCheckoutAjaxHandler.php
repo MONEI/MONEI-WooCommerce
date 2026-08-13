@@ -9,7 +9,10 @@ namespace Monei\Services\express;
 
 use Monei\Core\ContainerProvider;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
+use WC_Cart;
 use WC_Data_Store;
+use WC_Monei_Logger;
+use WC_Order;
 use WC_Product;
 use WC_Product_Variation;
 use WC_Session_Handler;
@@ -118,6 +121,7 @@ class ExpressCheckoutAjaxHandler {
 		add_action( 'wc_ajax_monei_express_get_selected_product_data', array( $this, 'ajax_get_selected_product_data' ) );
 		add_action( 'wc_ajax_monei_express_add_to_cart', array( $this, 'ajax_add_to_cart' ) );
 		add_action( 'wc_ajax_monei_express_clear_cart', array( $this, 'ajax_clear_cart' ) );
+		add_action( 'wc_ajax_monei_express_create_order', array( $this, 'ajax_create_order' ) );
 		add_action( 'wp', array( $this, 'maybe_start_customer_session' ) );
 	}
 
@@ -376,6 +380,347 @@ class ExpressCheckoutAjaxHandler {
 				'restored' => $this->cart_backup->restore(),
 			)
 		);
+	}
+
+	/**
+	 * Turns a wallet `SubmitResult` into a paid WooCommerce order.
+	 *
+	 * This is the only path a product page or a classic cart express payment has: those
+	 * surfaces carry no checkout form to submit, unlike the classic checkout page and
+	 * the Cart/Checkout blocks, which both go through WooCommerce's own order flow.
+	 *
+	 * 🚨 `finalAmount` comes from the client. It is never charged, never stored and never
+	 * trusted — the total is recomputed here from the cart and the request is refused on
+	 * any mismatch. See `amount_matches()`.
+	 *
+	 * @return void
+	 */
+	public function ajax_create_order() {
+		$this->verify_request();
+
+		$location = $this->get_posted_text( 'location' );
+		$gateway  = $this->get_gateway_for_payment_method( $this->get_posted_text( 'payment_method' ) );
+
+		if ( ! $gateway instanceof WCMoneiPaymentGateway || ! $gateway->is_express_enabled_at( $location ) ) {
+			$this->fail_order( 'express_disabled', __( 'Express checkout is not available.', 'monei' ) );
+		}
+
+		// The token is read straight out of $_POST by the gateways themselves, under the
+		// same field name the classic checkout form uses, so nothing is passed by hand.
+		if ( '' === $this->get_posted_text( 'monei_payment_request_token' ) ) {
+			$this->fail_order( 'missing_token', __( 'The wallet did not return a payment token.', 'monei' ) );
+		}
+
+		// The token was created against the session the component was initialised with.
+		// A session that rotated in between would be rejected by MONEI with nothing a
+		// shopper could act on, so it is caught here instead.
+		if ( $this->get_posted_text( 'session_id' ) !== $this->get_session_id() ) {
+			$this->fail_order( 'session_mismatch', __( 'Your express checkout session expired. Please reload the page.', 'monei' ) );
+		}
+
+		if ( ! WC()->cart instanceof WC_Cart || WC()->cart->is_empty() ) {
+			$this->fail_order( 'empty_cart', __( 'Your cart is empty.', 'monei' ) );
+		}
+
+		$billing  = $this->get_posted_address( 'billing' );
+		$shipping = $this->get_posted_address( 'shipping' );
+
+		if ( '' === $shipping['country'] ) {
+			$shipping = $billing;
+		}
+
+		if ( '' === $billing['country'] ) {
+			$billing = $shipping;
+		}
+
+		// Totals are recomputed exactly the way the shipping callbacks computed the
+		// figure the shopper approved: the customer is pointed at the shipping address
+		// and nothing else. Setting the billing address separately here would move the
+		// total on a store that taxes by billing address, after the wallet had already
+		// shown its own — the order still records the billing address the wallet returned.
+		$this->apply_shipping_address( $shipping );
+		$this->apply_chosen_shipping_option();
+
+		WC()->cart->calculate_totals();
+
+		$currency = get_woocommerce_currency();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		$final_amount = isset( $_POST['final_amount'] ) ? wc_clean( wp_unslash( $_POST['final_amount'] ) ) : null;
+
+		if ( ! self::amount_matches( WC()->cart->get_total( 'edit' ), $currency, $final_amount ) ) {
+			WC_Monei_Logger::log(
+				sprintf(
+					'Express checkout refused an order: the wallet reported %s and the cart recomputed to %d %s.',
+					is_scalar( $final_amount ) ? (string) $final_amount : 'nothing',
+					self::to_minor_units( WC()->cart->get_total( 'edit' ), $currency ),
+					$currency
+				),
+				WC_Monei_Logger::LEVEL_ERROR
+			);
+
+			$this->fail_order( 'amount_mismatch', __( 'The payment amount did not match your cart, so nothing was charged. Please try again.', 'monei' ) );
+		}
+
+		$order = $this->create_order( $billing, $shipping, $gateway );
+
+		$result = $gateway->process_payment( $order->get_id() );
+
+		if ( ! is_array( $result ) || 'success' !== ( isset( $result['result'] ) ? $result['result'] : '' ) || empty( $result['redirect'] ) ) {
+			$order->update_status( 'failed', __( 'Express checkout payment could not be started.', 'monei' ) );
+
+			$this->fail_order( 'payment_failed', $this->take_error_notice() );
+		}
+
+		$order->add_order_note(
+			sprintf(
+				/* translators: %s: express checkout surface, e.g. product page */
+				__( 'Order placed through MONEI express checkout (%s).', 'monei' ),
+				$this->get_location_label( $location )
+			)
+		);
+
+		// The product page flow borrowed the shopper's cart to hold the express item.
+		// The order has taken its copy of it, so the shopper's own cart goes back.
+		if ( $this->cart_backup->has_backup() ) {
+			$this->cart_backup->restore();
+		} else {
+			WC()->cart->empty_cart();
+		}
+
+		wp_send_json(
+			array(
+				'result'   => 'success',
+				'orderId'  => $order->get_id(),
+				'redirect' => $result['redirect'],
+			)
+		);
+	}
+
+	/**
+	 * Builds the WooCommerce order for an express payment.
+	 *
+	 * `WC_Checkout::create_order()` is the same call the ordinary checkout makes, so
+	 * line items, fees, shipping lines, taxes and coupons are all copied from the cart
+	 * by WooCommerce itself and the resulting order is indistinguishable from one placed
+	 * through the checkout form.
+	 *
+	 * @param array<string, string>  $billing  Normalized billing address.
+	 * @param array<string, string>  $shipping Normalized shipping address.
+	 * @param WCMoneiPaymentGateway  $gateway  Gateway the order is placed with.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order( array $billing, array $shipping, WCMoneiPaymentGateway $gateway ) {
+		$data = $this->build_order_data( $billing, $shipping, $gateway );
+
+		$order_id = WC()->checkout()->create_order( $data );
+
+		if ( is_wp_error( $order_id ) ) {
+			$this->fail_order( 'order_failed', $order_id->get_error_message() );
+		}
+
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order instanceof WC_Order ) {
+			$this->fail_order( 'order_failed', __( 'Your order could not be created.', 'monei' ) );
+		}
+
+		// Both are what WC_Checkout::process_checkout() does around this point. The
+		// action is what WooCommerce Subscriptions and YITH listen on to build their
+		// subscriptions, so an express order carries them exactly as a normal one does.
+		WC()->session->set( 'order_awaiting_payment', $order->get_id() );
+		do_action( 'woocommerce_checkout_order_processed', $order->get_id(), $data, $order );
+
+		return $order;
+	}
+
+	/**
+	 * Checkout data in the shape `WC_Checkout::create_order()` reads.
+	 *
+	 * @param array<string, string> $billing  Normalized billing address.
+	 * @param array<string, string> $shipping Normalized shipping address.
+	 * @param WCMoneiPaymentGateway $gateway  Gateway the order is placed with.
+	 *
+	 * @return array<string, string>
+	 */
+	private function build_order_data( array $billing, array $shipping, WCMoneiPaymentGateway $gateway ) {
+		$data = array(
+			'payment_method' => $gateway->id,
+			'order_comments' => '',
+		);
+
+		foreach ( array( 'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country' ) as $field ) {
+			$data[ 'billing_' . $field ]  = $billing[ $field ];
+			$data[ 'shipping_' . $field ] = $shipping[ $field ];
+		}
+
+		$data['billing_email'] = $billing['email'];
+		$data['billing_phone'] = $billing['phone'];
+
+		return $data;
+	}
+
+	/**
+	 * Applies the shipping method the shopper picked in the wallet sheet.
+	 *
+	 * The rate id comes from the client, so it is honoured only when it is one the cart
+	 * and address actually produced.
+	 *
+	 * @return void
+	 */
+	private function apply_chosen_shipping_option() {
+		if ( ! WC()->cart->needs_shipping() ) {
+			return;
+		}
+
+		$options = $this->get_available_shipping_options();
+
+		if ( empty( $options ) ) {
+			$this->fail_order( 'invalid_shipping_address', __( 'No shipping method is available for this address.', 'monei' ) );
+		}
+
+		$rate_id = $this->get_posted_text( 'shipping_option' );
+
+		if ( ! in_array( $rate_id, wp_list_pluck( $options, 'id' ), true ) ) {
+			// No usable pick means the wallet never offered a choice — a sheet that shows
+			// one option does not always report it — so the option the cart already holds
+			// stands, which is the first of the list the wallet was given.
+			$rate_id = $options[0]['id'];
+		}
+
+		$this->set_chosen_shipping_method( $rate_id );
+		WC()->cart->calculate_totals();
+	}
+
+	/**
+	 * Whether a client-supplied amount equals the amount this server computed.
+	 *
+	 * 🚨 The security boundary of express checkout. The wallet's own figure travels
+	 * through the browser and is therefore attacker-controlled; the only figure that may
+	 * decide a charge is the one recomputed here from the cart.
+	 *
+	 * ⚠️ The comparison goes through `to_minor_units()`, never `monei_price_format()`.
+	 * The global helper multiplies by 100 for every currency, so on a zero-decimal
+	 * currency it would compare 100000 against the wallet's 1000 and refuse every
+	 * legitimate JPY payment.
+	 *
+	 * Only whole minor units are accepted: fractions never come off a wallet, and
+	 * rounding one into range is exactly the tampering this guard exists to catch.
+	 *
+	 * @param float|int|string $expected_amount Server-recomputed total, in major units.
+	 * @param string           $currency        ISO 4217 code.
+	 * @param mixed            $submitted       Raw client value, in minor units.
+	 *
+	 * @return bool
+	 */
+	public static function amount_matches( $expected_amount, $currency, $submitted ) {
+		if ( ! is_scalar( $submitted ) || is_bool( $submitted ) ) {
+			return false;
+		}
+
+		$value = trim( (string) $submitted );
+
+		if ( '' === $value || ! is_numeric( $value ) ) {
+			return false;
+		}
+
+		$minor = (float) $value;
+
+		if ( floor( $minor ) !== $minor ) {
+			return false;
+		}
+
+		return self::to_minor_units( $expected_amount, $currency ) === (int) $minor;
+	}
+
+	/**
+	 * The express gateway that issued a wallet token.
+	 *
+	 * @param string $payment_method `paymentMethod` from the wallet's SubmitResult.
+	 *
+	 * @return WCMoneiPaymentGateway|null
+	 */
+	private function get_gateway_for_payment_method( $payment_method ) {
+		$wanted = 'paypal' === strtolower( $payment_method )
+			? 'Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal'
+			: 'Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle';
+
+		foreach ( $this->get_express_gateways() as $gateway ) {
+			if ( $gateway instanceof $wanted ) {
+				return $gateway;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Restores the borrowed cart, then refuses the request.
+	 *
+	 * Every way out of order creation goes through here: a shopper whose payment did not
+	 * happen must find the cart they had before the wallet opened.
+	 *
+	 * @param string $code    Machine readable reason.
+	 * @param string $message Shopper facing message.
+	 *
+	 * @return void
+	 */
+	private function fail_order( $code, $message ) {
+		$this->cart_backup->restore();
+
+		$this->deny( $code, '' !== $message ? $message : __( 'Express checkout could not complete your order.', 'monei' ) );
+	}
+
+	/**
+	 * Takes the error WooCommerce queued during payment, so it is reported under the
+	 * express button instead of surfacing on whatever page the shopper opens next.
+	 *
+	 * @return string
+	 */
+	private function take_error_notice() {
+		if ( ! function_exists( 'wc_get_notices' ) ) {
+			return '';
+		}
+
+		$notices = wc_get_notices( 'error' );
+
+		wc_clear_notices();
+
+		foreach ( $notices as $notice ) {
+			$message = is_array( $notice ) && isset( $notice['notice'] ) ? $notice['notice'] : $notice;
+
+			if ( is_string( $message ) && '' !== $message ) {
+				return wp_strip_all_tags( $message );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * @param string $location Express location key.
+	 *
+	 * @return string
+	 */
+	private function get_location_label( $location ) {
+		$options = WCMoneiPaymentGateway::get_express_location_options();
+
+		return isset( $options[ $location ] ) ? $options[ $location ] : $location;
+	}
+
+	/**
+	 * @param string $key POST key.
+	 *
+	 * @return string
+	 */
+	private function get_posted_text( $key ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		if ( ! isset( $_POST[ $key ] ) || ! is_scalar( $_POST[ $key ] ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return (string) wc_clean( wp_unslash( $_POST[ $key ] ) );
 	}
 
 	/**
