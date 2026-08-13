@@ -66,11 +66,12 @@ export const useMoneiCardGroup = ( config, amount ) => {
 
 	/**
 	 * Initialize the MONEI card group and its three parts
+	 * @return {boolean} Whether the group is now mounted
 	 */
 	const initializeCardGroup = useCallback( () => {
 		if ( typeof monei === 'undefined' || ! monei.CardGroup ) {
 			setError( 'MONEI SDK is not available' );
-			return;
+			return false;
 		}
 
 		if (
@@ -79,7 +80,7 @@ export const useMoneiCardGroup = ( config, amount ) => {
 			! cardCvcRef.current
 		) {
 			setError( 'Card input container not found' );
-			return;
+			return false;
 		}
 
 		try {
@@ -127,9 +128,11 @@ export const useMoneiCardGroup = ( config, amount ) => {
 			partsRef.current = parts;
 			setIsReady( true );
 			setError( '' );
+			return true;
 		} catch ( err ) {
 			setError( err.message || 'Failed to initialize card input' );
 			setIsReady( false );
+			return false;
 		}
 	}, [ config, createToken ] );
 
@@ -158,12 +161,12 @@ export const useMoneiCardGroup = ( config, amount ) => {
 		setIsValid( false );
 	}, [] );
 
-	// Initialize on mount
+	// Initialize on mount. A failed attempt leaves the ref down so a later run
+	// can try again, otherwise the shopper keeps empty fields and cannot pay.
 	useEffect( () => {
 		if ( ! hasInitialized.current ) {
 			const timer = setTimeout( () => {
-				initializeCardGroup();
-				hasInitialized.current = true;
+				hasInitialized.current = initializeCardGroup();
 			}, 500 );
 			return () => clearTimeout( timer );
 		}
