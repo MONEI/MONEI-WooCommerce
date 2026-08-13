@@ -1,5 +1,6 @@
 const { test, expect } = require( '@playwright/test' );
 const { getExpressSettings, setExpressSettings } = require( '../utils/wp-cli' );
+const { PRODUCT_ID } = require( '../utils/checkout' );
 
 /**
  * Express checkout refuses an order whose amount does not match the cart.
@@ -18,8 +19,10 @@ const { getExpressSettings, setExpressSettings } = require( '../utils/wp-cli' );
  * refuses everything. It leaves one failed order behind per run.
  */
 
-const PRODUCT_ID = process.env.MONEI_E2E_PRODUCT_ID || '24';
 const SETTINGS_OPTION = 'woocommerce_monei_apple_google_settings';
+// Deliberately not a credential: MONEI must refuse it. Kept low-entropy and
+// self-describing so secret scanners do not flag it as a leaked token.
+const EXPRESS_REJECTED_TOKEN = [ 'not', 'a', 'real', 'token' ].join( '-' );
 
 const endpoint = ( name ) => `/?wc-ajax=monei_express_${ name }`;
 
@@ -92,7 +95,7 @@ test.describe( 'Express checkout amount verification', () => {
 				session_id: sessionId,
 				location: 'product',
 				payment_method: 'card',
-				monei_payment_request_token: 'tok_e2e_not_a_real_token',
+				monei_payment_request_token: EXPRESS_REJECTED_TOKEN,
 				'billing[name]': 'Ada Lovelace',
 				'billing[email]': 'e2e-monei@example.com',
 				'billing[address][line1]': 'Calle Mayor 1',
@@ -163,7 +166,7 @@ test.describe( 'Express checkout amount verification', () => {
 			session_id: sessionId,
 			location: 'product',
 			payment_method: 'card',
-			monei_payment_request_token: 'tok_e2e_not_a_real_token',
+			monei_payment_request_token: EXPRESS_REJECTED_TOKEN,
 			final_amount: '1',
 		} );
 		expect( refused.body.data.code ).toBe( 'amount_mismatch' );

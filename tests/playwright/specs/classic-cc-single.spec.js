@@ -16,11 +16,19 @@ const {
 	setCheckoutPageId,
 } = require( '../utils/wp-cli' );
 
+const { fixture } = require( '../utils/fixtures' );
+
 const LAYOUT = 'single';
-const CLASSIC_CHECKOUT_PAGE_ID =
-	process.env.MONEI_E2E_CLASSIC_CHECKOUT_PAGE_ID || '31';
-const CLASSIC_CHECKOUT_PATH =
-	process.env.MONEI_E2E_CLASSIC_CHECKOUT_PATH || '/classic-checkout/';
+const CLASSIC_CHECKOUT_PAGE_ID = fixture(
+	'classicCheckoutPageId',
+	'MONEI_E2E_CLASSIC_CHECKOUT_PAGE_ID',
+	'31'
+);
+const CLASSIC_CHECKOUT_PATH = fixture(
+	'classicCheckoutPath',
+	'MONEI_E2E_CLASSIC_CHECKOUT_PATH',
+	'/classic-checkout/'
+);
 
 let previousLayout;
 let previousCheckoutPageId;
