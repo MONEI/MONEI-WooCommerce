@@ -11,12 +11,17 @@ const {
 	gotoCheckout,
 } = require( '../utils/checkout' );
 const { getCardFieldLayout, setCardFieldLayout } = require( '../utils/wp-cli' );
+const { THREE_DS_SKIP_REASON, supportsThreeDs } = require( '../utils/env' );
 
 const LAYOUT = 'single';
 
 let previousLayout;
 
 test.describe( 'Block checkout, single card field', () => {
+	// Every case here places a card order, and this account challenges the test
+	// cards, so the whole file depends on a 3DS round trip.
+	test.skip( ! supportsThreeDs(), THREE_DS_SKIP_REASON );
+
 	test.beforeAll( () => {
 		previousLayout = getCardFieldLayout();
 		setCardFieldLayout( LAYOUT );

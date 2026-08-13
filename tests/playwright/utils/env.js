@@ -87,4 +87,35 @@ const baseUrl = () => {
 	return wpEnvUrl();
 };
 
-module.exports = { PLUGIN_ROOT, baseUrl, isWpEnv, requireEnv, wpEnvUrl };
+/**
+ * Whether the store is reachable from outside this machine over HTTPS.
+ *
+ * 3D Secure sends the shopper's browser to the issuer and back to the store, and
+ * the challenge is framed over HTTPS. A store on `http://localhost` satisfies
+ * neither half: the page is plain HTTP, and MONEI cannot reach the host at all.
+ * The challenge then never renders, so a card journey that expects one waits for
+ * a thank you page that can never arrive.
+ *
+ * wp-env serves exactly such a site, which is why the card specs run only
+ * against a publicly reachable HTTPS store — an ngrok tunnel, staging, or any
+ * real host.
+ * @return {boolean} Whether 3DS can complete against this store
+ */
+const supportsThreeDs = () => baseUrl().startsWith( 'https://' );
+
+/**
+ * Reason shown when a spec is skipped for want of a public HTTPS store.
+ */
+const THREE_DS_SKIP_REASON =
+	`3D Secure needs a publicly reachable HTTPS store; this run targets ${ baseUrl() }. ` +
+	'Set MONEI_E2E_WP_DIR and MONEI_E2E_BASE_URL to a tunnelled or hosted site to run it.';
+
+module.exports = {
+	PLUGIN_ROOT,
+	THREE_DS_SKIP_REASON,
+	baseUrl,
+	isWpEnv,
+	requireEnv,
+	supportsThreeDs,
+	wpEnvUrl,
+};
