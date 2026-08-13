@@ -177,11 +177,18 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return void
 		 */
 		function admin_new_install_notice() {
+			// The notice concerns the plugin itself, so it is neither shown to nor
+			// dismissable by users who cannot administer WooCommerce. Without this the
+			// option is a site-wide setting any logged-in user could write.
+			if ( ! current_user_can( 'manage_woocommerce' ) ) {
+				return;
+			}
 			/**
 			 * If Dismissed, we save the versions installed.
 			 */
-			if ( isset( $_GET['monei-hide-new-version'] ) && 'hide-new-version-monei' === sanitize_text_field( $_GET['monei-hide-new-version'] ) ) {
-				if ( wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_monei_hide_new_version_nonce'] ) ), 'monei_hide_new_version_nonce' ) ) {
+			if ( isset( $_GET['monei-hide-new-version'] ) && 'hide-new-version-monei' === sanitize_text_field( wp_unslash( $_GET['monei-hide-new-version'] ) ) ) {
+				$nonce = isset( $_GET['_monei_hide_new_version_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_monei_hide_new_version_nonce'] ) ) : '';
+				if ( wp_verify_nonce( $nonce, 'monei_hide_new_version_nonce' ) ) {
 					update_option( 'hide-new-version-monei-notice', MONEI_VERSION );
 				}
 				return;
