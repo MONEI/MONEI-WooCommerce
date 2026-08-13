@@ -13,31 +13,31 @@ MONEI Payments for WooCommerce - Official WordPress plugin for accepting payment
 ```bash
 # Install dependencies
 composer install
-yarn install
+pnpm install
 
 # Build production assets (required after JS/CSS changes)
-yarn build
+pnpm build
 
 # Development build with watch mode
-yarn start
+pnpm start
 
 # Lint and fix code
-yarn lint:js-fix
-yarn lint:css
+pnpm lint:js-fix
+pnpm lint:css
 ```
 
 ### Release Process
 
 ```bash
 # Create new release (automated versioning based on conventional commits)
-yarn release
+pnpm release
 
 # Test release without making changes
-yarn release --dry-run
+pnpm release --dry-run
 
 # Manual version bump
-yarn release --increment patch   # 6.3.8 → 6.3.9
-yarn release --increment minor   # 6.3.8 → 6.4.0
+pnpm release --increment patch   # 6.3.8 → 6.3.9
+pnpm release --increment minor   # 6.3.8 → 6.4.0
 ```
 
 **IMPORTANT**: All commits MUST follow conventional commit format:
@@ -90,7 +90,7 @@ The plugin directory is mounted as a volume:
 -   Edit files in `/Users/dmitriy/Work/woocommerce/wp-content/plugins/MONEI-WooCommerce/`
 -   Changes are immediately reflected in the WordPress container
 -   No need to rebuild containers after code changes
--   Must run `yarn build` after JS/CSS changes to regenerate assets
+-   Must run `pnpm build` after JS/CSS changes to regenerate assets
 
 ### WordPress Configuration
 
@@ -155,7 +155,7 @@ Check ngrok URL: http://localhost:4040
 **Plugin changes not appearing**:
 
 1. Clear WordPress cache: `docker-compose exec wp-cli wp cache flush`
-2. Rebuild assets: `yarn build`
+2. Rebuild assets: `pnpm build`
 3. Check file permissions if needed
 
 **Database reset**:
@@ -363,22 +363,22 @@ The project uses automated linting and static analysis tools with git hooks for 
 
 ```bash
 # Auto-fix all issues at once (recommended workflow)
-yarn lint:fix
+pnpm lint:fix
 
 # Individual auto-fixers
-yarn format           # Auto-format JS, CSS, JSON, YAML, Markdown
-yarn lint:js-fix      # Fix JavaScript
-yarn lint:css-fix     # Fix CSS
-yarn lint:php:fix     # Fix PHP code style (phpcbf)
+pnpm format           # Auto-format JS, CSS, JSON, YAML, Markdown
+pnpm lint:js-fix      # Fix JavaScript
+pnpm lint:css-fix     # Fix CSS
+pnpm lint:php:fix     # Fix PHP code style (phpcbf)
 
 # Linters only (no auto-fix)
-yarn lint             # Check all (formatting + JS + CSS + PHP + PHPStan)
-yarn format:check     # Check formatting without fixing
-yarn lint:js          # Check JavaScript
-yarn lint:css         # Check CSS
-yarn lint:php         # Check PHP (PHPCS + PHPStan)
-yarn lint:php:phpcs   # Check PHP code style only
-yarn lint:php:phpstan # Check PHP static analysis only
+pnpm lint             # Check all (formatting + JS + CSS + PHP + PHPStan)
+pnpm format:check     # Check formatting without fixing
+pnpm lint:js          # Check JavaScript
+pnpm lint:css         # Check CSS
+pnpm lint:php         # Check PHP (PHPCS + PHPStan)
+pnpm lint:php:phpcs   # Check PHP code style only
+pnpm lint:php:phpstan # Check PHP static analysis only
 ```
 
 ### Developer Workflow
@@ -386,7 +386,7 @@ yarn lint:php:phpstan # Check PHP static analysis only
 **Recommended workflow for best experience:**
 
 1. **Make your changes** in the codebase
-2. **Before staging**: Run `yarn lint:fix` to auto-fix all issues
+2. **Before staging**: Run `pnpm lint:fix` to auto-fix all issues
 3. **Stage your files**: `git add <files>`
 4. **Commit**: `git commit -m "feat: your message"`
     - Pre-commit hook auto-fixes staged files
@@ -568,14 +568,14 @@ PHPStan configuration accounts for WordPress patterns:
 1. **Always run linters** before committing:
 
     ```bash
-    yarn lint
+    pnpm lint
     ```
 
 2. **Fix auto-fixable issues** first:
 
     ```bash
     composer phpcbf
-    yarn lint:js-fix
+    pnpm lint:js-fix
     ```
 
 3. **Check pre-commit hook** is working:
@@ -618,7 +618,7 @@ vendor/bin/phpstan analyse --memory-limit=2G
 ### After modifying JavaScript:
 
 ```bash
-yarn build
+pnpm build
 ```
 
 ### After modifying settings or gateway classes:

@@ -20,7 +20,7 @@ MONEI is an e-commerce payment gateway for WooCommerce that enables merchants to
 -   PHP 8.0 or higher
 -   Node.js 18 or higher
 -   Composer
--   Yarn 4 (managed via Corepack)
+-   pnpm 11 (pinned via the packageManager field)
 
 ### Installation
 
@@ -40,8 +40,8 @@ composer install
 3. Install Node dependencies and build assets:
 
 ```bash
-yarn install
-yarn build
+pnpm install
+pnpm build
 ```
 
 ## Development Workflow
@@ -84,10 +84,10 @@ Commits are automatically validated by Husky + Commitlint. Invalid commit messag
 
 ```bash
 # Development build with watch mode
-yarn start
+pnpm start
 
 # Production build
-yarn build
+pnpm build
 ```
 
 ## Release Process
@@ -105,7 +105,7 @@ git push
 2. **Run the release command**:
 
 ```bash
-yarn release
+pnpm release
 ```
 
 This will automatically:
@@ -136,7 +136,7 @@ This will automatically:
 Test the release process without making changes:
 
 ```bash
-yarn release --dry-run
+pnpm release --dry-run
 ```
 
 ### Manual Version Bump
@@ -144,10 +144,10 @@ yarn release --dry-run
 To specify a version manually:
 
 ```bash
-yarn release --increment patch   # 6.3.8 → 6.3.9
-yarn release --increment minor   # 6.3.8 → 6.4.0
-yarn release --increment major   # 6.3.8 → 7.0.0
-yarn release 6.4.0              # Specific version
+pnpm release --increment patch   # 6.3.8 → 6.3.9
+pnpm release --increment minor   # 6.3.8 → 6.4.0
+pnpm release --increment major   # 6.3.8 → 7.0.0
+pnpm release 6.4.0              # Specific version
 ```
 
 ## Project Structure
@@ -203,25 +203,25 @@ The project uses automated linting and code quality tools to maintain consistent
 
 ```bash
 # Auto-fix all issues at once (recommended)
-yarn lint:fix
+pnpm lint:fix
 
 # Individual fixers
-yarn lint:js-fix    # Fix JavaScript issues
-yarn lint:css-fix   # Fix CSS issues
-yarn lint:php:fix   # Fix PHP code style issues (phpcbf)
+pnpm lint:js-fix    # Fix JavaScript issues
+pnpm lint:css-fix   # Fix CSS issues
+pnpm lint:php:fix   # Fix PHP code style issues (phpcbf)
 
 # Linters only (no auto-fix)
-yarn lint           # Check all (JS + CSS + PHP)
-yarn lint:js        # Check JavaScript
-yarn lint:css       # Check CSS
-yarn lint:php       # Check PHP (PHPCS + PHPStan)
-yarn lint:php:phpcs # Check PHP code style only
-yarn lint:php:phpstan # Check PHP static analysis only
+pnpm lint           # Check all (JS + CSS + PHP)
+pnpm lint:js        # Check JavaScript
+pnpm lint:css       # Check CSS
+pnpm lint:php       # Check PHP (PHPCS + PHPStan)
+pnpm lint:php:phpcs # Check PHP code style only
+pnpm lint:php:phpstan # Check PHP static analysis only
 ```
 
 ### Workflow Best Practices
 
-1. **Before committing**: Run `yarn lint:fix` to auto-fix all issues
+1. **Before committing**: Run `pnpm lint:fix` to auto-fix all issues
 2. **During commit**: Hooks auto-fix staged files, run PHPStan, and validate commit message
 3. **If commit fails**: Fix PHPStan errors and commit again
 4. **Before push**: Branch protection check ensures you're not pushing to master
@@ -244,8 +244,8 @@ PHPStan analyzes PHP code for type errors and bugs without running it:
 # Run PHPStan manually
 composer phpstan
 
-# Or via yarn
-yarn lint:php:phpstan
+# Or via pnpm
+pnpm lint:php:phpstan
 ```
 
 **Common PHPStan errors:**
@@ -267,11 +267,11 @@ PHPCS checks PHP code against WordPress Coding Standards:
 ```bash
 # Check code style
 composer phpcs
-yarn lint:php:phpcs
+pnpm lint:php:phpcs
 
 # Auto-fix code style issues
 composer phpcbf
-yarn lint:php:fix
+pnpm lint:php:fix
 ```
 
 **Configuration**: `phpcs.xml`
@@ -297,22 +297,22 @@ git push origin feat/my-feature
 
 ## Scripts
 
--   `yarn build` - Build production assets
--   `yarn start` - Development build with watch mode
--   `yarn release` - Create new release (automated versioning)
--   `yarn lint` - Lint all files (JS + CSS + PHP)
--   `yarn lint:fix` - Auto-fix all linting issues
--   `yarn lint:js` - Lint JavaScript
--   `yarn lint:js-fix` - Fix JavaScript linting issues
--   `yarn lint:css` - Lint CSS
--   `yarn lint:css-fix` - Fix CSS linting issues
--   `yarn lint:php` - Lint PHP (PHPCS + PHPStan)
--   `yarn lint:php:fix` - Fix PHP code style issues
+-   `pnpm build` - Build production assets
+-   `pnpm start` - Development build with watch mode
+-   `pnpm release` - Create new release (automated versioning)
+-   `pnpm lint` - Lint all files (JS + CSS + PHP)
+-   `pnpm lint:fix` - Auto-fix all linting issues
+-   `pnpm lint:js` - Lint JavaScript
+-   `pnpm lint:js-fix` - Fix JavaScript linting issues
+-   `pnpm lint:css` - Lint CSS
+-   `pnpm lint:css-fix` - Fix CSS linting issues
+-   `pnpm lint:php` - Lint PHP (PHPCS + PHPStan)
+-   `pnpm lint:php:fix` - Fix PHP code style issues
 
 ## Tech Stack
 
 -   **Build Tool**: Webpack (via @wordpress/scripts)
--   **Package Manager**: Yarn 4 (Berry)
+-   **Package Manager**: pnpm 11
 -   **Commit Linting**: Commitlint + Husky
 -   **Release Automation**: release-it + generate-wp-readme
 -   **Changelog**: Auto-generated from conventional commits
