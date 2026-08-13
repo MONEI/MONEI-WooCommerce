@@ -215,7 +215,6 @@
 
 /* Responsive Design */
 @media (max-width: 480px) {
-
 	.monei-input,
 	.monei-card-input {
 		font-size: 1em; /* Prevents zoom on iOS */
