@@ -1,14 +1,15 @@
 /**
- * Express checkout wallet button for the Cart and Checkout blocks.
+ * Express checkout wallet buttons for the Cart and Checkout blocks.
  *
- * ⚠️ This is `registerExpressPaymentMethod`, a registry entry of its own — not a
- * variation of the `registerPaymentMethod` entry the regular Apple/Google Pay method
- * already occupies. The two coexist because they register under different names; the
- * express entry points `paymentMethodId` back at the real gateway so the Store API
- * still processes the order through `monei_apple_google`.
+ * ⚠️ These are `registerExpressPaymentMethod` entries of their own — not variations of
+ * the `registerPaymentMethod` entries the regular Apple/Google Pay and PayPal methods
+ * already occupy. They coexist because they register under different names; each
+ * express entry points `paymentMethodId` back at its real gateway so the Store API
+ * still processes the order through it.
  *
- * A single registration serves both blocks: WooCommerce adds every active payment
- * method's script to `wc-cart-block-frontend` and `wc-checkout-block-frontend` alike.
+ * A single script serves both blocks and both wallets: WooCommerce adds every active
+ * payment method's script to `wc-cart-block-frontend` and `wc-checkout-block-frontend`
+ * alike.
  */
 
 import {
@@ -16,29 +17,41 @@ import {
 	expressRequest,
 	setExpressParams,
 } from './helpers/monei-express-api';
-import { createExpressPaymentRequest } from './helpers/monei-express-payment-request';
+import { createExpressComponent } from './helpers/monei-express-payment-request';
 
 const { __ } = wp.i18n;
 
-const NAME = 'monei_apple_google_express';
-const GATEWAY_ID = 'monei_apple_google';
+const PAYMENT_REQUEST = 'payment_request';
+const PAYPAL = 'paypal';
 
-let cachedData = null;
+let cachedExpress = null;
 
 /**
- * Payment method settings, resolved once.
+ * Express settings, resolved once.
  *
- * `getSetting` builds a fresh object on every call, and this data reaches hook
- * dependency lists. Caching it keeps those identities stable across renders.
- * @return {Object} Settings for this payment method
+ * Both MONEI blocks payment methods carry the same express payload, so whichever of
+ * them is active supplies it. `getSetting` builds a fresh object on every call and this
+ * data reaches hook dependency lists, so caching keeps those identities stable.
+ * @return {Object} Express settings
  */
-const getData = () => {
-	if ( ! cachedData ) {
-		cachedData = wc.wcSettings.getSetting( 'monei_apple_google_data', {} );
-		setExpressParams( cachedData.express );
+const getExpress = () => {
+	if ( ! cachedExpress ) {
+		const candidates = [ 'monei_apple_google_data', 'monei_paypal_data' ];
+
+		for ( const key of candidates ) {
+			const data = wc.wcSettings.getSetting( key, {} );
+
+			if ( data.express ) {
+				cachedExpress = data.express;
+				break;
+			}
+		}
+
+		cachedExpress = cachedExpress || {};
+		setExpressParams( cachedExpress );
 	}
 
-	return cachedData;
+	return cachedExpress;
 };
 
 /**
@@ -65,7 +78,9 @@ const getLocation = () => {
  *
  * WooCommerce injects `onClick`, `onClose`, `onError` and `setExpressPaymentError`
  * on top of the usual payment method props.
- * @param {Object} props - Injected props
+ * @param {Object} props        - Injected props
+ * @param {string} props.method - Wallet this instance renders
+ * @param {string} props.name   - Registry name of this express method
  * @return {*} JSX element
  */
 const MoneiExpressContent = ( props ) => {
@@ -73,6 +88,8 @@ const MoneiExpressContent = ( props ) => {
 	const { useDispatch } = wp.data;
 
 	const {
+		method,
+		name,
 		onClick,
 		onClose,
 		onError,
@@ -91,8 +108,7 @@ const MoneiExpressContent = ( props ) => {
 	const { onPaymentSetup } = props.eventRegistration;
 	const { responseTypes } = props.emitResponse;
 
-	const moneiData = getData();
-	const express = moneiData.express || {};
+	const express = getExpress();
 
 	const containerRef = useRef( null );
 	const instanceRef = useRef( null );
@@ -132,6 +148,9 @@ const MoneiExpressContent = ( props ) => {
 	/**
 	 * Pushes the wallet address into the cart store, so the order WooCommerce creates
 	 * carries the address the shopper approved rather than the one already on file.
+	 *
+	 * PayPal has no `requestBilling` prop and returns the payer's name and email
+	 * regardless, which land in the same `billingDetails` object.
 	 * @param {Object} result - SubmitResult from monei.js
 	 */
 	const applyAddresses = useCallback(
@@ -174,7 +193,7 @@ const MoneiExpressContent = ( props ) => {
 	 */
 	const waitUntilActive = useCallback( async () => {
 		for ( let attempt = 0; attempt < 40; attempt++ ) {
-			if ( activeRef.current === NAME ) {
+			if ( activeRef.current === name ) {
 				return true;
 			}
 
@@ -182,7 +201,7 @@ const MoneiExpressContent = ( props ) => {
 		}
 
 		return false;
-	}, [] );
+	}, [ name ] );
 
 	const handleSubmit = useCallback(
 		async ( result ) => {
@@ -222,7 +241,7 @@ const MoneiExpressContent = ( props ) => {
 			// page — so this observer runs on *every* checkout, including one paid by
 			// card. Returning anything but undefined here would abort those. Verified
 			// the hard way: it failed all three card payment E2E tests.
-			if ( activeRef.current !== NAME ) {
+			if ( activeRef.current !== name ) {
 				return undefined;
 			}
 
@@ -233,19 +252,26 @@ const MoneiExpressContent = ( props ) => {
 				};
 			}
 
+			const paymentMethodData = {
+				monei_payment_request_token: tokenRef.current,
+			};
+
+			// ⚠️ Apple/Google Pay only. The flag makes the gateway hand the payment
+			// back for client-side confirmation, which is what the card component
+			// does; PayPal's gateway answers it with a paymentId the express flow has
+			// nothing to confirm with, so PayPal takes the ordinary redirect path.
+			if ( PAYMENT_REQUEST === method ) {
+				paymentMethodData.monei_is_block_checkout = 'yes';
+			}
+
 			return {
 				type: responseTypes.SUCCESS,
-				meta: {
-					paymentMethodData: {
-						monei_payment_request_token: tokenRef.current,
-						monei_is_block_checkout: 'yes',
-					},
-				},
+				meta: { paymentMethodData },
 			};
 		} );
 
 		return () => unsubscribe();
-	}, [ onPaymentSetup, responseTypes, express.i18n ] );
+	}, [ onPaymentSetup, responseTypes, express.i18n, method, name ] );
 
 	// Mount once. The amount is kept live through updateProps, never by rebuilding —
 	// a rebuild would drop the wallet sheet the shopper is looking at.
@@ -262,13 +288,13 @@ const MoneiExpressContent = ( props ) => {
 
 			amountRef.current = cart.amount;
 
-			const instance = createExpressPaymentRequest( {
-				accountId: moneiData.accountId,
+			const instance = createExpressComponent( method, {
+				accountId: express.accountId,
 				sessionId,
 				amount: cart.amount,
 				currency: cart.currency,
-				language: moneiData.language,
-				style: express.buttonStyle,
+				language: express.language,
+				style: express.methods?.[ method ]?.style,
 				requestShipping: cart.shippingRequired,
 				onBeforeOpen: () => {
 					markStarted();
@@ -331,38 +357,75 @@ const MoneiExpressContent = ( props ) => {
 	);
 };
 
-const MoneiExpressPaymentMethod = {
-	name: NAME,
-	paymentMethodId: GATEWAY_ID,
-	gatewayId: GATEWAY_ID,
-	title: __( 'MONEI Express Checkout', 'monei' ),
-	content: <MoneiExpressContent />,
+/**
+ * Builds the registry entry for one wallet.
+ * @param {Object}   options              - Options
+ * @param {string}   options.method       - `payment_request` or `paypal`
+ * @param {string}   options.name         - Registry name, distinct from the gateway's own
+ * @param {string}   options.gatewayId    - Gateway that processes the order
+ * @param {string}   options.title        - Admin-facing title
+ * @param {Function} options.isAvailable  - Extra platform check
+ * @return {Object} Express payment method definition
+ */
+const buildExpressMethod = ( {
+	method,
+	name,
+	gatewayId,
+	title,
+	isAvailable,
+} ) => ( {
+	name,
+	paymentMethodId: gatewayId,
+	gatewayId,
+	title,
+	content: <MoneiExpressContent method={ method } name={ name } />,
 	edit: <div className="monei-express-checkout__button" />,
 	canMakePayment: () => {
-		const data = getData();
-		const express = data.express || {};
+		const express = getExpress();
 		const location = getLocation();
 
-		if ( ! location || ! express.locations?.[ location ] ) {
+		if (
+			! location ||
+			! express.methods?.[ method ]?.locations?.[ location ]
+		) {
 			return false;
 		}
 
-		if ( ! data.accountId ) {
+		if ( ! express.accountId ) {
 			return false;
 		}
 
-		// A cheap platform check only. A definitive answer needs the wallet component
-		// itself, which reports through onLoad — the content component removes itself
-		// when that comes back unsupported. Probing here would mean mounting a second
-		// PaymentRequest just to throw it away.
-		return (
-			!! window.PaymentRequest ||
-			!! window.ApplePaySession?.canMakePayments?.()
-		);
+		return isAvailable();
 	},
 	supports: {
 		features: [ 'products' ],
 	},
-};
+} );
 
-wc.wcBlocksRegistry.registerExpressPaymentMethod( MoneiExpressPaymentMethod );
+wc.wcBlocksRegistry.registerExpressPaymentMethod(
+	buildExpressMethod( {
+		method: PAYMENT_REQUEST,
+		name: 'monei_apple_google_express',
+		gatewayId: 'monei_apple_google',
+		title: __( 'MONEI Express Checkout', 'monei' ),
+		// A cheap platform check only. A definitive answer needs the wallet component
+		// itself, which reports through onLoad — the content component removes itself
+		// when that comes back unsupported. Probing here would mean mounting a second
+		// PaymentRequest just to throw it away.
+		isAvailable: () =>
+			!! window.PaymentRequest ||
+			!! window.ApplePaySession?.canMakePayments?.(),
+	} )
+);
+
+wc.wcBlocksRegistry.registerExpressPaymentMethod(
+	buildExpressMethod( {
+		method: PAYPAL,
+		name: 'monei_paypal_express',
+		gatewayId: 'monei_paypal',
+		title: __( 'MONEI PayPal Express Checkout', 'monei' ),
+		// PayPal needs no wallet on the device, so there is nothing to probe. The
+		// component still reports through onLoad if the account cannot serve it.
+		isAvailable: () => true,
+	} )
+);

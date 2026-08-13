@@ -27,6 +27,9 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 
 	/**
 	 * Default JSON style of the express checkout button.
+	 *
+	 * PayPal takes its own style keys — color, layout, size, shape, label — so it
+	 * overrides the shared default rather than sharing one.
 	 * ⚠️ Heights need a CSS unit — monei.js discards unitless values.
 	 */
 	const DEFAULT_EXPRESS_BUTTON_STYLE = '{"height": "50px", "disableMaxWidth": true}';

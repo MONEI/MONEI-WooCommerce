@@ -11,7 +11,7 @@ import {
 	expressRequest,
 	setExpressParams,
 } from './helpers/monei-express-api';
-import { createExpressPaymentRequest } from './helpers/monei-express-payment-request';
+import { createExpressComponent } from './helpers/monei-express-payment-request';
 
 ( function ( $ ) {
 	'use strict';
@@ -23,8 +23,8 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	const isProductPage = 'product' === params.location;
 
 	const state = {
-		instance: null,
-		container: null,
+		// One entry per wallet the merchant enabled here: `{ method, instance }`.
+		components: [],
 		root: null,
 		amount: null,
 		sessionId: null,
@@ -144,6 +144,31 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	};
 
 	/**
+	 * A wallet reporting whether it can be used here.
+	 *
+	 * Each button hides on its own, so an unsupported wallet never leaves a dead
+	 * control next to a working one, and the block as a whole only disappears once
+	 * every wallet has reported and none of them can pay.
+	 * @param {Object}  component   - Component entry from `state.components`
+	 * @param {boolean} isSupported - What the wallet reported
+	 */
+	const setAvailability = ( component, isSupported ) => {
+		component.supported = !! isSupported;
+		component.container.classList.toggle( 'is-unavailable', ! isSupported );
+
+		if ( state.components.some( ( entry ) => entry.supported === true ) ) {
+			revealExpress();
+			return;
+		}
+
+		if (
+			state.components.every( ( entry ) => entry.supported === false )
+		) {
+			hideExpress();
+		}
+	};
+
+	/**
 	 * Writes a value into a classic checkout field, letting WooCommerce see the change.
 	 * @param {string} name  - Input name
 	 * @param {string} value - Value to set
@@ -225,7 +250,9 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		}
 
 		const radio = document.getElementById(
-			'payment_method_monei_apple_google'
+			'paypal' === result.paymentMethod
+				? 'payment_method_monei_paypal'
+				: 'payment_method_monei_apple_google'
 		);
 
 		if ( radio ) {
@@ -326,7 +353,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	 * would drop the sheet the shopper is looking at.
 	 */
 	const refreshAmount = async () => {
-		if ( ! state.instance ) {
+		if ( ! state.components.length ) {
 			return;
 		}
 
@@ -340,7 +367,63 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 
 		state.amount = cart.amount;
 
-		await state.instance.updateProps( { amount: cart.amount } );
+		await Promise.all(
+			state.components.map( ( { instance } ) =>
+				instance.updateProps( { amount: cart.amount } )
+			)
+		);
+	};
+
+	/**
+	 * Builds and renders one wallet into its own container.
+	 * @param {Element} container - Mount container carrying the method name
+	 * @param {Object}  cart      - Cart-shaped payload
+	 * @return {Promise<void>}
+	 */
+	const mountMethod = async ( container, cart ) => {
+		const method = container.dataset.moneiExpressMethod;
+		const entry = { method, container, instance: null, supported: null };
+
+		const instance = createExpressComponent( method, {
+			accountId: params.accountId,
+			sessionId: state.sessionId,
+			amount: cart.amount,
+			currency: cart.currency,
+			language: params.language,
+			style: params.methods?.[ method ]?.style,
+			requestShipping: cart.shippingRequired,
+			onCartChange: ( payload ) => {
+				state.cart = payload;
+				state.amount = payload.amount;
+			},
+			beforeServerCall: isProductPage ? ensureProductInCart : null,
+			onBeforeOpen: isProductPage
+				? () => {
+						// The wallet button is a cross-origin iframe, so this is the
+						// only signal there is that the sheet is opening. It cannot
+						// await, so the cart is prepared here optimistically and
+						// again — idempotently — before anything depends on it.
+						ensureProductInCart().catch( () => {} );
+						return true;
+				  }
+				: null,
+			onSubmit: handleSubmit,
+			onError: ( error ) => {
+				showError( error?.message || params.i18n?.genericError );
+				releaseCart().catch( () => {} );
+			},
+			onLoad: ( isSupported ) => setAvailability( entry, isSupported ),
+		} );
+
+		if ( ! instance ) {
+			container.classList.add( 'is-unavailable' );
+			return;
+		}
+
+		entry.instance = instance;
+		state.components.push( entry );
+
+		await instance.render( container );
 	};
 
 	const mount = async () => {
@@ -354,9 +437,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 
 		state.mounting = true;
 		state.root = root;
-		state.container = root.querySelector(
-			'.monei-express-checkout__button'
-		);
+		state.components = [];
 
 		try {
 			const { sessionId } = await expressBootstrap();
@@ -366,51 +447,17 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 			state.cart = cart;
 			state.amount = cart.amount;
 
-			const instance = createExpressPaymentRequest( {
-				accountId: params.accountId,
-				sessionId,
-				amount: cart.amount,
-				currency: cart.currency,
-				language: params.language,
-				style: params.buttonStyle,
-				requestShipping: cart.shippingRequired,
-				onCartChange: ( payload ) => {
-					state.cart = payload;
-					state.amount = payload.amount;
-				},
-				beforeServerCall: isProductPage ? ensureProductInCart : null,
-				onBeforeOpen: isProductPage
-					? () => {
-							// The wallet button is a cross-origin iframe, so this is the
-							// only signal there is that the sheet is opening. It cannot
-							// await, so the cart is prepared here optimistically and
-							// again — idempotently — before anything depends on it.
-							ensureProductInCart().catch( () => {} );
-							return true;
-					  }
-					: null,
-				onSubmit: handleSubmit,
-				onError: ( error ) => {
-					showError( error?.message || params.i18n?.genericError );
-					releaseCart().catch( () => {} );
-				},
-				onLoad: ( isSupported ) => {
-					if ( isSupported ) {
-						revealExpress();
-					} else {
-						hideExpress();
-					}
-				},
-			} );
+			const containers = root.querySelectorAll(
+				'.monei-express-checkout__button[data-monei-express-method]'
+			);
 
-			if ( ! instance ) {
-				hideExpress();
-				return;
+			for ( const container of containers ) {
+				await mountMethod( container, cart );
 			}
 
-			state.instance = instance;
-
-			await instance.render( state.container );
+			if ( ! state.components.length ) {
+				hideExpress();
+			}
 		} finally {
 			state.mounting = false;
 		}
@@ -428,7 +475,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		);
 
 		if ( root && root !== state.root ) {
-			state.instance = null;
+			state.components = [];
 			await mount();
 			return;
 		}

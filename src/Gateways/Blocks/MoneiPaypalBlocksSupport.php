@@ -4,6 +4,7 @@ namespace Monei\Gateways\Blocks;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
+use Monei\Services\express\ExpressCheckoutAssets;
 
 final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 
@@ -56,7 +57,27 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 			wp_set_script_translations( $script_name );
 		}
 
-		return array( $script_name );
+		$handles = array( $script_name );
+
+		// Registered from here as well as from the Apple/Google method, so express still
+		// loads on a store that only turned it on for PayPal. The handle is the same one,
+		// and registering it twice is a no-op.
+		$express_handle = ExpressCheckoutAssets::register_blocks_script();
+
+		if ( '' !== $express_handle ) {
+			$handles[] = $express_handle;
+
+			// The express component builds a wallet, which needs the SDK. The regular
+			// PayPal block gets it through its own dependency list; this one is loaded
+			// even when the merchant only enabled express.
+			if ( ! wp_script_is( 'monei', 'registered' ) ) {
+				wp_register_script( 'monei', 'https://js.monei.com/v3/monei.js', '', '3.0', true );
+			}
+
+			wp_enqueue_script( 'monei' );
+		}
+
+		return $handles;
 	}
 
 	public function is_active() {
@@ -100,6 +121,7 @@ final class MoneiPaypalBlocksSupport extends AbstractPaymentMethodType {
 			'paypalStyle'  => json_decode( $paypal_style ),
 			'redirectFlow' => $redirect_flow,
 			'description'  => $this->get_setting( 'description' ),
+			'express'      => ExpressCheckoutAssets::get_script_data(),
 		);
 
 		$hide_logo = $this->get_setting( 'hide_logo' );

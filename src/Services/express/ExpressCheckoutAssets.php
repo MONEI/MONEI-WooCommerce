@@ -10,6 +10,7 @@ namespace Monei\Services\express;
 use Monei\Core\ContainerProvider;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle;
+use Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal;
 use WC_AJAX;
 use WC_Product;
 use WP_Post;
@@ -51,11 +52,18 @@ class ExpressCheckoutAssets {
 	const BLOCKS_METHOD_NAME = 'monei_apple_google_express';
 
 	/**
-	 * Resolved Apple/Google gateway, or false when it cannot be built.
-	 *
-	 * @var WCGatewayMoneiAppleGoogle|false|null
+	 * The wallet component each express gateway renders. These keys are the contract
+	 * with the JavaScript: they name the component factory and the mount container.
 	 */
-	private $gateway = null;
+	const METHOD_PAYMENT_REQUEST = 'payment_request';
+	const METHOD_PAYPAL          = 'paypal';
+
+	/**
+	 * Express gateways by wallet component, or null before they are resolved.
+	 *
+	 * @var array<string, WCMoneiPaymentGateway>|null
+	 */
+	private static $gateways = null;
 
 	/**
 	 * Register the frontend hooks.
@@ -78,12 +86,6 @@ class ExpressCheckoutAssets {
 		$location = $this->get_classic_location();
 
 		if ( null === $location ) {
-			return;
-		}
-
-		$gateway = $this->get_gateway();
-
-		if ( ! $gateway instanceof WCGatewayMoneiAppleGoogle ) {
 			return;
 		}
 
@@ -113,7 +115,7 @@ class ExpressCheckoutAssets {
 			self::SCRIPT_HANDLE,
 			'wc_monei_express_params',
 			array_merge(
-				self::get_script_data( $gateway ),
+				self::get_script_data(),
 				array(
 					'location' => $location,
 					'product'  => 'product' === $location ? $this->get_product_context() : null,
@@ -134,7 +136,7 @@ class ExpressCheckoutAssets {
 			return;
 		}
 
-		self::render_container( 'checkout' );
+		$this->render_container( 'checkout' );
 	}
 
 	/**
@@ -147,7 +149,7 @@ class ExpressCheckoutAssets {
 			return;
 		}
 
-		self::render_container( 'cart' );
+		$this->render_container( 'cart' );
 	}
 
 	/**
@@ -160,23 +162,31 @@ class ExpressCheckoutAssets {
 			return;
 		}
 
-		self::render_container( 'product' );
+		$this->render_container( 'product' );
 	}
 
 	/**
-	 * Prints a mount container. It starts hidden and the script reveals it only once
-	 * the wallet reports itself supported, so an unavailable wallet leaves no gap and
-	 * no dead control.
+	 * Prints the mount containers, one per wallet the merchant enabled at this surface.
+	 *
+	 * Everything starts hidden and the script reveals it only once a wallet reports
+	 * itself supported, so an unavailable wallet leaves no gap and no dead control.
 	 *
 	 * @param string $location One of the express location keys.
 	 *
 	 * @return void
 	 */
-	public static function render_container( $location ) {
+	private function render_container( $location ) {
+		$methods = array_keys( self::get_enabled_methods( $location ) );
+
+		if ( empty( $methods ) ) {
+			return;
+		}
 		?>
 		<div class="monei-express-checkout is-loading" data-monei-express-location="<?php echo esc_attr( $location ); ?>">
 			<div class="monei-express-checkout__title"><?php esc_html_e( 'Express checkout', 'monei' ); ?></div>
-			<div class="monei-express-checkout__button" data-monei-express-method="payment_request"></div>
+			<?php foreach ( $methods as $method ) : ?>
+				<div class="monei-express-checkout__button" data-monei-express-method="<?php echo esc_attr( $method ); ?>"></div>
+			<?php endforeach; ?>
 			<div class="monei-express-checkout__error" role="alert"></div>
 		</div>
 		<?php
@@ -185,32 +195,148 @@ class ExpressCheckoutAssets {
 	/**
 	 * Everything the express scripts need that is identical on classic and blocks.
 	 *
-	 * @param WCGatewayMoneiAppleGoogle $gateway Apple/Google gateway.
+	 * Both wallets are described in one payload, and both blocks payment methods carry
+	 * the same copy of it, so the express script works whichever gateway happened to
+	 * put it on the page.
 	 *
 	 * @return array<string, mixed>
 	 */
-	public static function get_script_data( WCGatewayMoneiAppleGoogle $gateway ) {
-		$style = $gateway->get_option( 'express_button_style', WCGatewayMoneiAppleGoogle::DEFAULT_EXPRESS_BUTTON_STYLE );
+	public static function get_script_data() {
+		$methods    = array();
+		$account_id = '';
 
-		$locations = array();
+		foreach ( self::get_express_gateways() as $method => $gateway ) {
+			$locations = array();
 
-		foreach ( array_keys( WCMoneiPaymentGateway::get_express_location_options() ) as $location ) {
-			$locations[ $location ] = $gateway->is_express_enabled_at( (string) $location );
+			foreach ( array_keys( WCMoneiPaymentGateway::get_express_location_options() ) as $location ) {
+				$locations[ $location ] = $gateway->is_express_enabled_at( (string) $location );
+			}
+
+			$methods[ $method ] = array(
+				'locations' => $locations,
+				// PayPal takes different style keys from PaymentRequest — color, layout,
+				// size, shape, label — so each wallet carries its own.
+				'style'     => json_decode( self::get_button_style( $gateway ) ),
+			);
+
+			if ( '' === $account_id ) {
+				$account_id = (string) $gateway->getAccountId();
+			}
 		}
 
 		return array(
 			// The `%%endpoint%%` placeholder is how WooCommerce core itself hands a
 			// wc-ajax URL template to the browser, see wc_cart_fragments_params.
-			'ajaxUrl'     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'accountId'   => $gateway->getAccountId(),
-			'currency'    => get_woocommerce_currency(),
-			'language'    => locale_iso_639_1_code(),
-			'buttonStyle' => json_decode( $style ),
-			'locations'   => $locations,
-			'i18n'        => array(
+			'ajaxUrl'   => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'accountId' => $account_id,
+			'currency'  => get_woocommerce_currency(),
+			'language'  => locale_iso_639_1_code(),
+			'methods'   => $methods,
+			'i18n'      => array(
 				'genericError' => __( 'Express checkout is unavailable right now. Please use the regular checkout.', 'monei' ),
 			),
 		);
+	}
+
+	/**
+	 * Registers the express script for the Cart and Checkout blocks.
+	 *
+	 * Called by both blocks payment methods, so express still loads when only one of
+	 * the two gateways is on. Registering an existing handle twice is a no-op, and the
+	 * handle is deduplicated when WooCommerce merges it into the block bundle.
+	 *
+	 * @return string Handle, or an empty string when no wallet has express on a block
+	 *                surface.
+	 */
+	public static function register_blocks_script() {
+		if ( empty( self::get_enabled_methods( 'cart' ) ) && empty( self::get_enabled_methods( 'checkout' ) ) ) {
+			return '';
+		}
+
+		$handle = self::BLOCKS_SCRIPT_HANDLE;
+
+		wp_register_script(
+			$handle,
+			WC_Monei()->plugin_url() . '/public/js/monei-block-express-checkout.min.js',
+			array(
+				'wc-blocks-checkout',
+				'wc-blocks-registry',
+				'wc-settings',
+				'wp-data',
+				'wp-element',
+				'wp-i18n',
+				'monei',
+			),
+			WC_Monei()->version,
+			true
+		);
+
+		if ( function_exists( 'wp_set_script_translations' ) ) {
+			wp_set_script_translations( $handle );
+		}
+
+		return $handle;
+	}
+
+	/**
+	 * Express gateways that are enabled at a surface, keyed by wallet component.
+	 *
+	 * @param string $location One of the express location keys.
+	 *
+	 * @return array<string, WCMoneiPaymentGateway>
+	 */
+	private static function get_enabled_methods( $location ) {
+		$enabled = array();
+
+		foreach ( self::get_express_gateways() as $method => $gateway ) {
+			if ( $gateway->is_express_enabled_at( $location ) ) {
+				$enabled[ $method ] = $gateway;
+			}
+		}
+
+		return $enabled;
+	}
+
+	/**
+	 * @param WCMoneiPaymentGateway $gateway Express gateway.
+	 *
+	 * @return string
+	 */
+	private static function get_button_style( WCMoneiPaymentGateway $gateway ) {
+		return (string) $gateway->get_option( 'express_button_style', $gateway::DEFAULT_EXPRESS_BUTTON_STYLE );
+	}
+
+	/**
+	 * The gateways that expose express checkout, keyed by the wallet they render.
+	 *
+	 * Resolved on demand rather than injected, for the same reason the AJAX handler
+	 * does it: this service is built during `init`, before WooCommerce assembles its
+	 * payment gateways.
+	 *
+	 * @return array<string, WCMoneiPaymentGateway>
+	 */
+	private static function get_express_gateways() {
+		if ( null !== self::$gateways ) {
+			return self::$gateways;
+		}
+
+		$container      = ContainerProvider::getContainer();
+		self::$gateways = array();
+
+		$classes = array(
+			self::METHOD_PAYMENT_REQUEST => WCGatewayMoneiAppleGoogle::class,
+			self::METHOD_PAYPAL          => WCGatewayMoneiPaypal::class,
+		);
+
+		foreach ( $classes as $method => $class_name ) {
+			$gateway = $container->get( $class_name );
+
+			if ( $gateway instanceof WCMoneiPaymentGateway ) {
+				self::$gateways[ $method ] = $gateway;
+			}
+		}
+
+		return self::$gateways;
 	}
 
 	/**
@@ -242,22 +368,16 @@ class ExpressCheckoutAssets {
 	 * @return string|null
 	 */
 	private function get_classic_location() {
-		$gateway = $this->get_gateway();
-
-		if ( ! $gateway instanceof WCGatewayMoneiAppleGoogle ) {
-			return null;
-		}
-
 		if ( is_checkout() && ! is_checkout_pay_page() && ! is_add_payment_method_page() ) {
 			if ( self::current_page_has_block( 'woocommerce/checkout' ) ) {
 				return null;
 			}
 
-			return $gateway->is_express_enabled_at( 'checkout' ) ? 'checkout' : null;
+			return empty( self::get_enabled_methods( 'checkout' ) ) ? null : 'checkout';
 		}
 
 		if ( is_product() ) {
-			return $gateway->is_express_enabled_at( 'product' ) ? 'product' : null;
+			return empty( self::get_enabled_methods( 'product' ) ) ? null : 'product';
 		}
 
 		if ( is_cart() ) {
@@ -265,7 +385,7 @@ class ExpressCheckoutAssets {
 				return null;
 			}
 
-			return $gateway->is_express_enabled_at( 'cart' ) ? 'cart' : null;
+			return empty( self::get_enabled_methods( 'cart' ) ) ? null : 'cart';
 		}
 
 		return null;
@@ -287,24 +407,5 @@ class ExpressCheckoutAssets {
 		$post = get_post();
 
 		return $post instanceof WP_Post && has_block( $block, $post );
-	}
-
-	/**
-	 * Resolved on demand rather than injected, for the same reason the AJAX handler
-	 * does it: this service is built during `init`, before WooCommerce assembles its
-	 * payment gateways.
-	 *
-	 * @return WCGatewayMoneiAppleGoogle|false
-	 */
-	private function get_gateway() {
-		if ( null !== $this->gateway ) {
-			return $this->gateway;
-		}
-
-		$gateway = ContainerProvider::getContainer()->get( WCGatewayMoneiAppleGoogle::class );
-
-		$this->gateway = $gateway instanceof WCGatewayMoneiAppleGoogle ? $gateway : false;
-
-		return $this->gateway;
 	}
 }
