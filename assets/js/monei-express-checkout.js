@@ -6,6 +6,7 @@
  */
 
 import {
+	expressBeacon,
 	expressBootstrap,
 	expressRequest,
 	setExpressParams,
@@ -19,6 +20,8 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 
 	setExpressParams( params );
 
+	const isProductPage = 'product' === params.location;
+
 	const state = {
 		instance: null,
 		container: null,
@@ -26,6 +29,85 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		amount: null,
 		cart: null,
 		mounting: false,
+		// Signature of the product selection currently sitting in the borrowed cart,
+		// or null when the shopper's own cart has not been touched.
+		cartHolds: null,
+	};
+
+	/**
+	 * The product, quantity and variation the shopper has chosen on the page.
+	 * @return {Object|null} Request fields for the product endpoints
+	 */
+	const readProductSelection = () => {
+		if ( ! isProductPage || ! params.product?.id ) {
+			return null;
+		}
+
+		const form = document.querySelector( 'form.cart' );
+		const quantity =
+			parseInt( form?.querySelector( '[name="quantity"]' )?.value, 10 ) ||
+			1;
+		const variationId =
+			parseInt(
+				form?.querySelector( '[name="variation_id"]' )?.value,
+				10
+			) || 0;
+		const attributes = {};
+
+		form?.querySelectorAll( '[name^="attribute_"]' ).forEach( ( field ) => {
+			attributes[ field.name ] = field.value;
+		} );
+
+		return {
+			product_id: params.product.id,
+			quantity,
+			variation_id: variationId,
+			attributes,
+		};
+	};
+
+	const selectionSignature = ( selection ) => JSON.stringify( selection );
+
+	/**
+	 * Makes sure the borrowed cart holds exactly the current selection.
+	 *
+	 * ⚠️ The server snapshots the shopper's own cart before emptying it, and this is
+	 * safe to call repeatedly: a second call with the same selection does nothing, and
+	 * a changed selection re-adds without taking a second snapshot.
+	 * @return {Promise<void>}
+	 */
+	const ensureProductInCart = async () => {
+		const selection = readProductSelection();
+
+		if ( ! selection ) {
+			return;
+		}
+
+		const signature = selectionSignature( selection );
+
+		if ( state.cartHolds === signature ) {
+			return;
+		}
+
+		const cart = await expressRequest( 'add_to_cart', selection );
+
+		state.cartHolds = signature;
+		state.cart = cart;
+		state.amount = cart.amount;
+	};
+
+	/**
+	 * Puts the shopper's own cart back. Called on every way out of the flow.
+	 * @return {Promise<void>}
+	 */
+	const releaseCart = async () => {
+		if ( null === state.cartHolds ) {
+			return;
+		}
+
+		state.cartHolds = null;
+
+		await expressRequest( 'clear_cart' );
 	};
 
 	const showError = ( message ) => {
@@ -168,7 +250,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	const handleSubmit = ( result ) => {
 		if ( ! result || ! result.token ) {
 			showError( result?.error || params.i18n?.genericError );
-			$( document.body ).trigger( 'monei_express_aborted' );
+			releaseCart().catch( () => {} );
 			return;
 		}
 
@@ -177,24 +259,45 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		const finish =
 			'checkout' === params.location
 				? submitCheckoutForm( result )
-				: completeExpressPayment( result );
+				: ensureProductInCart().then( () =>
+						completeExpressPayment( result )
+				  );
 
 		finish.catch( ( error ) => {
 			showError( error.message || params.i18n?.genericError );
-			$( document.body ).trigger( 'monei_express_aborted' );
+			releaseCart().catch( () => {} );
 		} );
 	};
 
 	/**
-	 * Keeps the wallet total in step with the cart without rebuilding the component.
-	 * Rebuilding would drop the sheet the shopper is looking at.
+	 * Where the wallet total comes from.
+	 *
+	 * On a product page the cart is not the answer until the flow has borrowed it, so
+	 * the amount comes from the selected product instead. Once the borrow has happened
+	 * the cart is authoritative again.
+	 * @return {Promise<Object>} Cart-shaped payload
+	 */
+	const readAmountSource = () => {
+		if ( isProductPage && null === state.cartHolds ) {
+			return expressRequest(
+				'get_selected_product_data',
+				readProductSelection()
+			);
+		}
+
+		return expressRequest( 'get_cart_details' );
+	};
+
+	/**
+	 * Keeps the wallet total in step without rebuilding the component. Rebuilding
+	 * would drop the sheet the shopper is looking at.
 	 */
 	const refreshAmount = async () => {
 		if ( ! state.instance ) {
 			return;
 		}
 
-		const cart = await expressRequest( 'get_cart_details' );
+		const cart = await readAmountSource();
 
 		state.cart = cart;
 
@@ -224,7 +327,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 
 		try {
 			const { sessionId } = await expressBootstrap();
-			const cart = await expressRequest( 'get_cart_details' );
+			const cart = await readAmountSource();
 
 			state.cart = cart;
 			state.amount = cart.amount;
@@ -241,9 +344,21 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 					state.cart = payload;
 					state.amount = payload.amount;
 				},
+				beforeServerCall: isProductPage ? ensureProductInCart : null,
+				onBeforeOpen: isProductPage
+					? () => {
+							// The wallet button is a cross-origin iframe, so this is the
+							// only signal there is that the sheet is opening. It cannot
+							// await, so the cart is prepared here optimistically and
+							// again — idempotently — before anything depends on it.
+							ensureProductInCart().catch( () => {} );
+							return true;
+					  }
+					: null,
 				onSubmit: handleSubmit,
 				onError: ( error ) => {
 					showError( error?.message || params.i18n?.genericError );
+					releaseCart().catch( () => {} );
 				},
 				onLoad: ( isSupported ) => {
 					if ( isSupported ) {
@@ -296,5 +411,34 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 				onCartUpdated().catch( () => {} );
 			}
 		);
+
+		if ( isProductPage ) {
+			// Quantity typing, variation selection and variation reset all move the
+			// price the wallet must show.
+			$( 'form.cart' ).on(
+				'change keyup',
+				'[name="quantity"], [name^="attribute_"]',
+				function () {
+					refreshAmount().catch( () => {} );
+				}
+			);
+
+			$( document.body ).on(
+				'found_variation reset_data',
+				'form.cart',
+				function () {
+					refreshAmount().catch( () => {} );
+				}
+			);
+
+			// Navigating away mid-flow is an exit path like any other, and a normal
+			// request would be cancelled with the document.
+			window.addEventListener( 'pagehide', function () {
+				if ( null !== state.cartHolds ) {
+					state.cartHolds = null;
+					expressBeacon( 'clear_cart' );
+				}
+			} );
+		}
 	} );
 } )( jQuery );
