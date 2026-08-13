@@ -64,6 +64,7 @@ class ExpressCheckoutAssets {
 	public function init() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_classic_assets' ) );
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'render_checkout_buttons' ), 5 );
+		add_action( 'woocommerce_proceed_to_checkout', array( $this, 'render_cart_buttons' ), 5 );
 	}
 
 	/**
@@ -129,6 +130,19 @@ class ExpressCheckoutAssets {
 		}
 
 		self::render_container( 'checkout' );
+	}
+
+	/**
+	 * Express button container above the classic cart's checkout button.
+	 *
+	 * @return void
+	 */
+	public function render_cart_buttons() {
+		if ( 'cart' !== $this->get_classic_location() ) {
+			return;
+		}
+
+		self::render_container( 'cart' );
 	}
 
 	/**
@@ -203,6 +217,14 @@ class ExpressCheckoutAssets {
 			}
 
 			return $gateway->is_express_enabled_at( 'checkout' ) ? 'checkout' : null;
+		}
+
+		if ( is_cart() ) {
+			if ( self::current_page_has_block( 'woocommerce/cart' ) ) {
+				return null;
+			}
+
+			return $gateway->is_express_enabled_at( 'cart' ) ? 'cart' : null;
 		}
 
 		return null;
