@@ -1,6 +1,7 @@
 const { test, expect } = require( '@playwright/test' );
 const { addProductToCart, fillBlocksBilling } = require( '../utils/checkout' );
 const {
+	getAccountId,
 	getBlocksScriptRegistration,
 	getExpressSettings,
 	getGatewayEnabled,
@@ -28,6 +29,10 @@ const {
  *
  * ⚠️ Express checkout is switched off as well: it enqueues the SDK from the
  * wallet gateways regardless of whether those gateways are enabled.
+ *
+ * ⚠️ Only the registration test runs everywhere. MONEI offers Bizum by caller IP
+ * address, so the browser test runs only where it is actually on offer. See
+ * `isBizumOfferedHere()`.
  *
  * ⚠️ No payment is taken. Bizum authorises out of band, in the shopper's bank app
  * on a phone that answers a real phone number, so nothing past the mounted
@@ -59,11 +64,57 @@ const EXPRESS_OPTIONS = [
 
 const MOUNT_TIMEOUT = 60000;
 
+/**
+ * The call `monei.Bizum()` makes before it decides whether to render itself.
+ */
+const CLIENT_PAYMENT_METHODS_URL =
+	'https://api.monei.com/v1/client-payment-methods';
+
+/**
+ * Whether MONEI offers Bizum to the machine this suite runs on.
+ *
+ * ⚠️ Bizum is a Spanish scheme, and MONEI filters an account's client payment
+ * methods by the caller's own IP address, not by the store's country. From
+ * outside Spain the account is told it has no Bizum at all, and the component
+ * then declines to mount — correctly, and with nothing wrong on the store. The
+ * WooCommerce payment method itself is unaffected, because availability there is
+ * decided in PHP, which is why the checkout still offers Bizum and only the
+ * mounted component goes missing.
+ *
+ * Asking MONEI the same question the component asks is the only gate that stays
+ * honest: it skips exactly where Bizum is genuinely unavailable, and still fails
+ * where Bizum is offered and the component does not appear.
+ * @param {string} accountId - MONEI account the store pays with
+ * @return {Promise<boolean>} Whether Bizum is on offer here
+ */
+const isBizumOfferedHere = async ( accountId ) => {
+	const response = await fetch(
+		`${ CLIENT_PAYMENT_METHODS_URL }?accountId=${ accountId }`,
+		// An unanswered request would otherwise hold the hook with no upper bound.
+		{ signal: AbortSignal.timeout( 30000 ) }
+	);
+
+	if ( ! response.ok ) {
+		throw new Error(
+			`${ CLIENT_PAYMENT_METHODS_URL } answered ${ response.status } for ` +
+				`account ${ accountId }, so this spec cannot tell whether Bizum is ` +
+				'offered here.'
+		);
+	}
+
+	const body = await response.json();
+
+	return ( body.paymentMethods || [] ).includes( 'bizum' );
+};
+
 const previousEnabled = {};
 const previousExpress = {};
+let bizumOffered = false;
 
 test.describe( 'Block checkout, Bizum only', () => {
-	test.beforeAll( () => {
+	test.beforeAll( async () => {
+		bizumOffered = await isBizumOfferedHere( getAccountId() );
+
 		for ( const option of OTHER_GATEWAY_OPTIONS ) {
 			previousEnabled[ option ] = getGatewayEnabled( option );
 			setGatewayEnabled( option, 'no' );
@@ -117,6 +168,14 @@ test.describe( 'Block checkout, Bizum only', () => {
 	test( 'renders the Bizum component on a Bizum only checkout', async ( {
 		page,
 	} ) => {
+		test.skip(
+			! bizumOffered,
+			'MONEI does not offer Bizum to this machine. It is a Spanish scheme ' +
+				"and the account's client payment methods are filtered by the " +
+				'caller IP address, so the component has nothing to mount. Run the ' +
+				'suite from Spain to cover it.'
+		);
+
 		const consoleErrors = [];
 
 		page.on(
