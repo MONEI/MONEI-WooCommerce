@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T11:53:13+00:00\n"
+"POT-Creation-Date: 2026-08-13T12:21:55+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: monei\n"
@@ -84,7 +84,7 @@ msgid "Generic payment method name shown in order emails, order history, and adm
 msgstr ""
 
 #: includes/admin/monei-apple-google-settings.php:41
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:75
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:68
 msgid "Apple Pay / Google Pay"
 msgstr ""
 
@@ -97,9 +97,9 @@ msgid "Title shown on checkout page for Apple devices (iPhone, iPad, Mac with Sa
 msgstr ""
 
 #: includes/admin/monei-apple-google-settings.php:48
-#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:157
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:247
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:251
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:118
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:254
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:258
 #: src/Services/MoneiApplePayVerificationService.php:69
 msgid "Apple Pay"
 msgstr ""
@@ -113,9 +113,9 @@ msgid "Title shown on checkout page for non-Apple devices (Android, Chrome, etc)
 msgstr ""
 
 #: includes/admin/monei-apple-google-settings.php:55
-#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:158
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:248
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:252
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:119
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:255
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:259
 msgid "Google Pay"
 msgstr ""
 
@@ -416,8 +416,8 @@ msgstr ""
 #: includes/class-wc-monei-redirect-hooks.php:258
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:167
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:174
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:227
 #: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:234
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:241
 msgid "MONEI Transaction id: "
 msgstr ""
 
@@ -430,8 +430,8 @@ msgstr ""
 #: includes/class-wc-monei-redirect-hooks.php:259
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:168
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:175
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:228
 #: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:235
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:242
 msgid "MONEI Status Message: "
 msgstr ""
 
@@ -552,75 +552,75 @@ msgid "Payment verified via redirect - <strong>Payment Completed</strong>"
 msgstr ""
 
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:129
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:183
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:190
 msgid "Payment Method Subscription Change"
 msgstr ""
 
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:166
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:226
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:233
 msgid "Success Renewal scheduled_subscription_payment."
 msgstr ""
 
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:173
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:186
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:233
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:247
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:240
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:254
 msgid "Error Renewal scheduled_subscription_payment. Reason: "
 msgstr ""
 
 #. translators: 1) card brand 2) last 4 digits
 #: src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php:308
-#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:307
+#: src/Features/Subscriptions/YithSubscriptionPluginHandler.php:314
 #, php-format
 msgid "%1$s card ending in %2$s"
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:246
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:257
 msgid "MONEI Refund Approved:"
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:252
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:263
 msgid "Refund error: "
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:267
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:278
 msgid "Save payment information to my account for future purchases."
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:339
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:350
 msgid "MONEI needs an API Key in order to work. Disabling the gateway."
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:406
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:426
 msgid "Product page"
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:407
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:427
 msgid "Cart page"
 msgstr ""
 
-#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:408
+#: src/Gateways/Abstracts/WCMoneiPaymentGateway.php:428
 msgid "Checkout page"
 msgstr ""
 
-#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:162
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:84
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:256
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:123
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:77
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:263
 #: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:70
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:120
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:118
 #: src/Gateways/PaymentMethods/WCGatewayMoneiMBWay.php:64
 #: src/Gateways/PaymentMethods/WCGatewayMoneiMultibanco.php:63
-#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:75
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:78
 msgid "Test Mode"
 msgstr ""
 
 #: src/Gateways/Blocks/MoneiCCBlocksSupport.php:125
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:412
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:410
 msgid "Cardholder Name"
 msgstr ""
 
 #: src/Gateways/Blocks/MoneiCCBlocksSupport.php:126
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:510
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:508
 msgid "Please enter a valid name. Special characters are not allowed."
 msgstr ""
 
@@ -638,23 +638,23 @@ msgstr ""
 msgid "You will be redirected to the payment page"
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:72
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:65
 msgid "MONEI - Apple Pay / Google Pay"
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:73
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:66
 msgid "Accept Apple Pay and Google Pay payments."
 msgstr ""
 
 #. translators: %s: JSON error message
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:157
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:164
 #, php-format
 msgid "Apple Pay / Google Pay Style field contains invalid JSON: %s"
 msgstr ""
 
 #. translators: %s: JSON error message
-#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:191
-#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:195
+#: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:198
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:198
 #, php-format
 msgid "Express Checkout Button Style field contains invalid JSON: %s"
 msgstr ""
@@ -673,21 +673,21 @@ msgstr ""
 msgid "Bizum Style field contains invalid JSON: %s"
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:90
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:88
 msgid "MONEI - Credit Card"
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:91
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:89
 msgid "Accept credit card payments."
 msgstr ""
 
 #. translators: %s: JSON error message
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:231
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:229
 #, php-format
 msgid "Card Input Style field contains invalid JSON: %s"
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:345
+#: src/Gateways/PaymentMethods/WCGatewayMoneiCC.php:343
 msgid "Pay via MONEI: you can add your payment method for future payments."
 msgstr ""
 
@@ -707,16 +707,16 @@ msgstr ""
 msgid "Accept Multibanco payments."
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:54
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:57
 msgid "MONEI - PayPal"
 msgstr ""
 
-#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:55
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:58
 msgid "Accept PayPal payments."
 msgstr ""
 
 #. translators: %s: JSON error message
-#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:161
+#: src/Gateways/PaymentMethods/WCGatewayMoneiPaypal.php:164
 #, php-format
 msgid "PayPal Style field contains invalid JSON: %s"
 msgstr ""
@@ -729,59 +729,100 @@ msgstr ""
 msgid "We could not put your cart back after the express checkout. Please check your cart before ordering."
 msgstr ""
 
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:191
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:196
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:620
 msgid "No shipping method is available for this address."
 msgstr ""
 
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:255
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:260
 msgid "That shipping method is not available."
 msgstr ""
 
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:351
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:356
 msgid "This product could not be added to the cart."
 msgstr ""
 
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:398
-msgid "This product is not available."
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:408
-msgid "This product cannot be bought with express checkout."
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:438
-msgid "Please choose product options before paying."
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:526
-msgid "Subtotal"
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:535
-msgid "Discount"
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:549
-msgid "Shipping"
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:558
-msgid "Tax"
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:940
-msgid "Your express checkout session expired. Please reload the page."
-msgstr ""
-
-#: src/Services/express/ExpressCheckoutAjaxHandler.php:964
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:406
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:1350
 msgid "Express checkout is not available."
 msgstr ""
 
-#: src/Services/express/ExpressCheckoutAssets.php:178
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:412
+msgid "The wallet did not return a payment token."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:419
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:1326
+msgid "Your express checkout session expired. Please reload the page."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:423
+msgid "Your cart is empty."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:462
+msgid "The payment amount did not match your cart, so nothing was charged. Please try again."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:472
+msgid "Express checkout payment could not be started."
+msgstr ""
+
+#. translators: %s: express checkout surface, e.g. product page
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:480
+#, php-format
+msgid "Order placed through MONEI express checkout (%s)."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:528
+msgid "Your order could not be created."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:570
+msgid "Express checkout cannot take subscription payments with this payment method."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:574
+msgid "This product needs the regular checkout. Please continue there."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:712
+msgid "Express checkout could not complete your order."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:784
+msgid "This product is not available."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:794
+msgid "This product cannot be bought with express checkout."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:824
+msgid "Please choose product options before paying."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:912
+msgid "Subtotal"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:921
+msgid "Discount"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:935
+msgid "Shipping"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:944
+msgid "Tax"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAssets.php:186
 msgid "Express checkout"
 msgstr ""
 
-#: src/Services/express/ExpressCheckoutAssets.php:211
+#: src/Services/express/ExpressCheckoutAssets.php:236
 msgid "Express checkout is unavailable right now. Please use the regular checkout."
 msgstr ""
 
@@ -1351,6 +1392,10 @@ msgstr ""
 msgid "MONEI Payment Gateway"
 msgstr ""
 
-#: assets/js/monei-block-express-checkout.js:338
+#: assets/js/monei-block-express-checkout.js:410
 msgid "MONEI Express Checkout"
+msgstr ""
+
+#: assets/js/monei-block-express-checkout.js:426
+msgid "MONEI PayPal Express Checkout"
 msgstr ""
