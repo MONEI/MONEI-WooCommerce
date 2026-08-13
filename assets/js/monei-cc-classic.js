@@ -1,4 +1,8 @@
-import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
+import {
+	awaitComponentUpdate,
+	getMoneiErrorMessage,
+	updateComponentProps,
+} from './helpers/monei-shared-utils';
 
 ( function ( $ ) {
 	'use strict';
@@ -44,6 +48,7 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 		$payment_request_container: null,
 		$errorContainer: null,
 		$paymentForm: null,
+		$pendingAmountUpdate: null,
 		is_checkout: false,
 		is_add_payment_method: false,
 		is_order_pay: false,
@@ -211,6 +216,9 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 			wc_monei_form.$container = wc_monei_form.get_card_container();
 			wc_monei_form.$errorContainer =
 				document.getElementById( 'monei-card-error' );
+			// The instance below is a new one, so an update still in flight for
+			// the outgoing instance must not hold up its first submit.
+			wc_monei_form.$pendingAmountUpdate = null;
 
 			if ( wc_monei_form.is_split_layout() ) {
 				wc_monei_form.init_card_group();
@@ -334,9 +342,15 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 			if ( ! instance ) {
 				return;
 			}
-			instance.updateProps( {
-				amount: parseInt( wc_monei_form.total ),
-			} );
+			// `updated_checkout` unblocks the place order button, so the shopper
+			// can submit before this update reaches the component. Kept for
+			// submit_card_input() to wait on.
+			wc_monei_form.$pendingAmountUpdate = updateComponentProps(
+				instance,
+				{
+					amount: parseInt( wc_monei_form.total ),
+				}
+			);
 		},
 		submit_card_input() {
 			const instance = wc_monei_form.get_card_instance();
@@ -345,8 +359,10 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 				return;
 			}
 			// This will be trigger, when CC component is used and "Place order" has been clicked.
-			instance
-				.submit()
+			awaitComponentUpdate( wc_monei_form.$pendingAmountUpdate )
+				.then( function () {
+					return instance.submit();
+				} )
 				.then( function ( result ) {
 					if ( result.error ) {
 						// Error displayed via print_errors

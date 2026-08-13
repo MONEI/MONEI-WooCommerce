@@ -1,4 +1,8 @@
-import { getMoneiErrorMessage } from './monei-shared-utils';
+import {
+	awaitComponentUpdate,
+	getMoneiErrorMessage,
+	updateComponentProps,
+} from './monei-shared-utils';
 
 const { useState, useEffect, useRef, useCallback, useMemo } = wp.element;
 
@@ -88,6 +92,9 @@ export const useMoneiCardInput = ( config, amount ) => {
 	// would re-arm the delayed init effect below.
 	const amountRef = useRef( amount );
 	amountRef.current = amount;
+	// Latest in flight updateProps(). The token request carries the amount the
+	// component holds, so tokenization has to wait for it.
+	const pendingUpdateRef = useRef( null );
 
 	/**
 	 * Create payment token
@@ -102,6 +109,8 @@ export const useMoneiCardInput = ( config, amount ) => {
 		setError( '' );
 
 		try {
+			await awaitComponentUpdate( pendingUpdateRef.current );
+
 			const result = await cardInputRef.current.submit();
 
 			if ( result.error ) {
@@ -209,12 +218,12 @@ export const useMoneiCardInput = ( config, amount ) => {
 	/**
 	 * Update props on the live card input instance
 	 * @param {Object} props - Props to forward to the instance
+	 * @return {Promise<void>} Settles once the instance confirms the update
 	 */
 	const updateProps = useCallback( ( props ) => {
-		if ( ! cardInputRef.current || ! cardInputRef.current.updateProps ) {
-			return;
-		}
-		cardInputRef.current.updateProps( props );
+		const pending = updateComponentProps( cardInputRef.current, props );
+		pendingUpdateRef.current = pending;
+		return pending;
 	}, [] );
 
 	/**

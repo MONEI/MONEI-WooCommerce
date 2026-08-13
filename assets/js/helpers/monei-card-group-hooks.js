@@ -1,4 +1,8 @@
-import { getMoneiErrorMessage } from './monei-shared-utils';
+import {
+	awaitComponentUpdate,
+	getMoneiErrorMessage,
+	updateComponentProps,
+} from './monei-shared-utils';
 
 const { useState, useEffect, useRef, useCallback, useMemo } = wp.element;
 
@@ -28,6 +32,9 @@ export const useMoneiCardGroup = ( config, amount ) => {
 	const amountRef = useRef( amount );
 	amountRef.current = amount;
 	const lastAmountRef = useRef( null );
+	// Latest in flight updateProps(). The token request carries the amount the
+	// group holds, so tokenization has to wait for it.
+	const pendingUpdateRef = useRef( null );
 
 	/**
 	 * Create payment token
@@ -42,6 +49,8 @@ export const useMoneiCardGroup = ( config, amount ) => {
 		setError( '' );
 
 		try {
+			await awaitComponentUpdate( pendingUpdateRef.current );
+
 			const result = await groupRef.current.submit();
 
 			if ( result.error ) {
@@ -139,12 +148,12 @@ export const useMoneiCardGroup = ( config, amount ) => {
 	/**
 	 * Update props on the live card group instance
 	 * @param {Object} props - Props to forward to the instance
+	 * @return {Promise<void>} Settles once the instance confirms the update
 	 */
 	const updateProps = useCallback( ( props ) => {
-		if ( ! groupRef.current || ! groupRef.current.updateProps ) {
-			return;
-		}
-		groupRef.current.updateProps( props );
+		const pending = updateComponentProps( groupRef.current, props );
+		pendingUpdateRef.current = pending;
+		return pending;
 	}, [] );
 
 	/**

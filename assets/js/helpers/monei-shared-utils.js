@@ -31,6 +31,76 @@ export const getAmountInMinorUnits = ( cartTotals, fallbackTotal ) =>
 		: Math.round( fallbackTotal * 100 );
 
 /**
+ * How long tokenization waits for an in flight component update.
+ *
+ * Long enough for a postMessage round trip to a slow iframe, short enough that
+ * an update which never settles cannot strand the shopper on a spinner.
+ */
+export const COMPONENT_UPDATE_DEADLINE_MS = 2000;
+
+/**
+ * Forward props to a live MONEI component and keep the update trackable.
+ *
+ * The returned promise settles once the component confirms the update, and
+ * never rejects: a failed update must not wedge the payment.
+ * @param {Object|null} instance - Live component, or null before it mounts
+ * @param {Object}      props    - Props to forward
+ * @return {Promise<void>}
+ */
+export const updateComponentProps = ( instance, props ) => {
+	if ( ! instance || ! instance.updateProps ) {
+		return Promise.resolve();
+	}
+
+	return Promise.resolve( instance.updateProps( props ) ).then(
+		() => undefined,
+		( error ) => {
+			console.error( 'MONEI: card component update failed', error );
+		}
+	);
+};
+
+/**
+ * Wait for an in flight component update before submitting the component.
+ *
+ * The token request carries the amount the component holds, and `updateProps()`
+ * only resolves once the new props reach it. A shopper who pays inside that
+ * window would otherwise tokenize against the previous total.
+ *
+ * The wait is capped. An update that never settles gives up the guarantee
+ * rather than the payment, so tokenization continues once the deadline passes.
+ * @param {Promise|null} pending    - In flight update, if any
+ * @param {number}       deadlineMs - Maximum time to wait
+ * @return {Promise<void>}
+ */
+export const awaitComponentUpdate = (
+	pending,
+	deadlineMs = COMPONENT_UPDATE_DEADLINE_MS
+) => {
+	if ( ! pending ) {
+		return Promise.resolve();
+	}
+
+	let timer;
+	const settled = Promise.resolve( pending ).then(
+		() => false,
+		() => false
+	);
+	const expired = new Promise( ( resolve ) => {
+		timer = setTimeout( () => resolve( true ), deadlineMs );
+	} );
+
+	return Promise.race( [ settled, expired ] ).then( ( timedOut ) => {
+		clearTimeout( timer );
+		if ( timedOut ) {
+			console.warn(
+				'MONEI: the card component did not confirm the amount update in time, submitting with the amount it holds.'
+			);
+		}
+	} );
+};
+
+/**
  * Get WooCommerce place order button
  * @return {HTMLElement|null}
  */

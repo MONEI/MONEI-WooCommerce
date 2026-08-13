@@ -298,6 +298,110 @@ describe( 'useMoneiCardGroup', () => {
 		expect( group.updateProps ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	// The token request carries the amount the group holds. A shopper who pays
+	// while an amount update is still crossing into the iframe would otherwise
+	// be tokenized against the previous total.
+	describe( 'amount update serialization', () => {
+		/**
+		 * Make `updateProps` hang until the returned settler is called.
+		 * @param {Object} group - Mock group instance
+		 * @return {Object} Settlers for the pending update
+		 */
+		const holdUpdateProps = ( group ) => {
+			const settlers = {};
+			group.updateProps.mockImplementation(
+				() =>
+					new Promise( ( resolve, reject ) => {
+						settlers.resolve = resolve;
+						settlers.reject = reject;
+					} )
+			);
+			return settlers;
+		};
+
+		it( 'does not submit until a pending amount update settles', async () => {
+			const { group } = installMoneiMock();
+			const { api, setAmount } = renderCardGroup( 3600 );
+			flushInit();
+
+			const update = holdUpdateProps( group );
+			setAmount( 5400 );
+
+			let pending;
+			act( () => {
+				pending = api.current.createToken();
+			} );
+			await act( async () => {} );
+
+			expect( group.submit ).not.toHaveBeenCalled();
+
+			await act( async () => {
+				update.resolve();
+				await pending;
+			} );
+
+			expect( group.submit ).toHaveBeenCalledTimes( 1 );
+			await expect( pending ).resolves.toBe( 'tok_123' );
+		} );
+
+		it( 'still submits when the amount update rejects', async () => {
+			const errorSpy = jest
+				.spyOn( console, 'error' )
+				.mockImplementation( () => {} );
+			const { group } = installMoneiMock();
+			const { api, setAmount } = renderCardGroup( 3600 );
+			flushInit();
+
+			const update = holdUpdateProps( group );
+			setAmount( 5400 );
+
+			let pending;
+			act( () => {
+				pending = api.current.createToken();
+			} );
+
+			await act( async () => {
+				update.reject( new Error( 'iframe gone' ) );
+				await pending;
+			} );
+
+			expect( group.submit ).toHaveBeenCalledTimes( 1 );
+			await expect( pending ).resolves.toBe( 'tok_123' );
+			expect( errorSpy ).toHaveBeenCalled();
+			errorSpy.mockRestore();
+		} );
+
+		it( 'submits on the deadline when the amount update never settles', async () => {
+			const warnSpy = jest
+				.spyOn( console, 'warn' )
+				.mockImplementation( () => {} );
+			const { group } = installMoneiMock();
+			const { api, setAmount } = renderCardGroup( 3600 );
+			flushInit();
+
+			holdUpdateProps( group );
+			setAmount( 5400 );
+
+			let pending;
+			act( () => {
+				pending = api.current.createToken();
+			} );
+			await act( async () => {} );
+
+			expect( group.submit ).not.toHaveBeenCalled();
+
+			await act( async () => {
+				jest.advanceTimersByTime( 2000 );
+				await pending;
+			} );
+
+			expect( group.submit ).toHaveBeenCalledTimes( 1 );
+			await expect( pending ).resolves.toBe( 'tok_123' );
+			expect( warnSpy ).toHaveBeenCalled();
+			warnSpy.mockRestore();
+		} );
+	} );
+
 	it( 'does not re-create the group when the amount changes', () => {
 		const { monei } = installMoneiMock();
 		const { setAmount } = renderCardGroup( 3600 );
