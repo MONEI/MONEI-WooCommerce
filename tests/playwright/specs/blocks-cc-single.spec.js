@@ -23,7 +23,11 @@ test.describe( 'Block checkout, single card field', () => {
 	} );
 
 	test.afterAll( () => {
-		setCardFieldLayout( previousLayout );
+		// A failed beforeAll leaves this unset, and writing an empty layout
+		// back would take the setting off the site.
+		if ( previousLayout ) {
+			setCardFieldLayout( previousLayout );
+		}
 	} );
 
 	test( 'pays with a card', async ( { page } ) => {

@@ -1,10 +1,13 @@
 const { execFileSync } = require( 'child_process' );
+const { requireEnv } = require( './env' );
 
 /**
  * Directory holding the docker-compose stack that serves the test site.
  */
-const WP_DIR =
-	process.env.MONEI_E2E_WP_DIR || '/Users/dmitriy/Work/woocommerce';
+const WP_DIR = requireEnv(
+	'MONEI_E2E_WP_DIR',
+	'It must be the docker-compose directory of the same site MONEI_E2E_BASE_URL points at.'
+);
 
 /**
  * Run a WP-CLI command against the docker test site.
