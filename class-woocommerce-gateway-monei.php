@@ -11,6 +11,7 @@
 use Monei\Core\ContainerProvider;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
+use Monei\Services\express\ExpressCheckoutAjaxHandler;
 use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
@@ -257,6 +258,11 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$sdkClient            = new MoneiSdkClientFactory( $apiKeyService );
 			$moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
 			new MoneiApplePayVerificationService( $moneiPaymentServices );
+
+			// The container is lazy: a service nobody resolves never runs its constructor,
+			// so its hooks never bind. Express endpoints must exist on every request, so
+			// resolve the handler here and register them.
+			ContainerProvider::getContainer()->get( ExpressCheckoutAjaxHandler::class )->init();
 
 			$this->load_plugin_textdomain();
 
