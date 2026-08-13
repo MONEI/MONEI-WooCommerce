@@ -18,7 +18,7 @@ MONEI is an e-commerce payment gateway for WooCommerce that enables merchants to
 ### Prerequisites
 
 -   PHP 8.0 or higher
--   Node.js 18 or higher
+-   Node.js 22.13 or higher (the version in `.nvmrc`; pnpm 11 requires it)
 -   Composer
 -   pnpm 11 (pinned via the packageManager field)
 
