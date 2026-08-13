@@ -71,7 +71,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$this->hide_logo          = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 		$this->description        = ( ! empty( $this->get_option( 'description' ) ) ) ? $this->get_option( 'description' ) : '';
 		$iconUrl                  = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'google-logo.svg' ) );
-		$iconMarkup               = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+		$iconMarkup               = '<img src="' . esc_url( $iconUrl ) . '" alt="MONEI" class="monei-icons" />';
 		$this->testmode           = $this->getTestmode();
 		if ( $this->testmode && ! empty( $this->title ) ) {
 			$this->title .= ' (' . __( 'Test Mode', 'monei' ) . ')';

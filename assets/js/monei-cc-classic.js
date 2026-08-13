@@ -490,26 +490,24 @@ import {
 				return;
 			}
 
-			let html = '<span class="monei-card-brands">';
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'monei-card-brands';
 			const brandKeys = Object.keys( wc_monei_params.cardBrands ).filter(
 				( key ) => key !== 'default'
 			);
 
-			// Render each brand icon
+			// The brand codes come from the API, and jQuery parses an appended
+			// string as HTML, so each icon is built as a node instead.
 			for ( let i = 0; i < brandKeys.length; i++ ) {
 				const brand = wc_monei_params.cardBrands[ brandKeys[ i ] ];
-				html +=
-					'<img src="' +
-					brand.url +
-					'" ' +
-					'alt="' +
-					brand.title +
-					'" ' +
-					'class="card-brand-icon" />';
+				const img = document.createElement( 'img' );
+				img.setAttribute( 'src', brand.url );
+				img.setAttribute( 'alt', brand.title );
+				img.className = 'card-brand-icon';
+				wrapper.appendChild( img );
 			}
 
-			html += '</span>';
-			label.append( html );
+			label.append( wrapper );
 		},
 	};
 	$( function () {

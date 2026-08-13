@@ -66,7 +66,7 @@ class WCGatewayMoneiPaypal extends WCMoneiPaymentGatewayHosted {
 		// Bizum Hosted payment with redirect.
 		$this->has_fields = false;
 		$iconUrl          = apply_filters( 'woocommerce_monei_paypal_icon', WC_Monei()->image_url( 'paypal-logo.svg' ) );
-		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons" />';
+		$iconMarkup       = '<img src="' . esc_url( $iconUrl ) . '" alt="MONEI" class="monei-icons" />';
 		// Settings variable
 		$this->hide_logo     = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 		$this->icon          = ( $this->hide_logo ) ? '' : $iconMarkup;
