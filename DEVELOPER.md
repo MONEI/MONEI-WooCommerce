@@ -90,6 +90,25 @@ pnpm start
 pnpm build
 ```
 
+### Testing
+
+```bash
+# JavaScript unit tests
+pnpm test:unit
+
+# PHP unit tests
+composer test
+
+# End to end payment tests
+pnpm test:e2e
+```
+
+`pnpm test:e2e` pays with real MONEI test cards on a real site, so it requires
+`MONEI_E2E_BASE_URL` (the site the browser drives) and `MONEI_E2E_WP_DIR` (the
+docker-compose directory of that same site). Neither has a default. Copy
+`tests/playwright/.env.example` to `tests/playwright/.env` and fill both in —
+see [tests/playwright/README.md](tests/playwright/README.md).
+
 ## Release Process
 
 ### Automated Release with Conventional Commits
@@ -308,6 +327,8 @@ git push origin feat/my-feature
 -   `pnpm lint:css-fix` - Fix CSS linting issues
 -   `pnpm lint:php` - Lint PHP (PHPCS + PHPStan)
 -   `pnpm lint:php:fix` - Fix PHP code style issues
+-   `pnpm test:unit` - Run JavaScript unit tests
+-   `pnpm test:e2e` - Run end to end payment tests (needs `tests/playwright/.env`)
 
 ## Tech Stack
 

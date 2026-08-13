@@ -37,9 +37,15 @@ test.describe( 'Classic checkout, single card field', () => {
 
 	test.afterAll( () => {
 		// Restores run even when the test above failed, so the site never
-		// stays pointed at the shortcode page.
-		setCheckoutPageId( previousCheckoutPageId );
-		setCardFieldLayout( previousLayout );
+		// stays pointed at the shortcode page. A failed beforeAll leaves the
+		// previous values unset, and writing those back would take the
+		// settings off the site.
+		if ( previousCheckoutPageId ) {
+			setCheckoutPageId( previousCheckoutPageId );
+		}
+		if ( previousLayout ) {
+			setCardFieldLayout( previousLayout );
+		}
 	} );
 
 	test( 'pays with a card', async ( { page } ) => {
