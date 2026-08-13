@@ -64,6 +64,24 @@ const appendField = ( form, key, value ) => {
 	form.append( key, typeof value === 'boolean' ? String( value ) : value );
 };
 
+const genericError = () => getParams().i18n?.genericError || 'Error';
+
+/**
+ * Decodes a response body, or null when it is not JSON at all.
+ *
+ * A WAF block, a PHP fatal or a plain server error page all answer with HTML, and
+ * the parser message that comes out of those means nothing to a shopper.
+ * @param {Response} response - Fetch response
+ * @return {Promise<Object|null>} Decoded body, or null
+ */
+const parseJson = async ( response ) => {
+	try {
+		return await response.json();
+	} catch ( error ) {
+		return null;
+	}
+};
+
 const request = async ( endpoint, data ) => {
 	const form = new FormData();
 	Object.keys( data ).forEach( ( key ) =>
@@ -76,15 +94,20 @@ const request = async ( endpoint, data ) => {
 		body: form,
 	} );
 
-	const payload = await response.json();
+	const payload = await parseJson( response );
 
-	// wp_send_json_error() wraps its payload; wp_send_json() does not.
+	// wp_send_json_error() wraps its payload; wp_send_json() does not. Checked before
+	// the status, so the server's own message wins over the generic one.
 	if ( payload && payload.success === false ) {
-		const error = new Error(
-			payload.data?.message || getParams().i18n?.genericError || 'Error'
-		);
+		const error = new Error( payload.data?.message || genericError() );
 		error.code = payload.data?.code;
 		throw error;
+	}
+
+	// Anything else that is not a decoded 2xx body carries nothing a caller can use.
+	// Returning it would hand `undefined` amounts and tokens on to the wallet.
+	if ( ! response.ok || ! payload ) {
+		throw new Error( genericError() );
 	}
 
 	return payload;
