@@ -106,6 +106,24 @@ const ensureCoupon = ( code, percent ) => {
 };
 
 /**
+ * Read the WooCommerce status of an order.
+ *
+ * The thank you page only says the browser landed somewhere; the order status is
+ * what says money moved, so a payment test has to read it from the store itself.
+ * @param {string|number} orderId - Order id
+ * @return {string} Order status, without the `wc-` prefix
+ */
+const getOrderStatus = ( orderId ) =>
+	wpCli( [
+		'wc',
+		'shop_order',
+		'get',
+		String( orderId ),
+		'--user=1',
+		'--field=status',
+	] );
+
+/**
  * Read the express checkout settings of a MONEI gateway.
  *
  * Returned as the pair of keys a test has to put back, not the whole settings
@@ -153,4 +171,5 @@ module.exports = {
 	getCheckoutPageId,
 	setCheckoutPageId,
 	ensureCoupon,
+	getOrderStatus,
 };
