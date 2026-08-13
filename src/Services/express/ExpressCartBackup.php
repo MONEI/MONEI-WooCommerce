@@ -300,8 +300,13 @@ class ExpressCartBackup {
 	}
 
 	/**
-	 * Never lets a failed restore pass silently: the shopper is told and the snapshot
-	 * is written to the log so the cart can be reconstructed from it.
+	 * Never lets a failed restore pass silently: the shopper is told and the failure
+	 * is logged.
+	 *
+	 * ⚠️ Only the shape of the snapshot is logged, never the snapshot. Cart extensions
+	 * keep shopper-entered values — gift messages, engraving, custom fields — in line
+	 * item metadata, and the log is not the place for those. The snapshot itself stays
+	 * in the session, which is where a later exit path recovers it from.
 	 *
 	 * @param array<string, mixed> $backup  Snapshot that failed to restore.
 	 * @param string               $message Log message.
@@ -310,7 +315,14 @@ class ExpressCartBackup {
 	 */
 	private function fail( array $backup, $message ) {
 		WC_Monei_Logger::log( $message, WC_Monei_Logger::LEVEL_ERROR );
-		WC_Monei_Logger::log( $backup, WC_Monei_Logger::LEVEL_ERROR );
+		WC_Monei_Logger::log(
+			sprintf(
+				'Express checkout snapshot: version %s, %d item(s).',
+				isset( $backup['version'] ) ? (string) $backup['version'] : 'unknown',
+				isset( $backup['contents'] ) ? count( (array) $backup['contents'] ) : 0
+			),
+			WC_Monei_Logger::LEVEL_ERROR
+		);
 
 		if ( function_exists( 'wc_add_notice' ) ) {
 			wc_add_notice(
