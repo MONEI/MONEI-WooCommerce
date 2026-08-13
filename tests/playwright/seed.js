@@ -45,9 +45,19 @@ const fetchAccountId = async ( apiKey ) => {
 	const body = await response.json();
 
 	if ( ! response.ok || ! body.accountId ) {
+		// Describe the key without printing it. A stored secret pasted with a
+		// trailing newline is the usual cause of a 401 here, and it is invisible
+		// unless the length is reported.
+		const shape =
+			`${ apiKey.length } chars, starts "${ apiKey.slice( 0, 8 ) }"` +
+			( apiKey !== apiKey.trim() ? ', HAS SURROUNDING WHITESPACE' : '' );
+
 		throw new Error(
 			`MONEI_TEST_API_KEY was refused by ${ ALLOWED_PAYMENT_METHODS_URL }: ` +
-				`${ body.message || response.status }`
+				`${
+					body.message || response.status
+				}. The key is ${ shape }. ` +
+				'A MONEI test key is 40 characters and starts "pk_test_".'
 		);
 	}
 
