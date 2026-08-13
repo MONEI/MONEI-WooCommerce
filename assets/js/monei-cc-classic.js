@@ -39,6 +39,7 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 		$order_pay_form: $( 'form#order_review' ),
 		$cardInput: null,
 		$cardGroup: null,
+		$cardGroupParts: [],
 		$container: null,
 		$payment_request_container: null,
 		$errorContainer: null,
@@ -257,6 +258,11 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 		 * a part throws when given either.
 		 */
 		init_card_group() {
+			// A checkout refresh replaces the mount containers, which re-arms
+			// init_checkout_monei(). Without this the previous group and its
+			// three parts stay alive with their listeners attached.
+			wc_monei_form.destroy_card_group();
+
 			const group = monei.CardGroup( {
 				accountId: wc_monei_params.accountId,
 				sessionId: wc_monei_params.sessionId,
@@ -281,17 +287,45 @@ import { getMoneiErrorMessage } from './helpers/monei-shared-utils';
 				},
 			} );
 
-			[
+			wc_monei_form.$cardGroupParts = [
 				[ monei.CardNumber, 'monei-card-number' ],
 				[ monei.CardExpiry, 'monei-card-expiry' ],
 				[ monei.CardCvc, 'monei-card-cvc' ],
-			].forEach( function ( part ) {
-				part[ 0 ]( { group } ).render(
-					document.getElementById( part[ 1 ] )
-				);
+			].map( function ( part ) {
+				const instance = part[ 0 ]( { group } );
+				instance.render( document.getElementById( part[ 1 ] ) );
+				return instance;
 			} );
 
 			wc_monei_form.$cardGroup = group;
+		},
+		/**
+		 * Tear down the split layout. The SDK requires the parts to go before
+		 * the group they belong to.
+		 */
+		destroy_card_group() {
+			wc_monei_form.$cardGroupParts.forEach( function ( part ) {
+				if ( part && part.destroy ) {
+					try {
+						part.destroy();
+					} catch ( e ) {
+						// Silent cleanup
+					}
+				}
+			} );
+			wc_monei_form.$cardGroupParts = [];
+
+			if (
+				wc_monei_form.$cardGroup &&
+				wc_monei_form.$cardGroup.destroy
+			) {
+				try {
+					wc_monei_form.$cardGroup.destroy();
+				} catch ( e ) {
+					// Silent cleanup
+				}
+			}
+			wc_monei_form.$cardGroup = null;
 		},
 		update_monei_amount() {
 			// Runs after init_checkout_monei(), which may have rebuilt the

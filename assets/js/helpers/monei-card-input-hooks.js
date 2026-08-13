@@ -126,16 +126,17 @@ export const useMoneiCardInput = ( config, amount ) => {
 
 	/**
 	 * Initialize MONEI Card Input
+	 * @return {boolean} Whether the card input is now mounted
 	 */
 	const initializeCardInput = useCallback( () => {
 		if ( typeof monei === 'undefined' || ! monei.CardInput ) {
 			setError( 'MONEI SDK is not available' );
-			return;
+			return false;
 		}
 
 		if ( ! containerRef.current ) {
 			setError( 'Card input container not found' );
-			return;
+			return false;
 		}
 
 		try {
@@ -197,9 +198,11 @@ export const useMoneiCardInput = ( config, amount ) => {
 			cardInputRef.current = cardInput;
 			setIsReady( true );
 			setError( '' );
+			return true;
 		} catch ( err ) {
 			setError( err.message || 'Failed to initialize card input' );
 			setIsReady( false );
+			return false;
 		}
 	}, [ config, createToken ] );
 
@@ -226,12 +229,12 @@ export const useMoneiCardInput = ( config, amount ) => {
 		setIsValid( false );
 	}, [] );
 
-	// Initialize on mount
+	// Initialize on mount. A failed attempt leaves the ref down so a later run
+	// can try again, otherwise the shopper keeps an empty field and cannot pay.
 	useEffect( () => {
 		if ( ! hasInitialized.current ) {
 			const timer = setTimeout( () => {
-				initializeCardInput();
-				hasInitialized.current = true;
+				hasInitialized.current = initializeCardInput();
 			}, 500 );
 			return () => clearTimeout( timer );
 		}

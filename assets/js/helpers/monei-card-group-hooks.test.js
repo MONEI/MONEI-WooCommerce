@@ -73,7 +73,7 @@ const renderCardGroup = ( amount = 3600 ) => {
 	const api = {};
 
 	const Harness = ( props ) => {
-		const cardGroup = useMoneiCardGroup( CONFIG, props.amount );
+		const cardGroup = useMoneiCardGroup( props.config, props.amount );
 		api.current = cardGroup;
 		return (
 			<div>
@@ -84,14 +84,22 @@ const renderCardGroup = ( amount = 3600 ) => {
 		);
 	};
 
-	const utils = render( <Harness amount={ amount } /> );
+	const utils = render( <Harness amount={ amount } config={ CONFIG } /> );
 
 	return {
 		...utils,
 		api,
 		setAmount: ( next ) =>
 			act( () => {
-				utils.rerender( <Harness amount={ next } /> );
+				utils.rerender( <Harness amount={ next } config={ CONFIG } /> );
+			} ),
+		// A fresh config object is what re-arms the init effect, the same way a
+		// re-rendered checkout hands the hook a new settings object.
+		remountConfig: () =>
+			act( () => {
+				utils.rerender(
+					<Harness amount={ amount } config={ { ...CONFIG } } />
+				);
 			} ),
 	};
 };
@@ -190,6 +198,33 @@ describe( 'useMoneiCardGroup', () => {
 
 		expect( api.current.isReady ).toBe( false );
 		expect( api.current.error ).toBe( 'MONEI SDK is not available' );
+	} );
+
+	it( 'retries after an attempt that found no SDK', () => {
+		delete global.monei;
+		const { api, remountConfig } = renderCardGroup();
+		flushInit();
+
+		expect( api.current.isReady ).toBe( false );
+
+		const { monei } = installMoneiMock();
+		remountConfig();
+		flushInit();
+
+		expect( monei.CardGroup ).toHaveBeenCalledTimes( 1 );
+		expect( api.current.isReady ).toBe( true );
+		expect( api.current.error ).toBe( '' );
+	} );
+
+	it( 'does not re-create a group that already mounted', () => {
+		const { monei } = installMoneiMock();
+		const { remountConfig } = renderCardGroup();
+		flushInit();
+
+		remountConfig();
+		flushInit();
+
+		expect( monei.CardGroup ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'refuses to submit before the group is ready', async () => {
