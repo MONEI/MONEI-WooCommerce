@@ -11,9 +11,8 @@ docker_tag
 /node_modules
 /assets
 package.json
-yarn.lock
-.yarnrc.yml
-.yarn/
+pnpm-lock.yaml
+pnpm-workspace.yaml
 webpack.config.js
 phpcs.xml
 commitlint.config.js

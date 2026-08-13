@@ -1,0 +1,12 @@
+# Supply chain protection: only install package versions published at least 24h
+# ago, so a compromised release has time to be pulled before it reaches us.
+minimumReleaseAge: 1440
+
+# core-js postinstall only prints a funding banner. The two native packages ship
+# prebuilt binaries for the platforms we use, so their build fallback is not
+# needed.
+allowBuilds:
+    '@parcel/watcher': false
+    core-js: false
+    core-js-pure: false
+    unrs-resolver: false

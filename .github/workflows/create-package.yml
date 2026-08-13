@@ -18,20 +18,20 @@ jobs:
               with:
                   composer-options: --no-dev --optimize-autoloader
 
-            - name: Enable Corepack
-              run: corepack enable
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version-file: .nvmrc
-                  cache: yarn
+                  cache: pnpm
 
             - name: Install dependencies
-              run: yarn install --immutable
+              run: pnpm install --frozen-lockfile
 
             - name: Build assets
-              run: yarn build
+              run: pnpm build
 
             - name: Exclude files listed in .distignore
               run: |
