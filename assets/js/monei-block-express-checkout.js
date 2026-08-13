@@ -227,6 +227,9 @@ const MoneiExpressContent = ( props ) => {
 
 				onSubmit();
 			} catch ( error ) {
+				// The method stays mounted for the page's life, so a token left
+				// here would be handed over as valid data on the next attempt.
+				tokenRef.current = null;
 				fail( error.message );
 			}
 		},

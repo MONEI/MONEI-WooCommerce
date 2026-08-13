@@ -369,7 +369,11 @@ import { createExpressComponent } from './helpers/monei-express-payment-request'
 
 		await Promise.all(
 			state.components.map( ( { instance } ) =>
-				instance.updateProps( { amount: cart.amount } )
+				// One wallet refusing the update must not abandon the rest of
+				// the batch, or the others keep the previous amount.
+				instance
+					.updateProps( { amount: cart.amount } )
+					.catch( () => {} )
 			)
 		);
 	};
