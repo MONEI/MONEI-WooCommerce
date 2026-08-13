@@ -2,6 +2,7 @@ const { test, expect } = require( '@playwright/test' );
 const {
 	CARDS,
 	PRODUCT_ID,
+	PRODUCT_PATH,
 	completeThreeDsChallengeIfShown,
 	expectOrderReceived,
 	fillCard,
@@ -42,8 +43,6 @@ const {
  */
 
 const SETTINGS_OPTION = 'woocommerce_monei_apple_google_settings';
-const PRODUCT_PATH =
-	process.env.MONEI_E2E_PRODUCT_PATH || '/product/t-shirt-with-logo/';
 
 const BILLING_FIELDS = {
 	'billing[name]': 'Ada Lovelace',

@@ -1,5 +1,5 @@
 const { defineConfig, devices } = require( '@playwright/test' );
-const { requireEnv } = require( './utils/env' );
+const { baseUrl } = require( './utils/env' );
 
 /**
  * Playwright config for the MONEI card payment E2E suite.
@@ -24,10 +24,7 @@ module.exports = defineConfig( {
 		[ 'html', { outputFolder: './playwright-report', open: 'never' } ],
 	],
 	use: {
-		baseURL: requireEnv(
-			'MONEI_E2E_BASE_URL',
-			'It must be the public URL of the site the suite pays on.'
-		),
+		baseURL: baseUrl(),
 		actionTimeout: 30000,
 		navigationTimeout: 60000,
 		trace: 'retain-on-failure',

@@ -71,18 +71,16 @@ jobs:
         outputs:
             configured: ${{ steps.check.outputs.configured }}
         steps:
-            - name: Look for the E2E secrets
+            - name: Look for the E2E secret
               id: check
               env:
                   MONEI_TEST_API_KEY: ${{ secrets.MONEI_TEST_API_KEY }}
-                  MONEI_E2E_BASE_URL: ${{ secrets.MONEI_E2E_BASE_URL }}
-                  MONEI_E2E_WP_DIR: ${{ secrets.MONEI_E2E_WP_DIR }}
               run: |
-                  if [ -n "$MONEI_TEST_API_KEY" ] && [ -n "$MONEI_E2E_BASE_URL" ] && [ -n "$MONEI_E2E_WP_DIR" ]; then
+                  if [ -n "$MONEI_TEST_API_KEY" ]; then
                     echo 'configured=true' >> "$GITHUB_OUTPUT"
                   else
                     echo 'configured=false' >> "$GITHUB_OUTPUT"
-                    echo '::notice title=E2E skipped::The E2E suite takes real MONEI test payments, so it only runs where MONEI_TEST_API_KEY, MONEI_E2E_BASE_URL and MONEI_E2E_WP_DIR are all set. See tests/playwright/README.md.'
+                    echo '::notice title=E2E skipped::The E2E suite takes real MONEI test payments, so it only runs where MONEI_TEST_API_KEY is set. See tests/playwright/README.md.'
                   fi
 
     e2e:
@@ -111,13 +109,36 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            # wp-env mounts this checkout as the plugin, so the runner has to hold
+            # everything the plugin loads at runtime: the Composer autoloader and
+            # the built front end assets, neither of which is committed.
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.0'
+                  coverage: none
+                  tools: composer
+
+            - name: Install Composer dependencies
+              uses: ramsey/composer-install@v3
+              with:
+                  composer-options: --no-dev --optimize-autoloader
+
+            - name: Build assets
+              run: pnpm build
+
+            - name: Start WordPress
+              run: pnpm exec wp-env start
+
+            - name: Seed the store
+              env:
+                  MONEI_TEST_API_KEY: ${{ secrets.MONEI_TEST_API_KEY }}
+              run: pnpm test:e2e:seed
+
             - name: Install Playwright browsers
               run: pnpm exec playwright install --with-deps chromium
 
             - name: Run Playwright
-              env:
-                  MONEI_E2E_BASE_URL: ${{ secrets.MONEI_E2E_BASE_URL }}
-                  MONEI_E2E_WP_DIR: ${{ secrets.MONEI_E2E_WP_DIR }}
               run: pnpm test:e2e
 
             - name: Upload the report

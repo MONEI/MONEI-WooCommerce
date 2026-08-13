@@ -1,9 +1,19 @@
 const { expect } = require( '@playwright/test' );
+const { fixture } = require( './fixtures' );
 
 /**
  * Simple product added to the cart for every checkout run.
  */
-const PRODUCT_ID = process.env.MONEI_E2E_PRODUCT_ID || '24';
+const PRODUCT_ID = fixture( 'productId', 'MONEI_E2E_PRODUCT_ID', '24' );
+
+/**
+ * Permalink of that product.
+ */
+const PRODUCT_PATH = fixture(
+	'productPath',
+	'MONEI_E2E_PRODUCT_PATH',
+	'/product/t-shirt-with-logo/'
+);
 
 /**
  * MONEI test cards. Expiry 12/34 and CVC 123 apply to all of them.
@@ -339,10 +349,14 @@ const readBlocksTotal = async ( page ) => {
  */
 const expectOrderReceived = async ( page ) => {
 	await page.waitForURL( /order-received/, { timeout: 120000 } );
+	// The confirmation page carries both the classic body class and the block
+	// status element, so this must not assert on a strict single match.
 	await expect(
-		page.locator(
-			'.woocommerce-order-received, .wc-block-order-confirmation-status'
-		)
+		page
+			.locator(
+				'.woocommerce-order-received, .wc-block-order-confirmation-status'
+			)
+			.first()
 	).toBeVisible();
 	await expect( page.locator( 'body' ) ).not.toContainText(
 		/order (has failed|failed)/i
@@ -358,6 +372,7 @@ module.exports = {
 	CARD_CVC,
 	CARD_EXPIRY,
 	PRODUCT_ID,
+	PRODUCT_PATH,
 	SINGLE_MOUNT,
 	SPLIT_MOUNT,
 	addProductToCart,
