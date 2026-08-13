@@ -574,6 +574,24 @@ class ExpressCheckoutAjaxHandler {
 	 * Duplicate rate ids are dropped: a wallet sheet given two options with the same
 	 * id never finishes loading.
 	 *
+	 * ⚠️ KNOWN LIMITATION — carts that WooCommerce splits into more than one shipping
+	 * package. A wallet sheet takes exactly one flat list of shipping methods, so it
+	 * cannot express a choice per package. Every package's rates are flattened into
+	 * that one list, each `amount` is the cost of the single package the rate came
+	 * from, and `set_chosen_shipping_method()` writes only `chosen_shipping_methods[0]`
+	 * — so the shopper's pick governs the first package and WooCommerce falls back to
+	 * its own default for the rest.
+	 *
+	 * The charge itself stays correct: the total handed to the wallet is always
+	 * `WC()->cart->get_total()` recomputed after `calculate_totals()`, never a figure
+	 * assembled here. What is wrong is the per-option amount shown in the sheet and
+	 * the shopper's inability to choose for packages after the first.
+	 *
+	 * Not fixed here on purpose. There is no patch — only a redesign of the option
+	 * model that the wallet APIs cannot represent anyway, on a code path with no
+	 * multi-package coverage to redesign it against. Splitting needs several shipping
+	 * zones or per-class packaging, so it is a minority configuration.
+	 *
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function get_available_shipping_options() {
