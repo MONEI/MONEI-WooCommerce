@@ -40,7 +40,9 @@ const isWpEnv = () => ! process.env.MONEI_E2E_WP_DIR;
  * @return {string} The value
  */
 const requireEnv = ( name, hint ) => {
-	const value = process.env[ name ];
+	// A secret pasted into a CI store almost always carries a trailing newline,
+	// which turns a valid credential into a 401 that reads like a wrong key.
+	const value = ( process.env[ name ] || '' ).trim();
 	if ( ! value ) {
 		throw new Error(
 			`${ name } is not set. ${ hint }\n` +
