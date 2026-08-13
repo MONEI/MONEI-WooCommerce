@@ -152,45 +152,36 @@ const getOrderStatus = ( orderId ) =>
 	] );
 
 /**
- * Read the express checkout settings of a MONEI gateway.
+ * Read a gateway settings option.
  *
- * Returned as the pair of keys a test has to put back, not the whole settings
- * blob: writing a whole blob back would undo anything else that changed while
- * the run was in progress.
+ * The gateway option row only exists once the settings screen has been saved, so
+ * a fresh store has no row at all and `wp option get` exits non-zero. That is the
+ * documented default state, not a failure.
  * @param {string} option - Gateway settings option name
- * @return {Object} `{ express_enabled, express_locations }`
+ * @return {Object} Stored settings, or an empty object
  */
-const getExpressSettings = ( option ) => {
-	let settings = {};
-
-	// The gateway option row only exists once the settings screen has been saved,
-	// so a fresh store has no row at all and `wp option get` exits non-zero. That
-	// is the documented default state, not a failure.
+const readSettings = ( option ) => {
 	try {
-		settings =
+		return (
 			JSON.parse(
 				wpCli( [ 'option', 'get', option, '--format=json' ] )
-			) || {};
+			) || {}
+		);
 	} catch ( error ) {
-		settings = {};
+		return {};
 	}
-
-	return {
-		express_enabled: settings.express_enabled || 'no',
-		express_locations: settings.express_locations || [],
-	};
 };
 
 /**
- * Write express checkout settings into a MONEI gateway.
+ * Merge keys into a gateway settings option.
  *
- * `option patch` refuses a key the option does not have yet, and express keys
- * are absent until a merchant saves the settings screen once, so the option is
- * merged in PHP instead.
+ * `option patch` refuses a key the option does not have yet, and several keys are
+ * absent until a merchant saves the settings screen once, so the option is merged
+ * in PHP instead.
  * @param {string} option - Gateway settings option name
  * @param {Object} values - Keys to merge in
  */
-const setExpressSettings = ( option, values ) =>
+const mergeSettings = ( option, values ) =>
 	wpCli( [
 		'eval',
 		`$s = (array) get_option( '${ option }', array() );` +
@@ -200,10 +191,83 @@ const setExpressSettings = ( option, values ) =>
 			`update_option( '${ option }', $s );`,
 	] );
 
+/**
+ * Read the express checkout settings of a MONEI gateway.
+ *
+ * Returned as the pair of keys a test has to put back, not the whole settings
+ * blob: writing a whole blob back would undo anything else that changed while
+ * the run was in progress.
+ * @param {string} option - Gateway settings option name
+ * @return {Object} `{ express_enabled, express_locations }`
+ */
+const getExpressSettings = ( option ) => {
+	const settings = readSettings( option );
+
+	return {
+		express_enabled: settings.express_enabled || 'no',
+		express_locations: settings.express_locations || [],
+	};
+};
+
+/**
+ * Write express checkout settings into a MONEI gateway.
+ * @param {string} option - Gateway settings option name
+ * @param {Object} values - Keys to merge in
+ */
+const setExpressSettings = ( option, values ) =>
+	mergeSettings( option, values );
+
+/**
+ * Read what a blocks payment integration registers with WordPress.
+ *
+ * `get_payment_method_script_handles()` is where an integration declares the
+ * assets its React component needs. A browser can only see the effect of that
+ * declaration, and any other enabled MONEI method produces the same effect by
+ * enqueueing the shared SDK first, so the declaration itself is the only place
+ * an integration that forgot it can be told apart from one that did not.
+ * @param {string} className - Fully qualified blocks support class
+ * @return {Object} `{ handles, deps, sdk }`
+ */
+const getBlocksScriptRegistration = ( className ) =>
+	JSON.parse(
+		wpCli( [
+			'eval',
+			`$support = \\Monei\\Core\\ContainerProvider::getContainer()->get( '${ className }' );` +
+				'$handles = (array) $support->get_payment_method_script_handles();' +
+				'$scripts = wp_scripts()->registered;' +
+				'$deps = array();' +
+				'foreach ( $handles as $handle ) {' +
+				'if ( isset( $scripts[ $handle ] ) ) { $deps = array_merge( $deps, (array) $scripts[ $handle ]->deps ); }' +
+				'}' +
+				"echo json_encode( array( 'handles' => array_values( $handles ), 'deps' => array_values( array_unique( $deps ) ), 'sdk' => isset( $scripts['monei'] ) ? $scripts['monei']->src : '' ) );",
+		] )
+	);
+
+/**
+ * Read whether a gateway is enabled.
+ *
+ * An unsaved gateway has no option row, and WooCommerce treats that as off, so
+ * the absent case answers `no` rather than throwing.
+ * @param {string} option - Gateway settings option name
+ * @return {string} `yes` or `no`
+ */
+const getGatewayEnabled = ( option ) => readSettings( option ).enabled || 'no';
+
+/**
+ * Turn a gateway on or off.
+ * @param {string} option  - Gateway settings option name
+ * @param {string} enabled - `yes` or `no`
+ */
+const setGatewayEnabled = ( option, enabled ) =>
+	mergeSettings( option, { enabled } );
+
 module.exports = {
 	wpCli,
 	getExpressSettings,
 	setExpressSettings,
+	getBlocksScriptRegistration,
+	getGatewayEnabled,
+	setGatewayEnabled,
 	setCardFieldLayout,
 	getCardFieldLayout,
 	getCheckoutPageId,
