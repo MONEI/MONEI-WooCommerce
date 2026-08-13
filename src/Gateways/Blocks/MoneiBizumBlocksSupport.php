@@ -62,7 +62,7 @@ final class MoneiBizumBlocksSupport extends AbstractPaymentMethodType {
 		);
 
 		if ( function_exists( 'wp_set_script_translations' ) ) {
-			wp_set_script_translations( $script_name );
+			wp_set_script_translations( $script_name, 'monei', WC_Monei()->plugin_path() . '/languages' );
 		}
 
 		return array( $script_name );
