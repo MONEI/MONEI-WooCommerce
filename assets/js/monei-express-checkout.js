@@ -25,14 +25,11 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		root: null,
 		amount: null,
 		cart: null,
+		mounting: false,
 	};
 
 	const showError = ( message ) => {
-		if ( ! state.root ) {
-			return;
-		}
-
-		const target = state.root.querySelector(
+		const target = state.root?.querySelector(
 			'.monei-express-checkout__error'
 		);
 
@@ -42,17 +39,12 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	};
 
 	const hideExpress = () => {
-		if ( state.root ) {
-			state.root.classList.add( 'is-unavailable' );
-			state.root.classList.remove( 'is-loading' );
-		}
+		state.root?.classList.add( 'is-unavailable' );
+		state.root?.classList.remove( 'is-loading' );
 	};
 
 	const revealExpress = () => {
-		if ( state.root ) {
-			state.root.classList.remove( 'is-loading' );
-			state.root.classList.remove( 'is-unavailable' );
-		}
+		state.root?.classList.remove( 'is-loading', 'is-unavailable' );
 	};
 
 	/**
@@ -113,8 +105,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		const form = document.querySelector( 'form.woocommerce-checkout' );
 
 		if ( ! form ) {
-			showError( params.i18n?.genericError );
-			return;
+			throw new Error( params.i18n?.genericError );
 		}
 
 		const normalized = await expressRequest( 'normalize_address', {
@@ -162,21 +153,41 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		$( form ).trigger( 'submit' );
 	};
 
+	/**
+	 * Completes a wallet payment started somewhere other than the checkout page.
+	 *
+	 * ⚠️ Deliberately unimplemented. The classic cart and product pages carry no
+	 * checkout form to submit, so they need the server-side order creation that Task 22
+	 * of the plan owns. This is the single seam that task fills in; every caller
+	 * already unwinds the flow when it rejects.
+	 */
+	const completeExpressPayment = async () => {
+		throw new Error( params.i18n?.genericError );
+	};
+
 	const handleSubmit = ( result ) => {
 		if ( ! result || ! result.token ) {
 			showError( result?.error || params.i18n?.genericError );
+			$( document.body ).trigger( 'monei_express_aborted' );
 			return;
 		}
 
 		showError( '' );
 
-		submitCheckoutForm( result ).catch( ( error ) => {
+		const finish =
+			'checkout' === params.location
+				? submitCheckoutForm( result )
+				: completeExpressPayment( result );
+
+		finish.catch( ( error ) => {
 			showError( error.message || params.i18n?.genericError );
+			$( document.body ).trigger( 'monei_express_aborted' );
 		} );
 	};
 
 	/**
 	 * Keeps the wallet total in step with the cart without rebuilding the component.
+	 * Rebuilding would drop the sheet the shopper is looking at.
 	 */
 	const refreshAmount = async () => {
 		if ( ! state.instance ) {
@@ -197,68 +208,93 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	};
 
 	const mount = async () => {
-		state.root = document.querySelector(
+		const root = document.querySelector(
 			'.monei-express-checkout[data-monei-express-location]'
 		);
 
-		if ( ! state.root ) {
+		if ( ! root || state.mounting ) {
 			return;
 		}
 
-		state.container = state.root.querySelector(
+		state.mounting = true;
+		state.root = root;
+		state.container = root.querySelector(
 			'.monei-express-checkout__button'
 		);
 
-		const { sessionId } = await expressBootstrap();
-		const cart = await expressRequest( 'get_cart_details' );
+		try {
+			const { sessionId } = await expressBootstrap();
+			const cart = await expressRequest( 'get_cart_details' );
 
-		state.cart = cart;
-		state.amount = cart.amount;
+			state.cart = cart;
+			state.amount = cart.amount;
 
-		const instance = createExpressPaymentRequest( {
-			accountId: params.accountId,
-			sessionId,
-			amount: cart.amount,
-			currency: cart.currency,
-			language: params.language,
-			style: params.buttonStyle,
-			requestShipping: cart.shippingRequired,
-			onCartChange: ( payload ) => {
-				state.cart = payload;
-				state.amount = payload.amount;
-			},
-			onSubmit: handleSubmit,
-			onError: ( error ) => {
-				showError( error?.message || params.i18n?.genericError );
-			},
-			onLoad: ( isSupported ) => {
-				if ( isSupported ) {
-					revealExpress();
-				} else {
-					hideExpress();
-				}
-			},
-		} );
+			const instance = createExpressPaymentRequest( {
+				accountId: params.accountId,
+				sessionId,
+				amount: cart.amount,
+				currency: cart.currency,
+				language: params.language,
+				style: params.buttonStyle,
+				requestShipping: cart.shippingRequired,
+				onCartChange: ( payload ) => {
+					state.cart = payload;
+					state.amount = payload.amount;
+				},
+				onSubmit: handleSubmit,
+				onError: ( error ) => {
+					showError( error?.message || params.i18n?.genericError );
+				},
+				onLoad: ( isSupported ) => {
+					if ( isSupported ) {
+						revealExpress();
+					} else {
+						hideExpress();
+					}
+				},
+			} );
 
-		if ( ! instance ) {
-			hideExpress();
+			if ( ! instance ) {
+				hideExpress();
+				return;
+			}
+
+			state.instance = instance;
+
+			await instance.render( state.container );
+		} finally {
+			state.mounting = false;
+		}
+	};
+
+	/**
+	 * Remounts when WooCommerce replaced the container, refreshes the amount otherwise.
+	 *
+	 * The classic cart replaces its whole totals block on every quantity, coupon or
+	 * removal change, and that takes the mount container with it.
+	 */
+	const onCartUpdated = async () => {
+		const root = document.querySelector(
+			'.monei-express-checkout[data-monei-express-location]'
+		);
+
+		if ( root && root !== state.root ) {
+			state.instance = null;
+			await mount();
 			return;
 		}
 
-		state.instance = instance;
-
-		await instance.render( state.container );
+		await refreshAmount();
 	};
 
 	$( function () {
-		mount().catch( () => {
-			hideExpress();
-		} );
+		mount().catch( () => hideExpress() );
 
-		// The classic checkout replaces its totals over AJAX on every coupon, address
-		// or shipping change. The component survives that; only its amount moves.
-		$( document.body ).on( 'updated_checkout', function () {
-			refreshAmount().catch( () => {} );
-		} );
+		$( document.body ).on(
+			'updated_checkout updated_cart_totals',
+			function () {
+				onCartUpdated().catch( () => {} );
+			}
+		);
 	} );
 } )( jQuery );
