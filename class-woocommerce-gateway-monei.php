@@ -17,6 +17,7 @@ use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Settings\MoneiSettings;
+use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 
 if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 
@@ -89,7 +90,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 					$blockSupportClasses = $blockSupportService->getBlockSupportClasses();
 					add_action(
 						'woocommerce_blocks_payment_method_type_registration',
-						function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) use ( $blockSupportClasses, $container ) {
+						function ( PaymentMethodRegistry $payment_method_registry ) use ( $blockSupportClasses, $container ) {
 							foreach ( $blockSupportClasses as $className ) {
 								if ( $container->has( $className ) ) {
 									$payment_method_registry->register( $container->get( $className ) );
@@ -185,7 +186,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 				}
 				return;
 			}
-			$container       = \Monei\Core\ContainerProvider::getContainer();
+			$container       = ContainerProvider::getContainer();
 			$templateManager = $container->get( 'Monei\Templates\TemplateManager' );
 			$template        = $templateManager->getTemplate( 'notice-admin-new-install' );
 			if ( $template ) {
@@ -199,7 +200,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return void
 		 */
 		public function dependency_notice() {
-			$container       = \Monei\Core\ContainerProvider::getContainer();
+			$container       = ContainerProvider::getContainer();
 			$templateManager = $container->get( 'Monei\Templates\TemplateManager' );
 			$template        = $templateManager->getTemplate( 'notice-admin-dependency' );
 			if ( $template ) {
@@ -318,17 +319,15 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		/**
 		 * Hooks when plugin_loaded
 		 */
-        public function plugins_loaded()
-        {
-            add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
-            add_filter('plugin_action_links_' . plugin_basename(MONEI_MAIN_FILE), array($this, 'plugin_action_links'));
-        }
+		public function plugins_loaded() {
+			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
+			add_filter( 'plugin_action_links_' . plugin_basename( MONEI_MAIN_FILE ), array( $this, 'plugin_action_links' ) );
+		}
 
-        public function plugin_action_links($links)
-        {
-            $links[] = '<a href="' . admin_url('admin.php?page=wc-settings&tab=monei_settings') . '">' . __('Settings', 'woocommerce') . '</a>';
-            return $links;
-        }
+		public function plugin_action_links( $links ) {
+			$links[] = '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=monei_settings' ) . '">' . __( 'Settings', 'woocommerce' ) . '</a>';
+			return $links;
+		}
 
 		/**
 		 * Add Monei Gateways.
@@ -338,7 +337,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 * @return array
 		 */
 		public function add_gateways( $methods ) {
-			$container = \Monei\Core\ContainerProvider::getContainer();
+			$container = ContainerProvider::getContainer();
 
 			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiCC' );
 			$methods[] = $container->get( 'Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle' );
