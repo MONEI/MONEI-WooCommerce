@@ -9,6 +9,9 @@ namespace Monei\Services\express;
 
 use Monei\Core\ContainerProvider;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
+use WC_Data_Store;
+use WC_Product;
+use WC_Product_Variation;
 use WC_Session_Handler;
 use WC_Session;
 use WC_Validation;
@@ -88,6 +91,20 @@ class ExpressCheckoutAjaxHandler {
 	private $express_gateways = null;
 
 	/**
+	 * Cart snapshot service.
+	 *
+	 * @var ExpressCartBackup
+	 */
+	private $cart_backup;
+
+	/**
+	 * @param ExpressCartBackup $cart_backup Cart snapshot service.
+	 */
+	public function __construct( ExpressCartBackup $cart_backup ) {
+		$this->cart_backup = $cart_backup;
+	}
+
+	/**
 	 * Register the endpoints.
 	 *
 	 * @return void
@@ -98,6 +115,9 @@ class ExpressCheckoutAjaxHandler {
 		add_action( 'wc_ajax_monei_express_get_shipping_options', array( $this, 'ajax_get_shipping_options' ) );
 		add_action( 'wc_ajax_monei_express_normalize_address', array( $this, 'ajax_normalize_address' ) );
 		add_action( 'wc_ajax_monei_express_update_shipping_method', array( $this, 'ajax_update_shipping_method' ) );
+		add_action( 'wc_ajax_monei_express_get_selected_product_data', array( $this, 'ajax_get_selected_product_data' ) );
+		add_action( 'wc_ajax_monei_express_add_to_cart', array( $this, 'ajax_add_to_cart' ) );
+		add_action( 'wc_ajax_monei_express_clear_cart', array( $this, 'ajax_clear_cart' ) );
 		add_action( 'wp', array( $this, 'maybe_start_customer_session' ) );
 	}
 
@@ -244,6 +264,207 @@ class ExpressCheckoutAjaxHandler {
 		}
 
 		wp_send_json( array_merge( array( 'result' => 'success' ), $this->build_cart_payload() ) );
+	}
+
+	/**
+	 * Price and shipping requirement of the product the shopper is looking at.
+	 *
+	 * The wallet sheet has to open with the right total before the cart has been
+	 * touched, so the amount comes from the product rather than from the cart. Once
+	 * `add_to_cart` has run, `get_cart_details` is the authority.
+	 *
+	 * @return void
+	 */
+	public function ajax_get_selected_product_data() {
+		$this->verify_request();
+
+		$product  = $this->get_posted_product();
+		$quantity = $this->get_posted_quantity();
+		$currency = get_woocommerce_currency();
+
+		wp_send_json(
+			array(
+				'result'           => 'success',
+				'productId'        => $product->get_id(),
+				'currency'         => $currency,
+				'amount'           => self::to_minor_units(
+					(float) wc_get_price_to_display( $product, array( 'qty' => $quantity ) ),
+					$currency
+				),
+				// Mirrors WC_Cart::needs_shipping() rather than asking the product alone:
+				// a store with shipping switched off, or with no method configured
+				// anywhere, would otherwise make the wallet collect a shipping address
+				// that get_cart_details() then says is not needed.
+				'shippingRequired' => wc_shipping_enabled()
+					&& wc_get_shipping_method_count( true ) > 0
+					&& $product->needs_shipping(),
+				'displayItems'     => array(
+					array(
+						'label'  => $product->get_name(),
+						'amount' => self::to_minor_units(
+							(float) wc_get_price_to_display( $product, array( 'qty' => $quantity ) ),
+							$currency
+						),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Puts the product being viewed into the cart, on its own.
+	 *
+	 * ⚠️ The snapshot is taken **first**. Everything after this point can be undone by
+	 * `clear_cart`; anything emptied before it cannot.
+	 *
+	 * @return void
+	 */
+	public function ajax_add_to_cart() {
+		$this->verify_request();
+
+		$product  = $this->get_posted_product();
+		$quantity = $this->get_posted_quantity();
+
+		$this->cart_backup->save();
+
+		WC()->cart->empty_cart();
+
+		$is_variation = $product instanceof WC_Product_Variation;
+		$variation_id = $is_variation ? $product->get_id() : 0;
+		$parent_id    = $is_variation ? $product->get_parent_id() : $product->get_id();
+
+		$key = WC()->cart->add_to_cart(
+			$parent_id,
+			$quantity,
+			$variation_id,
+			$is_variation ? $product->get_variation_attributes() : array()
+		);
+
+		if ( ! $key ) {
+			// The cart is empty at this point, so the shopper's own cart has to go back
+			// before this request returns, whatever the reason for the failure.
+			$this->cart_backup->restore();
+
+			wp_send_json_error(
+				array(
+					'code'    => 'add_to_cart_failed',
+					'message' => __( 'This product could not be added to the cart.', 'monei' ),
+				),
+				400
+			);
+		}
+
+		$this->cart_backup->remember_express_items( array( $key ) );
+
+		WC()->cart->calculate_totals();
+
+		wp_send_json( array_merge( array( 'result' => 'success' ), $this->build_cart_payload() ) );
+	}
+
+	/**
+	 * Puts the shopper's own cart back, on every way out of a product page express
+	 * flow: cancelled wallet sheet, failed payment, or navigating away.
+	 *
+	 * @return void
+	 */
+	public function ajax_clear_cart() {
+		$this->verify_request();
+
+		wp_send_json(
+			array(
+				'result'   => 'success',
+				'restored' => $this->cart_backup->restore(),
+			)
+		);
+	}
+
+	/**
+	 * The product the request refers to, resolved down to a concrete variation.
+	 *
+	 * Sends an error response and stops rather than returning, because every caller
+	 * would otherwise have to repeat the same check.
+	 *
+	 * @return WC_Product
+	 */
+	private function get_posted_product() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		$product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$variation_id = isset( $_POST['variation_id'] ) ? absint( wp_unslash( $_POST['variation_id'] ) ) : 0;
+
+		$product = wc_get_product( $variation_id > 0 ? $variation_id : $product_id );
+
+		if ( ! $product instanceof WC_Product ) {
+			$this->deny( 'invalid_product', __( 'This product is not available.', 'monei' ) );
+		}
+
+		if ( $product->is_type( 'variable' ) ) {
+			$product = $this->resolve_variation( $product );
+		}
+
+		// Grouped and external products have no price and no single line to buy, and a
+		// wallet sheet cannot ask the questions their pages ask.
+		if ( ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+			$this->deny( 'unsupported_product', __( 'This product cannot be bought with express checkout.', 'monei' ) );
+		}
+
+		return $product;
+	}
+
+	/**
+	 * Turns the posted attributes into the one variation they select.
+	 *
+	 * @param WC_Product $product Variable product.
+	 *
+	 * @return WC_Product
+	 */
+	private function resolve_variation( WC_Product $product ) {
+		$attributes = array();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		if ( isset( $_POST['attributes'] ) && is_array( $_POST['attributes'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$attributes = (array) wc_clean( wp_unslash( $_POST['attributes'] ) );
+		}
+
+		$data_store = WC_Data_Store::load( 'product' );
+		// WC_Data_Store proxies to the concrete store through __call, so the method is
+		// invisible to static analysis.
+		/** @phpstan-ignore-next-line */
+		$variation = $data_store->find_matching_product_variation( $product, $attributes );
+		$resolved  = $variation ? wc_get_product( $variation ) : null;
+
+		if ( ! $resolved instanceof WC_Product ) {
+			$this->deny( 'variation_not_found', __( 'Please choose product options before paying.', 'monei' ) );
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return int
+	 */
+	private function get_posted_quantity() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		$quantity = isset( $_POST['quantity'] ) ? absint( wp_unslash( $_POST['quantity'] ) ) : 1;
+
+		return max( 1, $quantity );
+	}
+
+	/**
+	 * @param string $code    Machine readable reason.
+	 * @param string $message Shopper facing message.
+	 *
+	 * @return void
+	 */
+	private function deny( $code, $message ) {
+		wp_send_json_error(
+			array(
+				'code'    => $code,
+				'message' => $message,
+			),
+			400
+		);
 	}
 
 	/**

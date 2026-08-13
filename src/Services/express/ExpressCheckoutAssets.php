@@ -11,6 +11,7 @@ use Monei\Core\ContainerProvider;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle;
 use WC_AJAX;
+use WC_Product;
 use WP_Post;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -65,6 +66,7 @@ class ExpressCheckoutAssets {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_classic_assets' ) );
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'render_checkout_buttons' ), 5 );
 		add_action( 'woocommerce_proceed_to_checkout', array( $this, 'render_cart_buttons' ), 5 );
+		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'render_product_buttons' ) );
 	}
 
 	/**
@@ -112,7 +114,10 @@ class ExpressCheckoutAssets {
 			'wc_monei_express_params',
 			array_merge(
 				self::get_script_data( $gateway ),
-				array( 'location' => $location )
+				array(
+					'location' => $location,
+					'product'  => 'product' === $location ? $this->get_product_context() : null,
+				)
 			)
 		);
 
@@ -143,6 +148,19 @@ class ExpressCheckoutAssets {
 		}
 
 		self::render_container( 'cart' );
+	}
+
+	/**
+	 * Express button container below the add-to-cart form.
+	 *
+	 * @return void
+	 */
+	public function render_product_buttons() {
+		if ( 'product' !== $this->get_classic_location() ) {
+			return;
+		}
+
+		self::render_container( 'product' );
 	}
 
 	/**
@@ -196,6 +214,25 @@ class ExpressCheckoutAssets {
 	}
 
 	/**
+	 * The product the page is showing, for the product page express flow.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	private function get_product_context() {
+		$product = wc_get_product();
+
+		if ( ! $product instanceof WC_Product ) {
+			return null;
+		}
+
+		return array(
+			'id'          => $product->get_id(),
+			'isVariable'  => $product->is_type( 'variable' ),
+			'purchasable' => $product->is_purchasable() && $product->is_in_stock(),
+		);
+	}
+
+	/**
 	 * Express location of the current request, or null when express must not render.
 	 *
 	 * Block-rendered cart and checkout pages return null: their buttons come from the
@@ -217,6 +254,10 @@ class ExpressCheckoutAssets {
 			}
 
 			return $gateway->is_express_enabled_at( 'checkout' ) ? 'checkout' : null;
+		}
+
+		if ( is_product() ) {
+			return $gateway->is_express_enabled_at( 'product' ) ? 'product' : null;
 		}
 
 		if ( is_cart() ) {

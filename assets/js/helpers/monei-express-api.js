@@ -128,6 +128,34 @@ export const expressRequest = async ( endpoint, data = {} ) => {
 };
 
 /**
+ * Fire-and-forget call that survives the page being torn down.
+ *
+ * A shopper who navigates away mid-flow leaves a borrowed cart behind, and a normal
+ * `fetch` is cancelled with the document. Only works once `expressBootstrap()` has
+ * resolved, which it always has by the time a flow is in progress.
+ * @param {string} endpoint - Endpoint name without the `monei_express_` prefix
+ * @param {Object} data     - Request fields
+ * @return {boolean} Whether the beacon was queued
+ */
+export const expressBeacon = ( endpoint, data = {} ) => {
+	if ( ! credentials || ! navigator.sendBeacon ) {
+		return false;
+	}
+
+	const form = new FormData();
+
+	Object.keys( { ...data, security: credentials.nonce } ).forEach( ( key ) =>
+		appendField(
+			form,
+			key,
+			key === 'security' ? credentials.nonce : data[ key ]
+		)
+	);
+
+	return navigator.sendBeacon( expressAjaxUrl( endpoint ), form );
+};
+
+/**
  * Test seam: drops the cached nonce so the next call bootstraps again.
  */
 export const resetExpressCredentials = () => {
