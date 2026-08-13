@@ -48,6 +48,11 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 				// makes that one failed call away at any moment, so fall back
 				// to the last answer that worked.
 				$data = get_transient( $this->fallbackKey( $transientKey ) );
+				if ( $data ) {
+					// Without this every request during an outage repeats the
+					// failing call.
+					set_transient( $transientKey, $data, 30 );
+				}
 			}
 		}
 
