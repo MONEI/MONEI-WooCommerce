@@ -133,6 +133,7 @@ jobs:
             - name: Seed the store
               env:
                   MONEI_TEST_API_KEY: ${{ secrets.MONEI_TEST_API_KEY }}
+                  MONEI_TEST_ACCOUNT_ID: ${{ secrets.MONEI_TEST_ACCOUNT_ID }}
               run: pnpm test:e2e:seed
 
             - name: Install Playwright browsers

@@ -179,7 +179,22 @@ const main = async () => {
 		'It must be the test mode API key of the MONEI account the suite pays with.'
 	);
 
-	const accountId = await fetchAccountId( apiKey );
+	// The API call stays even when the id is supplied, because it is what proves
+	// the key is real and, more importantly, that it is not a live mode key.
+	const resolvedAccountId = await fetchAccountId( apiKey );
+	const declaredAccountId = (
+		process.env.MONEI_TEST_ACCOUNT_ID || ''
+	).trim();
+
+	if ( declaredAccountId && declaredAccountId !== resolvedAccountId ) {
+		throw new Error(
+			`MONEI_TEST_ACCOUNT_ID is ${ declaredAccountId } but MONEI_TEST_API_KEY ` +
+				`belongs to ${ resolvedAccountId }. Paying with one account while ` +
+				'configuring the store for another would make every result meaningless.'
+		);
+	}
+
+	const accountId = declaredAccountId || resolvedAccountId;
 
 	wpCli( [ 'plugin', 'activate', 'woocommerce' ] );
 	wpCli( [ 'rewrite', 'structure', '/%postname%/', '--hard' ] );
