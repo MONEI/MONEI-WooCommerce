@@ -143,7 +143,7 @@ class ExpressCheckoutAjaxHandler {
 	public function ajax_get_shipping_options() {
 		$this->verify_request();
 
-		$address = $this->get_posted_address_fields();
+		$address = $this->get_posted_address( 'address' );
 
 		if ( ! WC()->cart->needs_shipping() ) {
 			WC()->cart->calculate_totals();
@@ -200,7 +200,13 @@ class ExpressCheckoutAjaxHandler {
 	public function ajax_normalize_address() {
 		$this->verify_request();
 
-		wp_send_json( array( 'result' => 'success' ) );
+		wp_send_json(
+			array(
+				'result'   => 'success',
+				'billing'  => $this->get_posted_address( 'billing' ),
+				'shipping' => $this->get_posted_address( 'shipping' ),
+			)
+		);
 	}
 
 	/**
@@ -211,7 +217,33 @@ class ExpressCheckoutAjaxHandler {
 	public function ajax_update_shipping_method() {
 		$this->verify_request();
 
-		wp_send_json( array( 'result' => 'success' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		$rate_id = isset( $_POST['shipping_method'] ) ? (string) wc_clean( wp_unslash( $_POST['shipping_method'] ) ) : '';
+
+		WC()->cart->calculate_totals();
+
+		if ( WC()->cart->needs_shipping() ) {
+			// The rate id comes from the client, so it is only honoured when it is one
+			// of the rates this cart and address actually produced.
+			$available = wp_list_pluck( $this->get_available_shipping_options(), 'id' );
+
+			if ( ! in_array( $rate_id, $available, true ) ) {
+				wp_send_json(
+					array_merge(
+						array(
+							'result'  => 'invalid_shipping_option',
+							'message' => __( 'That shipping method is not available.', 'monei' ),
+						),
+						$this->build_cart_payload()
+					)
+				);
+			}
+
+			$this->set_chosen_shipping_method( $rate_id );
+			WC()->cart->calculate_totals();
+		}
+
+		wp_send_json( array_merge( array( 'result' => 'success' ), $this->build_cart_payload() ) );
 	}
 
 	/**
@@ -439,29 +471,219 @@ class ExpressCheckoutAjaxHandler {
 	}
 
 	/**
-	 * The partial address a wallet sends mid-flow.
+	 * Reads a posted address object and returns it in WooCommerce format.
+	 *
+	 * @param string $key POST key holding the address object.
 	 *
 	 * @return array<string, string>
 	 */
-	private function get_posted_address_fields() {
-		$address = array(
-			'country'  => '',
-			'state'    => '',
-			'city'     => '',
-			'postcode' => '',
+	private function get_posted_address( $key ) {
+		$raw = array();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer first.
+		if ( isset( $_POST[ $key ] ) && is_array( $_POST[ $key ] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$raw = (array) wc_clean( wp_unslash( $_POST[ $key ] ) );
+		}
+
+		return $this->normalize_address( $raw );
+	}
+
+	/**
+	 * @param array<string, mixed> $address Wallet address.
+	 *
+	 * @return array<string, string>
+	 */
+	private function normalize_address( array $address ) {
+		$normalized          = self::map_wallet_address( $address );
+		$normalized['state'] = self::normalize_state_code(
+			$normalized['state'],
+			$this->get_country_states( $normalized['country'] )
 		);
 
-		foreach ( array_keys( $address ) as $field ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_request() runs check_ajax_referer before this is reached.
-			if ( isset( $_POST[ $field ] ) ) {
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$address[ $field ] = (string) wc_clean( wp_unslash( $_POST[ $field ] ) );
+		return $normalized;
+	}
+
+	/**
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_country_states( $country ) {
+		if ( '' === $country ) {
+			return array();
+		}
+
+		$states = WC()->countries->get_states( $country );
+
+		return is_array( $states ) ? $states : array();
+	}
+
+	/**
+	 * Maps a wallet address onto WooCommerce address fields.
+	 *
+	 * Wallets disagree on field names — monei.js hands back `{ line1, line2, city,
+	 * state, zip, country }` while Apple Pay, Google Pay and PayPal each use their own
+	 * spelling — and mid-flow the object holds country, city, state and postcode only.
+	 * Every field is therefore optional and every unknown key is ignored.
+	 *
+	 * @param array<string, mixed> $address Wallet address, flat or with a nested `address`.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function map_wallet_address( array $address ) {
+		$nested = isset( $address['address'] ) && is_array( $address['address'] ) ? $address['address'] : array();
+		$fields = array_merge( array_filter( $address, 'is_scalar' ), array_filter( $nested, 'is_scalar' ) );
+
+		$mapped = array(
+			'first_name' => self::first_value( $fields, array( 'first_name', 'firstName', 'givenName', 'given_name' ) ),
+			'last_name'  => self::first_value( $fields, array( 'last_name', 'lastName', 'surname', 'familyName', 'family_name' ) ),
+			'company'    => self::first_value( $fields, array( 'company', 'organization' ) ),
+			'address_1'  => self::first_value( $fields, array( 'address_1', 'line1', 'addressLine1', 'address_line_1' ) ),
+			'address_2'  => self::first_value( $fields, array( 'address_2', 'line2', 'addressLine2', 'address_line_2' ) ),
+			'city'       => self::first_value( $fields, array( 'city', 'locality', 'admin_area_2' ) ),
+			'state'      => self::first_value( $fields, array( 'state', 'region', 'province', 'administrativeArea', 'admin_area_1' ) ),
+			'postcode'   => self::first_value( $fields, array( 'postcode', 'zip', 'postalCode', 'postal_code' ) ),
+			'country'    => strtoupper( self::first_value( $fields, array( 'country', 'countryCode', 'country_code' ) ) ),
+			'email'      => self::first_value( $fields, array( 'email', 'emailAddress', 'email_address' ) ),
+			'phone'      => self::first_value( $fields, array( 'phone', 'phoneNumber', 'phone_number', 'telephone' ) ),
+		);
+
+		if ( '' === $mapped['first_name'] && '' === $mapped['last_name'] ) {
+			$name = self::first_value( $fields, array( 'name', 'fullName', 'full_name', 'recipient' ) );
+
+			if ( '' !== $name ) {
+				$parts = preg_split( '/\s+/', $name );
+				$parts = is_array( $parts ) ? $parts : array( $name );
+
+				$mapped['last_name']  = count( $parts ) > 1 ? (string) array_pop( $parts ) : '';
+				$mapped['first_name'] = implode( ' ', $parts );
 			}
 		}
 
-		$address['country'] = strtoupper( $address['country'] );
+		return $mapped;
+	}
 
-		return $address;
+	/**
+	 * Resolves a state to the code WooCommerce stores.
+	 *
+	 * This is where express checkout usually breaks: wallets send a display name
+	 * ("Madrid", "California"), sometimes decorated ("Co. Clare") and sometimes without
+	 * accents, while WooCommerce shipping zones and address validation match on the
+	 * code. Countries WooCommerce has no state list for keep the value untouched.
+	 *
+	 * @param string                $state     Value from the wallet.
+	 * @param array<string, string> $wc_states WooCommerce states for the country, code => name.
+	 *
+	 * @return string
+	 */
+	public static function normalize_state_code( $state, array $wc_states ) {
+		$state = trim( (string) $state );
+
+		if ( '' === $state || empty( $wc_states ) ) {
+			return $state;
+		}
+
+		if ( isset( $wc_states[ $state ] ) ) {
+			return $state;
+		}
+
+		foreach ( array_keys( $wc_states ) as $code ) {
+			if ( 0 === strcasecmp( (string) $code, $state ) ) {
+				return (string) $code;
+			}
+		}
+
+		$needle = self::fold( $state );
+
+		// Exact name match runs as its own pass: a containment pass alone would resolve
+		// "West Virginia" to Virginia, whichever key WooCommerce happens to list first.
+		foreach ( $wc_states as $code => $name ) {
+			if ( self::fold( $name ) === $needle ) {
+				return (string) $code;
+			}
+		}
+
+		foreach ( $wc_states as $code => $name ) {
+			$folded = self::fold( $name );
+
+			if ( '' !== $folded && false !== strpos( $needle, $folded ) ) {
+				return (string) $code;
+			}
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Lowercases, strips accents and drops punctuation, so "Málaga", "Malaga" and
+	 * "MALAGA." all compare equal.
+	 *
+	 * @param string $value Value to fold.
+	 *
+	 * @return string
+	 */
+	private static function fold( $value ) {
+		$value = mb_strtolower( (string) $value, 'UTF-8' );
+
+		$value = strtr(
+			$value,
+			array(
+				'á' => 'a',
+				'à' => 'a',
+				'â' => 'a',
+				'ä' => 'a',
+				'ã' => 'a',
+				'å' => 'a',
+				'é' => 'e',
+				'è' => 'e',
+				'ê' => 'e',
+				'ë' => 'e',
+				'í' => 'i',
+				'ì' => 'i',
+				'î' => 'i',
+				'ï' => 'i',
+				'ó' => 'o',
+				'ò' => 'o',
+				'ô' => 'o',
+				'ö' => 'o',
+				'õ' => 'o',
+				'ú' => 'u',
+				'ù' => 'u',
+				'û' => 'u',
+				'ü' => 'u',
+				'ñ' => 'n',
+				'ç' => 'c',
+			)
+		);
+
+		$value = (string) preg_replace( '/[^a-z0-9]+/', ' ', $value );
+
+		return trim( $value );
+	}
+
+	/**
+	 * First non-empty scalar among the given keys.
+	 *
+	 * @param array<string, mixed> $source Source data.
+	 * @param string[]             $keys   Keys to try, in order.
+	 *
+	 * @return string
+	 */
+	private static function first_value( array $source, array $keys ) {
+		foreach ( $keys as $key ) {
+			if ( ! isset( $source[ $key ] ) || ! is_scalar( $source[ $key ] ) ) {
+				continue;
+			}
+
+			$value = trim( (string) $source[ $key ] );
+
+			if ( '' !== $value ) {
+				return $value;
+			}
+		}
+
+		return '';
 	}
 
 	/**
