@@ -194,7 +194,16 @@ const MoneiExpressContent = ( props ) => {
 
 			try {
 				await applyAddresses( result );
-				await waitUntilActive();
+
+				// Submitting while WooCommerce still reports another method active
+				// would place the order under that method, with no wallet token
+				// attached — the observer below hands nothing over in that state.
+				if ( ! ( await waitUntilActive() ) ) {
+					tokenRef.current = null;
+					fail();
+					return;
+				}
+
 				onSubmit();
 			} catch ( error ) {
 				fail( error.message );
