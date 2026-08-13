@@ -101,7 +101,11 @@ return apply_filters(
 		'express_button_style'  => array(
 			'title'       => __( 'Express Checkout Button Style', 'monei' ),
 			'type'        => 'textarea',
-			'description' => __( 'Configure in JSON format the style of the Apple Pay / Google Pay express checkout button. Documentation: ', 'monei' ) . '<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">MONEI Payment Request Style</a>',
+			'description' => sprintf(
+				/* translators: %s: link to the MONEI payment request style documentation */
+				__( 'Configure in JSON format the style of the Apple Pay / Google Pay express checkout button. Documentation: %s', 'monei' ),
+				'<a href="https://docs.monei.com/docs/monei-js/reference/#paymentrequest-options" target="_blank">' . __( 'MONEI Payment Request Style', 'monei' ) . '</a>'
+			),
 			'default'     => WCGatewayMoneiAppleGoogle::DEFAULT_EXPRESS_BUTTON_STYLE,
 			'css'         => 'min-height: 80px;',
 		),
