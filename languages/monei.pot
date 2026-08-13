@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T18:37:34+00:00\n"
+"POT-Creation-Date: 2026-08-13T18:44:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: monei\n"
@@ -217,8 +217,14 @@ msgstr ""
 msgid "Express Checkout Button Style"
 msgstr ""
 
-#: includes/admin/monei-apple-google-settings.php:104
-msgid "Configure in JSON format the style of the Apple Pay / Google Pay express checkout button. Documentation: "
+#. translators: %s: link to the MONEI payment request style documentation
+#: includes/admin/monei-apple-google-settings.php:106
+#, php-format
+msgid "Configure in JSON format the style of the Apple Pay / Google Pay express checkout button. Documentation: %s"
+msgstr ""
+
+#: includes/admin/monei-apple-google-settings.php:107
+msgid "MONEI Payment Request Style"
 msgstr ""
 
 #: includes/admin/monei-bizum-settings.php:25
@@ -403,8 +409,14 @@ msgstr ""
 msgid "Select where the PayPal express checkout button is displayed."
 msgstr ""
 
-#: includes/admin/monei-paypal-settings.php:104
-msgid "Configure in JSON format the style of the PayPal express checkout button. Documentation: "
+#. translators: %s: link to the MONEI PayPal style documentation
+#: includes/admin/monei-paypal-settings.php:106
+#, php-format
+msgid "Configure in JSON format the style of the PayPal express checkout button. Documentation: %s"
+msgstr ""
+
+#: includes/admin/monei-paypal-settings.php:107
+msgid "MONEI PayPal Style"
 msgstr ""
 
 #: includes/class-wc-monei-ipn.php:151
@@ -637,7 +649,7 @@ msgid "Please check your card details."
 msgstr ""
 
 #: src/Gateways/Blocks/MoneiCCBlocksSupport.php:128
-#: assets/js/monei-block-checkout-bizum.js:217
+#: assets/js/monei-block-checkout-bizum.js:218
 #: assets/js/monei-block-checkout-paypal.js:240
 msgid "MONEI token could not be generated."
 msgstr ""
