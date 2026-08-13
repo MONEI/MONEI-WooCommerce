@@ -99,7 +99,7 @@ pnpm test:unit
 # PHP unit tests
 composer test
 
-# End to end payment tests
+# End-to-end payment tests
 pnpm test:e2e
 ```
 
@@ -328,7 +328,7 @@ git push origin feat/my-feature
 -   `pnpm lint:php` - Lint PHP (PHPCS + PHPStan)
 -   `pnpm lint:php:fix` - Fix PHP code style issues
 -   `pnpm test:unit` - Run JavaScript unit tests
--   `pnpm test:e2e` - Run end to end payment tests (needs `tests/playwright/.env`)
+-   `pnpm test:e2e` - Run end-to-end payment tests (needs `tests/playwright/.env`)
 
 ## Tech Stack
 
