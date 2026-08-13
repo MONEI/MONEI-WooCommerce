@@ -1,6 +1,9 @@
 name: Tests
 on: [push]
 
+permissions:
+    contents: read
+
 # A second push supersedes the first. Separate from the Code Quality group so the
 # two workflows cancel independently.
 concurrency:
@@ -15,6 +18,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
@@ -38,6 +43,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             # Matches the platform pin in composer.json, so CI resolves the same
             # dependency tree the plugin ships against.
@@ -89,6 +96,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup pnpm
               uses: pnpm/action-setup@v4

@@ -5,6 +5,10 @@ on:
             PACKAGE_VERSION:
                 description: 'Package Version'
                 required: true
+
+permissions:
+    contents: read
+
 jobs:
     tag:
         name: New package
@@ -12,6 +16,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Install Composer dependencies
               uses: ramsey/composer-install@v3

@@ -2,6 +2,12 @@ name: Deploy to WordPress.org
 on:
     release:
         types: [published]
+
+# Write access is what ncipollo/release-action needs to attach the built zip to the
+# release it is triggered by. Every other workflow reads only.
+permissions:
+    contents: write
+
 jobs:
     tag:
         name: New release
@@ -9,6 +15,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Install Composer dependencies
               uses: ramsey/composer-install@v3

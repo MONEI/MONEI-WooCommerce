@@ -1,6 +1,9 @@
 name: Code Quality
 on: [push]
 
+permissions:
+    contents: read
+
 # Concurrency to prevent multiple jobs from running at the same time
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,6 +17,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
