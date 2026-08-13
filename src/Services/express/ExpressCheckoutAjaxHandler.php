@@ -532,9 +532,31 @@ class ExpressCheckoutAjaxHandler {
 		// action is what WooCommerce Subscriptions and YITH listen on to build their
 		// subscriptions, so an express order carries them exactly as a normal one does.
 		WC()->session->set( 'order_awaiting_payment', $order->get_id() );
+		$this->persist_session();
 		do_action( 'woocommerce_checkout_order_processed', $order->get_id(), $data, $order );
 
 		return $order;
+	}
+
+	/**
+	 * Writes the session out before the gateway is called.
+	 *
+	 * WooCommerce saves a session on shutdown, which a request hanging inside a
+	 * payment gateway never reaches. `order_awaiting_payment` would then be absent
+	 * when the shopper tries again, and `WC_Checkout::create_order()` would build a
+	 * second order instead of resuming the first. `WC_Checkout::process_order_payment()`
+	 * saves at exactly this point for exactly this reason.
+	 *
+	 * @return void
+	 */
+	private function persist_session() {
+		$session = function_exists( 'WC' ) ? WC()->session : null;
+
+		// save_data() lives on the handler, not on the abstract WC_Session a custom
+		// implementation could subclass.
+		if ( $session instanceof WC_Session_Handler ) {
+			$session->save_data();
+		}
 	}
 
 	/**
