@@ -348,7 +348,38 @@ const readBlocksTotal = async ( page ) => {
  * @return {Promise<string>} WooCommerce order id
  */
 const expectOrderReceived = async ( page ) => {
-	await page.waitForURL( /order-received/, { timeout: 120000 } );
+	// A challenge can still be rendering when the caller's tolerant wait gives
+	// up: that wait cannot tell "timed out" from "no challenge", so on a slow
+	// runner it reports neither and leaves the page sitting on an unanswered
+	// challenge until this wait also expires. Keep answering challenges here
+	// until the order actually lands.
+	const deadline = Date.now() + 120000;
+
+	for (;;) {
+		const remaining = deadline - Date.now();
+
+		if ( remaining <= 0 ) {
+			// Let waitForURL raise its own timeout error, which names the URL.
+			await page.waitForURL( /order-received/, { timeout: 1 } );
+		}
+
+		try {
+			await page.waitForURL( /order-received/, {
+				timeout: Math.min( remaining, CHALLENGE_TIMEOUT ),
+			} );
+			break;
+		} catch ( error ) {
+			const button = await visibleChallengeButton( page );
+
+			// No challenge to answer yet. The order may simply still be in
+			// flight, so keep waiting until the deadline rather than giving up
+			// on this slice — the deadline check above raises when it expires.
+			if ( button ) {
+				await activateChallengeButton( button, page );
+			}
+		}
+	}
+
 	// The confirmation page carries both the classic body class and the block
 	// status element, so this must not assert on a strict single match.
 	await expect(
