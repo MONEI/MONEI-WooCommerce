@@ -15,6 +15,7 @@ const {
 	setCardFieldLayout,
 	setCheckoutPageId,
 } = require( '../utils/wp-cli' );
+const { THREE_DS_SKIP_REASON, supportsThreeDs } = require( '../utils/env' );
 
 const { fixture } = require( '../utils/fixtures' );
 
@@ -34,6 +35,10 @@ let previousLayout;
 let previousCheckoutPageId;
 
 test.describe( 'Classic checkout, single card field', () => {
+	// Every case here places a card order, and this account challenges the test
+	// cards, so the whole file depends on a 3DS round trip.
+	test.skip( ! supportsThreeDs(), THREE_DS_SKIP_REASON );
+
 	test.beforeAll( () => {
 		previousLayout = getCardFieldLayout();
 		previousCheckoutPageId = getCheckoutPageId();
