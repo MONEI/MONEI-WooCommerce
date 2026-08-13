@@ -98,16 +98,29 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 
 	/**
 	 * Puts the shopper's own cart back. Called on every way out of the flow.
+	 *
+	 * ⚠️ The hold is only given up once the server has confirmed the release. Dropping
+	 * it on a failed call would lose the shopper's cart for good: the `pagehide`
+	 * beacon and every other exit path skip a cart they believe is already returned.
 	 * @return {Promise<void>}
 	 */
 	const releaseCart = async () => {
-		if ( null === state.cartHolds ) {
+		const held = state.cartHolds;
+
+		if ( null === held ) {
 			return;
 		}
 
+		// Cleared up front so a second call cannot release the same cart twice, and
+		// put back below so a later exit path retries.
 		state.cartHolds = null;
 
-		await expressRequest( 'clear_cart' );
+		try {
+			await expressRequest( 'clear_cart' );
+		} catch ( error ) {
+			state.cartHolds = held;
+			throw error;
+		}
 	};
 
 	const showError = ( message ) => {
@@ -434,9 +447,11 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 			// Navigating away mid-flow is an exit path like any other, and a normal
 			// request would be cancelled with the document.
 			window.addEventListener( 'pagehide', function () {
-				if ( null !== state.cartHolds ) {
+				if (
+					null !== state.cartHolds &&
+					expressBeacon( 'clear_cart' )
+				) {
 					state.cartHolds = null;
-					expressBeacon( 'clear_cart' );
 				}
 			} );
 		}
