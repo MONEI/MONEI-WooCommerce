@@ -1,0 +1,120 @@
+name: Tests
+on: [push]
+
+# A second push supersedes the first. Separate from the Code Quality group so the
+# two workflows cancel independently.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    jest:
+        name: JavaScript unit tests
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Run Jest
+              run: pnpm test:unit
+
+    phpunit:
+        name: PHP unit tests
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            # Matches the platform pin in composer.json, so CI resolves the same
+            # dependency tree the plugin ships against.
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.0'
+                  coverage: none
+                  tools: composer
+
+            - name: Install Composer dependencies
+              uses: ramsey/composer-install@v3
+              with:
+                  composer-options: --dev --optimize-autoloader
+
+            - name: Run PHPUnit
+              run: composer test
+
+    # `secrets` is not readable from a job level `if`, so the gate has to be a job
+    # that reads them and publishes a plain output.
+    e2e-environment:
+        name: E2E environment check
+        runs-on: ubuntu-latest
+        outputs:
+            configured: ${{ steps.check.outputs.configured }}
+        steps:
+            - name: Look for the E2E secrets
+              id: check
+              env:
+                  MONEI_TEST_API_KEY: ${{ secrets.MONEI_TEST_API_KEY }}
+                  MONEI_E2E_BASE_URL: ${{ secrets.MONEI_E2E_BASE_URL }}
+                  MONEI_E2E_WP_DIR: ${{ secrets.MONEI_E2E_WP_DIR }}
+              run: |
+                  if [ -n "$MONEI_TEST_API_KEY" ] && [ -n "$MONEI_E2E_BASE_URL" ] && [ -n "$MONEI_E2E_WP_DIR" ]; then
+                    echo 'configured=true' >> "$GITHUB_OUTPUT"
+                  else
+                    echo 'configured=false' >> "$GITHUB_OUTPUT"
+                    echo '::notice title=E2E skipped::The E2E suite takes real MONEI test payments, so it only runs where MONEI_TEST_API_KEY, MONEI_E2E_BASE_URL and MONEI_E2E_WP_DIR are all set. See tests/playwright/README.md.'
+                  fi
+
+    e2e:
+        name: E2E tests (Playwright)
+        runs-on: ubuntu-latest
+        needs: e2e-environment
+        # A fork or a clone has no MONEI account behind it. Skipping keeps their runs
+        # green instead of failing on a missing key.
+        if: needs.e2e-environment.outputs.configured == 'true'
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Install Playwright browsers
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Run Playwright
+              env:
+                  MONEI_E2E_BASE_URL: ${{ secrets.MONEI_E2E_BASE_URL }}
+                  MONEI_E2E_WP_DIR: ${{ secrets.MONEI_E2E_WP_DIR }}
+              run: pnpm test:e2e
+
+            - name: Upload the report
+              if: ${{ !cancelled() }}
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report
+                  path: tests/playwright/playwright-report
+                  retention-days: 7
