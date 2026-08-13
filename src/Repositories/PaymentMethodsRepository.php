@@ -18,11 +18,19 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	 * Fetch payment methods from the API.
 	 */
 	private function fetchFromAPI(): ?array {
+		// The account id no longer reaches the API — getAllowed() derives the account
+		// from the API key. It still gates the call because it is what separates the
+		// test cache from the live one, and because an unset one means the plugin is
+		// not configured yet.
 		if ( ! $this->accountId ) {
 			return null;
 		}
 		try {
-			$response = $this->moneiClient->paymentMethods->get( $this->accountId );
+			// /allowed-payment-methods, the API key authenticated replacement for the
+			// deprecated /payment-methods. Amount, currency and country are left out on
+			// purpose: this repository is a container singleton that answers admin
+			// screens as well as the checkout, so it has no one cart to describe.
+			$response = $this->moneiClient->paymentMethods->getAllowed();
 		} catch ( Exception $e ) {
 			$response = null;
 		}

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8e3fde219f54cd7c6684d6f11e3540a9",
+    "content-hash": "4d4c2f75e00d7663a43960662799bc13",
     "packages": [
         {
             "name": "laravel/serializable-closure",
@@ -69,16 +69,16 @@
         },
         {
             "name": "monei/monei-php-sdk",
-            "version": "2.8.3",
+            "version": "2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MONEI/monei-php-sdk.git",
-                "reference": "dc9a0845d591bef8d70c591d8b23b48e0002ba8f"
+                "reference": "2360971196e544c1b654822fd9766c590947fc63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/dc9a0845d591bef8d70c591d8b23b48e0002ba8f",
-                "reference": "dc9a0845d591bef8d70c591d8b23b48e0002ba8f",
+                "url": "https://api.github.com/repos/MONEI/monei-php-sdk/zipball/2360971196e544c1b654822fd9766c590947fc63",
+                "reference": "2360971196e544c1b654822fd9766c590947fc63",
                 "shasum": ""
             },
             "require": {
@@ -135,9 +135,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MONEI/monei-php-sdk/issues",
-                "source": "https://github.com/MONEI/monei-php-sdk/tree/2.8.3"
+                "source": "https://github.com/MONEI/monei-php-sdk/tree/2.11.0"
             },
-            "time": "2025-09-15T17:51:42+00:00"
+            "time": "2026-07-02T13:32:57+00:00"
         },
         {
             "name": "php-di/invoker",

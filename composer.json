@@ -1,7 +1,7 @@
 {
 	"require": {
 		"php": "^8.0",
-		"monei/monei-php-sdk": "^2.8",
+		"monei/monei-php-sdk": "^2.11",
 		"php-di/php-di": "^7.0"
 	},
 	"autoload": {
