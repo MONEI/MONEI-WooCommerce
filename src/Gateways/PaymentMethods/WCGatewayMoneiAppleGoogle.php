@@ -27,12 +27,6 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	const PAYMENT_METHOD = 'card';
 
 	/**
-	 * Default JSON style of the express checkout button.
-	 * ⚠️ Heights need a CSS unit — monei.js discards unitless values.
-	 */
-	const DEFAULT_EXPRESS_BUTTON_STYLE = '{"height": "50px"}';
-
-	/**
 	 * @var bool
 	 */
 	protected $redirect_flow;

@@ -1,9 +1,13 @@
 /**
- * Shared construction of the express `PaymentRequest` component.
+ * Shared construction of the express wallet components.
  *
  * Classic and blocks differ in how they mount the button and what they do with the
  * resulting token, but the wallet contract — amount, shipping callbacks, minor units
  * — is identical, so it lives here once.
+ *
+ * PaymentRequest (Apple Pay / Google Pay) and PayPal take the same shipping callbacks:
+ * `onShippingAddressChange` and `onShippingOptionChange` are declared with the same
+ * result types in both components, so one set of endpoints serves both.
  */
 
 import { expressRequest } from './monei-express-api';
@@ -64,16 +68,11 @@ export const createShippingCallbacks = ( {
 };
 
 /**
- * Builds an express `PaymentRequest`. Returns null when the SDK is absent.
+ * Everything both wallets take, in the shape the SDK expects.
  * @param {Object} config - Component configuration
- * @return {Object|null} The component instance
+ * @return {Object} Component props
  */
-export const createExpressPaymentRequest = ( config ) => {
-	// eslint-disable-next-line no-undef
-	if ( typeof monei === 'undefined' || ! monei.PaymentRequest ) {
-		return null;
-	}
-
+const buildProps = ( config ) => {
 	const {
 		accountId,
 		sessionId,
@@ -96,6 +95,8 @@ export const createExpressPaymentRequest = ( config ) => {
 		onCartChange,
 	} );
 
+	// ⚠️ `accountId` and never `paymentId`: monei.js refuses `requestShipping` on a
+	// paymentId flow, and express cannot work without collecting a shipping address.
 	const props = {
 		accountId,
 		sessionId,
@@ -103,7 +104,6 @@ export const createExpressPaymentRequest = ( config ) => {
 		currency,
 		language,
 		style: style || {},
-		requestBilling: true,
 		onSubmit,
 		onError,
 		onLoad,
@@ -120,6 +120,52 @@ export const createExpressPaymentRequest = ( config ) => {
 		props.onShippingOptionChange = callbacks.onShippingOptionChange;
 	}
 
-	// eslint-disable-next-line no-undef
-	return monei.PaymentRequest( props );
+	return props;
 };
+
+/**
+ * Builds an express `PaymentRequest`. Returns null when the SDK is absent.
+ * @param {Object} config - Component configuration
+ * @return {Object|null} The component instance
+ */
+export const createExpressPaymentRequest = ( config ) => {
+	// eslint-disable-next-line no-undef
+	if ( typeof monei === 'undefined' || ! monei.PaymentRequest ) {
+		return null;
+	}
+
+	// eslint-disable-next-line no-undef
+	return monei.PaymentRequest( {
+		...buildProps( config ),
+		requestBilling: true,
+	} );
+};
+
+/**
+ * Builds an express PayPal button. Returns null when the SDK is absent.
+ *
+ * ⚠️ There is no `requestBilling` prop on PayPal — the component always returns the
+ * payer's name and email, and passing one is not how you ask for them.
+ * @param {Object} config - Component configuration
+ * @return {Object|null} The component instance
+ */
+export const createExpressPayPal = ( config ) => {
+	// eslint-disable-next-line no-undef
+	if ( typeof monei === 'undefined' || ! monei.PayPal ) {
+		return null;
+	}
+
+	// eslint-disable-next-line no-undef
+	return monei.PayPal( buildProps( config ) );
+};
+
+/**
+ * Builds the wallet a mount container asks for.
+ * @param {string} method - `payment_request` or `paypal`
+ * @param {Object} config - Component configuration
+ * @return {Object|null} The component instance
+ */
+export const createExpressComponent = ( method, config ) =>
+	'paypal' === method
+		? createExpressPayPal( config )
+		: createExpressPaymentRequest( config );

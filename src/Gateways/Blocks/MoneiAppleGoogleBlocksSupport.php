@@ -89,55 +89,16 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 
 		$handles = array( $script_name );
 
-		$express_handle = $this->register_express_script();
+		// One express script serves both wallets and both blocks: WooCommerce merges
+		// every active payment method's handles into `wc-cart-block-frontend` and
+		// `wc-checkout-block-frontend` alike.
+		$express_handle = ExpressCheckoutAssets::register_blocks_script();
 
 		if ( '' !== $express_handle ) {
 			$handles[] = $express_handle;
 		}
 
 		return $handles;
-	}
-
-	/**
-	 * Registers the express wallet button script for the Cart and Checkout blocks.
-	 *
-	 * One registration serves both: WooCommerce merges every active payment method's
-	 * handles into `wc-cart-block-frontend` and `wc-checkout-block-frontend` alike, so
-	 * a second entry would only mount the button twice.
-	 *
-	 * @return string Handle, or an empty string when express is off everywhere.
-	 */
-	private function register_express_script() {
-		if (
-			! $this->gateway->is_express_enabled_at( 'cart' ) &&
-			! $this->gateway->is_express_enabled_at( 'checkout' )
-		) {
-			return '';
-		}
-
-		$handle = ExpressCheckoutAssets::BLOCKS_SCRIPT_HANDLE;
-
-		wp_register_script(
-			$handle,
-			WC_Monei()->plugin_url() . '/public/js/monei-block-express-checkout.min.js',
-			array(
-				'wc-blocks-checkout',
-				'wc-blocks-registry',
-				'wc-settings',
-				'wp-data',
-				'wp-element',
-				'wp-i18n',
-				'monei',
-			),
-			WC_Monei()->version,
-			true
-		);
-
-		if ( function_exists( 'wp_set_script_translations' ) ) {
-			wp_set_script_translations( $handle );
-		}
-
-		return $handle;
 	}
 
 	public function get_payment_method_data() {
@@ -180,7 +141,7 @@ final class MoneiAppleGoogleBlocksSupport extends AbstractPaymentMethodType {
 			'total'               => $total,
 			'language'            => locale_iso_639_1_code(),
 			'paymentRequestStyle' => json_decode( $payment_request_style ),
-			'express'             => ExpressCheckoutAssets::get_script_data( $this->gateway ),
+			'express'             => ExpressCheckoutAssets::get_script_data(),
 		);
 
 		return $data;

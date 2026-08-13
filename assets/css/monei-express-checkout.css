@@ -32,6 +32,16 @@
 	max-width: 420px;
 }
 
+/* A store can offer more than one wallet on the same surface. */
+.monei-express-checkout__button + .monei-express-checkout__button {
+	margin-top: 8px;
+}
+
+/* One wallet being unusable on this device must not take the others with it. */
+.monei-express-checkout__button.is-unavailable {
+	display: none;
+}
+
 .monei-express-checkout__error {
 	color: #cc1818;
 	font-size: 13px;

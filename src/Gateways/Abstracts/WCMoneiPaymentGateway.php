@@ -394,6 +394,15 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Default JSON style of the express checkout button.
+	 *
+	 * Declared here so express code can read it off any gateway; a gateway whose wallet
+	 * takes different style keys overrides it.
+	 * ⚠️ Heights need a CSS unit — monei.js discards unitless values.
+	 */
+	const DEFAULT_EXPRESS_BUTTON_STYLE = '{"height": "50px"}';
+
+	/**
 	 * Express checkout surfaces, and the labels shown in the settings multiselect.
 	 *
 	 * Single source of truth for the location keys: the settings files build the
