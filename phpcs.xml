@@ -22,6 +22,21 @@
         <exclude name="Generic.Commenting.DocComment" />
     </rule>
 
+    <!--
+        wc_clean() is WooCommerce's sanitizer (it maps sanitize_text_field over
+        scalars and arrays). WPCS only knows core's sanitizers, so without this
+        every `wc_clean( wp_unslash( $_POST[...] ) )` in the plugin is reported
+        as unsanitized input.
+    -->
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <properties>
+            <property name="customSanitizingFunctions" type="array">
+                <element value="wc_clean"/>
+                <element value="wc_sanitize_textarea"/>
+            </property>
+        </properties>
+    </rule>
+
     <!-- Require use statements instead of fully qualified names -->
     <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
         <properties>

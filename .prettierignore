@@ -18,6 +18,9 @@ composer.lock
 # WordPress
 *.pot
 
+# Legal text — must not be reflowed
+LICENSE.md
+
 # IDE
 .idea/
 .vscode/

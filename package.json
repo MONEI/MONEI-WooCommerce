@@ -11,7 +11,7 @@
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"format": "wp-scripts format",
-		"format:check": "wp-scripts format --check",
+		"format:check": "prettier --check .",
 		"lint:css": "wp-scripts lint-style",
 		"lint:css-fix": "wp-scripts lint-style --fix",
 		"lint:js": "wp-scripts lint-js",
