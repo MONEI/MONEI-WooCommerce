@@ -7,6 +7,7 @@ use Monei\Helpers\CardBrandHelper;
 use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
+use Monei\Services\express\ExpressCheckoutAjaxHandler;
 use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\payment\MoneiPaymentServices;
@@ -70,6 +71,7 @@ $definitions            = array(
 		->constructor( $blocksPath, $blockNamespacePrefix ),
 	MoneiApplePayVerificationService::class => autowire( MoneiApplePayVerificationService::class )
 		->constructor( get( MoneiPaymentServices::class ) ),
+	ExpressCheckoutAjaxHandler::class       => autowire( ExpressCheckoutAjaxHandler::class ),
 	WooCommerceSubscriptionsHandler::class  => create(
 		WooCommerceSubscriptionsHandler::class,
 	)->constructor(
