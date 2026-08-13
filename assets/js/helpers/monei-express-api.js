@@ -143,13 +143,10 @@ export const expressBeacon = ( endpoint, data = {} ) => {
 	}
 
 	const form = new FormData();
+	const fields = { ...data, security: credentials.nonce };
 
-	Object.keys( { ...data, security: credentials.nonce } ).forEach( ( key ) =>
-		appendField(
-			form,
-			key,
-			key === 'security' ? credentials.nonce : data[ key ]
-		)
+	Object.keys( fields ).forEach( ( key ) =>
+		appendField( form, key, fields[ key ] )
 	);
 
 	return navigator.sendBeacon( expressAjaxUrl( endpoint ), form );
