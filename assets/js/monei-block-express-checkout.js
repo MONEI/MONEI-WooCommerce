@@ -206,6 +206,15 @@ const MoneiExpressContent = ( props ) => {
 	// Hand the token to the checkout as this gateway's payment data.
 	useEffect( () => {
 		const unsubscribe = onPaymentSetup( () => {
+			// ⚠️ Unlike a regular payment method, whose content is only mounted while
+			// it is selected, an express method is mounted for the whole life of the
+			// page — so this observer runs on *every* checkout, including one paid by
+			// card. Returning anything but undefined here would abort those. Verified
+			// the hard way: it failed all three card payment E2E tests.
+			if ( activeRef.current !== NAME ) {
+				return undefined;
+			}
+
 			if ( ! tokenRef.current ) {
 				return {
 					type: responseTypes.ERROR,
