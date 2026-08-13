@@ -8,6 +8,7 @@
 namespace Monei\Services\express;
 
 use Monei\Core\ContainerProvider;
+use Monei\Features\Subscriptions\SubscriptionService;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use WC_Cart;
 use WC_Data_Store;
@@ -463,6 +464,8 @@ class ExpressCheckoutAjaxHandler {
 
 		$order = $this->create_order( $billing, $shipping, $gateway );
 
+		$this->assert_gateway_can_renew( $order, $gateway );
+
 		$result = $gateway->process_payment( $order->get_id() );
 
 		if ( ! is_array( $result ) || 'success' !== ( isset( $result['result'] ) ? $result['result'] : '' ) || empty( $result['redirect'] ) ) {
@@ -532,6 +535,44 @@ class ExpressCheckoutAjaxHandler {
 		do_action( 'woocommerce_checkout_order_processed', $order->get_id(), $data, $order );
 
 		return $order;
+	}
+
+	/**
+	 * Refuses an order the chosen gateway would never be able to renew.
+	 *
+	 * Express checkout supports subscription products, through the same handler the card
+	 * gateway uses — but only for a gateway that declares subscription support, because
+	 * that declaration is what registers the renewal hook. Taking the first payment for a
+	 * subscription that can never be charged again is worse than refusing it.
+	 *
+	 * @param WC_Order              $order   Order just created.
+	 * @param WCMoneiPaymentGateway $gateway Gateway the order is placed with.
+	 *
+	 * @return void
+	 */
+	private function assert_gateway_can_renew( WC_Order $order, WCMoneiPaymentGateway $gateway ) {
+		$handler = ContainerProvider::getContainer()->get( SubscriptionService::class );
+
+		if ( ! $handler instanceof SubscriptionService ) {
+			return;
+		}
+
+		$handler = $handler->getHandler();
+
+		if ( null === $handler || ! $handler->is_subscription_order( $order->get_id() ) ) {
+			return;
+		}
+
+		if ( $gateway->supports( 'subscriptions' ) ) {
+			return;
+		}
+
+		$order->update_status( 'failed', __( 'Express checkout cannot take subscription payments with this payment method.', 'monei' ) );
+
+		$this->fail_order(
+			'subscription_unsupported',
+			__( 'This product needs the regular checkout. Please continue there.', 'monei' )
+		);
 	}
 
 	/**

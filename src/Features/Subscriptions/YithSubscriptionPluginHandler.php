@@ -13,18 +13,25 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 
 	public function __construct( MoneiSdkClientFactory $sdkClient ) {
 		$this->moneiPaymentServices = new MoneiPaymentServices( $sdkClient );
-		add_action(
-			'ywsbs_pay_renew_order_with_' . MONEI_GATEWAY_ID,
-			function ( $renew_order ) {
-				if ( ! $renew_order instanceof WC_Order ) {
-					return false;
-				}
-				$amount_to_charge = $renew_order->get_total();
-				$this->scheduled_subscription_payment( $amount_to_charge, $renew_order );
-			},
-			10,
-			1
-		);
+
+		// ⚠️ YITH names its renewal action after the gateway that placed the order. An
+		// express checkout of a subscription product places it under the Apple/Google
+		// Pay gateway, so listening only for the card gateway would leave that
+		// subscription with no renewal charge at all.
+		foreach ( array( MONEI_GATEWAY_ID, 'monei_apple_google' ) as $gateway_id ) {
+			add_action(
+				'ywsbs_pay_renew_order_with_' . $gateway_id,
+				function ( $renew_order ) {
+					if ( ! $renew_order instanceof WC_Order ) {
+						return false;
+					}
+					$amount_to_charge = $renew_order->get_total();
+					$this->scheduled_subscription_payment( $amount_to_charge, $renew_order );
+				},
+				10,
+				1
+			);
+		}
 		//whenever it creates a renew order it will check for this meta, as is just created we put to 0
 		add_action(
 			'ywsbs_renew_subscription',

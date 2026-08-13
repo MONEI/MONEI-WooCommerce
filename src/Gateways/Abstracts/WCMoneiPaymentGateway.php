@@ -2,6 +2,7 @@
 
 namespace Monei\Gateways\Abstracts;
 
+use Monei\Features\Subscriptions\SubscriptionHandlerInterface;
 use Monei\Model\PaymentStatus;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\ApiKeyService;
@@ -77,6 +78,16 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * @var string
 	 */
 	public $shop_name;
+
+	/**
+	 * Subscription plugin in use, or null when no subscription plugin is active.
+	 *
+	 * Declared here because WCMoneiPaymentGatewayComponent::process_payment() reads it
+	 * on every gateway it serves, not only on the ones that set it.
+	 *
+	 * @var SubscriptionHandlerInterface|null
+	 */
+	protected ?SubscriptionHandlerInterface $handler = null;
 
 	/**
 	 * Password.

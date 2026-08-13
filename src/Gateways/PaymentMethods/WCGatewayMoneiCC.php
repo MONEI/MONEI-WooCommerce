@@ -65,8 +65,6 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 	protected SubscriptionService $subscriptions_service;
 
-	protected ?SubscriptionHandlerInterface $handler;
-
 	protected CardBrandHelper $cardBrandHelper;
 
 	/**

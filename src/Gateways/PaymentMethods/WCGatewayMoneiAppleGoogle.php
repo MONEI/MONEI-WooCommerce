@@ -49,9 +49,8 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 	 * @param TemplateManager $templateManager
 	 * @param ApiKeyService $apiKeyService
 	 * @param MoneiPaymentServices $moneiPaymentServices
-	 * @param SubscriptionService $subscriptionService Injected by DI container but not used (Apple/Google Pay doesn't support subscriptions)
+	 * @param SubscriptionService $subscriptionService Subscription plugin bridge, used for express checkout of subscription products
 	 * @return void
-	 * @phpstan-ignore-next-line
 	 */
 	public function __construct(
 		PaymentMethodsService $paymentMethodsService,
@@ -91,7 +90,21 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 			'products',
 			'refunds',
 		);
-		$this->notify_url    = WC_Monei()->get_ipn_url();
+
+		// Express checkout can start from a product page, so a subscription product can
+		// reach this gateway without ever passing the checkout form. Renewals therefore
+		// go through exactly the machinery the card gateway uses: the handler adds the
+		// `sequence` to the payment payload, and the sequence id is stored from the
+		// order received page by WC_Monei_Addons_Redirect_Hooks. Nothing new is invented
+		// here. Resolves to null unless a subscription plugin is active, so a store
+		// without one sees no change at all.
+		$this->handler = $subscriptionService->getHandler();
+
+		if ( $this->handler ) {
+			$this->supports = $this->handler->init_subscriptions( $this->supports, $this->id );
+		}
+
+		$this->notify_url = WC_Monei()->get_ipn_url();
 		new WC_Monei_IPN( $this->logging );
 		// Load the form fields.
 		$this->init_form_fields();
