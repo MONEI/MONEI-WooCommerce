@@ -332,7 +332,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		}
 
 		public function plugin_action_links( $links ) {
-			$links[] = '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=monei_settings' ) . '">' . __( 'Settings', 'woocommerce' ) . '</a>';
+			$links[] = '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=monei_settings' ) ) . '">' . esc_html__( 'Settings', 'monei' ) . '</a>';
 			return $links;
 		}
 
