@@ -45,6 +45,10 @@ const wpCli = ( args ) => {
 		cwd,
 		encoding: 'utf8',
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
+		// A container that accepts the command and never answers would otherwise
+		// hold the seed, or a `beforeAll` hook, with no upper bound. A wedged
+		// Docker daemon is a real failure mode, not a hypothetical one.
+		timeout: 120000,
 	} ).trim();
 };
 
