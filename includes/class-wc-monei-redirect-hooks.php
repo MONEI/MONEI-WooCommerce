@@ -119,7 +119,7 @@ class WC_Monei_Redirect_Hooks {
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( is_add_payment_method_page() && ( ! isset( $_GET['status'] ) || ! in_array( wc_clean( wp_unslash( $_GET['status'] ) ), $accepted_statuses, true ) ) ) {
 			wc_clear_notices();
-			wc_add_notice( __( 'Unable to add payment method to your account.', 'woocommerce' ), 'error' );
+			wc_add_notice( __( 'Unable to add payment method to your account.', 'monei' ), 'error' );
 			$error_message = filter_input( INPUT_GET, 'message', FILTER_CALLBACK, array( 'options' => 'sanitize_text_field' ) );
 			if ( $error_message ) {
 				wc_add_notice( $error_message, 'error' );
