@@ -27,6 +27,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 		container: null,
 		root: null,
 		amount: null,
+		sessionId: null,
 		cart: null,
 		mounting: false,
 		// Signature of the product selection currently sitting in the borrowed cart,
@@ -251,13 +252,32 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 	/**
 	 * Completes a wallet payment started somewhere other than the checkout page.
 	 *
-	 * ⚠️ Deliberately unimplemented. The classic cart and product pages carry no
-	 * checkout form to submit, so they need the server-side order creation that Task 22
-	 * of the plan owns. This is the single seam that task fills in; every caller
-	 * already unwinds the flow when it rejects.
+	 * The classic cart and product pages carry no checkout form to submit, so the order
+	 * is created server-side instead. `finalAmount` is forwarded exactly as the wallet
+	 * reported it and is never substituted: the server recomputes the total and refuses
+	 * the order on any mismatch, which only works while the two figures are independent.
+	 * @param {Object} result - SubmitResult from monei.js
+	 * @return {Promise<void>}
 	 */
-	const completeExpressPayment = async () => {
-		throw new Error( params.i18n?.genericError );
+	const completeExpressPayment = async ( result ) => {
+		const response = await expressRequest( 'create_order', {
+			// Named for the field the classic checkout form posts, because the gateways
+			// read the wallet token straight out of it.
+			monei_payment_request_token: result.token,
+			payment_method: result.paymentMethod || '',
+			location: params.location,
+			session_id: state.sessionId,
+			final_amount: result.finalAmount,
+			shipping_option: result.shippingOption?.id || '',
+			billing: result.billingDetails || {},
+			shipping: result.shippingDetails || result.billingDetails || {},
+		} );
+
+		// The server put the shopper's own cart back as part of placing the order, so
+		// no exit path may release it a second time.
+		state.cartHolds = null;
+
+		window.location.href = response.redirect;
 	};
 
 	const handleSubmit = ( result ) => {
@@ -342,6 +362,7 @@ import { createExpressPaymentRequest } from './helpers/monei-express-payment-req
 			const { sessionId } = await expressBootstrap();
 			const cart = await readAmountSource();
 
+			state.sessionId = sessionId;
 			state.cart = cart;
 			state.amount = cart.amount;
 
