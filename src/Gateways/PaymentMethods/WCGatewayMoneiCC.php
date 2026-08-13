@@ -101,7 +101,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		// Hosted payment with redirect.
 		$this->has_fields = false;
 		$iconUrl          = apply_filters( 'woocommerce_monei_icon', WC_Monei()->image_url( 'monei-cards.svg' ) );
-		$iconMarkup       = '<img src="' . $iconUrl . '" alt="MONEI" class="monei-icons-cc" />';
+		$iconMarkup       = '<img src="' . esc_url( $iconUrl ) . '" alt="MONEI" class="monei-icons-cc" />';
 		// Settings variable
 		$this->hide_logo = ( ! empty( $this->get_option( 'hide_logo' ) ) && 'yes' === $this->get_option( 'hide_logo' ) ) ? true : false;
 
