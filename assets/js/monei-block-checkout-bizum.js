@@ -1,3 +1,5 @@
+import { getAmountInMinorUnits } from './helpers/monei-shared-utils';
+
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
@@ -102,9 +104,10 @@
 		 * Initialize MONEI Bizum instance once.
 		 */
 		const initMoneiBizum = useCallback( () => {
-			const currentTotal = cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: parseInt( bizumData.total * 100 );
+			const currentTotal = getAmountInMinorUnits(
+				cartTotals,
+				bizumData.total
+			);
 
 			lastAmountRef.current = currentTotal;
 			createOrRenderBizum( currentTotal );
@@ -114,9 +117,10 @@
 		 * Update the amount in the existing Bizum instance.
 		 */
 		const updateBizumAmount = useCallback( () => {
-			const currentTotal = cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: parseInt( bizumData.total * 100 );
+			const currentTotal = getAmountInMinorUnits(
+				cartTotals,
+				bizumData.total
+			);
 
 			// Only update if amount actually changed
 			if ( currentTotal === lastAmountRef.current ) {

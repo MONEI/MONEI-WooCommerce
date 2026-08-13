@@ -15,6 +15,22 @@ export const getMoneiErrorMessage = ( error, fallback ) => {
 };
 
 /**
+ * Resolve the payment amount in minor units.
+ *
+ * The Store API reports `total_price` already in minor units, while the
+ * localized total is a major unit amount. Truncating that product would
+ * undercharge by a cent for every total whose float representation falls just
+ * below the integer, such as 0.29, 1.13 or 2.05.
+ * @param {Object} cartTotals    - Cart totals from the Store API
+ * @param {number} fallbackTotal - Localized total in major units
+ * @return {number}
+ */
+export const getAmountInMinorUnits = ( cartTotals, fallbackTotal ) =>
+	cartTotals?.total_price
+		? parseInt( cartTotals.total_price, 10 )
+		: Math.round( fallbackTotal * 100 );
+
+/**
  * Get WooCommerce place order button
  * @return {HTMLElement|null}
  */
