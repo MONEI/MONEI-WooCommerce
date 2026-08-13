@@ -175,6 +175,48 @@ const ensureProduct = () => {
 };
 
 /**
+ * Move the store's order ids past every id the MONEI account has already paid.
+ *
+ * 🚨 Without this the suite fails on a fresh site with `The order "14" has already
+ * been paid` — MONEI's own refusal, not WooCommerce's. MONEI keeps `orderId` unique
+ * per account, the plugin sends the WooCommerce order id unchanged, and a fresh
+ * wp-env starts its ids at 1. Those low ids are exactly the ones every earlier run
+ * on the same test account has already paid for, so a new site collides with its own
+ * history. A long-lived store never notices, which is why this only ever bites CI.
+ *
+ * The wall clock is the only thing machines that never talk to each other can both
+ * read and never repeat, so the range starts at the current millisecond.
+ *
+ * Order ids come off the `wp_posts` sequence, and off the orders table as well on a
+ * site running HPOS, so both are moved where they exist.
+ * @return {number} First order id this run can use
+ */
+const reserveOrderIdRange = () => {
+	const start = Date.now();
+
+	const next = php(
+		'global $wpdb;' +
+			`$wpdb->query( "ALTER TABLE {$wpdb->posts} AUTO_INCREMENT = ${ start }" );` +
+			"$orders = $wpdb->prefix . 'wc_orders';" +
+			"if ( $orders === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $orders ) ) ) {" +
+			`$wpdb->query( "ALTER TABLE {$orders} AUTO_INCREMENT = ${ start }" );` +
+			'}' +
+			'echo (int) $wpdb->get_var( "SELECT AUTO_INCREMENT FROM information_schema.TABLES' +
+			" WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '{$wpdb->posts}'\" );"
+	);
+
+	if ( Number( next ) < start ) {
+		throw new Error(
+			`The store's next order id is ${ next }, not ${ start }: the seed could not ` +
+				'move the sequence, so this run would pay with order ids the MONEI ' +
+				'account has already been paid for and every payment would be refused.'
+		);
+	}
+
+	return start;
+};
+
+/**
  * The shortcode checkout page the classic checkout spec drives.
  *
  * WooCommerce's own checkout page carries the Checkout block on a modern
@@ -232,6 +274,9 @@ const main = async () => {
 	const product = ensureProduct();
 	const classicCheckout = ensureClassicCheckoutPage();
 
+	// After the fixtures, so the product and the page keep readable ids.
+	const firstOrderId = reserveOrderIdRange();
+
 	wpCli( [ 'option', 'update', 'monei_test_apikey', apiKey ] );
 	wpCli( [ 'option', 'update', 'monei_test_accountid', accountId ] );
 	wpCli( [ 'option', 'update', 'monei_apikey_mode', 'test' ] );
@@ -257,7 +302,8 @@ const main = async () => {
 	process.stdout.write(
 		`Seeded MONEI account ${ accountId }\n` +
 			`  product ${ product.id } at ${ product.path }\n` +
-			`  classic checkout page ${ classicCheckout.id } at ${ classicCheckout.path }\n`
+			`  classic checkout page ${ classicCheckout.id } at ${ classicCheckout.path }\n` +
+			`  orders start at ${ firstOrderId }\n`
 	);
 };
 
