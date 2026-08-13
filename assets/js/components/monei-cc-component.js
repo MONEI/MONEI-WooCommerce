@@ -4,6 +4,7 @@ import {
 	useMoneiCardInput,
 } from '../helpers/monei-card-input-hooks';
 import { MoneiCCGroupContent } from './monei-cc-group-component';
+import { getAmountInMinorUnits } from '../helpers/monei-shared-utils';
 
 const { useEffect, useState, useRef, useCallback, useMemo, createPortal } =
 	wp.element;
@@ -406,10 +407,7 @@ export const MoneiCCContent = ( props ) => {
 	);
 
 	const amount = useMemo(
-		() =>
-			cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: parseInt( moneiData.total * 100 ),
+		() => getAmountInMinorUnits( cartTotals, moneiData.total ),
 		[ cartTotals, moneiData.total ]
 	);
 

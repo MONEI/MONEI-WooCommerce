@@ -1,3 +1,5 @@
+import { getAmountInMinorUnits } from './helpers/monei-shared-utils';
+
 ( function () {
 	const { registerPaymentMethod } = wc.wcBlocksRegistry;
 	const { __ } = wp.i18n;
@@ -142,9 +144,10 @@
 				return;
 			}
 
-			const currentTotal = cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: Math.round( paypalData.total * 100 );
+			const currentTotal = getAmountInMinorUnits(
+				cartTotals,
+				paypalData.total
+			);
 
 			lastAmountRef.current = currentTotal;
 			createOrRenderPayPal( currentTotal );
@@ -154,9 +157,10 @@
 		 * Update the amount in the existing PayPal instance
 		 */
 		const updatePaypalAmount = useCallback( () => {
-			const currentTotal = cartTotals?.total_price
-				? parseInt( cartTotals.total_price )
-				: Math.round( paypalData.total * 100 );
+			const currentTotal = getAmountInMinorUnits(
+				cartTotals,
+				paypalData.total
+			);
 
 			// Only update if amount actually changed
 			if ( currentTotal === lastAmountRef.current ) {

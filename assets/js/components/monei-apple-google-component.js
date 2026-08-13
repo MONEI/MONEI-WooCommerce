@@ -1,4 +1,7 @@
-import { useButtonStateManager } from '../helpers/monei-shared-utils';
+import {
+	getAmountInMinorUnits,
+	useButtonStateManager,
+} from '../helpers/monei-shared-utils';
 
 /**
  * Create Apple/Google Pay label
@@ -154,9 +157,10 @@ export const MoneiAppleGoogleContent = ( props ) => {
 			return;
 		}
 
-		const currentTotal = cartTotals?.total_price
-			? parseInt( cartTotals.total_price )
-			: Math.round( moneiData.total * 100 );
+		const currentTotal = getAmountInMinorUnits(
+			cartTotals,
+			moneiData.total
+		);
 
 		lastAmountRef.current = currentTotal;
 
@@ -167,9 +171,10 @@ export const MoneiAppleGoogleContent = ( props ) => {
 	 * Update the amount in the existing Payment Request instance
 	 */
 	const updatePaymentRequestAmount = useCallback( () => {
-		const currentTotal = cartTotals?.total_price
-			? parseInt( cartTotals.total_price )
-			: Math.round( moneiData.total * 100 );
+		const currentTotal = getAmountInMinorUnits(
+			cartTotals,
+			moneiData.total
+		);
 
 		// Only update if amount actually changed
 		if ( currentTotal === lastAmountRef.current ) {
