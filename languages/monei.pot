@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-12T23:27:15+00:00\n"
+"POT-Creation-Date: 2026-08-13T11:53:13+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: monei\n"
@@ -39,7 +39,7 @@ msgstr ""
 msgid "https://www.monei.com/"
 msgstr ""
 
-#: class-woocommerce-gateway-monei.php:65
+#: class-woocommerce-gateway-monei.php:67
 msgid "Use Singleton."
 msgstr ""
 
@@ -97,7 +97,7 @@ msgid "Title shown on checkout page for Apple devices (iPhone, iPad, Mac with Sa
 msgstr ""
 
 #: includes/admin/monei-apple-google-settings.php:48
-#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:106
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:157
 #: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:247
 #: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:251
 #: src/Services/MoneiApplePayVerificationService.php:69
@@ -113,7 +113,7 @@ msgid "Title shown on checkout page for non-Apple devices (Android, Chrome, etc)
 msgstr ""
 
 #: includes/admin/monei-apple-google-settings.php:55
-#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:107
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:158
 #: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:248
 #: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:252
 msgid "Google Pay"
@@ -603,7 +603,7 @@ msgstr ""
 msgid "Checkout page"
 msgstr ""
 
-#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:111
+#: src/Gateways/Blocks/MoneiAppleGoogleBlocksSupport.php:162
 #: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:84
 #: src/Gateways/PaymentMethods/WCGatewayMoneiAppleGoogle.php:256
 #: src/Gateways/PaymentMethods/WCGatewayMoneiBizum.php:70
@@ -629,10 +629,8 @@ msgid "Please check your card details."
 msgstr ""
 
 #: src/Gateways/Blocks/MoneiCCBlocksSupport.php:128
-#: assets/js/monei-block-checkout-bizum.js:213
-#: assets/js/monei-block-checkout-paypal.js:236
-#: public/js/monei-block-checkout-bizum.min.js:263
-#: public/js/monei-block-checkout-paypal.min.js:286
+#: assets/js/monei-block-checkout-bizum.js:217
+#: assets/js/monei-block-checkout-paypal.js:240
 msgid "MONEI token could not be generated."
 msgstr ""
 
@@ -725,6 +723,66 @@ msgstr ""
 
 #: src/Helpers/CardBrandHelper.php:38
 msgid "Card"
+msgstr ""
+
+#: src/Services/express/ExpressCartBackup.php:329
+msgid "We could not put your cart back after the express checkout. Please check your cart before ordering."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:191
+msgid "No shipping method is available for this address."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:255
+msgid "That shipping method is not available."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:351
+msgid "This product could not be added to the cart."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:398
+msgid "This product is not available."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:408
+msgid "This product cannot be bought with express checkout."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:438
+msgid "Please choose product options before paying."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:526
+msgid "Subtotal"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:535
+msgid "Discount"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:549
+msgid "Shipping"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:558
+msgid "Tax"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:940
+msgid "Your express checkout session expired. Please reload the page."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAjaxHandler.php:964
+msgid "Express checkout is not available."
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAssets.php:178
+msgid "Express checkout"
+msgstr ""
+
+#: src/Services/express/ExpressCheckoutAssets.php:211
+msgid "Express checkout is unavailable right now. Please use the regular checkout."
 msgstr ""
 
 #: src/Services/MoneiApplePayVerificationService.php:57
@@ -1281,18 +1339,18 @@ msgid "Go to your MONEI Dashboard to activate it"
 msgstr ""
 
 #: assets/js/monei-block-checkout-apple-google.js:18
-#: public/js/monei-block-checkout-apple-google.min.js:502
 msgid "Apple/Google Pay Payment Gateway"
 msgstr ""
 
 #: assets/js/monei-block-checkout-apple-google.js:20
 #: assets/js/monei-block-checkout-cc.js:19
-#: public/js/monei-block-checkout-apple-google.min.js:504
-#: public/js/monei-block-checkout-cc.min.js:1577
 msgid "MONEI Payment Form (Edit Mode)"
 msgstr ""
 
 #: assets/js/monei-block-checkout-cc.js:17
-#: public/js/monei-block-checkout-cc.min.js:1575
 msgid "MONEI Payment Gateway"
+msgstr ""
+
+#: assets/js/monei-block-express-checkout.js:338
+msgid "MONEI Express Checkout"
 msgstr ""

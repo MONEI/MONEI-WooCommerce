@@ -18,6 +18,8 @@ import {
 } from './helpers/monei-express-api';
 import { createExpressPaymentRequest } from './helpers/monei-express-payment-request';
 
+const { __ } = wp.i18n;
+
 const NAME = 'monei_apple_google_express';
 const GATEWAY_ID = 'monei_apple_google';
 
@@ -333,7 +335,7 @@ const MoneiExpressPaymentMethod = {
 	name: NAME,
 	paymentMethodId: GATEWAY_ID,
 	gatewayId: GATEWAY_ID,
-	title: 'MONEI Express Checkout',
+	title: __( 'MONEI Express Checkout', 'monei' ),
 	content: <MoneiExpressContent />,
 	edit: <div className="monei-express-checkout__button" />,
 	canMakePayment: () => {
