@@ -166,7 +166,8 @@ import { getAmountInMinorUnits } from './helpers/monei-shared-utils';
 				return;
 			}
 
-			// We assume the MONEI SDK is already loaded via wp_enqueue_script on the backend.
+			// The SDK is enqueued as a dependency of this script by
+			// MoneiBizumBlocksSupport, so it is present unless the CDN failed.
 			if (
 				typeof monei !== 'undefined' &&
 				monei.Bizum &&
@@ -174,7 +175,7 @@ import { getAmountInMinorUnits } from './helpers/monei-shared-utils';
 			) {
 				initMoneiBizum();
 				isInitializedRef.current = true;
-			} else if ( ! monei || ! monei.Bizum ) {
+			} else if ( typeof monei === 'undefined' || ! monei.Bizum ) {
 				console.error( 'MONEI SDK is not available' );
 			}
 		}, [ initMoneiBizum, isRedirectFlow ] );
