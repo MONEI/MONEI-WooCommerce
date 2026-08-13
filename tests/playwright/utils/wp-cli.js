@@ -83,6 +83,12 @@ const getCardFieldLayout = () => {
 };
 
 /**
+ * Read the MONEI account id the store pays with.
+ * @return {string} Account id
+ */
+const getAccountId = () => wpCli( [ 'option', 'get', 'monei_test_accountid' ] );
+
+/**
  * Read the WooCommerce checkout page id.
  * @return {string} Page id
  */
@@ -263,6 +269,7 @@ const setGatewayEnabled = ( option, enabled ) =>
 
 module.exports = {
 	wpCli,
+	getAccountId,
 	getExpressSettings,
 	setExpressSettings,
 	getBlocksScriptRegistration,
