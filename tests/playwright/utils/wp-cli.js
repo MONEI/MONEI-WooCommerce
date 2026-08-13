@@ -105,8 +105,49 @@ const ensureCoupon = ( code, percent ) => {
 	] );
 };
 
+/**
+ * Read the express checkout settings of a MONEI gateway.
+ *
+ * Returned as the pair of keys a test has to put back, not the whole settings
+ * blob: writing a whole blob back would undo anything else that changed while
+ * the run was in progress.
+ * @param {string} option - Gateway settings option name
+ * @return {Object} `{ express_enabled, express_locations }`
+ */
+const getExpressSettings = ( option ) => {
+	const settings = JSON.parse(
+		wpCli( [ 'option', 'get', option, '--format=json' ] )
+	);
+
+	return {
+		express_enabled: settings.express_enabled || 'no',
+		express_locations: settings.express_locations || [],
+	};
+};
+
+/**
+ * Write express checkout settings into a MONEI gateway.
+ *
+ * `option patch` refuses a key the option does not have yet, and express keys
+ * are absent until a merchant saves the settings screen once, so the option is
+ * merged in PHP instead.
+ * @param {string} option - Gateway settings option name
+ * @param {Object} values - Keys to merge in
+ */
+const setExpressSettings = ( option, values ) =>
+	wpCli( [
+		'eval',
+		`$s = (array) get_option( '${ option }', array() );` +
+			`$s = array_merge( $s, json_decode( '${ JSON.stringify(
+				values
+			) }', true ) );` +
+			`update_option( '${ option }', $s );`,
+	] );
+
 module.exports = {
 	wpCli,
+	getExpressSettings,
+	setExpressSettings,
 	setCardFieldLayout,
 	getCardFieldLayout,
 	getCheckoutPageId,
