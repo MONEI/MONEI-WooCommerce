@@ -103,11 +103,13 @@ composer test
 pnpm test:e2e
 ```
 
-`pnpm test:e2e` pays with real MONEI test cards on a real site, so it requires
-`MONEI_E2E_BASE_URL` (the site the browser drives) and `MONEI_E2E_WP_DIR` (the
-docker-compose directory of that same site). Neither has a default. Copy
-`tests/playwright/.env.example` to `tests/playwright/.env` and fill both in —
-see [tests/playwright/README.md](tests/playwright/README.md).
+`pnpm test:e2e` pays with real MONEI test cards, and brings its own WordPress
+through `wp-env`, so the only thing it needs is `MONEI_TEST_API_KEY` — the test
+mode key of the account it pays with. Copy `tests/playwright/.env.example` to
+`tests/playwright/.env` and set it there, then `pnpm test:e2e:start` to boot and
+seed the site. To run against a store you already have instead, set
+`MONEI_E2E_WP_DIR` and `MONEI_E2E_BASE_URL` to that same site. See
+[tests/playwright/README.md](tests/playwright/README.md).
 
 ## Release Process
 

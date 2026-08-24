@@ -47,7 +47,7 @@ const requireEnv = ( name, hint ) => {
 		throw new Error(
 			`${ name } is not set. ${ hint }\n` +
 				'Copy tests/playwright/.env.example to tests/playwright/.env ' +
-				'and fill both values in. See tests/playwright/README.md.'
+				'and set it there. See tests/playwright/README.md.'
 		);
 	}
 	return value;
