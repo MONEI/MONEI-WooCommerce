@@ -1,5 +1,11 @@
 # Changelog
 
+## <small>7.1.2 (2026-08-25)</small>
+
+-   fix: keep the wallet button inside its container on blocks checkout ([be063e7](https://github.com/MONEI/MONEI-WooCommerce/commit/be063e7))
+-   fix: stop the wallet container shifting when the button renders ([0cc63c2](https://github.com/MONEI/MONEI-WooCommerce/commit/0cc63c2))
+-   docs: regenerate readme changelog for 7.1.1 ([9f28c17](https://github.com/MONEI/MONEI-WooCommerce/commit/9f28c17))
+
 ## <small>7.1.1 (2026-08-25)</small>
 
 -   fix: do not register an express wallet the account cannot serve ([9467afb](https://github.com/MONEI/MONEI-WooCommerce/commit/9467afb))

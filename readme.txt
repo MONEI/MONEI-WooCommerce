@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.1.1
+Stable tag: 7.1.2
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.1.1 - 2026-08-25 =
+= v7.1.2 - 2026-08-25 =
 -   fix: do not register an express wallet the account cannot serve ([9467afb](https://github.com/MONEI/MONEI-WooCommerce/commit/9467afb))
 -   fix: give the card field the same bottom margin as the cardholder field ([bb3478e](https://github.com/MONEI/MONEI-WooCommerce/commit/bb3478e))
 -   fix: give the save-card checkbox its gap instead of padding the card field ([a0e256c](https://github.com/MONEI/MONEI-WooCommerce/commit/a0e256c))
