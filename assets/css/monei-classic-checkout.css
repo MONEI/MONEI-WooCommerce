@@ -56,7 +56,6 @@ label .monei-icons {
 	font-size: 16px;
 	height: 50px;
 	line-height: 1;
-	margin: 0 0 16px;
 	min-height: 0;
 	padding: 0;
 	width: 100%;
@@ -76,7 +75,6 @@ label .monei-icons {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px;
-	margin: 0 0 16px;
 }
 
 /* Card number takes the full row, expiry and CVC share the next one. */
@@ -267,4 +265,14 @@ label .monei-icons {
 		align-items: flex-start;
 		gap: 5px;
 	}
+}
+
+/*
+ * Separates the card fields from whatever WooCommerce renders after the
+ * fieldset — the "save payment information" checkbox when tokenization is on.
+ * The gap belongs to the following element rather than to the fields, so a form
+ * that ends at the fieldset ends flush instead of carrying a trailing margin.
+ */
+.monei-card-fieldset + * {
+	margin-top: 16px;
 }
