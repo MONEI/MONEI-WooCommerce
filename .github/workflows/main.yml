@@ -14,20 +14,20 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Install Composer dependencies
-              uses: ramsey/composer-install@v3
+              uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
               with:
                   composer-options: --no-dev --optimize-autoloader
 
             - name: Setup pnpm
-              uses: pnpm/action-setup@v4
+              uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
             - name: Setup Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version-file: .nvmrc
                   cache: pnpm
@@ -40,7 +40,7 @@ jobs:
 
             - name: WordPress Plugin Deploy
               id: deploy
-              uses: 10up/action-wordpress-plugin-deploy@stable
+              uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
               with:
                   generate-zip: true
               env:
@@ -49,7 +49,7 @@ jobs:
                   SLUG: monei
 
             - name: Upload Release
-              uses: ncipollo/release-action@v1.14.0
+              uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
               with:
                   allowUpdates: true
                   omitBodyDuringUpdate: true
