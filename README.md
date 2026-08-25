@@ -4,7 +4,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.1.0
+Stable tag: 7.1.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -99,6 +99,17 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 ## Changelog
+
+### v7.1.1 - 2026-08-25
+
+-   fix: do not register an express wallet the account cannot serve ([9467afb](https://github.com/MONEI/MONEI-WooCommerce/commit/9467afb))
+-   fix: give the card field the same bottom margin as the cardholder field ([bb3478e](https://github.com/MONEI/MONEI-WooCommerce/commit/bb3478e))
+-   fix: give the save-card checkbox its gap instead of padding the card field ([a0e256c](https://github.com/MONEI/MONEI-WooCommerce/commit/a0e256c))
+-   fix: refuse an express order the wallet gave no email for ([9335fba](https://github.com/MONEI/MONEI-WooCommerce/commit/9335fba))
+-   fix: stop reporting a dismissed wallet sheet as a checkout error ([1790ba9](https://github.com/MONEI/MONEI-WooCommerce/commit/1790ba9))
+-   fix: stop string severities bypassing the log level and filing as errors ([3900a10](https://github.com/MONEI/MONEI-WooCommerce/commit/3900a10))
+-   fix: tell the wallet when an address cannot be shipped to ([60e3597](https://github.com/MONEI/MONEI-WooCommerce/commit/60e3597))
+-   docs: regenerate readme changelog for 7.1.0 ([c952589](https://github.com/MONEI/MONEI-WooCommerce/commit/c952589))
 
 ### v7.1.0 - 2026-08-25
 
@@ -400,11 +411,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   Uppercase Key in API Key ([1d263b1](https://github.com/MONEI/MONEI-WooCommerce/commit/1d263b1))
 -   Use rounding ([cb79abd](https://github.com/MONEI/MONEI-WooCommerce/commit/cb79abd))
 -   Use Woo api client ([9c5362d](https://github.com/MONEI/MONEI-WooCommerce/commit/9c5362d))
-
-### v6.3.5 - 2025-06-04
-
--   Add 30 seconds caching ([73a4d1a](https://github.com/MONEI/MONEI-WooCommerce/commit/73a4d1a))
--   Change payment methods check to sdk ([5e045eb](https://github.com/MONEI/MONEI-WooCommerce/commit/5e045eb))
--   Remove cofidis ([fef0d3b](https://github.com/MONEI/MONEI-WooCommerce/commit/fef0d3b))
--   Require php 7.4 for the package ([841acfb](https://github.com/MONEI/MONEI-WooCommerce/commit/841acfb))
--   Update version to 6.3.5 for release ([ba2437a](https://github.com/MONEI/MONEI-WooCommerce/commit/ba2437a))

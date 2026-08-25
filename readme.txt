@@ -104,6 +104,16 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 == Changelog ==
 
 = v7.1.1 - 2026-08-25 =
+-   fix: do not register an express wallet the account cannot serve ([9467afb](https://github.com/MONEI/MONEI-WooCommerce/commit/9467afb))
+-   fix: give the card field the same bottom margin as the cardholder field ([bb3478e](https://github.com/MONEI/MONEI-WooCommerce/commit/bb3478e))
+-   fix: give the save-card checkbox its gap instead of padding the card field ([a0e256c](https://github.com/MONEI/MONEI-WooCommerce/commit/a0e256c))
+-   fix: refuse an express order the wallet gave no email for ([9335fba](https://github.com/MONEI/MONEI-WooCommerce/commit/9335fba))
+-   fix: stop reporting a dismissed wallet sheet as a checkout error ([1790ba9](https://github.com/MONEI/MONEI-WooCommerce/commit/1790ba9))
+-   fix: stop string severities bypassing the log level and filing as errors ([3900a10](https://github.com/MONEI/MONEI-WooCommerce/commit/3900a10))
+-   fix: tell the wallet when an address cannot be shipped to ([60e3597](https://github.com/MONEI/MONEI-WooCommerce/commit/60e3597))
+-   docs: regenerate readme changelog for 7.1.0 ([c952589](https://github.com/MONEI/MONEI-WooCommerce/commit/c952589))
+
+= v7.1.0 - 2026-08-25 =
 -   docs: drop the key-shaped placeholder from the e2e setup ([6fb42e6](https://github.com/MONEI/MONEI-WooCommerce/commit/6fb42e6))
 -   docs: hyphenate end-to-end ([2da6a7d](https://github.com/MONEI/MONEI-WooCommerce/commit/2da6a7d))
 -   docs: match the e2e README to the wp-env suite ([3cfae74](https://github.com/MONEI/MONEI-WooCommerce/commit/3cfae74))
@@ -201,7 +211,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   chore: update .gitignore and package.json for translation support ([f8b1cbe](https://github.com/MONEI/MONEI-WooCommerce/commit/f8b1cbe))
 -   chore: update GitHub Actions workflow for code quality checks ([24c8082](https://github.com/MONEI/MONEI-WooCommerce/commit/24c8082))
 -   fix: add has_fields() method to CC gateway for component mode visibility ([0efb59f](https://github.com/MONEI/MONEI-WooCommerce/commit/0efb59f))
--   fix: add hide logo option to Apple/Google Pay ([af7.1.1](https://github.com/MONEI/MONEI-WooCommerce/commit/af7.1.1))
+-   fix: add hide logo option to Apple/Google Pay ([af7e120](https://github.com/MONEI/MONEI-WooCommerce/commit/af7e120))
 -   fix: add include for payment method display and fix PHPStan errors ([70ca589](https://github.com/MONEI/MONEI-WooCommerce/commit/70ca589))
 -   fix: add null checks and fallbacks to all classic payment methods ([0488427](https://github.com/MONEI/MONEI-WooCommerce/commit/0488427))
 -   fix: allow payment retry recovery for failed orders in classic checkout ([4f2adce](https://github.com/MONEI/MONEI-WooCommerce/commit/4f2adce))
@@ -368,7 +378,7 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Refactor ApplePay and GooglePay into separate gateway ([44fa266](https://github.com/MONEI/MONEI-WooCommerce/commit/44fa266))
 -   Refactor to reduce db calls ([1b1432d](https://github.com/MONEI/MONEI-WooCommerce/commit/1b1432d))
 -   Remove automated tests from this PR ([302c9af](https://github.com/MONEI/MONEI-WooCommerce/commit/302c9af))
--   Remove log and follow convention ([ee7.1.1](https://github.com/MONEI/MONEI-WooCommerce/commit/ee7.1.1))
+-   Remove log and follow convention ([ee74140](https://github.com/MONEI/MONEI-WooCommerce/commit/ee74140))
 -   remove logs ([9ca86e9](https://github.com/MONEI/MONEI-WooCommerce/commit/9ca86e9))
 -   Remove looking into settings again when updating keys ([e484889](https://github.com/MONEI/MONEI-WooCommerce/commit/e484889))
 -   Remove old payment methods transients on activation and update ([c1cbad1](https://github.com/MONEI/MONEI-WooCommerce/commit/c1cbad1))
@@ -391,10 +401,3 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Uppercase Key in API Key ([1d263b1](https://github.com/MONEI/MONEI-WooCommerce/commit/1d263b1))
 -   Use rounding ([cb79abd](https://github.com/MONEI/MONEI-WooCommerce/commit/cb79abd))
 -   Use Woo api client ([9c5362d](https://github.com/MONEI/MONEI-WooCommerce/commit/9c5362d))
-
-= v6.3.5 - 2025-06-04 =
--   Add 30 seconds caching ([73a4d1a](https://github.com/MONEI/MONEI-WooCommerce/commit/73a4d1a))
--   Change payment methods check to sdk ([5e045eb](https://github.com/MONEI/MONEI-WooCommerce/commit/5e045eb))
--   Remove cofidis ([fef0d3b](https://github.com/MONEI/MONEI-WooCommerce/commit/fef0d3b))
--   Require php 7.4 for the package ([841acfb](https://github.com/MONEI/MONEI-WooCommerce/commit/841acfb))
--   Update version to 6.3.5 for release ([ba2437a](https://github.com/MONEI/MONEI-WooCommerce/commit/ba2437a))
