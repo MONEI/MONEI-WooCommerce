@@ -44,6 +44,12 @@ parameters:
         -
             message: '#never returns .+ so it can be removed from the return type#'
             path: tests/phpstan-bootstrap.php
+        # The SDK documents Payment::getStatus() as returning a PaymentStatus, but that
+        # class is a bag of string constants and the getter returns the raw container
+        # value — a string. Concatenating it is correct at runtime; only the docblock is
+        # wrong. Full-repo runs infer this correctly, so without an explicit ignore the
+        # pre-commit hook (which analyses only the staged files) disagrees with CI.
+        - '#(Binary operation "\." between .+ and Monei\\Model\\PaymentStatus results in an error|Cannot cast Monei\\Model\\PaymentStatus to string)#'
 
     # Performance optimizations
     parallel:

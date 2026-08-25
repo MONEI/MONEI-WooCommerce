@@ -53,17 +53,17 @@ class MoneiApplePayVerificationService {
 
 			// Ensure domain is not empty before registering
 			if ( empty( $domain ) ) {
-				WC_Monei_Logger::log( 'Apple Pay domain registration failed: empty domain', 'error' );
+				WC_Monei_Logger::logError( 'Apple Pay domain registration failed: empty domain' );
 				WC_Admin_Settings::add_error( __( 'Apple Pay domain registration failed: unable to determine domain.', 'monei' ) );
 				return;
 			}
 
 			$this->moneiPaymentServices->register_apple_domain( $domain );
 
-			WC_Monei_Logger::log( 'Apple Pay domain registered successfully: ' . $domain, 'info' );
+			WC_Monei_Logger::logDebug( 'Apple Pay domain registered successfully: ' . $domain );
 			WC_Admin_Settings::add_message( __( 'Apple Pay domain registered successfully.', 'monei' ) );
 		} catch ( ApiException $e ) {
-			WC_Monei_Logger::log( 'Apple Pay domain registration failed for ' . $domain . ': ' . $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( 'Apple Pay domain registration failed for ' . $domain . ': ' . $e->getMessage() );
 			$response_body = json_decode( $e->getResponseBody() );
 			if ( $response_body && isset( $response_body->message ) ) {
 				WC_Admin_Settings::add_error( __( 'Apple Pay', 'monei' ) . ': ' . $response_body->message );

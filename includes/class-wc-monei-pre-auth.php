@@ -51,11 +51,11 @@ class WC_Monei_Pre_Auth {
 			// Deleting pre-auth metadata, once the order is captured.
 			$order->delete_meta_data( '_payment_not_captured_monei' );
 
-			WC_Monei_Logger::log( 'Capture Payment OK.', 'debug' );
-			WC_Monei_Logger::log( $result, 'debug' );
+			WC_Monei_Logger::logDebug( 'Capture Payment OK.' );
+			WC_Monei_Logger::logDebug( $result );
 			$order->add_order_note( '<strong>Capture approved</strong>: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() . ' ' . $result->getStatusCode() );
 		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( 'Capture error: ' . $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( 'Capture error: ' . $e->getMessage() );
 			$order->add_order_note( '<strong>Capture error</strong>: ' . $e->getMessage() );
 		}
 	}
@@ -75,11 +75,11 @@ class WC_Monei_Pre_Auth {
 		try {
 			$this->moneiPaymentServices->set_order( $order );
 			$result = $this->moneiPaymentServices->cancel_payment( $payment_id );
-			WC_Monei_Logger::log( 'Cancel Payment Payment OK.', 'debug' );
-			WC_Monei_Logger::log( $result, 'debug' );
+			WC_Monei_Logger::logDebug( 'Cancel Payment Payment OK.' );
+			WC_Monei_Logger::logDebug( $result );
 			$order->add_order_note( '<strong>Cancel Payment approved</strong>: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() . ' ' . $result->getStatusCode() );
 		} catch ( Exception $e ) {
-			WC_Monei_Logger::log( 'Cancel Payment error: ' . $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( 'Cancel Payment error: ' . $e->getMessage() );
 			$order->add_order_note( '<strong>Cancel Payment error</strong>: ' . $e->getMessage() );
 		}
 	}

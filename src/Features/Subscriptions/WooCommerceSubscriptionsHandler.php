@@ -181,7 +181,7 @@ class WooCommerceSubscriptionsHandler implements SubscriptionHandlerInterface {
 			$renewal_order->save();
 		} catch ( Exception $e ) {
 			do_action( 'wc_gateway_monei_scheduled_subscription_payment_error', $e, $renewal_order, $amount_to_charge );
-			WC_Monei_Logger::log( $e, 'error' );
+			WC_Monei_Logger::logError( $e );
 			$renewal_order->update_status( 'failed' );
 			$renewal_order->add_order_note( __( 'Error Renewal scheduled_subscription_payment. Reason: ', 'monei' ) . $e->getMessage() );
 			$renewal_order->save();

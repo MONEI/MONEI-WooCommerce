@@ -74,7 +74,7 @@ class WC_Monei_IPN {
 		try {
 			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$payload = $this->verify_signature_get_payload( $raw_body, wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
-			$this->logging && WC_Monei_Logger::log( $payload, 'debug' );
+			$this->logging && WC_Monei_Logger::logDebug( $payload );
 		} catch ( Throwable $e ) {
 			// Signature verification failed - this is a security issue, always log.
 			WC_Monei_Logger::log( '[MONEI] Webhook signature verification failed: ' . $e->getMessage() );
@@ -141,7 +141,7 @@ class WC_Monei_IPN {
 			}
 		} catch ( Exception $e ) {
 			// Log but don't fail - payment method display is not critical
-			WC_Monei_Logger::log( '[MONEI] Failed to get payment method display: ' . $e->getMessage(), 'warning' );
+			WC_Monei_Logger::logWarning( '[MONEI] Failed to get payment method display: ' . $e->getMessage() );
 		}
 
 		$order->save();
@@ -301,6 +301,6 @@ class WC_Monei_IPN {
 			$headers[ $key ] = $key . ': ' . $value;
 		}
 		$headers = implode( "\n", $headers );
-		$this->logging && WC_Monei_Logger::log( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n", 'debug' );
+		$this->logging && WC_Monei_Logger::logDebug( 'IPN Request from ' . WC_Geolocation::get_ip_address() . ': ' . "\n\n" . $headers . "\n\n" . $raw_body . "\n" );
 	}
 }

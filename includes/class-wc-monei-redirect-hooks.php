@@ -182,7 +182,7 @@ class WC_Monei_Redirect_Hooks {
 
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while adding your payment method to MONEI. Payment ID: ', 'monei' ) . $payment_id, 'error' );
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( $e->getMessage() );
 		}
 	}
 
@@ -204,11 +204,11 @@ class WC_Monei_Redirect_Hooks {
 		$payment_status = $payment->getStatus();
 		$order_status   = $order->get_status();
 
-		WC_Monei_Logger::log( sprintf( '[MONEI] Redirect verification [payment_id=%s, order_id=%s, payment_status=%s, order_status=%s]', $payment->getId(), $order_id, $payment_status, $order_status ), 'debug' );
+		WC_Monei_Logger::logDebug( sprintf( '[MONEI] Redirect verification [payment_id=%s, order_id=%s, payment_status=%s, order_status=%s]', $payment->getId(), $order_id, $payment_status, $order_status ) );
 
 		// Only process if order is still pending/on-hold/failed and payment succeeded
 		if ( ! in_array( $order_status, array( 'pending', 'on-hold', 'failed' ), true ) ) {
-			WC_Monei_Logger::log( sprintf( '[MONEI] Order already processed, skipping [order_id=%s, status=%s]', $order_id, $order_status ), 'debug' );
+			WC_Monei_Logger::logDebug( sprintf( '[MONEI] Order already processed, skipping [order_id=%s, status=%s]', $order_id, $order_status ) );
 			return;
 		}
 
@@ -230,7 +230,7 @@ class WC_Monei_Redirect_Hooks {
 						$amount
 					)
 				);
-				WC_Monei_Logger::log( sprintf( '[MONEI] Amount mismatch [order_id=%s, order_amount=%s, payment_amount=%s]', $order_id, monei_price_format( $order_total ), $amount ), 'error' );
+				WC_Monei_Logger::logError( sprintf( '[MONEI] Amount mismatch [order_id=%s, order_amount=%s, payment_amount=%s]', $order_id, monei_price_format( $order_total ), $amount ) );
 				return;
 			}
 
@@ -266,7 +266,7 @@ class WC_Monei_Redirect_Hooks {
 			}
 
 			$order->save();
-			WC_Monei_Logger::log( sprintf( '[MONEI] Order completed via redirect verification [order_id=%s, payment_status=%s]', $order_id, $payment_status ), 'debug' );
+			WC_Monei_Logger::logDebug( sprintf( '[MONEI] Order completed via redirect verification [order_id=%s, payment_status=%s]', $order_id, $payment_status ) );
 		}
 	}
 }

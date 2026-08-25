@@ -36,6 +36,7 @@ class WC_Monei_Logger {
 	 * @version 5.0
 	 */
 	public static function log( $message, $severity = self::LEVEL_INFO ) {
+		$severity      = self::normalize_severity( $severity );
 		$min_log_level = (int) get_option( 'monei_log_level', self::LEVEL_ERROR ); // Default to ERROR only
 
 		// Treat 4 (NONE) as disabled
@@ -103,6 +104,41 @@ class WC_Monei_Logger {
 	 */
 	public static function logError( $message ) {
 		self::log( $message, self::LEVEL_ERROR );
+	}
+
+	/**
+	 * Coerce a severity to one of the integer levels.
+	 *
+	 * ⚠️ Callers used to pass the WooCommerce level *name* — `'debug'`, `'error'` —
+	 * where an int belongs, and both effects were silent. The filter below compares
+	 * `$severity < $min_log_level`, so PHP cast the int to string and compared
+	 * `'debug' < '3'` character by character: every name sorted above every level and
+	 * logged unconditionally, ignoring the merchant's `monei_log_level`. The name then
+	 * fell through `map_severity_to_wc_level()`'s default and was written as ERROR, so
+	 * routine successes filled the error log.
+	 *
+	 * Names are accepted rather than rejected because a third-party integration may
+	 * still pass one, and dropping its message would be worse than filing it.
+	 *
+	 * @param mixed $severity Integer level, or a WooCommerce level name.
+	 *
+	 * @return int One of the LEVEL_* constants.
+	 */
+	private static function normalize_severity( $severity ) {
+		if ( is_int( $severity ) || ctype_digit( (string) $severity ) ) {
+			return (int) $severity;
+		}
+
+		switch ( strtolower( (string) $severity ) ) {
+			case 'debug':
+			case 'info':
+			case 'notice':
+				return self::LEVEL_INFO;
+			case 'warning':
+				return self::LEVEL_WARNING;
+			default:
+				return self::LEVEL_ERROR;
+		}
 	}
 
 	/**

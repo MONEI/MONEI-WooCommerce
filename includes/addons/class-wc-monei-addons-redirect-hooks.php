@@ -78,7 +78,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( $e->getMessage() );
 		}
 	}
 
@@ -116,7 +116,7 @@ class WC_Monei_Addons_Redirect_Hooks {
 			$handler->update_subscription_meta_data( $subscriptions, $payment );
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );
-			WC_Monei_Logger::log( $e->getMessage(), 'error' );
+			WC_Monei_Logger::logError( $e->getMessage() );
 		}
 	}
 }
