@@ -434,6 +434,19 @@ class ExpressCheckoutAjaxHandler {
 			$billing = $shipping;
 		}
 
+		// 🚨 The wallet is the only source of an email in express: there is no form for a
+		// guest to type one into, and WooCommerce needs one to create the order. When a
+		// wallet stops returning it the payment fails at the MONEI API instead, as
+		// `Invalid email address at "body.customer.email"`, which reads as a MONEI fault
+		// rather than a missing field — so the contract is checked here, where the
+		// message can name what is actually wrong.
+		if ( ! is_email( $billing['email'] ) ) {
+			$this->fail_order(
+				'missing_billing_email',
+				__( 'The wallet did not return an email address, which is required to place the order.', 'monei' )
+			);
+		}
+
 		// Totals are recomputed exactly the way the shipping callbacks computed the
 		// figure the shopper approved: the customer is pointed at the shipping address
 		// and nothing else. Setting the billing address separately here would move the

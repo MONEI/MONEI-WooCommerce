@@ -174,4 +174,44 @@ test.describe( 'Express checkout amount verification', () => {
 		const after = await post( request, 'get_cart_details', { security } );
 		expect( after.body.amount ).toBe( before.body.amount );
 	} );
+
+	test( 'refuses an order the wallet gave no email for', async ( {
+		request,
+	} ) => {
+		// 🚨 Regression guard. Express has no form for a guest to type an email into,
+		// so the wallet is the only source of one — and monei.js did not request the
+		// Google Pay email at all, which made every express payment fail at the MONEI
+		// API as `Invalid email address at "body.customer.email"`. The suite missed it
+		// because it posts `billing[email]` itself, supplying the exact field
+		// production lacked. This asserts the boundary that stub replaces: the server
+		// must refuse the payload a wallet without an email produces.
+		const bootstrap = await post( request, 'bootstrap' );
+		const security = bootstrap.body.nonce;
+		const sessionId = bootstrap.body.sessionId;
+
+		const cart = await post( request, 'add_to_cart', {
+			security,
+			product_id: PRODUCT_ID,
+			quantity: 1,
+		} );
+		expect( cart.body.result ).toBe( 'success' );
+
+		const refused = await post( request, 'create_order', {
+			security,
+			session_id: sessionId,
+			location: 'product',
+			payment_method: 'card',
+			monei_payment_request_token: EXPRESS_REJECTED_TOKEN,
+			final_amount: String( cart.body.amount ),
+			// Everything a wallet returns except the email.
+			'billing[name]': 'Ada Lovelace',
+			'billing[address][line1]': 'Calle Mayor 1',
+			'billing[address][city]': 'Madrid',
+			'billing[address][zip]': '28013',
+			'billing[address][country]': 'ES',
+		} );
+
+		// Refused here, by name — not deep in an API error the shopper cannot act on.
+		expect( refused.body.data?.code ).toBe( 'missing_billing_email' );
+	} );
 } );
