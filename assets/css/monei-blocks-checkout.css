@@ -1,14 +1,22 @@
-/* Card Input Container */
+/*
+ * Card Input Container — the single-line layout's mount point.
+ *
+ * ⚠️ px, for the same reason as `.monei-card-group-field` below: this inherits
+ * the blocks checkout's 14px font size, so `3.125em` resolved to 43.75px. That
+ * left the field 6px shorter than the cardholder input stacked directly above
+ * it — which WooCommerce styles at 50px — and monei.js mounts its own 50px
+ * field inside, so the card field also overflowed its own border by ~6.75px.
+ */
 .monei-card-input {
 	transition: border-color 0.2s ease;
 	background-color: #fff;
-	border: 0.0625em solid hsla(0, 0%, 7%, 0.8);
-	border-radius: 0.25em;
+	border: 1px solid hsla(0, 0%, 7%, 0.8);
+	border-radius: 4px;
 	box-sizing: border-box;
 	color: #2b2d2f;
 	font-family: inherit;
-	font-size: 1em;
-	height: 3.125em;
+	font-size: 16px;
+	height: 50px;
 	line-height: 1;
 	min-height: 0;
 	padding: 0;
@@ -60,7 +68,13 @@
 /*
  * monei.js gives the wrapper and iframe it mounts an inline height of its own.
  * Overriding it keeps the rendered field the same height as this container.
+ *
+ * Both layouts need this. `box-sizing: border-box` means a 50px container has a
+ * 48px content box, so the 50px monei.js mounts inside overhangs the border by
+ * the 2px of border it does not know about.
  */
+.monei-card-input > *,
+.monei-card-input iframe,
 .monei-card-group-field > *,
 .monei-card-group-field iframe {
 	height: 100% !important;
@@ -246,11 +260,16 @@
 	margin: 0 0 1em 0 !important;
 }
 
-/* Responsive Design */
+/*
+ * Responsive Design
+ *
+ * iOS zooms a focused field whose font is under 16px. Only real inputs are
+ * affected, so the mount containers are deliberately not listed here — they set
+ * their own 16px above and must keep it.
+ */
 @media (max-width: 480px) {
-	.monei-input,
-	.monei-card-input {
-		font-size: 1em; /* Prevents zoom on iOS */
+	.monei-input {
+		font-size: 1em;
 	}
 
 	.monei-card-group {
