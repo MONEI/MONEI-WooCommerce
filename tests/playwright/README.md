@@ -9,7 +9,7 @@ Every run leaves real test mode orders behind on the MONEI account.
 The suite brings its own WordPress through [`wp-env`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/), so the only thing it needs from you is a MONEI test key.
 
 ```bash
-echo 'MONEI_TEST_API_KEY=pk_test_...' > tests/playwright/.env
+cp tests/playwright/.env.example tests/playwright/.env   # then set MONEI_TEST_API_KEY
 pnpm test:e2e:start   # boots wp-env, then seeds the store
 pnpm test:e2e
 pnpm test:e2e:stop
