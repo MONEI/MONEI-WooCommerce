@@ -12,6 +12,7 @@ import {
 	setExpressParams,
 } from './helpers/monei-express-api';
 import { createExpressComponent } from './helpers/monei-express-payment-request';
+import { isWalletDismissal } from './helpers/monei-shared-utils';
 
 ( function ( $ ) {
 	'use strict';
@@ -413,7 +414,13 @@ import { createExpressComponent } from './helpers/monei-express-payment-request'
 				: null,
 			onSubmit: handleSubmit,
 			onError: ( error ) => {
-				showError( error?.message || params.i18n?.genericError );
+				// A dismissed sheet still has to release the cart, but it is not
+				// something to report: the shopper chose it.
+				showError(
+					isWalletDismissal( error )
+						? ''
+						: error?.message || params.i18n?.genericError
+				);
 				releaseCart().catch( () => {} );
 			},
 			onLoad: ( isSupported ) => setAvailability( entry, isSupported ),

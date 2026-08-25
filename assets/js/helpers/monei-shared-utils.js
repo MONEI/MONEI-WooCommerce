@@ -15,6 +15,39 @@ export const getMoneiErrorMessage = ( error, fallback ) => {
 };
 
 /**
+ * Whether a wallet error is the shopper dismissing the sheet.
+ *
+ * Closing a wallet sheet is a choice, not a failure, so it must never surface
+ * as an error message. Google Pay rejects `loadPaymentData` with its own object
+ * — `{ statusCode: 'CANCELED', statusMessage: 'User closed the Payment Request
+ * UI.' }` — and monei.js forwards it verbatim, so the shape checked here is
+ * Google's rather than the SDK's. Apple Pay and the W3C PaymentRequest API
+ * report the same intent as an `AbortError`.
+ * @param {Object|string} error - Error reported by a wallet component
+ * @return {boolean}
+ */
+export const isWalletDismissal = ( error ) => {
+	if ( ! error ) {
+		return false;
+	}
+
+	if ( 'CANCELED' === error.statusCode || 'CANCELLED' === error.statusCode ) {
+		return true;
+	}
+
+	if ( 'AbortError' === error.name ) {
+		return true;
+	}
+
+	const text =
+		typeof error === 'string'
+			? error
+			: `${ error.statusMessage || '' } ${ error.message || '' }`;
+
+	return /user closed|cancell?ed|aborted/i.test( text );
+};
+
+/**
  * Resolve the payment amount in minor units.
  *
  * The Store API reports `total_price` already in minor units, while the

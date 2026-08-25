@@ -18,6 +18,7 @@ import {
 	setExpressParams,
 } from './helpers/monei-express-api';
 import { createExpressComponent } from './helpers/monei-express-payment-request';
+import { isWalletDismissal } from './helpers/monei-shared-utils';
 
 const { __ } = wp.i18n;
 
@@ -305,6 +306,14 @@ const MoneiExpressContent = ( props ) => {
 				},
 				onSubmit: handleSubmit,
 				onError: ( error ) => {
+					// A dismissed sheet still has to close and reset the button,
+					// but it is not something to report: the shopper chose it.
+					if ( isWalletDismissal( error ) ) {
+						startedRef.current = false;
+						onClose();
+						return;
+					}
+
 					fail( error?.message );
 					onClose();
 				},
@@ -395,6 +404,16 @@ const buildExpressMethod = ( {
 		}
 
 		if ( ! express.accountId ) {
+			return false;
+		}
+
+		// ⚠️ Registering reserves a grid column whether or not the component ever
+		// mounts, so a wallet the account cannot serve has to be refused here — by
+		// the time `onLoad` reports it, the empty column is already laid out and
+		// halves the width of the button beside it. Compared against `false` rather
+		// than truthiness so an absent flag still registers: hiding a wallet the
+		// merchant enabled is worse than an empty column.
+		if ( false === express.methods?.[ method ]?.available ) {
 			return false;
 		}
 
