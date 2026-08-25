@@ -130,8 +130,20 @@
  * `min-height`, not `height`: the button's height is a merchant setting
  * (`express_button_style`), so a taller one has to grow this container rather
  * than overflow it again.
+ *
+ * ⚠️ `line-height: 0` is load bearing, not cosmetic. PayPal mounts an
+ * `inline-block` button, and an inline-block sits on the text baseline, so the
+ * line box reserved ~5px of descender space beneath it: the container measured
+ * 55px around a 50px button and shifted by that much the moment the button
+ * rendered. Zeroing the line height collapses that space.
+ *
+ * Do NOT reach for `display: flex` here. It looks tempting — `justify-content`
+ * below is inert without it — but it makes the button a flex item, and the
+ * `width: 100%` PayPal sets on itself then stops filling the row, leaving the
+ * button squeezed to part of the container.
  */
 .monei-payment-request-container {
+	line-height: 0;
 	min-height: 50px;
 	justify-content: center;
 	width: 100%;
