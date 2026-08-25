@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.1.3 (2026-08-25)</small>
+
+-   fix: size the single-line card field to match the cardholder input ([805d3e0](https://github.com/MONEI/MONEI-WooCommerce/commit/805d3e0))
+-   docs: regenerate readme changelog for 7.1.2 ([c625d73](https://github.com/MONEI/MONEI-WooCommerce/commit/c625d73))
+
 ## <small>7.1.2 (2026-08-25)</small>
 
 -   fix: keep the wallet button inside its container on blocks checkout ([be063e7](https://github.com/MONEI/MONEI-WooCommerce/commit/be063e7))
