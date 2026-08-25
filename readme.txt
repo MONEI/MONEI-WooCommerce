@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.1.0
+Stable tag: 7.1.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.1.0 - 2026-08-25 =
+= v7.1.1 - 2026-08-25 =
 -   docs: drop the key-shaped placeholder from the e2e setup ([6fb42e6](https://github.com/MONEI/MONEI-WooCommerce/commit/6fb42e6))
 -   docs: hyphenate end-to-end ([2da6a7d](https://github.com/MONEI/MONEI-WooCommerce/commit/2da6a7d))
 -   docs: match the e2e README to the wp-env suite ([3cfae74](https://github.com/MONEI/MONEI-WooCommerce/commit/3cfae74))
@@ -201,7 +201,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   chore: update .gitignore and package.json for translation support ([f8b1cbe](https://github.com/MONEI/MONEI-WooCommerce/commit/f8b1cbe))
 -   chore: update GitHub Actions workflow for code quality checks ([24c8082](https://github.com/MONEI/MONEI-WooCommerce/commit/24c8082))
 -   fix: add has_fields() method to CC gateway for component mode visibility ([0efb59f](https://github.com/MONEI/MONEI-WooCommerce/commit/0efb59f))
--   fix: add hide logo option to Apple/Google Pay ([af7e120](https://github.com/MONEI/MONEI-WooCommerce/commit/af7e120))
+-   fix: add hide logo option to Apple/Google Pay ([af7.1.1](https://github.com/MONEI/MONEI-WooCommerce/commit/af7.1.1))
 -   fix: add include for payment method display and fix PHPStan errors ([70ca589](https://github.com/MONEI/MONEI-WooCommerce/commit/70ca589))
 -   fix: add null checks and fallbacks to all classic payment methods ([0488427](https://github.com/MONEI/MONEI-WooCommerce/commit/0488427))
 -   fix: allow payment retry recovery for failed orders in classic checkout ([4f2adce](https://github.com/MONEI/MONEI-WooCommerce/commit/4f2adce))
@@ -368,7 +368,7 @@ Any duplicate order notes are cosmetic and acceptable.
 -   Refactor ApplePay and GooglePay into separate gateway ([44fa266](https://github.com/MONEI/MONEI-WooCommerce/commit/44fa266))
 -   Refactor to reduce db calls ([1b1432d](https://github.com/MONEI/MONEI-WooCommerce/commit/1b1432d))
 -   Remove automated tests from this PR ([302c9af](https://github.com/MONEI/MONEI-WooCommerce/commit/302c9af))
--   Remove log and follow convention ([ee74140](https://github.com/MONEI/MONEI-WooCommerce/commit/ee74140))
+-   Remove log and follow convention ([ee7.1.1](https://github.com/MONEI/MONEI-WooCommerce/commit/ee7.1.1))
 -   remove logs ([9ca86e9](https://github.com/MONEI/MONEI-WooCommerce/commit/9ca86e9))
 -   Remove looking into settings again when updating keys ([e484889](https://github.com/MONEI/MONEI-WooCommerce/commit/e484889))
 -   Remove old payment methods transients on activation and update ([c1cbad1](https://github.com/MONEI/MONEI-WooCommerce/commit/c1cbad1))

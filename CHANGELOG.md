@@ -1,5 +1,16 @@
 # Changelog
 
+## <small>7.1.1 (2026-08-25)</small>
+
+-   fix: do not register an express wallet the account cannot serve ([9467afb](https://github.com/MONEI/MONEI-WooCommerce/commit/9467afb))
+-   fix: give the card field the same bottom margin as the cardholder field ([bb3478e](https://github.com/MONEI/MONEI-WooCommerce/commit/bb3478e))
+-   fix: give the save-card checkbox its gap instead of padding the card field ([a0e256c](https://github.com/MONEI/MONEI-WooCommerce/commit/a0e256c))
+-   fix: refuse an express order the wallet gave no email for ([9335fba](https://github.com/MONEI/MONEI-WooCommerce/commit/9335fba))
+-   fix: stop reporting a dismissed wallet sheet as a checkout error ([1790ba9](https://github.com/MONEI/MONEI-WooCommerce/commit/1790ba9))
+-   fix: stop string severities bypassing the log level and filing as errors ([3900a10](https://github.com/MONEI/MONEI-WooCommerce/commit/3900a10))
+-   fix: tell the wallet when an address cannot be shipped to ([60e3597](https://github.com/MONEI/MONEI-WooCommerce/commit/60e3597))
+-   docs: regenerate readme changelog for 7.1.0 ([c952589](https://github.com/MONEI/MONEI-WooCommerce/commit/c952589))
+
 ## 7.1.0 (2026-08-25)
 
 -   docs: drop the key-shaped placeholder from the e2e setup ([6fb42e6](https://github.com/MONEI/MONEI-WooCommerce/commit/6fb42e6))
