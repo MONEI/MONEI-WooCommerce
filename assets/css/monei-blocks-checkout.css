@@ -10,6 +10,7 @@
 	font-size: 1em;
 	height: 3.125em;
 	line-height: 1;
+	margin: 0 0 1em;
 	min-height: 0;
 	padding: 0;
 	width: 100%;
@@ -29,6 +30,7 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px;
+	margin: 0 0 1em;
 }
 
 /* Card number takes the full row, expiry and CVC share the next one. */
