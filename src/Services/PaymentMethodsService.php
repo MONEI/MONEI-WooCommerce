@@ -8,6 +8,7 @@ class PaymentMethodsService {
 
 	public const GOOGLE_API = 'googlePay';
 	public const APPLE_API  = 'applePay';
+	public const PAYPAL_API = 'paypal';
 	private $repository;
 
 	public function __construct( PaymentMethodsRepositoryInterface $repository ) {
@@ -40,6 +41,11 @@ class PaymentMethodsService {
 	public function isAppleEnabled(): bool {
 		$enabledMethods = $this->getEnabledPaymentMethods();
 		return isset( $enabledMethods[ self::APPLE_API ] );
+	}
+
+	public function isPaypalEnabled(): bool {
+		$enabledMethods = $this->getEnabledPaymentMethods();
+		return isset( $enabledMethods[ self::PAYPAL_API ] );
 	}
 
 	/**

@@ -11,9 +11,11 @@ use Monei\Core\ContainerProvider;
 use Monei\Gateways\Abstracts\WCMoneiPaymentGateway;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiAppleGoogle;
 use Monei\Gateways\PaymentMethods\WCGatewayMoneiPaypal;
+use Monei\Services\PaymentMethodsService;
 use WC_AJAX;
 use WC_Product;
 use WP_Post;
+use Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -217,6 +219,12 @@ class ExpressCheckoutAssets {
 				// PayPal takes different style keys from PaymentRequest — color, layout,
 				// size, shape, label — so each wallet carries its own.
 				'style'     => json_decode( self::get_button_style( $gateway ) ),
+				// Whether the MONEI account offers this wallet at all. The blocks
+				// registry reserves a grid column per registered express method before
+				// any component mounts, so a wallet the account cannot serve has to be
+				// refused at registration; discovering it later through `onLoad` leaves
+				// an empty column behind that halves the width of its neighbour.
+				'available' => self::account_offers( $method ),
 			);
 
 			if ( '' === $account_id ) {
@@ -315,6 +323,32 @@ class ExpressCheckoutAssets {
 	 *
 	 * @return array<string, WCMoneiPaymentGateway>
 	 */
+	/**
+	 * Whether the MONEI account can serve the wallet behind an express method.
+	 *
+	 * ⚠️ Fails open. A false negative hides a wallet the merchant has switched on and
+	 * paid to enable; a false positive costs an empty column. So an unreadable answer
+	 * — the API down, the account response cached empty — registers the method and
+	 * lets `onLoad` sort it out, which is the behaviour this replaced.
+	 *
+	 * @param string $method Express method key.
+	 *
+	 * @return bool
+	 */
+	private static function account_offers( $method ) {
+		try {
+			$methods = ContainerProvider::getContainer()->get( PaymentMethodsService::class );
+
+			if ( self::METHOD_PAYPAL === $method ) {
+				return $methods->isPaypalEnabled();
+			}
+
+			return $methods->isGoogleEnabled() || $methods->isAppleEnabled();
+		} catch ( Exception $e ) {
+			return true;
+		}
+	}
+
 	private static function get_express_gateways() {
 		if ( null !== self::$gateways ) {
 			return self::$gateways;
