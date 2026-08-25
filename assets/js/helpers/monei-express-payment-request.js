@@ -47,8 +47,18 @@ export const createShippingCallbacks = ( {
 
 			publish( payload );
 
-			// An empty option list is the wallet's own signal for "cannot ship here",
-			// so a rejected address needs no special casing beyond returning it.
+			// ⚠️ Throwing is the only way to tell the wallet an address cannot be
+			// shipped to. Returning an empty list reads as success, and the Google Pay
+			// sheet then sits on "Delivery option pending" with no way forward — the
+			// SDK maps a *rejection* to SHIPPING_ADDRESS_UNSERVICEABLE, in the `catch`
+			// around its shipping callbacks, and nothing else.
+			if ( 'invalid_shipping_address' === payload.result ) {
+				throw new Error(
+					payload.message ||
+						'No shipping method is available for this address.'
+				);
+			}
+
 			return {
 				shippingOptions: payload.shippingOptions || [],
 				amount: payload.amount,
