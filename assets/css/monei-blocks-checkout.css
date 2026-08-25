@@ -119,9 +119,20 @@
 	cursor: not-allowed;
 }
 
-/* Payment Request Container */
+/*
+ * Payment Request Container
+ *
+ * ⚠️ px, for the same reason as `.monei-card-group-field` above: the blocks
+ * checkout renders this at a 14px font size, so `3.125em` resolved to 43.75px
+ * while the wallet button mounted inside it is 50px — Google Pay and
+ * PayPal both spilled out of the payment method box they sit in.
+ *
+ * `min-height`, not `height`: the button's height is a merchant setting
+ * (`express_button_style`), so a taller one has to grow this container rather
+ * than overflow it again.
+ */
 .monei-payment-request-container {
-	height: 3.125em;
+	min-height: 50px;
 	justify-content: center;
 	width: 100%;
 	border-radius: 0.25em;
@@ -235,6 +246,6 @@
 	}
 
 	.monei-payment-request-container {
-		min-height: 3.75em;
+		min-height: 60px;
 	}
 }
