@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.1.2
+Stable tag: 7.1.3
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -95,6 +95,11 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+= v7.1.3 - 2026-08-25 =
+
+-   fix: size the single-line card field to match the cardholder input ([805d3e0](https://github.com/MONEI/MONEI-WooCommerce/commit/805d3e0))
+-   docs: regenerate readme changelog for 7.1.2 ([c625d73](https://github.com/MONEI/MONEI-WooCommerce/commit/c625d73))
 
 = v7.1.2 - 2026-08-25 =
 
@@ -338,24 +343,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
 -   fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
 -   chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
-
-= v6.3.9 - 2025-10-01 =
-
--   Fix amount when checkout data is updated ([2013a03](https://github.com/MONEI/MONEI-WooCommerce/commit/2013a03))
--   Fix card input style ([6c12a5a](https://github.com/MONEI/MONEI-WooCommerce/commit/6c12a5a))
--   Remove minified assets from vcs ([5a6fd99](https://github.com/MONEI/MONEI-WooCommerce/commit/5a6fd99))
--   Update monei sdk ([38a134a](https://github.com/MONEI/MONEI-WooCommerce/commit/38a134a))
--   Update setUserAgent to include comment ([f6d85df](https://github.com/MONEI/MONEI-WooCommerce/commit/f6d85df))
--   chore: add auto-generated CHANGELOG.md ([50e9983](https://github.com/MONEI/MONEI-WooCommerce/commit/50e9983))
--   chore: auto-remove README.md after generation ([b299478](https://github.com/MONEI/MONEI-WooCommerce/commit/b299478))
--   chore: modernize build and release pipeline ([21384f0](https://github.com/MONEI/MONEI-WooCommerce/commit/21384f0))
--   chore: remove redundant changelog.txt ([1703044](https://github.com/MONEI/MONEI-WooCommerce/commit/1703044))
--   chore: remove unnecessary README.md auto-deletion ([86c727e](https://github.com/MONEI/MONEI-WooCommerce/commit/86c727e))
--   chore: setup automated changelog generation ([e83b384](https://github.com/MONEI/MONEI-WooCommerce/commit/e83b384))
--   fix: properly configure changelog generation with placeholder ([2cefc8c](https://github.com/MONEI/MONEI-WooCommerce/commit/2cefc8c))
--   fix: remove version limit from changelog generation ([cfe33a3](https://github.com/MONEI/MONEI-WooCommerce/commit/cfe33a3))
--   fix: run changelog generation after tag creation ([f9aedb5](https://github.com/MONEI/MONEI-WooCommerce/commit/f9aedb5))
--   fix: specify main plugin file for generate-wp-readme ([f93edd3](https://github.com/MONEI/MONEI-WooCommerce/commit/f93edd3))
--   fix: update 6.3.9 changelog entry with correct date and content ([6050b35](https://github.com/MONEI/MONEI-WooCommerce/commit/6050b35))
--   refactor: move release-it config to separate file ([18bf445](https://github.com/MONEI/MONEI-WooCommerce/commit/18bf445))
--   docs: document changelog generation system ([3217a25](https://github.com/MONEI/MONEI-WooCommerce/commit/3217a25))
