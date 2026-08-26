@@ -24,6 +24,23 @@ const SETTINGS_OPTION = 'woocommerce_monei_apple_google_settings';
 // self-describing so secret scanners do not flag it as a leaked token.
 const EXPRESS_REJECTED_TOKEN = [ 'not', 'a', 'real', 'token' ].join( '-' );
 
+/**
+ * The billing an express wallet supplies.
+ *
+ * ⚠️ Shared by every `create_order` call here on purpose. `create_order` refuses a
+ * payload with no billing email before it ever reaches the amount check, so a test
+ * that omits these is refused as `missing_billing_email` and never exercises the
+ * thing it is named for.
+ */
+const BILLING_FIELDS = {
+	'billing[name]': 'Ada Lovelace',
+	'billing[email]': 'e2e-monei@example.com',
+	'billing[address][line1]': 'Calle Mayor 1',
+	'billing[address][city]': 'Madrid',
+	'billing[address][zip]': '28013',
+	'billing[address][country]': 'ES',
+};
+
 const endpoint = ( name ) => `/?wc-ajax=monei_express_${ name }`;
 
 /**
@@ -96,12 +113,7 @@ test.describe( 'Express checkout amount verification', () => {
 				location: 'product',
 				payment_method: 'card',
 				monei_payment_request_token: EXPRESS_REJECTED_TOKEN,
-				'billing[name]': 'Ada Lovelace',
-				'billing[email]': 'e2e-monei@example.com',
-				'billing[address][line1]': 'Calle Mayor 1',
-				'billing[address][city]': 'Madrid',
-				'billing[address][zip]': '28013',
-				'billing[address][country]': 'ES',
+				...BILLING_FIELDS,
 				...fields,
 			} );
 		};
@@ -168,6 +180,7 @@ test.describe( 'Express checkout amount verification', () => {
 			payment_method: 'card',
 			monei_payment_request_token: EXPRESS_REJECTED_TOKEN,
 			final_amount: '1',
+			...BILLING_FIELDS,
 		} );
 		expect( refused.body.data.code ).toBe( 'amount_mismatch' );
 
