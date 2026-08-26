@@ -269,8 +269,14 @@ const MoneiExpressContent = ( props ) => {
 	 * Returns undefined so the failure keeps whatever message WooCommerce produced.
 	 */
 	useEffect( () => {
-		const unsubscribe = onCheckoutFail( () => {
-			if ( activeRef.current !== name ) {
+		const unsubscribe = onCheckoutFail( ( failure ) => {
+			// ⚠️ `startedRef` decides ownership, not `activePaymentMethod`. On the
+			// Cart block WooCommerce never marks an express method active, so
+			// matching on the name alone discarded the failure there and the
+			// shopper was left on a cart that had already taken their PayPal
+			// approval, with nothing on screen. Verified: the Store API answered
+			// `woocommerce_rest_invalid_address` and the page showed no message.
+			if ( ! startedRef.current && activeRef.current !== name ) {
 				return undefined;
 			}
 
@@ -278,13 +284,21 @@ const MoneiExpressContent = ( props ) => {
 			// would be handed over as valid data on the next attempt.
 			tokenRef.current = null;
 			startedRef.current = false;
+
+			// WooCommerce's own message names the actual problem — a rejected
+			// address lists the fields it wants — which beats a generic failure.
+			setErrorMessage(
+				failure?.processingResponse?.message ||
+					express.i18n?.genericError ||
+					''
+			);
 			onClose();
 
 			return undefined;
 		} );
 
 		return () => unsubscribe();
-	}, [ onCheckoutFail, name, onClose ] );
+	}, [ onCheckoutFail, name, onClose, express.i18n ] );
 
 	// Hand the token to the checkout as this gateway's payment data.
 	useEffect( () => {
