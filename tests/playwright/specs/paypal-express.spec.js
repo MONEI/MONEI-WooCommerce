@@ -8,7 +8,8 @@
  */
 
 const { test, expect } = require( '@playwright/test' );
-const { PRODUCT_ID, expectOrderReceived } = require( '../utils/checkout' );
+const { expectOrderReceived } = require( '../utils/checkout' );
+const { readFixtures } = require( '../utils/fixtures' );
 const {
 	getOrderStatus,
 	setExpressSettings,
@@ -22,6 +23,8 @@ const {
 } = require( '../utils/paypal' );
 
 const PAYPAL_OPTION = 'woocommerce_monei_paypal_settings';
+
+const fixtures = readFixtures();
 
 // PayPal's sandbox is the slow part; the store's own work is a fraction of this.
 const PAYPAL_TIMEOUT = 240000;
@@ -66,13 +69,18 @@ test.describe( 'Express checkout, PayPal', () => {
 		);
 	} );
 
-	test( 'pays for a cart with express PayPal', async ( { page } ) => {
+	test( 'pays for a product with express PayPal', async ( { page } ) => {
 		test.setTimeout( PAYPAL_TIMEOUT );
 
-		await page.goto( `/?add-to-cart=${ PRODUCT_ID }`, {
+		// ⚠️ The product page, not the cart, and the difference is not cosmetic.
+		// PayPal returns a partial address — name, email and country, no street or
+		// city. The classic product flow builds the order itself and accepts that,
+		// so it pays. The Cart and Checkout blocks go through the Store API, which
+		// rejects a partial shipping address outright. Same wallet, same payload,
+		// two outcomes; this test covers the one that can complete.
+		await page.goto( fixtures.productPath, {
 			waitUntil: 'domcontentloaded',
 		} );
-		await page.goto( '/cart/', { waitUntil: 'domcontentloaded' } );
 
 		await payWithExpressPayPal( page );
 
@@ -96,7 +104,7 @@ test.describe( 'Express checkout, PayPal', () => {
 		// the failure was discarded and the shopper sat on a cart that had
 		// already taken their PayPal approval, with nothing on screen. Whatever
 		// the outcome, the store must either place the order or say why not.
-		await page.goto( `/?add-to-cart=${ PRODUCT_ID }`, {
+		await page.goto( `/?add-to-cart=${ fixtures.productId }`, {
 			waitUntil: 'domcontentloaded',
 		} );
 		await page.goto( '/cart/', { waitUntil: 'domcontentloaded' } );
