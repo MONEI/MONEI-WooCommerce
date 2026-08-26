@@ -119,6 +119,7 @@ const MoneiExpressContent = ( props ) => {
 	const activeRef = useRef( activePaymentMethod );
 	const { setBillingAddress } = useDispatch( 'wc/store/cart' );
 	const [ isSupported, setIsSupported ] = useState( true );
+	const [ errorMessage, setErrorMessage ] = useState( '' );
 
 	useEffect( () => {
 		activeRef.current = activePaymentMethod;
@@ -135,13 +136,23 @@ const MoneiExpressContent = ( props ) => {
 		}
 
 		startedRef.current = true;
+		setErrorMessage( '' );
 		onClick();
 	}, [ onClick ] );
 
 	const fail = useCallback(
 		( message ) => {
 			startedRef.current = false;
-			onError( message || express.i18n?.genericError || '' );
+
+			const text = message || express.i18n?.genericError || '';
+
+			// ⚠️ Shown here as well as handed to WooCommerce. `onError` surfaces a
+			// notice on the Checkout block, but the Cart block has nowhere to put
+			// one — an express payment could fail there and say nothing at all. The
+			// element below is the same one the classic surfaces render, so product,
+			// cart and checkout all report a failure the same way.
+			setErrorMessage( text );
+			onError( text );
 		},
 		[ onError, express.i18n ]
 	);
@@ -403,6 +414,9 @@ const MoneiExpressContent = ( props ) => {
 				className="monei-express-checkout__button"
 				ref={ containerRef }
 			/>
+			<div className="monei-express-checkout__error" role="alert">
+				{ errorMessage }
+			</div>
 		</div>
 	);
 };

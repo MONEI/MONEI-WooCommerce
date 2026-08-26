@@ -42,6 +42,11 @@ class ExpressCheckoutAssets {
 	const SCRIPT_HANDLE = 'monei-express-checkout';
 
 	/**
+	 * Handle of the express stylesheet, shared by the classic and blocks paths.
+	 */
+	const STYLE_HANDLE = 'monei-express-checkout';
+
+	/**
 	 * Handle of the blocks express registration script.
 	 */
 	const BLOCKS_SCRIPT_HANDLE = 'wc-monei-express-blocks-integration';
@@ -91,14 +96,7 @@ class ExpressCheckoutAssets {
 			return;
 		}
 
-		wp_register_style(
-			'monei-express-checkout',
-			plugins_url( 'public/css/monei-express-checkout.css', MONEI_MAIN_FILE ),
-			array(),
-			MONEI_VERSION,
-			'all'
-		);
-		wp_enqueue_style( 'monei-express-checkout' );
+		self::enqueue_style();
 
 		if ( ! wp_script_is( 'monei', 'registered' ) ) {
 			wp_register_script( 'monei', 'https://js.monei.com/v3/monei.js', '', '3.0', true );
@@ -267,6 +265,8 @@ class ExpressCheckoutAssets {
 
 		$handle = self::BLOCKS_SCRIPT_HANDLE;
 
+		self::enqueue_style();
+
 		wp_register_script(
 			$handle,
 			WC_Monei()->plugin_url() . '/public/js/monei-block-express-checkout.min.js',
@@ -351,6 +351,31 @@ class ExpressCheckoutAssets {
 		} catch ( Exception $e ) {
 			return true;
 		}
+	}
+
+	/**
+	 * Loads the express stylesheet, on whichever surface asked for it.
+	 *
+	 * ⚠️ Blocks needs this too. It used to be registered only on the classic path,
+	 * so a Cart or Checkout block got the express markup with none of its styling —
+	 * including `.monei-express-checkout__error`, which is how a failed express
+	 * payment tells the shopper what went wrong. Unstyled, that message inherited
+	 * whatever the theme did with a bare div, and `:empty` never hid it.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_style() {
+		if ( ! wp_style_is( self::STYLE_HANDLE, 'registered' ) ) {
+			wp_register_style(
+				self::STYLE_HANDLE,
+				plugins_url( 'public/css/monei-express-checkout.css', MONEI_MAIN_FILE ),
+				array(),
+				MONEI_VERSION,
+				'all'
+			);
+		}
+
+		wp_enqueue_style( self::STYLE_HANDLE );
 	}
 
 	private static function get_express_gateways() {
