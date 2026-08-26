@@ -106,7 +106,7 @@ const MoneiExpressContent = ( props ) => {
 	// `onPaymentSetup` updates state in the checkout events provider, which renders the
 	// parent again — an endless loop that pins a CPU core. The individual callbacks
 	// underneath are stable.
-	const { onPaymentSetup } = props.eventRegistration;
+	const { onPaymentSetup, onCheckoutFail } = props.eventRegistration;
 	const { responseTypes } = props.emitResponse;
 
 	const express = getExpress();
@@ -180,9 +180,18 @@ const MoneiExpressContent = ( props ) => {
 			} );
 
 			if ( shippingData.needsShipping ) {
-				shippingData.setShippingAddress(
-					toStoreAddress( normalized.shipping )
-				);
+				// ⚠️ Fall back on an unusable address, not just a missing one. The
+				// `||` above only catches a null `shippingDetails`, and PayPal
+				// returns an object that exists while carrying no address at all —
+				// so the Store API received `country: ""` and refused the order with
+				// `woocommerce_rest_invalid_address_country`, quoting an empty
+				// country. The server applies exactly this rule for the classic
+				// flow; the Store API path has to apply it itself.
+				const shipping = normalized.shipping?.country
+					? normalized.shipping
+					: normalized.billing;
+
+				shippingData.setShippingAddress( toStoreAddress( shipping ) );
 			}
 		},
 		[ setBillingAddress, shippingData ]
@@ -236,6 +245,35 @@ const MoneiExpressContent = ( props ) => {
 		},
 		[ applyAddresses, fail, markStarted, onSubmit, waitUntilActive ]
 	);
+
+	/**
+	 * Lets go of the checkout when WooCommerce could not place the order.
+	 *
+	 * `onSubmit()` hands the checkout over and never reports back, so without this
+	 * a rejected order left the express flow owning the page: WooCommerce keeps the
+	 * button in its processing state until `onClose()`, so its own error notice sat
+	 * behind a spinner that never stopped — the shopper saw a wallet that had taken
+	 * their approval and then simply hung.
+	 *
+	 * Returns undefined so the failure keeps whatever message WooCommerce produced.
+	 */
+	useEffect( () => {
+		const unsubscribe = onCheckoutFail( () => {
+			if ( activeRef.current !== name ) {
+				return undefined;
+			}
+
+			// The method stays mounted for the page's life, so a token left here
+			// would be handed over as valid data on the next attempt.
+			tokenRef.current = null;
+			startedRef.current = false;
+			onClose();
+
+			return undefined;
+		} );
+
+		return () => unsubscribe();
+	}, [ onCheckoutFail, name, onClose ] );
 
 	// Hand the token to the checkout as this gateway's payment data.
 	useEffect( () => {
