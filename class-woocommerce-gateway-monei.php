@@ -5,7 +5,7 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  7.2.1
+ * @version  7.2.2
  */
 
 use Monei\Core\ContainerProvider;
@@ -28,7 +28,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '7.2.1';
+		public $version = '7.2.2';
 
 		/**
 		 * The single instance of the class.
@@ -358,7 +358,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		/**
 		 * Load plugin text domain for translations.
 		 *
-		 * @since 7.2.1
+		 * @since 7.2.2
 		 */
 		private function load_plugin_textdomain() {
 			// Use local translations only if they're newer than WordPress.org translations or if WP.org version doesn't exist

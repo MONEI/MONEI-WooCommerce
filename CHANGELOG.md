@@ -1,5 +1,12 @@
 # Changelog
 
+## <small>7.2.2 (2026-08-26)</small>
+
+-   test: pay with a real PayPal sandbox account end to end ([a3fdb41](https://github.com/MONEI/MONEI-WooCommerce/commit/a3fdb41))
+-   test: pay with PayPal on the surface that can complete the order ([79ccdda](https://github.com/MONEI/MONEI-WooCommerce/commit/79ccdda))
+-   fix: surface an express checkout failure on the cart, not only the checkout ([ae72255](https://github.com/MONEI/MONEI-WooCommerce/commit/ae72255))
+-   docs: regenerate readme changelog for 7.2.1 ([19ef57a](https://github.com/MONEI/MONEI-WooCommerce/commit/19ef57a))
+
 ## <small>7.2.1 (2026-08-26)</small>
 
 -   fix: report express failures on every surface, not just the checkout block ([87471bb](https://github.com/MONEI/MONEI-WooCommerce/commit/87471bb))
