@@ -103,7 +103,13 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.2.0 - 2026-08-25 =
+= v7.2.0 - 2026-08-26 =
+-   test: give the cart-restore case the billing its refusal path needs ([09322cc](https://github.com/MONEI/MONEI-WooCommerce/commit/09322cc))
+-   fix: use the billing address when a wallet returns an empty shipping one ([09cd33d](https://github.com/MONEI/MONEI-WooCommerce/commit/09cd33d))
+-   feat: cover the page while an express payment is being completed ([937df01](https://github.com/MONEI/MONEI-WooCommerce/commit/937df01))
+-   docs: regenerate readme changelog for 7.1.3 ([4a917cf](https://github.com/MONEI/MONEI-WooCommerce/commit/4a917cf))
+
+= v7.1.3 - 2026-08-25 =
 -   fix: size the single-line card field to match the cardholder input ([805d3e0](https://github.com/MONEI/MONEI-WooCommerce/commit/805d3e0))
 -   docs: regenerate readme changelog for 7.1.2 ([c625d73](https://github.com/MONEI/MONEI-WooCommerce/commit/c625d73))
 
@@ -330,10 +336,3 @@ Any duplicate order notes are cosmetic and acceptable.
 -   fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
 -   fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
 -   fix: show all changelog versions, remove manual entries ([dbd53a1](https://github.com/MONEI/MONEI-WooCommerce/commit/dbd53a1))
-
-= v6.3.12 - 2025-10-01 =
--   fix: add changelog length limit to show all versions ([c135b7c](https://github.com/MONEI/MONEI-WooCommerce/commit/c135b7c))
--   fix: correct changelog template to show actual 6.3.8 release ([0efe693](https://github.com/MONEI/MONEI-WooCommerce/commit/0efe693))
--   fix: limit changelog to last 10 releases ([1a3f468](https://github.com/MONEI/MONEI-WooCommerce/commit/1a3f468))
--   fix: normalize changelog chronological order ([a3b1d8a](https://github.com/MONEI/MONEI-WooCommerce/commit/a3b1d8a))
--   chore: update CHANGELOG.md with corrected tag hash ([f9b0dfa](https://github.com/MONEI/MONEI-WooCommerce/commit/f9b0dfa))
