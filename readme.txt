@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.2.2
+Stable tag: 7.2.3
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.2.2 - 2026-08-26 =
+= v7.2.3 - 2026-08-26 =
 -   test: pay with a real PayPal sandbox account end to end ([a3fdb41](https://github.com/MONEI/MONEI-WooCommerce/commit/a3fdb41))
 -   test: pay with PayPal on the surface that can complete the order ([79ccdda](https://github.com/MONEI/MONEI-WooCommerce/commit/79ccdda))
 -   fix: surface an express checkout failure on the cart, not only the checkout ([ae72255](https://github.com/MONEI/MONEI-WooCommerce/commit/ae72255))

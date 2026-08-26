@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.2.3 (2026-08-26)</small>
+
+-   test: skip the PayPal specs instead of failing when unconfigured ([ac21f78](https://github.com/MONEI/MONEI-WooCommerce/commit/ac21f78))
+-   docs: regenerate readme changelog for 7.2.2 ([ec4dcb6](https://github.com/MONEI/MONEI-WooCommerce/commit/ec4dcb6))
+
 ## <small>7.2.2 (2026-08-26)</small>
 
 -   test: pay with a real PayPal sandbox account end to end ([a3fdb41](https://github.com/MONEI/MONEI-WooCommerce/commit/a3fdb41))
