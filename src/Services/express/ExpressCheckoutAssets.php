@@ -108,7 +108,11 @@ class ExpressCheckoutAssets {
 		wp_register_script(
 			self::SCRIPT_HANDLE,
 			plugins_url( 'public/js/monei-express-checkout.min.js', MONEI_MAIN_FILE ),
-			array( 'jquery', 'monei' ),
+			// `jquery-blockui` is WooCommerce's own loading treatment, and the express
+			// script uses it to cover the gap between the wallet sheet closing and the
+			// redirect. WooCommerce loads it on cart and checkout anyway, but not
+			// reliably on a product page, so it is declared rather than assumed.
+			array( 'jquery', 'jquery-blockui', 'monei' ),
 			MONEI_VERSION,
 			true
 		);

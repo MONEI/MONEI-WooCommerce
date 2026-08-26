@@ -308,6 +308,33 @@ import { isWalletDismissal } from './helpers/monei-shared-utils';
 		window.location.href = response.redirect;
 	};
 
+	/**
+	 * WooCommerce's own loading treatment, over the whole page.
+	 *
+	 * The wallet sheet closes the moment the shopper authorises, and the order is
+	 * only built afterwards — a server round trip on the product and cart pages that
+	 * ends in a redirect. Without this the storefront just sits there looking idle
+	 * while money is being taken, which reads as a failed click and invites a second
+	 * one. `blockUI` is what WooCommerce itself shows while a checkout is
+	 * processing, so the shopper sees the spinner they would expect.
+	 * @param {boolean} on - Whether to cover the page
+	 */
+	const setProcessing = ( on ) => {
+		if ( ! $.blockUI ) {
+			return;
+		}
+
+		if ( on ) {
+			$.blockUI( {
+				message: null,
+				overlayCSS: { background: '#fff', opacity: 0.6 },
+			} );
+			return;
+		}
+
+		$.unblockUI();
+	};
+
 	const handleSubmit = ( result ) => {
 		if ( ! result || ! result.token ) {
 			showError( result?.error || params.i18n?.genericError );
@@ -316,6 +343,7 @@ import { isWalletDismissal } from './helpers/monei-shared-utils';
 		}
 
 		showError( '' );
+		setProcessing( true );
 
 		const finish =
 			'checkout' === params.location
@@ -324,7 +352,11 @@ import { isWalletDismissal } from './helpers/monei-shared-utils';
 						completeExpressPayment( result )
 				  );
 
+		// Deliberately not cleared on success: the page is on its way to the redirect,
+		// and uncovering it first would flash an interactive storefront the shopper
+		// could click during a payment that has already been authorised.
 		finish.catch( ( error ) => {
+			setProcessing( false );
 			showError( error.message || params.i18n?.genericError );
 			releaseCart().catch( () => {} );
 		} );
@@ -414,6 +446,11 @@ import { isWalletDismissal } from './helpers/monei-shared-utils';
 				: null,
 			onSubmit: handleSubmit,
 			onError: ( error ) => {
+				// Uncovers the page when the wallet fails after the token was
+				// handed over, which is the one way `handleSubmit` can leave it
+				// blocked without reaching its own catch. A no-op otherwise.
+				setProcessing( false );
+
 				// A dismissed sheet still has to release the cart, but it is not
 				// something to report: the shopper chose it.
 				showError(
