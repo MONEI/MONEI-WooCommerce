@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.2.1 (2026-08-26)</small>
+
+-   fix: report express failures on every surface, not just the checkout block ([87471bb](https://github.com/MONEI/MONEI-WooCommerce/commit/87471bb))
+-   docs: regenerate readme changelog for 7.2.0 ([967c529](https://github.com/MONEI/MONEI-WooCommerce/commit/967c529))
+
 ## 7.2.0 (2026-08-26)
 
 -   test: give the cart-restore case the billing its refusal path needs ([09322cc](https://github.com/MONEI/MONEI-WooCommerce/commit/09322cc))
