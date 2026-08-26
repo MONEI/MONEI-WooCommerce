@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.2.2
+Stable tag: 7.2.3
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -95,6 +95,11 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 2. Google Pay, Bizum, PayPal, credit Card
 
 == Changelog ==
+
+= v7.2.3 - 2026-08-26 =
+
+-   test: skip the PayPal specs instead of failing when unconfigured ([ac21f78](https://github.com/MONEI/MONEI-WooCommerce/commit/ac21f78))
+-   docs: regenerate readme changelog for 7.2.2 ([ec4dcb6](https://github.com/MONEI/MONEI-WooCommerce/commit/ec4dcb6))
 
 = v7.2.2 - 2026-08-26 =
 
@@ -223,11 +228,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 = v7.0.2 - 2025-11-20 =
 
 -   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
-
-= v7.0.1 - 2025-10-14 =
-
--   fix: upgrade to PHP 8.0+ to resolve PHP-DI compatibility issue ([95f9ffd](https://github.com/MONEI/MONEI-WooCommerce/commit/95f9ffd))
--   PHP 7.4 users cannot upgrade. PHP 8.0 is now the
-    minimum required version. PHP 7.4 reached end-of-life in November
-
-2022. WordPress 6.8 officially supports PHP 8.0-8.3.
