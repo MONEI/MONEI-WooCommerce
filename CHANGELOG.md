@@ -1,5 +1,11 @@
 # Changelog
 
+## <small>7.2.4 (2026-08-27)</small>
+
+-   fix: pre-authorize wallet payments and let the capture actually stick (#118) ([2da42fa](https://github.com/MONEI/MONEI-WooCommerce/commit/2da42fa)), closes [#118](https://github.com/MONEI/MONEI-WooCommerce/issues/118)
+-   test: pay with express PayPal on a store that does not ship (#117) ([c70b798](https://github.com/MONEI/MONEI-WooCommerce/commit/c70b798)), closes [#117](https://github.com/MONEI/MONEI-WooCommerce/issues/117)
+-   docs: regenerate readme changelog for 7.2.3 ([689a789](https://github.com/MONEI/MONEI-WooCommerce/commit/689a789))
+
 ## <small>7.2.3 (2026-08-26)</small>
 
 -   test: skip the PayPal specs instead of failing when unconfigured ([ac21f78](https://github.com/MONEI/MONEI-WooCommerce/commit/ac21f78))
