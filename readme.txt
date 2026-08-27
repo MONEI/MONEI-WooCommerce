@@ -103,7 +103,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.2.4 - 2026-08-26 =
+= v7.2.4 - 2026-08-27 =
+-   fix: pre-authorize wallet payments and let the capture actually stick (#118) ([2da42fa](https://github.com/MONEI/MONEI-WooCommerce/commit/2da42fa)), closes [#118](https://github.com/MONEI/MONEI-WooCommerce/issues/118)
+-   test: pay with express PayPal on a store that does not ship (#117) ([c70b798](https://github.com/MONEI/MONEI-WooCommerce/commit/c70b798)), closes [#117](https://github.com/MONEI/MONEI-WooCommerce/issues/117)
+-   docs: regenerate readme changelog for 7.2.3 ([689a789](https://github.com/MONEI/MONEI-WooCommerce/commit/689a789))
+
+= v7.2.3 - 2026-08-26 =
 -   test: skip the PayPal specs instead of failing when unconfigured ([ac21f78](https://github.com/MONEI/MONEI-WooCommerce/commit/ac21f78))
 -   docs: regenerate readme changelog for 7.2.2 ([ec4dcb6](https://github.com/MONEI/MONEI-WooCommerce/commit/ec4dcb6))
 
@@ -222,6 +227,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 = v7.0.3 - 2026-03-26 =
 -   fix: filter release commits and standardize markdown headers in readme generator ([e9491b3](https://github.com/MONEI/MONEI-WooCommerce/commit/e9491b3))
 -   fix: skip token creation in CC block checkout redirect mode ([b8e1ff8](https://github.com/MONEI/MONEI-WooCommerce/commit/b8e1ff8))
-
-= v7.0.2 - 2025-11-20 =
--   fix: prevent wp_sanitize_redirect from stripping domain in payment URLs ([a982699](https://github.com/MONEI/MONEI-WooCommerce/commit/a982699))
