@@ -417,7 +417,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			</div>
 			<!-- Card Input Container -->
 			<div id="payment-form" class="monei-input-container wc-block-components-text-input">
-				<?php if ( 'split' === $this->get_option( 'card_field_layout', 'single' ) ) : ?>
+				<?php if ( 'split' === $this->get_option( 'card_field_layout', 'split' ) ) : ?>
 					<!-- Split Card Field Containers, in tab order -->
 					<div class="monei-card-group">
 						<div id="monei-card-number" class="monei-card-group-field monei-card-number"></div>
@@ -503,7 +503,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 				'currency'        => get_woocommerce_currency(),
 				'appleLogo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
 				'cardInputStyle'  => json_decode( $card_input_style ),
-				'cardFieldLayout' => $this->get_option( 'card_field_layout', 'single' ),
+				'cardFieldLayout' => $this->get_option( 'card_field_layout', 'split' ),
 				'cardBrands'      => $this->cardBrandHelper->getCardBrandsConfig(),
 				'nameErrorString' => esc_html__( 'Please enter a valid name. Special characters are not allowed.', 'monei' ),
 			)

@@ -143,7 +143,7 @@ final class MoneiCCBlocksSupport extends AbstractPaymentMethodType {
 			'total'            => $total,
 			'language'         => locale_iso_639_1_code(),
 			'cardInputStyle'   => json_decode( $card_input_style ),
-			'cardFieldLayout'  => $this->get_setting( 'card_field_layout', 'single' ),
+			'cardFieldLayout'  => $this->get_setting( 'card_field_layout', 'split' ),
 			'cardBrands'       => $this->cardBrandHelper->getCardBrandsConfig(),
 		);
 

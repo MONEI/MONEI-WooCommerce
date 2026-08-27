@@ -78,7 +78,7 @@ return apply_filters(
 			'title'       => __( 'Card Field Layout', 'monei' ),
 			'type'        => 'select',
 			'description' => __( 'Show the card fields on a single line, or as separate card number, expiry and CVC fields.', 'monei' ),
-			'default'     => 'single',
+			'default'     => 'split',
 			'desc_tip'    => true,
 			'options'     => array(
 				'single' => __( 'Single line', 'monei' ),
