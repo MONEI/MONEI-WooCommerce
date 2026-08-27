@@ -145,8 +145,15 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/class-wc-monei-logger.php';
 			include_once 'includes/class-wc-monei-payment-method-display.php';
 
+			// Capture listens on order status transitions, which are not an admin
+			// event. A shipping plugin, an ERP sync, WP-CLI, cron or the REST API
+			// moves an order to Processing exactly like a human does, and while
+			// this only loaded for `is_admin()` every one of those took the
+			// authorization no further — the money stayed held until it expired,
+			// with the order reading as paid and no note saying otherwise.
+			include_once 'includes/class-wc-monei-pre-auth.php';
+
 			if ( $this->is_request( 'admin' ) ) {
-				include_once 'includes/class-wc-monei-pre-auth.php';
 				add_filter(
 					'woocommerce_get_settings_pages',
 					function ( $settings ) use ( $container ) {

@@ -9,8 +9,12 @@ const {
 } = require( '../utils/checkout' );
 const {
 	getExpressSettings,
+	getOption,
+	getOrderMeta,
 	getOrderStatus,
 	setExpressSettings,
+	setOption,
+	setOrderStatus,
 } = require( '../utils/wp-cli' );
 
 /**
@@ -129,6 +133,79 @@ const mountCardInput = async ( page, sessionId, amount ) => {
 	);
 };
 
+/**
+ * A whole express order, from the product page to the store's redirect.
+ *
+ * Stops at the redirect rather than following it, because what the order should
+ * become next is the thing each test is about.
+ * @param {import('@playwright/test').Page} page - Page under test
+ * @return {Promise<Object>} The `create_order` response body
+ */
+const placeExpressOrder = async ( page ) => {
+	await page.goto( PRODUCT_PATH, { waitUntil: 'domcontentloaded' } );
+
+	// Also the assertion that the express assets reached the product page
+	// with a usable account id, which is what the wallet needs to render.
+	await expect
+		.poll( () =>
+			page.evaluate(
+				() => window.wc_monei_express_params?.accountId || ''
+			)
+		)
+		.not.toBe( '' );
+
+	const bootstrap = await expressPost( page, 'bootstrap' );
+	expect( bootstrap.body.result ).toBe( 'success' );
+
+	const security = bootstrap.body.nonce;
+	const sessionId = bootstrap.body.sessionId;
+
+	const cart = await expressPost( page, 'add_to_cart', {
+		security,
+		product_id: PRODUCT_ID,
+		quantity: 1,
+	} );
+	expect( cart.body.result ).toBe( 'success' );
+
+	const amount = cart.body.amount;
+	expect( amount ).toBeGreaterThan( 0 );
+
+	await mountCardInput( page, sessionId, amount );
+	await fillCard( page, 'single', CARDS.visaFrictionless );
+
+	const submitted = await page.evaluate( () =>
+		window.__moneiE2eCardInput.submit()
+	);
+	expect(
+		submitted.error,
+		'the card component returned a token'
+	).toBeFalsy();
+	expect( submitted.token ).toBeTruthy();
+
+	const created = await expressPost( page, 'create_order', {
+		security,
+		session_id: sessionId,
+		location: 'product',
+		payment_method: 'card',
+		monei_payment_request_token: submitted.token,
+		// The cart carries no shippable line while the store has no shipping
+		// method, so the wallet would report no option either.
+		shipping_option: '',
+		final_amount: String( amount ),
+		...BILLING_FIELDS,
+		...SHIPPING_FIELDS,
+	} );
+
+	expect(
+		created.body.data?.code,
+		`express order refused: ${ created.body.data?.message || '' }`
+	).toBeUndefined();
+	expect( created.body.result ).toBe( 'success' );
+	expect( created.body.orderId ).toBeGreaterThan( 0 );
+
+	return created.body;
+};
+
 let previousSettings;
 
 test.describe( 'Express checkout payment', () => {
@@ -149,78 +226,76 @@ test.describe( 'Express checkout payment', () => {
 	test( 'pays a product page express order with a real token', async ( {
 		page,
 	} ) => {
-		await page.goto( PRODUCT_PATH, { waitUntil: 'domcontentloaded' } );
-
-		// Also the assertion that the express assets reached the product page
-		// with a usable account id, which is what the wallet needs to render.
-		await expect
-			.poll( () =>
-				page.evaluate(
-					() => window.wc_monei_express_params?.accountId || ''
-				)
-			)
-			.not.toBe( '' );
-
-		const bootstrap = await expressPost( page, 'bootstrap' );
-		expect( bootstrap.body.result ).toBe( 'success' );
-
-		const security = bootstrap.body.nonce;
-		const sessionId = bootstrap.body.sessionId;
-
-		const cart = await expressPost( page, 'add_to_cart', {
-			security,
-			product_id: PRODUCT_ID,
-			quantity: 1,
-		} );
-		expect( cart.body.result ).toBe( 'success' );
-
-		const amount = cart.body.amount;
-		expect( amount ).toBeGreaterThan( 0 );
-
-		await mountCardInput( page, sessionId, amount );
-		await fillCard( page, 'single', CARDS.visaFrictionless );
-
-		const submitted = await page.evaluate( () =>
-			window.__moneiE2eCardInput.submit()
-		);
-		expect(
-			submitted.error,
-			'the card component returned a token'
-		).toBeFalsy();
-		expect( submitted.token ).toBeTruthy();
-
-		const created = await expressPost( page, 'create_order', {
-			security,
-			session_id: sessionId,
-			location: 'product',
-			payment_method: 'card',
-			monei_payment_request_token: submitted.token,
-			// The cart carries no shippable line while the store has no shipping
-			// method, so the wallet would report no option either.
-			shipping_option: '',
-			final_amount: String( amount ),
-			...BILLING_FIELDS,
-			...SHIPPING_FIELDS,
-		} );
-
-		expect(
-			created.body.data?.code,
-			`express order refused: ${ created.body.data?.message || '' }`
-		).toBeUndefined();
-		expect( created.body.result ).toBe( 'success' );
-		expect( created.body.orderId ).toBeGreaterThan( 0 );
+		const created = await placeExpressOrder( page );
 
 		// What the express client does with the response, and the only part of
 		// the flow after the sheet that is still a browser journey: the 3DS
 		// redirect and the return to the store.
-		await page.goto( created.body.redirect );
+		await page.goto( created.redirect );
 		await completeThreeDsChallengeIfShown( page );
 
 		const orderId = await expectOrderReceived( page );
-		expect( Number( orderId ) ).toBe( created.body.orderId );
+		expect( Number( orderId ) ).toBe( created.orderId );
 
 		// The assertion that separates a real payment from a created order: only
 		// money that actually moved takes an order out of `pending`.
 		expect( getOrderStatus( orderId ) ).toBe( 'processing' );
+	} );
+
+	test.describe( 'with Payment Action set to Authorization', () => {
+		let previousAction;
+
+		test.beforeAll( () => {
+			previousAction = getOption( 'monei_pre_authorize' );
+			setOption( 'monei_pre_authorize', 'yes' );
+		} );
+
+		test.afterAll( () => {
+			setOption( 'monei_pre_authorize', previousAction || 'no' );
+		} );
+
+		// 🚨 Regression guard. The Apple Pay / Google Pay gateway used to set
+		// `pre_auth = false` unconditionally, next to the `redirect_flow` and
+		// `tokenization` flags it genuinely does not support. Those two are real
+		// limitations; this one was not — a wallet payment is a card payment, and
+		// MONEI authorizes it like any other. A merchant who chose Authorization
+		// got an immediate charge from these two methods and no warning that the
+		// setting did not apply, while the settings screen listed them as
+		// supported.
+		test( 'holds the money instead of taking it, then captures', async ( {
+			page,
+		} ) => {
+			const created = await placeExpressOrder( page );
+
+			await page.goto( created.redirect );
+			await completeThreeDsChallengeIfShown( page );
+
+			const orderId = await expectOrderReceived( page );
+
+			expect(
+				getOrderStatus( orderId ),
+				'an authorized express order waits on-hold rather than being paid'
+			).toBe( 'on-hold' );
+			expect(
+				getOrderMeta( orderId, '_payment_not_captured_monei' ),
+				'the order is marked as holding uncaptured money'
+			).toBe( '1' );
+
+			// Capture is not a button — it is what moving the order to Processing
+			// does. This is the half a merchant actually performs.
+			setOrderStatus( orderId, 'processing' );
+
+			await expect
+				.poll(
+					() =>
+						getOrderMeta( orderId, '_payment_not_captured_monei' ),
+					{
+						message:
+							'the capture cleared the uncaptured marker on the order',
+					}
+				)
+				.toBe( '' );
+			expect( getOrderStatus( orderId ) ).toBe( 'processing' );
+		} );
 	} );
 } );
