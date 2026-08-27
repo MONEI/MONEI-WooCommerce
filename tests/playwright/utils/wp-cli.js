@@ -140,19 +140,6 @@ const ensureCoupon = ( code, percent ) => {
 };
 
 /**
- * How many shipping methods the store offers.
- *
- * Decides whether express asks the wallet for a shipping address, which in turn
- * decides whether PayPal returns any payer details at all — see MONEI/monei-js#764.
- * @return {number} Enabled shipping method count
- */
-const getShippingMethodCount = () =>
-	parseInt(
-		wpCli( [ 'eval', 'echo wc_get_shipping_method_count( true );' ] ),
-		10
-	) || 0;
-
-/**
  * Read the WooCommerce status of an order.
  *
  * The thank you page only says the browser landed somewhere; the order status is
@@ -294,5 +281,4 @@ module.exports = {
 	setCheckoutPageId,
 	ensureCoupon,
 	getOrderStatus,
-	getShippingMethodCount,
 };
