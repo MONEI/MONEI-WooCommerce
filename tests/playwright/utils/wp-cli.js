@@ -54,17 +54,18 @@ const wpCli = ( args ) => {
 
 /**
  * Set the MONEI credit card field layout.
+ *
+ * ⚠️ Merged rather than patched, for the same reason `mergeSettings` exists:
+ * `option patch` refuses a key the option does not carry yet, and a store whose
+ * merchant never saved the card settings has no `card_field_layout` at all. That
+ * is the normal state of a fresh install, not an edge case — and more common now
+ * that the layout has a default worth keeping.
  * @param {'single'|'split'} layout - Layout to activate
  */
 const setCardFieldLayout = ( layout ) =>
-	wpCli( [
-		'option',
-		'patch',
-		'update',
-		'woocommerce_monei_settings',
-		'card_field_layout',
-		layout,
-	] );
+	mergeSettings( 'woocommerce_monei_settings', {
+		card_field_layout: layout,
+	} );
 
 /**
  * Read the current MONEI credit card field layout.
@@ -79,7 +80,9 @@ const getCardFieldLayout = () => {
 			'--format=json',
 		] )
 	);
-	return settings.card_field_layout || 'single';
+	// Mirrors the gateway's own default for an unsaved setting. A stale value here
+	// makes a spec restore a layout the store never had.
+	return settings.card_field_layout || 'split';
 };
 
 /**
