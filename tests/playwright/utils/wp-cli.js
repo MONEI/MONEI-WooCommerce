@@ -140,6 +140,58 @@ const ensureCoupon = ( code, percent ) => {
 };
 
 /**
+ * Read a plain WordPress option, or an empty string when it is not set.
+ * @param {string} name - Option name
+ * @return {string} Option value
+ */
+const getOption = ( name ) => {
+	try {
+		return wpCli( [ 'option', 'get', name ] );
+	} catch ( error ) {
+		return '';
+	}
+};
+
+/**
+ * Write a plain WordPress option.
+ * @param {string} name  - Option name
+ * @param {string} value - Value to store
+ */
+const setOption = ( name, value ) =>
+	wpCli( [ 'option', 'update', name, value ] );
+
+/**
+ * Move an order to a WooCommerce status, the way an admin would.
+ * @param {string|number} orderId - Order id
+ * @param {string}        status  - Target status, without the `wc-` prefix
+ */
+const setOrderStatus = ( orderId, status ) =>
+	wpCli( [
+		'wc',
+		'shop_order',
+		'update',
+		String( orderId ),
+		'--user=1',
+		`--status=${ status }`,
+	] );
+
+/**
+ * Read one meta value from an order.
+ *
+ * ⚠️ Goes through `wc_get_order()` rather than the posts meta table: with HPOS
+ * the order lives in its own table, and `wp post meta get` would read nothing.
+ * @param {string|number} orderId - Order id
+ * @param {string}        key     - Meta key
+ * @return {string} Meta value, empty when absent
+ */
+const getOrderMeta = ( orderId, key ) =>
+	wpCli( [
+		'eval',
+		`$o = wc_get_order( ${ Number( orderId ) } );` +
+			`echo $o ? (string) $o->get_meta( '${ key }', true ) : '';`,
+	] );
+
+/**
  * Read the WooCommerce status of an order.
  *
  * The thank you page only says the browser landed somewhere; the order status is
@@ -281,4 +333,8 @@ module.exports = {
 	setCheckoutPageId,
 	ensureCoupon,
 	getOrderStatus,
+	getOption,
+	setOption,
+	setOrderStatus,
+	getOrderMeta,
 };

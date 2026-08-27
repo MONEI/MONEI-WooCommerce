@@ -84,9 +84,13 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 		$this->shop_name     = get_bloginfo( 'name' );
 		$this->redirect_flow = false;
 		$this->tokenization  = false;
-		$this->pre_auth      = false;
-		$this->logging       = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
-		$this->supports      = array(
+		// Apple Pay and Google Pay are card payments, so MONEI authorizes them like
+		// any other card. Backward compatible: try local setting first, then global.
+		$local_preauth  = $this->get_option( 'pre-authorize' );
+		$global_preauth = get_option( 'monei_pre_authorize', 'no' );
+		$this->pre_auth = ( ! empty( $local_preauth ) && 'yes' === $local_preauth ) || ( empty( $local_preauth ) && 'yes' === $global_preauth );
+		$this->logging  = ( ! empty( get_option( 'monei_debug' ) ) && 'yes' === get_option( 'monei_debug' ) ) ? true : false;
+		$this->supports = array(
 			'products',
 			'refunds',
 		);

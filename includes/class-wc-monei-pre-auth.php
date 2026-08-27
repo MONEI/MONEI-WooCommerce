@@ -49,7 +49,15 @@ class WC_Monei_Pre_Auth {
 			$this->moneiPaymentServices->set_order( $order );
 			$result = $this->moneiPaymentServices->capture_payment( $payment_id, monei_price_format( $order->get_total() ) );
 			// Deleting pre-auth metadata, once the order is captured.
+			// ⚠️ `delete_meta_data()` only changes the object in memory, so the
+			// deletion has to be persisted or the marker survives the capture and a
+			// later cancellation tries to release an authorization already gone.
+			// ⚠️ `save_meta_data()` and NOT `save()`: this runs inside a status
+			// transition, where the order object still carries the status it is
+			// moving away from. A full save writes that stale status back and puts
+			// the order straight back on hold — captured, but reading as unpaid.
 			$order->delete_meta_data( '_payment_not_captured_monei' );
+			$order->save_meta_data();
 
 			WC_Monei_Logger::logDebug( 'Capture Payment OK.' );
 			WC_Monei_Logger::logDebug( $result );
@@ -75,6 +83,11 @@ class WC_Monei_Pre_Auth {
 		try {
 			$this->moneiPaymentServices->set_order( $order );
 			$result = $this->moneiPaymentServices->cancel_payment( $payment_id );
+			// A released authorization holds nothing either, so the marker goes the
+			// same way it does after a capture.
+			$order->delete_meta_data( '_payment_not_captured_monei' );
+			$order->save_meta_data();
+
 			WC_Monei_Logger::logDebug( 'Cancel Payment Payment OK.' );
 			WC_Monei_Logger::logDebug( $result );
 			$order->add_order_note( '<strong>Cancel Payment approved</strong>: Status: ' . $result->getStatus() . ' ' . $result->getStatusMessage() . ' ' . $result->getStatusCode() );
