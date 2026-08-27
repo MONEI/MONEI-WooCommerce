@@ -76,23 +76,49 @@ const expressPayPalButton = ( page ) =>
 /**
  * Clicks the wallet button and returns whatever PayPal opened.
  *
- * @param {import('@playwright/test').Page}    page   - Page under test
- * @param {import('@playwright/test').Locator} button - The wallet button
- * @return {Promise<Object>} A page (popup) or frame locator (overlay)
+ * ⚠️ Racing `waitForEvent('popup')` against the click is not enough, and the
+ * failure it causes points at the wrong thing. The popup sometimes arrives after
+ * the race gives up, and the overlay fallback then matches an iframe zoid has
+ * appended as `about:blank` but not yet navigated — so the wait for the login
+ * field times out on a surface that was never PayPal. Poll both instead, and
+ * only accept a frame that has actually reached paypal.com.
+ *
+ * @param {import('@playwright/test').Page}    page      - Page under test
+ * @param {import('@playwright/test').Locator} button    - The wallet button
+ * @param {number}                             [timeout] - How long to keep looking
+ * @return {Promise<Object>} The popup page, or the overlay frame
  */
-const openPayPal = async ( page, button ) => {
-	const [ popup ] = await Promise.all( [
-		page.waitForEvent( 'popup', { timeout: 20000 } ).catch( () => null ),
-		button.click(),
-	] );
+const openPayPal = async ( page, button, timeout = 60000 ) => {
+	const isLogin = ( url ) =>
+		url.includes( 'paypal.com' ) && ! url.includes( 'smart/buttons' );
 
-	return (
-		popup ??
-		page
-			.frameLocator(
-				'iframe[src*="paypal.com"]:not([src*="smart/buttons"])'
-			)
-			.first()
+	await button.click();
+
+	const deadline = Date.now() + timeout;
+
+	while ( Date.now() < deadline ) {
+		const popup = page
+			.context()
+			.pages()
+			.find( ( other ) => other !== page && isLogin( other.url() ) );
+
+		if ( popup ) {
+			return popup;
+		}
+
+		const overlay = page
+			.frames()
+			.find( ( frame ) => isLogin( frame.url() ) );
+
+		if ( overlay ) {
+			return overlay;
+		}
+
+		await page.waitForTimeout( 500 );
+	}
+
+	throw new Error(
+		'PayPal did not open a login surface within ' + timeout + 'ms'
 	);
 };
 

@@ -12,7 +12,6 @@ const { expectOrderReceived } = require( '../utils/checkout' );
 const { readFixtures } = require( '../utils/fixtures' );
 const {
 	getOrderStatus,
-	getShippingMethodCount,
 	setExpressSettings,
 	getExpressSettings,
 } = require( '../utils/wp-cli' );
@@ -83,23 +82,13 @@ test.describe( 'Express checkout, PayPal', () => {
 	test( 'pays for a product with express PayPal', async ( { page } ) => {
 		test.setTimeout( PAYPAL_TIMEOUT );
 
-		// ⚠️ Needs a store that ships. monei.js only fetches the PayPal payer when
-		// `requestShipping` is true, so on a store with no shipping method the
-		// wallet returns a bare token — no email — and the order cannot be placed
-		// at all. Upstream as MONEI/monei-js#764. The seed removes every shipping
-		// method, so this skips there and runs on a store that has one.
-		test.skip(
-			getShippingMethodCount() === 0,
-			'Express PayPal returns no payer details on a store without shipping ' +
-				'methods — MONEI/monei-js#764.'
-		);
-
 		// ⚠️ The product page, not the cart, and the difference is not cosmetic.
 		// PayPal returns a partial address — name, email and country, no street or
-		// city. The classic product flow builds the order itself and accepts that,
-		// so it pays. The Cart and Checkout blocks go through the Store API, which
-		// rejects a partial shipping address outright. Same wallet, same payload,
-		// two outcomes; this test covers the one that can complete.
+		// city, because the shared sandbox account has none on file. The classic
+		// product flow builds the order itself and accepts that, so it pays. The
+		// Cart and Checkout blocks go through the Store API, which requires a full
+		// billing address and refuses. Same wallet, same payload, two outcomes;
+		// this test covers the one that can complete.
 		await page.goto( fixtures.productPath, {
 			waitUntil: 'domcontentloaded',
 		} );
