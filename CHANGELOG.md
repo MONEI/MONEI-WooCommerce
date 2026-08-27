@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.3.0 (2026-08-27)
+
+-   feat: show the card fields as separate fields by default (#119) ([9b6a1b2](https://github.com/MONEI/MONEI-WooCommerce/commit/9b6a1b2)), closes [#119](https://github.com/MONEI/MONEI-WooCommerce/issues/119)
+-   chore: track the browser preview launch config ([e36eb5f](https://github.com/MONEI/MONEI-WooCommerce/commit/e36eb5f))
+-   docs: regenerate readme changelog for 7.2.4 ([9689a4c](https://github.com/MONEI/MONEI-WooCommerce/commit/9689a4c))
+
 ## <small>7.2.4 (2026-08-27)</small>
 
 -   fix: pre-authorize wallet payments and let the capture actually stick (#118) ([2da42fa](https://github.com/MONEI/MONEI-WooCommerce/commit/2da42fa)), closes [#118](https://github.com/MONEI/MONEI-WooCommerce/issues/118)
