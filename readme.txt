@@ -104,6 +104,11 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 == Changelog ==
 
 = v7.3.0 - 2026-08-27 =
+-   feat: show the card fields as separate fields by default (#119) ([9b6a1b2](https://github.com/MONEI/MONEI-WooCommerce/commit/9b6a1b2)), closes [#119](https://github.com/MONEI/MONEI-WooCommerce/issues/119)
+-   chore: track the browser preview launch config ([e36eb5f](https://github.com/MONEI/MONEI-WooCommerce/commit/e36eb5f))
+-   docs: regenerate readme changelog for 7.2.4 ([9689a4c](https://github.com/MONEI/MONEI-WooCommerce/commit/9689a4c))
+
+= v7.2.4 - 2026-08-27 =
 -   fix: pre-authorize wallet payments and let the capture actually stick (#118) ([2da42fa](https://github.com/MONEI/MONEI-WooCommerce/commit/2da42fa)), closes [#118](https://github.com/MONEI/MONEI-WooCommerce/issues/118)
 -   test: pay with express PayPal on a store that does not ship (#117) ([c70b798](https://github.com/MONEI/MONEI-WooCommerce/commit/c70b798)), closes [#117](https://github.com/MONEI/MONEI-WooCommerce/issues/117)
 -   docs: regenerate readme changelog for 7.2.3 ([689a789](https://github.com/MONEI/MONEI-WooCommerce/commit/689a789))
@@ -223,7 +228,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   feat: style split card fields ([a628e54](https://github.com/MONEI/MONEI-WooCommerce/commit/a628e54))
 -   refactor: replace deprecated createToken with instance.submit ([093e5d1](https://github.com/MONEI/MONEI-WooCommerce/commit/093e5d1))
 -   refactor: simplify the express beacon field assembly ([8e756de](https://github.com/MONEI/MONEI-WooCommerce/commit/8e756de))
-
-= v7.0.3 - 2026-03-26 =
--   fix: filter release commits and standardize markdown headers in readme generator ([e9491b3](https://github.com/MONEI/MONEI-WooCommerce/commit/e9491b3))
--   fix: skip token creation in CC block checkout redirect mode ([b8e1ff8](https://github.com/MONEI/MONEI-WooCommerce/commit/b8e1ff8))
