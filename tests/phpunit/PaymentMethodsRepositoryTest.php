@@ -26,7 +26,8 @@ function get_transient( $key ) {
 }
 
 function set_transient( $key, $value, $expiration ) {
-	$GLOBALS['monei_test_transients'][ $key ] = $value;
+	$GLOBALS['monei_test_transients'][ $key ]            = $value;
+	$GLOBALS['monei_test_transient_expirations'][ $key ] = $expiration;
 	return true;
 }
 
@@ -50,7 +51,8 @@ class PaymentMethodsRepositoryTest extends TestCase {
 	private const API_BODY = '{"paymentMethods":["card","bizum","applePay"],"metadata":{"card":{"brands":["visa","mastercard"]},"bizum":{}}}';
 
 	protected function setUp(): void {
-		$GLOBALS['monei_test_transients'] = array();
+		$GLOBALS['monei_test_transients']            = array();
+		$GLOBALS['monei_test_transient_expirations'] = array();
 		if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 			define( 'HOUR_IN_SECONDS', 3600 );
 		}
@@ -136,10 +138,22 @@ class PaymentMethodsRepositoryTest extends TestCase {
 			->method( 'getAllowed' )
 			->willThrowException( new Exception( '401 Unauthorized' ) );
 
-		$repository = new PaymentMethodsRepository( self::ACCOUNT_ID, $this->clientWith( $api ) );
+		$client = $this->clientWith( $api );
 
-		$this->assertSame( array(), $repository->getPaymentMethods() );
-		$this->assertSame( array(), $repository->getPaymentMethods(), 'Second render within 30 s must not call again.' );
+		$this->assertSame( array(), ( new PaymentMethodsRepository( self::ACCOUNT_ID, $client ) )->getPaymentMethods() );
+
+		// The marker must live in the transient, not in the instance: every checkout
+		// render is a new request and a new repository. And it must expire with the
+		// short cache, or a corrected key would stay dark for an hour.
+		$this->assertSame(
+			30,
+			$GLOBALS['monei_test_transient_expirations'][ 'payment_methods_' . md5( self::ACCOUNT_ID ) ]
+		);
+		$this->assertSame(
+			array(),
+			( new PaymentMethodsRepository( self::ACCOUNT_ID, $client ) )->getPaymentMethods(),
+			'Second render within 30 s must not call again.'
+		);
 	}
 
 	public function test_cached_failure_still_reads_as_no_methods() {
