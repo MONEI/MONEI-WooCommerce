@@ -12,7 +12,7 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	 */
 	private const UNAVAILABLE = array(
 		'paymentMethods' => array(),
-		'metadata' => array(),
+		'metadata'       => array(),
 	);
 
 	private $accountId;
