@@ -26,7 +26,8 @@ function get_transient( $key ) {
 }
 
 function set_transient( $key, $value, $expiration ) {
-	$GLOBALS['monei_test_transients'][ $key ] = $value;
+	$GLOBALS['monei_test_transients'][ $key ]            = $value;
+	$GLOBALS['monei_test_transient_expirations'][ $key ] = $expiration;
 	return true;
 }
 
@@ -37,6 +38,7 @@ use Monei\MoneiClient;
 use Monei\Repositories\PaymentMethodsRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Exception;
 
 class PaymentMethodsRepositoryTest extends TestCase {
 
@@ -49,7 +51,8 @@ class PaymentMethodsRepositoryTest extends TestCase {
 	private const API_BODY = '{"paymentMethods":["card","bizum","applePay"],"metadata":{"card":{"brands":["visa","mastercard"]},"bizum":{}}}';
 
 	protected function setUp(): void {
-		$GLOBALS['monei_test_transients'] = array();
+		$GLOBALS['monei_test_transients']            = array();
+		$GLOBALS['monei_test_transient_expirations'] = array();
 		if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 			define( 'HOUR_IN_SECONDS', 3600 );
 		}
@@ -109,7 +112,7 @@ class PaymentMethodsRepositoryTest extends TestCase {
 		$api = $this->createMock( PaymentMethodsApi::class );
 		$api->method( 'getAllowed' )->willReturnOnConsecutiveCalls(
 			self::API_BODY,
-			$this->throwException( new \Exception( 'network down' ) )
+			$this->throwException( new Exception( 'network down' ) )
 		);
 
 		$repository = new PaymentMethodsRepository( self::ACCOUNT_ID, $this->clientWith( $api ) );
@@ -123,6 +126,46 @@ class PaymentMethodsRepositoryTest extends TestCase {
 			$repository->getPaymentMethods()['paymentMethods'],
 			'A failed call must not empty the checkout.'
 		);
+	}
+
+	public function test_failure_with_no_last_good_answer_is_not_repeated_within_the_cache_window() {
+		// A store with a wrong or missing API key has never had a good answer to fall
+		// back to. Before this, that failure never reached the cache (an empty array is
+		// falsy) and every checkout render repeated the call: one store did it 15
+		// times a second for a week, against an endpoint that could only say 401.
+		$api = $this->createMock( PaymentMethodsApi::class );
+		$api->expects( $this->once() )
+			->method( 'getAllowed' )
+			->willThrowException( new Exception( '401 Unauthorized' ) );
+
+		$client = $this->clientWith( $api );
+
+		$this->assertSame( array(), ( new PaymentMethodsRepository( self::ACCOUNT_ID, $client ) )->getPaymentMethods() );
+
+		// The marker must live in the transient, not in the instance: every checkout
+		// render is a new request and a new repository. And it must expire with the
+		// short cache, or a corrected key would stay dark for an hour.
+		$this->assertSame(
+			30,
+			$GLOBALS['monei_test_transient_expirations'][ 'payment_methods_' . md5( self::ACCOUNT_ID ) ]
+		);
+		$this->assertSame(
+			array(),
+			( new PaymentMethodsRepository( self::ACCOUNT_ID, $client ) )->getPaymentMethods(),
+			'Second render within 30 s must not call again.'
+		);
+	}
+
+	public function test_cached_failure_still_reads_as_no_methods() {
+		// The marker that lets the failure be cached must never leak into the checkout
+		// as a payment method list.
+		$api = $this->createMock( PaymentMethodsApi::class );
+		$api->method( 'getAllowed' )->willThrowException( new Exception( 'network down' ) );
+
+		$repository = new PaymentMethodsRepository( self::ACCOUNT_ID, $this->clientWith( $api ) );
+		$repository->getPaymentMethods();
+
+		$this->assertSame( array(), $repository->getPaymentMethods() );
 	}
 
 	public function test_test_and_live_accounts_do_not_share_a_cache() {

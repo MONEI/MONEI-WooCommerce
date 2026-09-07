@@ -6,6 +6,15 @@ use Monei\MoneiClient;
 use Exception;
 
 class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
+	/**
+	 * Cached marker for "the API said no". Distinct from an empty array so the
+	 * cache can hold it: an empty array is falsy and would be re-fetched.
+	 */
+	private const UNAVAILABLE = array(
+		'paymentMethods' => array(),
+		'metadata' => array(),
+	);
+
 	private $accountId;
 	private MoneiClient $moneiClient;
 
@@ -56,15 +65,20 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 				// makes that one failed call away at any moment, so fall back
 				// to the last answer that worked.
 				$data = get_transient( $this->fallbackKey( $transientKey ) );
-				if ( $data ) {
-					// Without this every request during an outage repeats the
-					// failing call.
-					set_transient( $transientKey, $data, 30 );
+				if ( ! $data ) {
+					// No answer has ever worked: a wrong or missing API key. An
+					// empty array is falsy, so it never reached the cache and
+					// every checkout render repeated the failing call. One
+					// store did this 15 times a second for a week.
+					$data = self::UNAVAILABLE;
 				}
+				// Without this every request during an outage repeats the
+				// failing call.
+				set_transient( $transientKey, $data, 30 );
 			}
 		}
 
-		return $data ?: array();
+		return $data === self::UNAVAILABLE ? array() : ( $data ?: array() );
 	}
 
 	/**
