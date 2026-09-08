@@ -1,5 +1,11 @@
 # Changelog
 
+## <small>7.3.2 (2026-09-08)</small>
+
+-   fix: stop polling the API on hosts where transients do not persist ([00797d1](https://github.com/MONEI/MONEI-WooCommerce/commit/00797d1))
+-   style: align the UNAVAILABLE array the way phpcs wants it ([7111b93](https://github.com/MONEI/MONEI-WooCommerce/commit/7111b93))
+-   docs: regenerate readme changelog for 7.3.1 ([95993a7](https://github.com/MONEI/MONEI-WooCommerce/commit/95993a7))
+
 ## <small>7.3.1 (2026-09-07)</small>
 
 -   fix: cache a failed payment-methods lookup so a wrong key does not poll the API per render (#120) ([0fc7c17](https://github.com/MONEI/MONEI-WooCommerce/commit/0fc7c17)), closes [#120](https://github.com/MONEI/MONEI-WooCommerce/issues/120)
