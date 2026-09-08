@@ -2,6 +2,7 @@
 
 namespace Monei\Repositories;
 
+use Monei\ApiException;
 use Monei\MoneiClient;
 use Exception;
 
@@ -15,8 +16,22 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 		'metadata'       => array(),
 	);
 
+	/**
+	 * Option that holds off the API after it rejected the key. An option, not a
+	 * transient: on the hosts that made this necessary transients do not persist,
+	 * so a transient-backed marker is gone by the next request.
+	 */
+	public const BACKOFF_OPTION = 'monei_payment_methods_backoff';
+
 	private $accountId;
 	private MoneiClient $moneiClient;
+
+	/**
+	 * Answers already resolved during this request, keyed by transient key. Every
+	 * gateway asks several times per render; without this each ask re-reads the
+	 * transient, and on a host where transients do not persist, calls the API again.
+	 */
+	private array $memo = array();
 
 	public function __construct( string $accountId, MoneiClient $moneiClient ) {
 		$this->accountId   = $accountId;
@@ -31,7 +46,7 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 		// from the API key. It still gates the call because it is what separates the
 		// test cache from the live one, and because an unset one means the plugin is
 		// not configured yet.
-		if ( ! $this->accountId ) {
+		if ( ! $this->accountId || $this->getBackoffUntil() ) {
 			return null;
 		}
 		try {
@@ -40,8 +55,19 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 			// purpose: this repository is a container singleton that answers admin
 			// screens as well as the checkout, so it has no one cart to describe.
 			$response = $this->moneiClient->paymentMethods->getAllowed();
+		} catch ( ApiException $e ) {
+			// A rejected key does not fix itself, so retrying every 30 seconds only
+			// costs. Anything else (network, 5xx) keeps the short retry.
+			if ( in_array( $e->getCode(), array( 401, 403 ), true ) ) {
+				$this->extendBackoff();
+			}
+			$response = null;
 		} catch ( Exception $e ) {
 			$response = null;
+		}
+
+		if ( $response ) {
+			delete_option( self::BACKOFF_OPTION );
 		}
 
 		return $response ? json_decode( $response, true ) : array();
@@ -52,7 +78,10 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	 */
 	public function getPaymentMethods(): array {
 		$transientKey = $this->generateTransientKey( $this->accountId );
-		$data         = get_transient( $transientKey );
+		if ( isset( $this->memo[ $transientKey ] ) ) {
+			return $this->memo[ $transientKey ];
+		}
+		$data = get_transient( $transientKey );
 
 		if ( ! $data ) {
 			$data = $this->fetchFromAPI();
@@ -78,7 +107,39 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 			}
 		}
 
-		return $data === self::UNAVAILABLE ? array() : ( $data ?: array() );
+		$this->memo[ $transientKey ] = $data === self::UNAVAILABLE ? array() : ( $data ?: array() );
+
+		return $this->memo[ $transientKey ];
+	}
+
+	/**
+	 * When the plugin will next ask the API after it rejected the key, as a Unix
+	 * timestamp. Null while the plugin is asking normally.
+	 */
+	public function getBackoffUntil(): ?int {
+		$backoff = get_option( self::BACKOFF_OPTION );
+		$until   = is_array( $backoff ) ? (int) ( $backoff['until'] ?? 0 ) : 0;
+
+		return $until > time() ? $until : null;
+	}
+
+	/**
+	 * Hold off the API for an hour, doubling on every further rejection up to a day.
+	 */
+	private function extendBackoff(): void {
+		$previous = get_option( self::BACKOFF_OPTION );
+		$delay    = HOUR_IN_SECONDS;
+		if ( is_array( $previous ) ) {
+			$delay = min( max( $delay, 2 * (int) ( $previous['delay'] ?? 0 ) ), DAY_IN_SECONDS );
+		}
+		update_option(
+			self::BACKOFF_OPTION,
+			array(
+				'until' => time() + $delay,
+				'delay' => $delay,
+			),
+			false
+		);
 	}
 
 	/**
