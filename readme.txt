@@ -103,7 +103,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.3.2 - 2026-09-07 =
+= v7.3.2 - 2026-09-08 =
+-   fix: stop polling the API on hosts where transients do not persist ([00797d1](https://github.com/MONEI/MONEI-WooCommerce/commit/00797d1))
+-   style: align the UNAVAILABLE array the way phpcs wants it ([7111b93](https://github.com/MONEI/MONEI-WooCommerce/commit/7111b93))
+-   docs: regenerate readme changelog for 7.3.1 ([95993a7](https://github.com/MONEI/MONEI-WooCommerce/commit/95993a7))
+
+= v7.3.1 - 2026-09-07 =
 -   fix: cache a failed payment-methods lookup so a wrong key does not poll the API per render (#120) ([0fc7c17](https://github.com/MONEI/MONEI-WooCommerce/commit/0fc7c17)), closes [#120](https://github.com/MONEI/MONEI-WooCommerce/issues/120)
 -   docs: regenerate readme changelog for 7.3.0 ([131ac73](https://github.com/MONEI/MONEI-WooCommerce/commit/131ac73))
 
@@ -145,13 +150,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   fix: keep the wallet button inside its container on blocks checkout ([be063e7](https://github.com/MONEI/MONEI-WooCommerce/commit/be063e7))
 -   fix: stop the wallet container shifting when the button renders ([0cc63c2](https://github.com/MONEI/MONEI-WooCommerce/commit/0cc63c2))
 -   docs: regenerate readme changelog for 7.1.1 ([9f28c17](https://github.com/MONEI/MONEI-WooCommerce/commit/9f28c17))
-
-= v7.1.1 - 2026-08-25 =
--   fix: do not register an express wallet the account cannot serve ([9467afb](https://github.com/MONEI/MONEI-WooCommerce/commit/9467afb))
--   fix: give the card field the same bottom margin as the cardholder field ([bb3478e](https://github.com/MONEI/MONEI-WooCommerce/commit/bb3478e))
--   fix: give the save-card checkbox its gap instead of padding the card field ([a0e256c](https://github.com/MONEI/MONEI-WooCommerce/commit/a0e256c))
--   fix: refuse an express order the wallet gave no email for ([9335fba](https://github.com/MONEI/MONEI-WooCommerce/commit/9335fba))
--   fix: stop reporting a dismissed wallet sheet as a checkout error ([1790ba9](https://github.com/MONEI/MONEI-WooCommerce/commit/1790ba9))
--   fix: stop string severities bypassing the log level and filing as errors ([3900a10](https://github.com/MONEI/MONEI-WooCommerce/commit/3900a10))
--   fix: tell the wallet when an address cannot be shipped to ([60e3597](https://github.com/MONEI/MONEI-WooCommerce/commit/60e3597))
--   docs: regenerate readme changelog for 7.1.0 ([c952589](https://github.com/MONEI/MONEI-WooCommerce/commit/c952589))
