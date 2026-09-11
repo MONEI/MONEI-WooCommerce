@@ -52,6 +52,15 @@ const SPLIT_MOUNT = {
  */
 const SINGLE_MOUNT = '#monei-card-input';
 
+/**
+ * Customer account the seed creates. Not a secret: a local test store.
+ */
+const SHOPPER = {
+	username: 'e2e-shopper',
+	email: 'e2e-shopper@example.com',
+	password: 'e2e-shopper-pass',
+};
+
 const BILLING = {
 	email: 'e2e-monei@example.com',
 	firstName: 'Ada',
@@ -108,6 +117,50 @@ const waitForCardFields = async ( page, layout, timeout ) => {
 };
 
 /**
+ * Smallest box a mounted MONEI component can honestly occupy. A card field is
+ * 50px tall; a wallet button 40. Anything under this is not rendered, whatever
+ * the DOM says. Width is per call: a full-width field is 200+, but the expiry
+ * and CVC parts of the split layout share a row at half that.
+ */
+const MOUNTED_MIN_HEIGHT = 30;
+
+/**
+ * Assert a MONEI component actually occupies space on the page.
+ *
+ * ⚠️ A component can mount as a perfectly well-formed iframe with the right
+ * src and every expected element inside it — at 0px tall. Every DOM check
+ * passes, and the shopper sees nothing. That shipped once in the Magento
+ * plugin. A screenshot comparison catches it, but reports "image differs"
+ * with no hint; this fails first, and says which box collapsed.
+ * @param {import('@playwright/test').Locator} container  - Mount container
+ * @param {string}                             label      - What it is, for the failure
+ * @param {number}                             [minWidth] - Narrowest honest width
+ */
+const expectMounted = async ( container, label, minWidth = 200 ) => {
+	// ⚠️ `:visible`, not `.first()`. monei.js's PayPal mounts a 0px bridge
+	// iframe first and the button the shopper sees is a sibling frame, so the
+	// first iframe in DOM order can be the one that is meant to have no size.
+	const frame = container.locator( 'iframe:visible' ).first();
+	await expect( frame, `${ label }: a visible iframe` ).toBeVisible();
+
+	for ( const [ what, locator ] of [
+		[ 'container', container ],
+		[ 'iframe', frame ],
+	] ) {
+		const box = await locator.boundingBox();
+		expect( box, `${ label }: ${ what } has a box` ).not.toBeNull();
+		expect(
+			box.height,
+			`${ label }: ${ what } height (${ box.width }x${ box.height })`
+		).toBeGreaterThanOrEqual( MOUNTED_MIN_HEIGHT );
+		expect(
+			box.width,
+			`${ label }: ${ what } width (${ box.width }x${ box.height })`
+		).toBeGreaterThanOrEqual( minWidth );
+	}
+};
+
+/**
  * Click an input inside a card iframe and type into it.
  * @param {import('@playwright/test').Locator} input - Input locator
  * @param {string}                             text  - Text to type
@@ -139,6 +192,34 @@ const fillCard = async ( page, layout, number ) => {
 		'12 / 34'
 	);
 	await expect( cardInput( page, layout, 'cvc' ) ).toHaveValue( CARD_CVC );
+};
+
+/**
+ * Sign in as the seeded customer.
+ *
+ * Goes through wp-login rather than the My Account form: it is the same on
+ * every theme, and the suite has no reason to test the login form itself.
+ * @param {import('@playwright/test').Page} page - Page under test
+ */
+const loginAsShopper = async ( page ) => {
+	await page.goto( '/wp-login.php', { waitUntil: 'domcontentloaded' } );
+	await page.locator( '#user_login' ).fill( SHOPPER.username );
+	await page.locator( '#user_pass' ).fill( SHOPPER.password );
+	await page.locator( '#wp-submit' ).click();
+	// Where wp-login lands a customer varies (WooCommerce bounces them off
+	// wp-admin), so assert on a page we choose instead of on the redirect.
+	// The first wp-admin hit of a fresh store runs WooCommerce's first-time
+	// admin setup, which takes longer than a page load. Commit is enough: the
+	// page that matters is loaded below, on purpose.
+	await page.waitForURL( ( url ) => ! url.pathname.includes( 'wp-login' ), {
+		timeout: 90000,
+		waitUntil: 'commit',
+	} );
+	await page.goto( '/', { waitUntil: 'domcontentloaded' } );
+	await expect(
+		page.locator( 'body' ),
+		'wp-login accepted the seeded customer'
+	).toHaveClass( /logged-in/ );
 };
 
 /**
@@ -400,6 +481,7 @@ const expectOrderReceived = async ( page ) => {
 module.exports = {
 	BILLING,
 	CARDS,
+	SHOPPER,
 	CARD_CVC,
 	CARD_EXPIRY,
 	PRODUCT_ID,
@@ -408,6 +490,7 @@ module.exports = {
 	SPLIT_MOUNT,
 	addProductToCart,
 	cardInput,
+	expectMounted,
 	challengeCompleteButtons,
 	completeThreeDsChallenge,
 	completeThreeDsChallengeIfShown,
@@ -417,6 +500,7 @@ module.exports = {
 	fillCardholderName,
 	fillClassicBilling,
 	gotoCheckout,
+	loginAsShopper,
 	mountSelector,
 	readBlocksTotal,
 	typeIntoCardInput,

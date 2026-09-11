@@ -66,9 +66,30 @@ Two conditions are environmental. Both skip with a printed reason rather than fa
 
 The gate sits on each card spec's `describe`, so it takes the whole file with it. That includes the split field focus test, which pays for nothing and would run fine over HTTP — it skips only because it shares a file with the specs that cannot.
 
-**The Bizum component test needs an IP MONEI offers Bizum to.** Bizum is Spain only, and MONEI filters an account's client payment methods by caller IP, so outside Spain the account is told it has no Bizum and the component correctly declines to mount. Nothing is wrong with the store: the WooCommerce payment method is unaffected, because availability there is decided in PHP. The spec asks MONEI the same question the component asks and skips only where Bizum is genuinely not on offer. See `isBizumOfferedHere()` in `specs/blocks-bizum.spec.js`.
+**The Bizum component test needs an IP MONEI offers Bizum to.** Bizum is Spain only, and MONEI filters an account's client payment methods by caller IP, so outside Spain the account is told it has no Bizum and the component correctly declines to mount. Nothing is wrong with the store: the WooCommerce payment method is unaffected, because availability there is decided in PHP. The spec asks MONEI the same question the component asks and skips only where Bizum is genuinely not on offer. See `isBizumOfferedHere()` in `utils/bizum.js`.
 
 The Bizum **registration** test runs everywhere — it asks WordPress what the blocks integration registered, which no IP can change.
+
+## Screenshot comparisons
+
+`specs/payment-methods-rendering.spec.js` photographs the payment methods at checkout — the card field in both layouts, with and without the save-card checkbox, focused and invalid, and the Bizum, PayPal, wallet and express components — and compares each against a committed PNG. It runs in its own Playwright project, `visual`, with no retries: a comparison that passes on the second attempt is nondeterministic, and a retry would hide that.
+
+Each case asserts geometry before pixels — the mount container and its iframe both have to occupy real space. A component can mount as a well-formed iframe at 0px tall and pass every DOM check; the geometry assert names the box that collapsed, where a pixel diff only says "image differs".
+
+**Baselines are macOS renders, and CI compares Linux renders against them.** Same convention as monei-js: one set of PNGs, `-darwin` in the name, and a tolerance (`threshold` 0.3, `maxDiffPixelRatio` 0.1 in `playwright.config.js`) that absorbs the anti-aliasing drift between the two. CI installs Source Sans Pro so that drift stays inside it. A per-test bump to the tolerance needs a comment saying what drift it absorbs.
+
+**Baselines come from wp-env only.** `.wp-env.json` pins WordPress, WooCommerce and Storefront to the versions the readme says the plugin is tested with, and disables WordPress's own background updater, which would otherwise replace the pinned core the first time a page load runs cron. A docker-compose store on other versions renders differently for reasons that are not regressions, and a store behind a tunnel or CDN can serve a stale stylesheet and turn a real regression into a green run. Never regenerate from either.
+
+To refresh after an intended change:
+
+```bash
+pnpm test:e2e:start
+pnpm test:e2e -- --project=visual -u
+```
+
+Then look at every changed PNG before committing it — the diff is the review. On CI a missing baseline fails the run instead of being written, so a new case has to arrive with its PNG.
+
+The PayPal and wallet buttons are masked in their shots: the vendor draws them and changes the art on its own schedule, so only their box is asserted. The card fields are not masked — monei.js draws those, and a change there is one the merchant sees. Bumping the pinned WooCommerce or WordPress version is a deliberate change that refreshes the baselines with it.
 
 ## In CI
 

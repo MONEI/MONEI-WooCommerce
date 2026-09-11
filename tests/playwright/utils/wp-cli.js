@@ -336,6 +336,7 @@ module.exports = {
 	setCheckoutPageId,
 	ensureCoupon,
 	getOrderStatus,
+	mergeSettings,
 	getOption,
 	setOption,
 	setOrderStatus,

@@ -136,6 +136,18 @@ jobs:
                   MONEI_TEST_ACCOUNT_ID: ${{ secrets.MONEI_TEST_ACCOUNT_ID }}
               run: pnpm test:e2e:seed
 
+            # Storefront and the MONEI card fields both render in Source Sans Pro.
+            # Without it Linux falls back to DejaVu and the screenshot
+            # comparisons drift from the macOS baselines far past the tolerance.
+            # Best-effort, as in monei-js: the package lives in `universe`, and a
+            # missing font is worse than no run at all only for the visual specs.
+            - name: Install Source Sans Pro
+              run: |
+                  sudo add-apt-repository -y universe || true
+                  sudo apt-get update -qq || true
+                  sudo apt-get install -y --no-install-recommends fonts-source-sans-pro || true
+                  fc-cache -f || true
+
             - name: Install Playwright browsers
               run: pnpm exec playwright install --with-deps chromium
 
