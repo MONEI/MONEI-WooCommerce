@@ -1,5 +1,12 @@
 # Changelog
 
+## <small>7.3.3 (2026-09-11)</small>
+
+-   fix: centre the text in the card fields (#124) ([4e51138](https://github.com/MONEI/MONEI-WooCommerce/commit/4e51138)), closes [#124](https://github.com/MONEI/MONEI-WooCommerce/issues/124)
+-   test: compare how the payment methods render at checkout (#122) ([a52e09d](https://github.com/MONEI/MONEI-WooCommerce/commit/a52e09d)), closes [#122](https://github.com/MONEI/MONEI-WooCommerce/issues/122)
+-   test: fail the Bizum case when its availability cannot be determined (#123) ([f1b0ae3](https://github.com/MONEI/MONEI-WooCommerce/commit/f1b0ae3)), closes [#123](https://github.com/MONEI/MONEI-WooCommerce/issues/123)
+-   docs: regenerate readme changelog for 7.3.2 ([b21bdd3](https://github.com/MONEI/MONEI-WooCommerce/commit/b21bdd3))
+
 ## <small>7.3.2 (2026-09-08)</small>
 
 -   fix: stop polling the API on hosts where transients do not persist ([00797d1](https://github.com/MONEI/MONEI-WooCommerce/commit/00797d1))
