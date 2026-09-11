@@ -337,6 +337,7 @@ module.exports = {
 	ensureCoupon,
 	getOrderStatus,
 	mergeSettings,
+	readSettings,
 	getOption,
 	setOption,
 	setOrderStatus,

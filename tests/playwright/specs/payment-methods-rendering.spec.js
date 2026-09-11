@@ -49,6 +49,7 @@ const {
 	getExpressSettings,
 	getGatewayEnabled,
 	mergeSettings,
+	readSettings,
 	setCardFieldLayout,
 	setCheckoutPageId,
 	setExpressSettings,
@@ -64,10 +65,19 @@ const fixtures = readFixtures();
 
 /**
  * The two checkouts, and the element that holds their payment methods.
+ *
+ * On classic that is the methods list, not `#payment`: WooCommerce also puts
+ * its privacy policy paragraph and the Place Order button in there, and the
+ * paragraph wraps to one more line on Linux than on macOS — same webfont,
+ * different glyph advance — which fails the comparison on size before a single
+ * pixel is compared. Neither is a payment method, and the plugin owns neither.
  */
 const CHECKOUTS = {
 	blocks: { path: '/checkout/', panel: '.wc-block-checkout__payment-method' },
-	classic: { path: fixtures.classicCheckoutPath, panel: '#payment' },
+	classic: {
+		path: fixtures.classicCheckoutPath,
+		panel: '#payment ul.wc_payment_methods',
+	},
 };
 
 /**
@@ -176,8 +186,16 @@ const selectMethod = async ( page, gateway, container ) => {
  * carries a PayPal row its baseline never had. The panel's contents are part
  * of what a baseline asserts, so they are set here, not inherited.
  */
+/**
+ * One key of the card gateway settings, or its documented default.
+ * @param {string} key - Settings key
+ * @return {string} Stored value, `no` when the key was never saved
+ */
+const readCardSetting = ( key ) => readSettings( CARD_OPTION )[ key ] || 'no';
+
 const snapshot = () => ( {
 	layout: getCardFieldLayout(),
+	tokenization: readCardSetting( 'tokenization' ),
 	checkoutPageId: getCheckoutPageId(),
 	bizum: getGatewayEnabled( BIZUM_OPTION ),
 	paypal: getGatewayEnabled( PAYPAL_OPTION ),
@@ -192,7 +210,7 @@ const restore = ( state ) => {
 	setGatewayEnabled( PAYPAL_OPTION, state.paypal );
 	setExpressSettings( WALLET_OPTION, state.walletExpress );
 	setExpressSettings( PAYPAL_OPTION, state.paypalExpress );
-	mergeSettings( CARD_OPTION, { tokenization: 'no' } );
+	mergeSettings( CARD_OPTION, { tokenization: state.tokenization } );
 };
 
 /**
