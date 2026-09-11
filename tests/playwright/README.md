@@ -84,10 +84,10 @@ To refresh after an intended change:
 
 ```bash
 pnpm test:e2e:start
-pnpm test:e2e -- --project=visual -u
+pnpm test:e2e -- --project=visual --update-snapshots=all
 ```
 
-Then look at every changed PNG before committing it — the diff is the review. On CI a missing baseline fails the run instead of being written, so a new case has to arrive with its PNG.
+`all`, not `-u`: `-u` rewrites only the baselines that fail the tolerance, so a rendering change small enough to pass — a field's text moving one pixel — leaves the old picture committed and the new one never recorded. Then look at every changed PNG before committing it — the diff is the review. On CI a missing baseline fails the run instead of being written, so a new case has to arrive with its PNG.
 
 The PayPal and wallet buttons are masked in their shots: the vendor draws them and changes the art on its own schedule, so only their box is asserted. The card fields are not masked — monei.js draws those, and a change there is one the merchant sees. Bumping the pinned WooCommerce or WordPress version is a deliberate change that refreshes the baselines with it.
 

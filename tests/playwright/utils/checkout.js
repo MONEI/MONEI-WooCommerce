@@ -161,6 +161,43 @@ const expectMounted = async ( container, label, minWidth = 200 ) => {
 };
 
 /**
+ * Assert the input inside a card iframe sits in the vertical middle of it.
+ *
+ * ⚠️ A pixel comparison does not catch this. The plugin used to hand the frame
+ * the mount's outer height, so the input overflowed its iframe by the border
+ * and its text sat 1px above centre — a shift small enough to pass the
+ * screenshot tolerance that absorbs cross-platform drift, and large enough for
+ * a merchant to see. The centre is a number; assert the number.
+ * @param {import('@playwright/test').Page}    page  - Page under test
+ * @param {string}                             mount - Mount container selector
+ * @param {import('@playwright/test').Locator} input - The input inside its iframe
+ * @param {string}                             label - What it is, for the failure
+ */
+const expectCentred = async ( page, mount, input, label ) => {
+	const iframeHeight = await page
+		.locator( `${ mount } iframe:visible` )
+		.first()
+		.evaluate( ( frame ) => frame.getBoundingClientRect().height );
+	const { offset, overflow } = await input.evaluate( ( el, frameHeight ) => {
+		const box = el.getBoundingClientRect();
+		return {
+			offset: box.top + box.height / 2 - frameHeight / 2,
+			overflow: Math.max( 0, box.bottom - frameHeight ),
+		};
+	}, iframeHeight );
+	expect(
+		Math.abs( offset ),
+		`${ label }: input centre is ${ offset.toFixed(
+			1
+		) }px off the iframe centre`
+	).toBeLessThanOrEqual( 0.5 );
+	expect(
+		overflow,
+		`${ label }: input overflows its iframe by ${ overflow.toFixed( 1 ) }px`
+	).toBe( 0 );
+};
+
+/**
  * Click an input inside a card iframe and type into it.
  * @param {import('@playwright/test').Locator} input - Input locator
  * @param {string}                             text  - Text to type
@@ -484,6 +521,7 @@ module.exports = {
 	addProductToCart,
 	cardInput,
 	expectMounted,
+	expectCentred,
 	challengeCompleteButtons,
 	completeThreeDsChallenge,
 	completeThreeDsChallengeIfShown,
