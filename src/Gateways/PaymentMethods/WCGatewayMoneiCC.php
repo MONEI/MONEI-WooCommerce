@@ -48,8 +48,14 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 	 * The fields render inside a cross origin iframe and cannot inherit page
 	 * CSS, so typography must be declared here to match the surrounding form.
 	 * `height` and `lineHeight` need a CSS unit, a bare number is ignored.
+	 *
+	 * ⚠️ 48px, not the mount's 50px. The mount is 50px border-box with a 1px
+	 * border, so the iframe inside it gets the 48px content box. This height is
+	 * the frame's own, inside that iframe: at 50px it overflows by 2px, the
+	 * bottom is clipped, and the text sits above centre. A percentage does not
+	 * work here — the frame document has no height of its own to resolve against.
 	 */
-	const DEFAULT_CARD_INPUT_STYLE = '{"base": {"height": "50px", "lineHeight": "50px", "fontSize": "16px", "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif", "color": "#2b2d2f"}, "input": {"background": "none"}}';
+	const DEFAULT_CARD_INPUT_STYLE = '{"base": {"height": "48px", "lineHeight": "48px", "fontSize": "16px", "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif", "color": "#2b2d2f"}, "input": {"background": "none"}}';
 
 	protected static $scripts_enqueued = false;
 

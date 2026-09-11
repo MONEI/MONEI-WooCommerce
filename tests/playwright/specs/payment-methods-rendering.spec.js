@@ -14,7 +14,8 @@
  * Generate and refresh them against `pnpm test:e2e:start`, never against a
  * docker-compose store: .wp-env.json pins WordPress, WooCommerce and the theme,
  * and a store on other versions renders differently for reasons that are not
- * regressions. Refresh with `pnpm test:e2e -- --project=visual -u`, then look
+ * regressions. Refresh with `--project=visual --update-snapshots=all` — `-u`
+ * alone skips baselines that still pass the tolerance — then look
  * at every changed PNG before committing it — the diff is the review.
  *
  * ⚠️ The MONEI card fields are cross-origin iframes rendered by monei.js. A
@@ -32,6 +33,7 @@ const { test, expect } = require( '@playwright/test' );
 const {
 	addProductToCart,
 	cardInput,
+	expectCentred,
 	expectMounted,
 	fillBlocksBilling,
 	gotoCheckout,
@@ -146,6 +148,12 @@ const expectCardMounted = async ( page, layout ) => {
 			`${ layout } card ${ part }`,
 			// Expiry and CVC share a row, so each gets half the width.
 			part === 'number' ? 200 : 100
+		);
+		await expectCentred(
+			page,
+			mountSelector( layout, part ),
+			cardInput( page, layout, part ),
+			`${ layout } card ${ part }`
 		);
 	}
 };
