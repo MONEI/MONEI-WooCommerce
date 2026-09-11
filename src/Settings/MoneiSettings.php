@@ -2,6 +2,7 @@
 
 namespace Monei\Settings;
 
+use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
@@ -142,6 +143,8 @@ class MoneiSettings extends WC_Settings_Page {
 		$settings = $this->get_settings();
 		WC_Admin_Settings::save_fields( $settings );
 		$this->apiKeyService->update_keys();
+		// A saved key is the merchant's fix; make the next request try it.
+		delete_option( PaymentMethodsRepository::BACKOFF_OPTION );
 	}
 
 	public function enqueue_admin_scripts( $hook ) {

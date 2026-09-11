@@ -5,10 +5,11 @@
  * @author   MONEI
  * @category Core
  * @package  Woocommerce_Gateway_Monei
- * @version  7.3.0
+ * @version  7.3.2
  */
 
 use Monei\Core\ContainerProvider;
+use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
 use Monei\Services\express\ExpressCheckoutAjaxHandler;
@@ -28,7 +29,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '7.3.0';
+		public $version = '7.3.2';
 
 		/**
 		 * The single instance of the class.
@@ -114,6 +115,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			if ( ! $this->get_installed_version() ) {
 				add_action( 'admin_notices', array( $this, 'admin_new_install_notice' ) );
 			}
+
+			add_action( 'admin_notices', array( $this, 'api_key_rejected_notice' ) );
 
 			$this->define_constants();
 			$this->includes();
@@ -205,6 +208,27 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$template        = $templateManager->getTemplate( 'notice-admin-new-install' );
 			if ( $template ) {
 				$template->render( array() );
+			}
+		}
+
+		/**
+		 * Prints notice while the plugin holds off the API after it rejected the key.
+		 *
+		 * @return void
+		 */
+		public function api_key_rejected_notice() {
+			if ( ! current_user_can( 'manage_woocommerce' ) ) {
+				return;
+			}
+			$container = ContainerProvider::getContainer();
+			$until     = $container->get( PaymentMethodsRepository::class )->getBackoffUntil();
+			if ( ! $until ) {
+				return;
+			}
+			$templateManager = $container->get( 'Monei\Templates\TemplateManager' );
+			$template        = $templateManager->getTemplate( 'notice-admin-api-key-rejected' );
+			if ( $template ) {
+				$template->render( array( 'until' => $until ) );
 			}
 		}
 
@@ -365,7 +389,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 		/**
 		 * Load plugin text domain for translations.
 		 *
-		 * @since 7.3.0
+		 * @since 7.3.2
 		 */
 		private function load_plugin_textdomain() {
 			// Use local translations only if they're newer than WordPress.org translations or if WP.org version doesn't exist
