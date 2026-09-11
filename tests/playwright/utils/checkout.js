@@ -197,29 +197,22 @@ const fillCard = async ( page, layout, number ) => {
 /**
  * Sign in as the seeded customer.
  *
- * Goes through wp-login rather than the My Account form: it is the same on
- * every theme, and the suite has no reason to test the login form itself.
+ * Through WooCommerce's own My Account form, not wp-login. wp-login lands a
+ * customer on wp-admin, and the first wp-admin request of a fresh store runs
+ * WooCommerce's first-time admin setup — long enough to time out a navigation
+ * wait, and the same request that flips "coming soon" on. My Account posts to
+ * itself and touches none of that.
  * @param {import('@playwright/test').Page} page - Page under test
  */
 const loginAsShopper = async ( page ) => {
-	await page.goto( '/wp-login.php', { waitUntil: 'domcontentloaded' } );
-	await page.locator( '#user_login' ).fill( SHOPPER.username );
-	await page.locator( '#user_pass' ).fill( SHOPPER.password );
-	await page.locator( '#wp-submit' ).click();
-	// Where wp-login lands a customer varies (WooCommerce bounces them off
-	// wp-admin), so assert on a page we choose instead of on the redirect.
-	// The first wp-admin hit of a fresh store runs WooCommerce's first-time
-	// admin setup, which takes longer than a page load. Commit is enough: the
-	// page that matters is loaded below, on purpose.
-	await page.waitForURL( ( url ) => ! url.pathname.includes( 'wp-login' ), {
-		timeout: 90000,
-		waitUntil: 'commit',
-	} );
-	await page.goto( '/', { waitUntil: 'domcontentloaded' } );
+	await page.goto( '/my-account/', { waitUntil: 'domcontentloaded' } );
+	await page.locator( '#username' ).fill( SHOPPER.username );
+	await page.locator( '#password' ).fill( SHOPPER.password );
+	await page.locator( 'button[name="login"]' ).click();
 	await expect(
 		page.locator( 'body' ),
-		'wp-login accepted the seeded customer'
-	).toHaveClass( /logged-in/ );
+		'My Account accepted the seeded customer'
+	).toHaveClass( /logged-in/, { timeout: 60000 } );
 };
 
 /**

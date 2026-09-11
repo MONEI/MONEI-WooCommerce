@@ -166,24 +166,86 @@ const selectMethod = async ( page, gateway, container ) => {
 	return mount;
 };
 
-let previousLayout;
-let previousCheckoutPageId;
+/**
+ * Every store setting a shot depends on, so each group can set exactly what it
+ * needs and the file can put it all back once at the end.
+ *
+ * ⚠️ Explicit, not "restore whatever was there". A restore-to-previous chain
+ * leaks: an interrupted run leaves PayPal on, the next run records "on" as the
+ * previous value and faithfully restores it, and every card panel from then on
+ * carries a PayPal row its baseline never had. The panel's contents are part
+ * of what a baseline asserts, so they are set here, not inherited.
+ */
+const snapshot = () => ( {
+	layout: getCardFieldLayout(),
+	checkoutPageId: getCheckoutPageId(),
+	bizum: getGatewayEnabled( BIZUM_OPTION ),
+	paypal: getGatewayEnabled( PAYPAL_OPTION ),
+	walletExpress: getExpressSettings( WALLET_OPTION ),
+	paypalExpress: getExpressSettings( PAYPAL_OPTION ),
+} );
+
+const restore = ( state ) => {
+	setCardFieldLayout( state.layout );
+	setCheckoutPageId( state.checkoutPageId );
+	setGatewayEnabled( BIZUM_OPTION, state.bizum );
+	setGatewayEnabled( PAYPAL_OPTION, state.paypal );
+	setExpressSettings( WALLET_OPTION, state.walletExpress );
+	setExpressSettings( PAYPAL_OPTION, state.paypalExpress );
+	mergeSettings( CARD_OPTION, { tokenization: 'no' } );
+};
+
+/**
+ * The card shots show the panel with the card method and the wallet method
+ * only. Every other MONEI method off, and no express row above.
+ * @param {'no'|'yes'} tokenization - Whether the save-card checkbox renders
+ */
+const cardOnlyStore = ( tokenization ) => {
+	setGatewayEnabled( BIZUM_OPTION, 'no' );
+	setGatewayEnabled( PAYPAL_OPTION, 'no' );
+	for ( const option of [ WALLET_OPTION, PAYPAL_OPTION ] ) {
+		setExpressSettings( option, {
+			express_enabled: 'no',
+			express_locations: [],
+		} );
+	}
+	mergeSettings( CARD_OPTION, { tokenization } );
+};
+
+/**
+ * Every MONEI method on, and express at the top of the checkout.
+ */
+const everyMethodStore = () => {
+	setGatewayEnabled( BIZUM_OPTION, 'yes' );
+	setGatewayEnabled( PAYPAL_OPTION, 'yes' );
+	for ( const option of [ WALLET_OPTION, PAYPAL_OPTION ] ) {
+		setExpressSettings( option, {
+			express_enabled: 'yes',
+			express_locations: [ 'checkout' ],
+		} );
+	}
+	mergeSettings( CARD_OPTION, { tokenization: 'no' } );
+	setCardFieldLayout( 'split' );
+};
+
+let before;
 
 test.describe( 'Checkout payment methods, rendering', () => {
 	test.beforeAll( () => {
-		previousLayout = getCardFieldLayout();
-		previousCheckoutPageId = getCheckoutPageId();
+		before = snapshot();
 	} );
 
 	test.afterAll( () => {
-		if ( previousLayout ) {
-			setCardFieldLayout( previousLayout );
+		if ( before ) {
+			restore( before );
 		}
 	} );
 
 	test.afterEach( () => {
-		if ( previousCheckoutPageId ) {
-			setCheckoutPageId( previousCheckoutPageId );
+		// Classic shots point WooCommerce at the shortcode page; every test
+		// starts from the real one.
+		if ( before ) {
+			setCheckoutPageId( before.checkoutPageId );
 		}
 	} );
 
@@ -201,11 +263,7 @@ test.describe( 'Checkout payment methods, rendering', () => {
 
 		test.describe( `card, ${ saved }`, () => {
 			test.beforeAll( () => {
-				mergeSettings( CARD_OPTION, { tokenization } );
-			} );
-
-			test.afterAll( () => {
-				mergeSettings( CARD_OPTION, { tokenization: 'no' } );
+				cardOnlyStore( tokenization );
 			} );
 
 			for ( const checkout of Object.keys( CHECKOUTS ) ) {
@@ -248,7 +306,7 @@ test.describe( 'Checkout payment methods, rendering', () => {
 
 	test.describe( 'card, split field states', () => {
 		test.beforeAll( () => {
-			mergeSettings( CARD_OPTION, { tokenization: 'no' } );
+			cardOnlyStore( 'no' );
 		} );
 
 		test( 'focused', async ( { page } ) => {
@@ -290,7 +348,6 @@ test.describe( 'Checkout payment methods, rendering', () => {
 	} );
 
 	test.describe( 'other methods, Blocks', () => {
-		const previous = {};
 		let bizumOffered = false;
 		let paypalOffered = false;
 
@@ -299,29 +356,7 @@ test.describe( 'Checkout payment methods, rendering', () => {
 			paypalOffered = await isPayPalOffered(
 				( process.env.MONEI_TEST_API_KEY || '' ).trim()
 			).catch( () => false );
-
-			for ( const option of [ BIZUM_OPTION, PAYPAL_OPTION ] ) {
-				previous[ option ] = getGatewayEnabled( option );
-				setGatewayEnabled( option, 'yes' );
-			}
-			for ( const option of [ WALLET_OPTION, PAYPAL_OPTION ] ) {
-				previous[ `${ option }:express` ] =
-					getExpressSettings( option );
-				setExpressSettings( option, {
-					express_enabled: 'yes',
-					express_locations: [ 'checkout' ],
-				} );
-			}
-			setCardFieldLayout( 'split' );
-		} );
-
-		test.afterAll( () => {
-			for ( const option of [ BIZUM_OPTION, PAYPAL_OPTION ] ) {
-				setGatewayEnabled( option, previous[ option ] );
-			}
-			for ( const option of [ WALLET_OPTION, PAYPAL_OPTION ] ) {
-				setExpressSettings( option, previous[ `${ option }:express` ] );
-			}
+			everyMethodStore();
 		} );
 
 		test( 'bizum', async ( { page } ) => {
