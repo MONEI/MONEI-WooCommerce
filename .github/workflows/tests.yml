@@ -139,6 +139,14 @@ jobs:
             - name: Install Playwright browsers
               run: pnpm exec playwright install --with-deps chromium
 
+            # No font install, on purpose. Storefront pulls Source Sans Pro as a
+            # webfont from Google Fonts, so the page text has the same outlines on
+            # every platform with nothing installed. The MONEI card iframes use the
+            # system-ui stack — San Francisco here, Ubuntu or DejaVu on the runner —
+            # and no package closes that gap. The screenshot tolerance is what
+            # absorbs it. (monei-js installs the font for its payment page, which
+            # the plugin never renders; the package does not exist on ubuntu-latest
+            # anyway.)
             - name: Run Playwright
               run: pnpm test:e2e
 

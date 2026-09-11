@@ -15,6 +15,7 @@
 const { wpCli } = require( './utils/wp-cli' );
 const { requireEnv } = require( './utils/env' );
 const { writeFixtures } = require( './utils/fixtures' );
+const { SHOPPER } = require( './utils/checkout' );
 
 /**
  * The one call that answers "which MONEI account is this key for" without
@@ -125,6 +126,12 @@ const STORE_OPTIONS = {
 	woocommerce_enable_coupons: 'yes',
 	woocommerce_enable_guest_checkout: 'yes',
 	woocommerce_enable_checkout_login_reminder: 'no',
+	// ⚠️ WooCommerce's onboarding switches "coming soon" on the first time
+	// anything hits wp-admin — which a customer signing in through wp-login does,
+	// before WooCommerce bounces them off it. From then on every guest gets a
+	// "launching soon" placeholder instead of the checkout, and nothing in the
+	// suite says why. Existing and set to no, the onboarding leaves it alone.
+	woocommerce_coming_soon: 'no',
 };
 
 /**
@@ -239,6 +246,23 @@ const ensureClassicCheckoutPage = () => {
 	return { id: id.trim(), path: path.trim() };
 };
 
+/**
+ * A customer account the suite can sign in as.
+ *
+ * The Blocks checkout offers "save payment information" only to a signed-in
+ * customer, so the screenshot of that state needs one. Password reset on every
+ * seed, so a store whose account predates a credential change still matches.
+ */
+const ensureShopper = () => {
+	php(
+		`$user = get_user_by( 'login', '${ SHOPPER.username }' );` +
+			'$id = $user ? $user->ID : wp_create_user(' +
+			`'${ SHOPPER.username }', '${ SHOPPER.password }', '${ SHOPPER.email }'` +
+			');' +
+			`wp_update_user( array( 'ID' => $id, 'role' => 'customer', 'user_pass' => '${ SHOPPER.password }' ) );`
+	);
+};
+
 const main = async () => {
 	const apiKey = requireEnv(
 		'MONEI_TEST_API_KEY',
@@ -263,6 +287,10 @@ const main = async () => {
 	const accountId = declaredAccountId || resolvedAccountId;
 
 	wpCli( [ 'plugin', 'activate', 'woocommerce' ] );
+	// The screenshot baselines are rendered by this theme at the version
+	// .wp-env.json pins. wp-env installs it but activates nothing, and the
+	// core default theme changes with every major WordPress release.
+	wpCli( [ 'theme', 'activate', 'storefront' ] );
 	wpCli( [ 'rewrite', 'structure', '/%postname%/', '--hard' ] );
 
 	Object.entries( STORE_OPTIONS ).forEach( ( [ name, value ] ) =>
@@ -273,6 +301,7 @@ const main = async () => {
 
 	const product = ensureProduct();
 	const classicCheckout = ensureClassicCheckoutPage();
+	ensureShopper();
 
 	// After the fixtures, so the product and the page keep readable ids.
 	const firstOrderId = reserveOrderIdRange();

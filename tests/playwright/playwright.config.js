@@ -18,7 +18,29 @@ module.exports = defineConfig( {
 	// MONEI mounts its iframes after a 500ms init delay, then a real payment
 	// round trip follows, so give each test room.
 	timeout: 180000,
-	expect: { timeout: 30000 },
+	// Same convention as monei-js: one set of baselines, rendered on macOS, and
+	// Linux CI compares against them. The tolerance absorbs the cross-platform
+	// drift: page text is a webfont and identical everywhere, but the MONEI card
+	// iframes use the system-ui stack, which no install can make match.
+	// Baselines have to come from wp-env, not a docker-compose store —
+	// .wp-env.json pins WordPress, WooCommerce and the theme, and a store on
+	// other versions renders differently for reasons that are not regressions.
+	snapshotPathTemplate:
+		'{testDir}/{testFilePath}-snapshots/{arg}-{projectName}-darwin{ext}',
+	// Locally a missing baseline is written and the run passes, which is how
+	// baselines are made. On CI the same default would turn "nobody committed
+	// the PNG" into a green build. There, a missing baseline is a failure.
+	updateSnapshots: process.env.CI ? 'none' : 'missing',
+	expect: {
+		timeout: 30000,
+		toHaveScreenshot: {
+			threshold: 0.3,
+			// Tight enough that a regression on one small element still fails.
+			// A per-test bump must carry a comment saying what drift it absorbs.
+			maxDiffPixelRatio: 0.1,
+			animations: 'disabled',
+		},
+	},
 	reporter: [
 		[ 'list' ],
 		[ 'html', { outputFolder: './playwright-report', open: 'never' } ],
@@ -31,5 +53,19 @@ module.exports = defineConfig( {
 		screenshot: 'only-on-failure',
 		video: 'retain-on-failure',
 	},
-	projects: [ { name: 'chromium', use: { ...devices[ 'Desktop Chrome' ] } } ],
+	projects: [
+		{
+			name: 'chromium',
+			testIgnore: /payment-methods-rendering\.spec\.js/,
+			use: { ...devices[ 'Desktop Chrome' ] },
+		},
+		{
+			// Screenshot comparisons. No retries: a comparison that passes on the
+			// second attempt is nondeterministic, and a retry would hide that.
+			name: 'visual',
+			testMatch: /payment-methods-rendering\.spec\.js/,
+			retries: 0,
+			use: { ...devices[ 'Desktop Chrome' ] },
+		},
+	],
 } );
