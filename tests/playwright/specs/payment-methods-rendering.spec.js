@@ -177,6 +177,13 @@ const selectMethod = async ( page, gateway, container ) => {
 };
 
 /**
+ * One key of the card gateway settings, or its documented default.
+ * @param {string} key - Settings key
+ * @return {string} Stored value, `no` when the key was never saved
+ */
+const readCardSetting = ( key ) => readSettings( CARD_OPTION )[ key ] || 'no';
+
+/**
  * Every store setting a shot depends on, so each group can set exactly what it
  * needs and the file can put it all back once at the end.
  *
@@ -186,13 +193,6 @@ const selectMethod = async ( page, gateway, container ) => {
  * carries a PayPal row its baseline never had. The panel's contents are part
  * of what a baseline asserts, so they are set here, not inherited.
  */
-/**
- * One key of the card gateway settings, or its documented default.
- * @param {string} key - Settings key
- * @return {string} Stored value, `no` when the key was never saved
- */
-const readCardSetting = ( key ) => readSettings( CARD_OPTION )[ key ] || 'no';
-
 const snapshot = () => ( {
 	layout: getCardFieldLayout(),
 	tokenization: readCardSetting( 'tokenization' ),
