@@ -4,7 +4,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.3.2
+Stable tag: 7.3.3
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -100,6 +100,13 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 ## Changelog
 
+### v7.3.3 - 2026-09-11
+
+-   fix: centre the text in the card fields (#124) ([4e51138](https://github.com/MONEI/MONEI-WooCommerce/commit/4e51138)), closes [#124](https://github.com/MONEI/MONEI-WooCommerce/issues/124)
+-   test: compare how the payment methods render at checkout (#122) ([a52e09d](https://github.com/MONEI/MONEI-WooCommerce/commit/a52e09d)), closes [#122](https://github.com/MONEI/MONEI-WooCommerce/issues/122)
+-   test: fail the Bizum case when its availability cannot be determined (#123) ([f1b0ae3](https://github.com/MONEI/MONEI-WooCommerce/commit/f1b0ae3)), closes [#123](https://github.com/MONEI/MONEI-WooCommerce/issues/123)
+-   docs: regenerate readme changelog for 7.3.2 ([b21bdd3](https://github.com/MONEI/MONEI-WooCommerce/commit/b21bdd3))
+
 ### v7.3.2 - 2026-09-08
 
 -   fix: stop polling the API on hosts where transients do not persist ([00797d1](https://github.com/MONEI/MONEI-WooCommerce/commit/00797d1))
@@ -151,9 +158,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 -   fix: size the single-line card field to match the cardholder input ([805d3e0](https://github.com/MONEI/MONEI-WooCommerce/commit/805d3e0))
 -   docs: regenerate readme changelog for 7.1.2 ([c625d73](https://github.com/MONEI/MONEI-WooCommerce/commit/c625d73))
-
-### v7.1.2 - 2026-08-25
-
--   fix: keep the wallet button inside its container on blocks checkout ([be063e7](https://github.com/MONEI/MONEI-WooCommerce/commit/be063e7))
--   fix: stop the wallet container shifting when the button renders ([0cc63c2](https://github.com/MONEI/MONEI-WooCommerce/commit/0cc63c2))
--   docs: regenerate readme changelog for 7.1.1 ([9f28c17](https://github.com/MONEI/MONEI-WooCommerce/commit/9f28c17))
