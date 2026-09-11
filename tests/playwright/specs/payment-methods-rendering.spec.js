@@ -349,10 +349,19 @@ test.describe( 'Checkout payment methods, rendering', () => {
 
 	test.describe( 'other methods, Blocks', () => {
 		let bizumOffered = false;
+		// Why Bizum is not on offer, when the question itself could not be
+		// answered. A failed lookup must not take wallet and express down with
+		// it, and it must not read as "Bizum is not offered here" either.
+		let bizumUnknown = '';
 		let paypalOffered = false;
 
 		test.beforeAll( async () => {
-			bizumOffered = await isBizumOfferedHere( getAccountId() );
+			bizumOffered = await isBizumOfferedHere( getAccountId() ).catch(
+				( error ) => {
+					bizumUnknown = String( error.message || error );
+					return false;
+				}
+			);
 			paypalOffered = await isPayPalOffered(
 				( process.env.MONEI_TEST_API_KEY || '' ).trim()
 			).catch( () => false );
@@ -365,7 +374,9 @@ test.describe( 'Checkout payment methods, rendering', () => {
 			// there is nothing to photograph. Same gate as blocks-bizum.spec.js.
 			test.skip(
 				! bizumOffered,
-				'MONEI does not offer Bizum from here.'
+				bizumUnknown
+					? `Could not tell whether Bizum is offered here: ${ bizumUnknown }`
+					: 'MONEI does not offer Bizum from here.'
 			);
 
 			await openPaymentPanel( page, 'blocks', 'split' );
@@ -427,6 +438,14 @@ test.describe( 'Checkout payment methods, rendering', () => {
 		} );
 
 		test( 'express', async ( { page } ) => {
+			// The baseline holds both buttons. Local settings do not override the
+			// account: without PayPal on it, canMakePayment rejects the method and
+			// only the wallet renders, which is a different picture, not a failure.
+			test.skip(
+				! paypalOffered,
+				'Needs MONEI_TEST_API_KEY set to an account that offers PayPal.'
+			);
+
 			await openPaymentPanel( page, 'blocks', 'split' );
 
 			// Each express method registers its own block, and WooCommerce lays
