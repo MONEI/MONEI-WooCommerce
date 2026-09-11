@@ -20,8 +20,9 @@ module.exports = defineConfig( {
 	timeout: 180000,
 	// Same convention as monei-js: one set of baselines, rendered on macOS, and
 	// Linux CI compares against them. The tolerance absorbs the cross-platform
-	// anti-aliasing drift; CI installs Source Sans Pro so that drift stays
-	// small. Baselines have to come from wp-env, not a docker-compose store —
+	// drift: page text is a webfont and identical everywhere, but the MONEI card
+	// iframes use the system-ui stack, which no install can make match.
+	// Baselines have to come from wp-env, not a docker-compose store —
 	// .wp-env.json pins WordPress, WooCommerce and the theme, and a store on
 	// other versions renders differently for reasons that are not regressions.
 	snapshotPathTemplate:

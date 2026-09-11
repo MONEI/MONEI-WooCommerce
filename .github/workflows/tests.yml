@@ -136,22 +136,17 @@ jobs:
                   MONEI_TEST_ACCOUNT_ID: ${{ secrets.MONEI_TEST_ACCOUNT_ID }}
               run: pnpm test:e2e:seed
 
-            # Storefront and the MONEI card fields both render in Source Sans Pro.
-            # Without it Linux falls back to DejaVu and every screenshot comparison
-            # fails on font drift, which reads as fourteen unrelated regressions.
-            # So the install itself is fatal: a missing font fails here, with the
-            # reason in the step name. Enabling `universe` and refreshing the
-            # lists stay best-effort, since the package may already be reachable.
-            - name: Install Source Sans Pro
-              run: |
-                  sudo add-apt-repository -y universe || true
-                  sudo apt-get update -qq || true
-                  sudo apt-get install -y --no-install-recommends fonts-source-sans-pro
-                  fc-cache -f || true
-
             - name: Install Playwright browsers
               run: pnpm exec playwright install --with-deps chromium
 
+            # No font install, on purpose. Storefront pulls Source Sans Pro as a
+            # webfont from Google Fonts, so the page text has the same outlines on
+            # every platform with nothing installed. The MONEI card iframes use the
+            # system-ui stack — San Francisco here, Ubuntu or DejaVu on the runner —
+            # and no package closes that gap. The screenshot tolerance is what
+            # absorbs it. (monei-js installs the font for its payment page, which
+            # the plugin never renders; the package does not exist on ubuntu-latest
+            # anyway.)
             - name: Run Playwright
               run: pnpm test:e2e
 
