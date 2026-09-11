@@ -376,19 +376,18 @@ test.describe( 'Checkout payment methods, rendering', () => {
 
 	test.describe( 'other methods, Blocks', () => {
 		let bizumOffered = false;
-		// Why Bizum is not on offer, when the question itself could not be
-		// answered. A failed lookup must not take wallet and express down with
-		// it, and it must not read as "Bizum is not offered here" either.
+		// Why the Bizum question could not be answered, when it could not. That
+		// is a failure of the Bizum case alone — it must not take wallet and
+		// express down with it, and it must not read as "not offered here".
 		let bizumUnknown = '';
 		let paypalOffered = false;
 
 		test.beforeAll( async () => {
-			bizumOffered = await isBizumOfferedHere( getAccountId() ).catch(
-				( error ) => {
-					bizumUnknown = String( error.message || error );
-					return false;
-				}
-			);
+			try {
+				bizumOffered = await isBizumOfferedHere( getAccountId() );
+			} catch ( error ) {
+				bizumUnknown = String( error.message || error );
+			}
 			paypalOffered = await isPayPalOffered(
 				( process.env.MONEI_TEST_API_KEY || '' ).trim()
 			).catch( () => false );
@@ -399,11 +398,16 @@ test.describe( 'Checkout payment methods, rendering', () => {
 			// Bizum is filtered by the caller's IP, not the store's country, so
 			// from outside Spain the component correctly declines to mount and
 			// there is nothing to photograph. Same gate as blocks-bizum.spec.js.
+			// A lookup that failed is not a store that does not offer Bizum. Skip
+			// only on a real "no"; a failed question fails this case, loudly.
+			if ( bizumUnknown ) {
+				throw new Error(
+					`Could not tell whether Bizum is offered here: ${ bizumUnknown }`
+				);
+			}
 			test.skip(
 				! bizumOffered,
-				bizumUnknown
-					? `Could not tell whether Bizum is offered here: ${ bizumUnknown }`
-					: 'MONEI does not offer Bizum from here.'
+				'MONEI does not offer Bizum from here.'
 			);
 
 			await openPaymentPanel( page, 'blocks', 'split' );
