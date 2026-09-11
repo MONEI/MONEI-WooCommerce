@@ -49,11 +49,11 @@ const {
 	getExpressSettings,
 	getGatewayEnabled,
 	mergeSettings,
-	readSettings,
 	setCardFieldLayout,
 	setCheckoutPageId,
 	setExpressSettings,
 	setGatewayEnabled,
+	wpCli,
 } = require( '../utils/wp-cli' );
 
 const CARD_OPTION = 'woocommerce_monei_settings';
@@ -178,10 +178,19 @@ const selectMethod = async ( page, gateway, container ) => {
 
 /**
  * One key of the card gateway settings, or its documented default.
+ *
+ * ⚠️ A loud read, not `readSettings()`. That helper returns `{}` for a row that
+ * does not exist and for a WP-CLI call that failed, which is right for the
+ * gateway rows a fresh store has not written yet. The seed writes this row, so
+ * here an empty answer is a failure — and a failure that read as "no" would be
+ * restored over the merchant's real setting at the end.
  * @param {string} key - Settings key
  * @return {string} Stored value, `no` when the key was never saved
  */
-const readCardSetting = ( key ) => readSettings( CARD_OPTION )[ key ] || 'no';
+const readCardSetting = ( key ) =>
+	JSON.parse( wpCli( [ 'option', 'get', CARD_OPTION, '--format=json' ] ) )[
+		key
+	] || 'no';
 
 /**
  * Every store setting a shot depends on, so each group can set exactly what it
