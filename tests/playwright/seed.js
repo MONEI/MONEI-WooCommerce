@@ -310,12 +310,11 @@ const main = async () => {
 	wpCli( [ 'option', 'update', 'monei_test_accountid', accountId ] );
 	wpCli( [ 'option', 'update', 'monei_apikey_mode', 'test' ] );
 
-	// `card_field_layout` is written by `wp option patch update`, which refuses a
-	// key the option does not have yet, so the key has to exist before a spec
-	// switches it.
+	// The card field layout is left unset on purpose: specs set the layout they
+	// need and put back whatever they found, and an unset key exercises the same
+	// default a fresh install gets.
 	mergeOption( 'woocommerce_monei_settings', {
 		enabled: 'yes',
-		card_field_layout: 'single',
 	} );
 	mergeOption( 'woocommerce_monei_apple_google_settings', {
 		enabled: 'yes',
