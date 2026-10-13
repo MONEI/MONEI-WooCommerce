@@ -152,6 +152,10 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	 * Check if this gateway is enabled and available in the user's country
 	 * todo: check if the gateway is enabled in the user account
 	 *
+	 * Calls the MONEI API (cached 30 s), so keep it out of gateway constructors:
+	 * gateways are built on every product page for the express buttons, crawlers
+	 * included, and a constructor call made thousands of API calls a day per store.
+	 *
 	 * @access public
 	 * @return bool
 	 */
@@ -173,15 +177,17 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	}
 
 	public function is_available() {
-		$isEnabled      = $this->enabled === 'yes' && $this->is_valid_for_use();
+		$isEnabled = $this->enabled === 'yes' && $this->is_valid_for_use();
+		if ( ! $isEnabled ) {
+			return false;
+		}
 		$billingCountry = WC()->customer !== null && ! empty( WC()->customer->get_billing_country() )
 			? WC()->customer->get_billing_country()
 			: wc_get_base_location()['country'];
 
 		$methodAvailability = $this->paymentMethodsService->getMethodAvailability( $this->id );
 
-		return $isEnabled &&
-			( empty( $methodAvailability['countries'] ) || in_array( $billingCountry, $methodAvailability['countries'], true ) );
+		return ( empty( $methodAvailability['countries'] ) || in_array( $billingCountry, $methodAvailability['countries'], true ) );
 	}
 
 	/**
