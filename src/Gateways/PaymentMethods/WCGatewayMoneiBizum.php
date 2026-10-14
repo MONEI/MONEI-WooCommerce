@@ -48,7 +48,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		$this->id                 = MONEI_GATEWAY_ID . '_bizum';
 		$this->method_title       = __( 'MONEI - Bizum', 'monei' );
 		$this->method_description = __( 'Accept Bizum payments.', 'monei' );
-		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) && $this->is_valid_for_use() ) ? 'yes' : 'no';
+		$this->enabled            = ( ! empty( $this->get_option( 'enabled' ) ) && 'yes' === $this->get_option( 'enabled' ) ) ? 'yes' : 'no';
 
 		// Load the form fields.
 		$this->init_form_fields();
@@ -205,7 +205,7 @@ class WCGatewayMoneiBizum extends WCMoneiPaymentGatewayHosted {
 		if ( ! is_checkout() && ! is_checkout_pay_page() ) {
 			return;
 		}
-		if ( 'no' === $this->enabled ) {
+		if ( 'no' === $this->enabled || ! $this->is_valid_for_use() ) {
 			return;
 		}
 		// Don't enqueue scripts if using redirect flow
