@@ -34,9 +34,16 @@ const {
  *
  * The token is therefore obtained the only way a test can obtain a genuine one:
  * a real `monei.CardInput`, mounted on the store's own page with the store's own
- * `accountId` and the express `sessionId`, filled with a MONEI test card. A
- * wallet `SubmitResult` carries a token of exactly this kind, so everything
- * downstream of the sheet is identical to a real Apple Pay or Google Pay run.
+ * `accountId` and the express `sessionId`, filled with a MONEI test card. The
+ * store handles it exactly as it handles a wallet `SubmitResult` token.
+ *
+ * ⚠️ One difference on MONEI's side: a wallet token carries a
+ * `tokenizationMethod`, and this one does not. MONEI skips its cardholder name
+ * check only for wallet tokens, and the express payload sends no
+ * `cardholderName`. So if the test account's card provider requires a
+ * cardholder name, these specs fail with "Cardholder's name is mandatory"
+ * while real Apple Pay and Google Pay payments still go through. Fix the
+ * account, not the plugin.
  *
  * ⚠️ Not exercised here: shipping option selection. The fixture store has zero
  * shipping methods, so `WC()->cart->needs_shipping()` is false and express skips
