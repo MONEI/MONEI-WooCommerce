@@ -1,5 +1,11 @@
 # Changelog
 
+## <small>7.3.4 (2026-10-14)</small>
+
+-   fix: stop gateway constructors from calling the payment methods API (#127) ([fa735a5](https://github.com/MONEI/MONEI-WooCommerce/commit/fa735a5)), closes [#127](https://github.com/MONEI/MONEI-WooCommerce/issues/127)
+-   test: stop seeding the pre-7.3.0 card field layout (#125) ([5c848e4](https://github.com/MONEI/MONEI-WooCommerce/commit/5c848e4)), closes [#125](https://github.com/MONEI/MONEI-WooCommerce/issues/125)
+-   docs: regenerate readme changelog for 7.3.3 ([af742a8](https://github.com/MONEI/MONEI-WooCommerce/commit/af742a8))
+
 ## <small>7.3.3 (2026-09-11)</small>
 
 -   fix: centre the text in the card fields (#124) ([4e51138](https://github.com/MONEI/MONEI-WooCommerce/commit/4e51138)), closes [#124](https://github.com/MONEI/MONEI-WooCommerce/issues/124)
