@@ -507,6 +507,7 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 				'sessionId'       => WC()->session !== null ? WC()->session->get_customer_id() : '',
 				'total'           => monei_price_format( $total ),
 				'currency'        => get_woocommerce_currency(),
+				'language'        => locale_iso_639_1_code(),
 				'appleLogo'       => WC_Monei()->image_url( 'apple-logo.svg' ),
 				'cardInputStyle'  => json_decode( $card_input_style ),
 				'cardFieldLayout' => $this->get_option( 'card_field_layout', 'split' ),

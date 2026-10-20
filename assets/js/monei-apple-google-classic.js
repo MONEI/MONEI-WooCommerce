@@ -218,6 +218,7 @@
 			const paymentRequest = monei.PaymentRequest( {
 				accountId: wc_monei_apple_google_params.accountId,
 				sessionId: wc_monei_apple_google_params.sessionId,
+				language: wc_monei_apple_google_params.language,
 				amount: parseInt( wc_monei_form.total ),
 				currency: wc_monei_apple_google_params.currency,
 				style: wc_monei_apple_google_params.paymentRequestStyle || {},

@@ -280,6 +280,7 @@ class WCGatewayMoneiAppleGoogle extends WCMoneiPaymentGatewayComponent {
 				'sessionId'           => WC()->session !== null ? WC()->session->get_customer_id() : '',
 				'total'               => monei_price_format( $total ),
 				'currency'            => get_woocommerce_currency(),
+				'language'            => locale_iso_639_1_code(),
 				'appleLogo'           => WC_Monei()->image_url( 'apple-logo.svg' ),
 				'applePayTitle'       => $apple_pay_title,
 				'googlePayTitle'      => $google_pay_title,

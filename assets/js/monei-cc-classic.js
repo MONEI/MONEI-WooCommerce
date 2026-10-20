@@ -229,6 +229,7 @@ import {
 			wc_monei_form.$cardInput = monei.CardInput( {
 				accountId: wc_monei_params.accountId,
 				sessionId: wc_monei_params.sessionId,
+				language: wc_monei_params.language,
 				amount: parseInt( wc_monei_form.total ),
 				currency: wc_monei_params.currency,
 				style: wc_monei_params.cardInputStyle || {},
@@ -274,6 +275,7 @@ import {
 			const group = monei.CardGroup( {
 				accountId: wc_monei_params.accountId,
 				sessionId: wc_monei_params.sessionId,
+				language: wc_monei_params.language,
 				amount: parseInt( wc_monei_form.total ),
 				currency: wc_monei_params.currency,
 				style: wc_monei_params.cardInputStyle || {},
