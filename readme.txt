@@ -103,7 +103,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.3.5 - 2026-10-14 =
+= v7.3.5 - 2026-10-20 =
+-   fix: pass store language to MONEI components in classic checkout (#129) ([7005a38](https://github.com/MONEI/MONEI-WooCommerce/commit/7005a38)), closes [#129](https://github.com/MONEI/MONEI-WooCommerce/issues/129)
+-   test(e2e): note express specs need a test account without a cardholder name rule (#128) ([3a381cb](https://github.com/MONEI/MONEI-WooCommerce/commit/3a381cb)), closes [#128](https://github.com/MONEI/MONEI-WooCommerce/issues/128)
+-   docs: regenerate readme changelog for 7.3.4 ([c0dd4b9](https://github.com/MONEI/MONEI-WooCommerce/commit/c0dd4b9))
+
+= v7.3.4 - 2026-10-14 =
 -   fix: stop gateway constructors from calling the payment methods API (#127) ([fa735a5](https://github.com/MONEI/MONEI-WooCommerce/commit/fa735a5)), closes [#127](https://github.com/MONEI/MONEI-WooCommerce/issues/127)
 -   test: stop seeding the pre-7.3.0 card field layout (#125) ([5c848e4](https://github.com/MONEI/MONEI-WooCommerce/commit/5c848e4)), closes [#125](https://github.com/MONEI/MONEI-WooCommerce/issues/125)
 -   docs: regenerate readme changelog for 7.3.3 ([af742a8](https://github.com/MONEI/MONEI-WooCommerce/commit/af742a8))
@@ -146,9 +151,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 = v7.2.1 - 2026-08-26 =
 -   fix: report express failures on every surface, not just the checkout block ([87471bb](https://github.com/MONEI/MONEI-WooCommerce/commit/87471bb))
 -   docs: regenerate readme changelog for 7.2.0 ([967c529](https://github.com/MONEI/MONEI-WooCommerce/commit/967c529))
-
-= v7.2.0 - 2026-08-26 =
--   test: give the cart-restore case the billing its refusal path needs ([09322cc](https://github.com/MONEI/MONEI-WooCommerce/commit/09322cc))
--   fix: use the billing address when a wallet returns an empty shipping one ([09cd33d](https://github.com/MONEI/MONEI-WooCommerce/commit/09cd33d))
--   feat: cover the page while an express payment is being completed ([937df01](https://github.com/MONEI/MONEI-WooCommerce/commit/937df01))
--   docs: regenerate readme changelog for 7.1.3 ([4a917cf](https://github.com/MONEI/MONEI-WooCommerce/commit/4a917cf))
