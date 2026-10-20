@@ -1,5 +1,11 @@
 # Changelog
 
+## <small>7.3.5 (2026-10-20)</small>
+
+-   fix: pass store language to MONEI components in classic checkout (#129) ([7005a38](https://github.com/MONEI/MONEI-WooCommerce/commit/7005a38)), closes [#129](https://github.com/MONEI/MONEI-WooCommerce/issues/129)
+-   test(e2e): note express specs need a test account without a cardholder name rule (#128) ([3a381cb](https://github.com/MONEI/MONEI-WooCommerce/commit/3a381cb)), closes [#128](https://github.com/MONEI/MONEI-WooCommerce/issues/128)
+-   docs: regenerate readme changelog for 7.3.4 ([c0dd4b9](https://github.com/MONEI/MONEI-WooCommerce/commit/c0dd4b9))
+
 ## <small>7.3.4 (2026-10-14)</small>
 
 -   fix: stop gateway constructors from calling the payment methods API (#127) ([fa735a5](https://github.com/MONEI/MONEI-WooCommerce/commit/fa735a5)), closes [#127](https://github.com/MONEI/MONEI-WooCommerce/issues/127)
