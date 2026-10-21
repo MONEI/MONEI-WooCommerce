@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.3.6 (2026-10-21)</small>
+
+-   fix: harden order verification on customer return (#130) ([90114b7](https://github.com/MONEI/MONEI-WooCommerce/commit/90114b7)), closes [#130](https://github.com/MONEI/MONEI-WooCommerce/issues/130)
+-   docs: regenerate readme changelog for 7.3.5 ([dfcb63b](https://github.com/MONEI/MONEI-WooCommerce/commit/dfcb63b))
+
 ## <small>7.3.5 (2026-10-20)</small>
 
 -   fix: pass store language to MONEI components in classic checkout (#129) ([7005a38](https://github.com/MONEI/MONEI-WooCommerce/commit/7005a38)), closes [#129](https://github.com/MONEI/MONEI-WooCommerce/issues/129)

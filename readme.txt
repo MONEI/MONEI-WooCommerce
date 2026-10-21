@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.3.5
+Stable tag: 7.3.6
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.3.5 - 2026-10-20 =
+= v7.3.6 - 2026-10-20 =
 -   fix: pass store language to MONEI components in classic checkout (#129) ([7005a38](https://github.com/MONEI/MONEI-WooCommerce/commit/7005a38)), closes [#129](https://github.com/MONEI/MONEI-WooCommerce/issues/129)
 -   test(e2e): note express specs need a test account without a cardholder name rule (#128) ([3a381cb](https://github.com/MONEI/MONEI-WooCommerce/commit/3a381cb)), closes [#128](https://github.com/MONEI/MONEI-WooCommerce/issues/128)
 -   docs: regenerate readme changelog for 7.3.4 ([c0dd4b9](https://github.com/MONEI/MONEI-WooCommerce/commit/c0dd4b9))
