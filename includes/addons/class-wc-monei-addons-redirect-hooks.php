@@ -70,6 +70,11 @@ class WC_Monei_Addons_Redirect_Hooks {
 			return;
 		}
 
+		$order = wc_get_order( $order_id );
+		if ( ! $order || $order->get_customer_id() !== get_current_user_id() ) {
+			return;
+		}
+
 		try {
 			/**
 			 * We need to update parent from subscription, where sequence id is stored.
@@ -109,6 +114,13 @@ class WC_Monei_Addons_Redirect_Hooks {
 		 */
 		$handler = $this->subscriptionService->getHandler();
 		if ( ! $handler || ! $handler->is_subscription_order( $order_id ) ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+		if ( ! $order || ! RedirectPaymentGuard::order_key_matches( $order_key, $order->get_order_key() ) ) {
 			return;
 		}
 
