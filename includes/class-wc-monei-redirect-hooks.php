@@ -4,6 +4,7 @@ use Monei\Core\ContainerProvider;
 use Monei\Model\PaymentStatus;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\payment\RedirectPaymentGuard;
 use Monei\Services\PaymentMethodFormatter;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 
@@ -134,10 +135,20 @@ class WC_Monei_Redirect_Hooks {
 			$payment       = $this->moneiPaymentServices->get_payment( $payment_id );
 			$payment_token = $payment->getPaymentToken();
 
-			// Verify payment status and complete order if needed (race condition fix)
-			// If user arrives before IPN webhook processes, we complete the order here
-			if ( $order_id && is_order_received_page() ) {
-				$this->verify_and_complete_order( $order_id, $payment );
+			if ( is_order_received_page() ) {
+				$order = $this->get_redirect_order( $order_id ?: get_query_var( 'order-received' ), $payment );
+				if ( ! $order ) {
+					return;
+				}
+
+				// Verify payment status and complete order if needed (race condition fix)
+				// If user arrives before IPN webhook processes, we complete the order here
+				if ( $order_id ) {
+					$this->verify_and_complete_order( $order->get_id(), $payment );
+				}
+			} elseif ( ! RedirectPaymentGuard::belongs_to_user_token_request( $payment->getOrderId(), get_current_user_id() ) ) {
+				WC_Monei_Logger::logError( sprintf( '[MONEI] Payment method redirect rejected, payment was not started by this user [payment_id=%s, payment_order_id=%s]', $payment->getId(), $payment->getOrderId() ) );
+				return;
 			}
 
 			// A payment can come without token, user didn't check on save payment method.
@@ -184,6 +195,33 @@ class WC_Monei_Redirect_Hooks {
 			wc_add_notice( __( 'Error while adding your payment method to MONEI. Payment ID: ', 'monei' ) . $payment_id, 'error' );
 			WC_Monei_Logger::logError( $e->getMessage() );
 		}
+	}
+
+	/**
+	 * The order a redirect refers to, if the payment and the order key in the URL belong to it.
+	 *
+	 * @param int|string           $order_id Order ID.
+	 * @param \Monei\Model\Payment $payment  MONEI payment object.
+	 * @return WC_Order|null
+	 */
+	private function get_redirect_order( $order_id, $payment ) {
+		$order = $order_id ? wc_get_order( $order_id ) : false;
+		if ( ! $order instanceof WC_Order ) {
+			return null;
+		}
+
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+
+		if (
+			! RedirectPaymentGuard::belongs_to_order( $payment->getOrderId(), $order->get_id() )
+			|| ! RedirectPaymentGuard::order_key_matches( $order_key, $order->get_order_key() )
+		) {
+			WC_Monei_Logger::logError( sprintf( '[MONEI] Redirect payment rejected, payment does not belong to this order [payment_id=%s, payment_order_id=%s, order_id=%s]', $payment->getId(), $payment->getOrderId(), $order->get_id() ) );
+			return null;
+		}
+
+		return $order;
 	}
 
 	/**

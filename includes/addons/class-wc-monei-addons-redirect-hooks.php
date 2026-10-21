@@ -5,6 +5,7 @@ use Monei\Features\Subscriptions\WooCommerceSubscriptionsHandler;
 use Monei\Features\Subscriptions\YithSubscriptionPluginHandler;
 use Monei\Services\ApiKeyService;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\payment\RedirectPaymentGuard;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -62,9 +63,15 @@ class WC_Monei_Addons_Redirect_Hooks {
 			return;
 		}
 
-		$order_id = $verification_order_id[0];
-		$handler  = $this->subscriptionService->getHandler();
+		$payment_order_id = $order_id;
+		$order_id         = $verification_order_id[0];
+		$handler          = $this->subscriptionService->getHandler();
 		if ( ! $handler || ! $handler->is_subscription_order( $order_id ) ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order || $order->get_customer_id() !== get_current_user_id() ) {
 			return;
 		}
 
@@ -72,7 +79,11 @@ class WC_Monei_Addons_Redirect_Hooks {
 			/**
 			 * We need to update parent from subscription, where sequence id is stored.
 			 */
-			$payment       = $this->moneiPaymentServices->get_payment( $payment_id );
+			$payment = $this->moneiPaymentServices->get_payment( $payment_id );
+			if ( ! RedirectPaymentGuard::belongs_to_order( $payment->getOrderId(), $payment_order_id ) ) {
+				WC_Monei_Logger::logError( sprintf( '[MONEI] Payment method change rejected, payment does not belong to this order [payment_id=%s, payment_order_id=%s, order_id=%s]', $payment->getId(), $payment->getOrderId(), $payment_order_id ) );
+				return;
+			}
 			$subscriptions = $handler->get_subscriptions_for_order( $order_id );
 			$handler->update_subscription_meta_data( $subscriptions, $payment );
 
@@ -106,6 +117,13 @@ class WC_Monei_Addons_Redirect_Hooks {
 			return;
 		}
 
+		$order = wc_get_order( $order_id );
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+		if ( ! $order || ! RedirectPaymentGuard::order_key_matches( $order_key, $order->get_order_key() ) ) {
+			return;
+		}
+
 		try {
 			$subscriptions = $handler->get_subscriptions_for_order( $order_id );
 			if ( ! $subscriptions ) {
@@ -113,6 +131,10 @@ class WC_Monei_Addons_Redirect_Hooks {
 			}
 
 			$payment = $this->moneiPaymentServices->get_payment( $payment_id );
+			if ( ! RedirectPaymentGuard::belongs_to_order( $payment->getOrderId(), $order_id ) ) {
+				WC_Monei_Logger::logError( sprintf( '[MONEI] Subscription redirect rejected, payment does not belong to this order [payment_id=%s, payment_order_id=%s, order_id=%s]', $payment->getId(), $payment->getOrderId(), $order_id ) );
+				return;
+			}
 			$handler->update_subscription_meta_data( $subscriptions, $payment );
 		} catch ( Exception $e ) {
 			wc_add_notice( __( 'Error while saving sequence id. Please contact admin. Payment ID: ', 'monei' ) . $payment_id, 'error' );
