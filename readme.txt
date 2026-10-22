@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.3.6
+Stable tag: 7.3.7
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,7 +103,7 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.3.6 - 2026-10-21 =
+= v7.3.7 - 2026-10-21 =
 -   fix: harden order verification on customer return (#130) ([90114b7](https://github.com/MONEI/MONEI-WooCommerce/commit/90114b7)), closes [#130](https://github.com/MONEI/MONEI-WooCommerce/issues/130)
 -   docs: regenerate readme changelog for 7.3.5 ([dfcb63b](https://github.com/MONEI/MONEI-WooCommerce/commit/dfcb63b))
 

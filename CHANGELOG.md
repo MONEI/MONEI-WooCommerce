@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>7.3.7 (2026-10-22)</small>
+
+-   fix(deps): update monei-php-sdk to 2.13 for bundled Guzzle security fixes (#131) ([adfdb48](https://github.com/MONEI/MONEI-WooCommerce/commit/adfdb48)), closes [#131](https://github.com/MONEI/MONEI-WooCommerce/issues/131)
+-   docs: regenerate readme changelog for 7.3.6 ([720369d](https://github.com/MONEI/MONEI-WooCommerce/commit/720369d))
+
 ## <small>7.3.6 (2026-10-21)</small>
 
 -   fix: harden order verification on customer return (#130) ([90114b7](https://github.com/MONEI/MONEI-WooCommerce/commit/90114b7)), closes [#130](https://github.com/MONEI/MONEI-WooCommerce/issues/130)

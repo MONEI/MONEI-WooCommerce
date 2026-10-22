@@ -1,6 +1,6 @@
 {
 	"name": "monei-woocommerce",
-	"version": "7.3.6",
+	"version": "7.3.7",
 	"main": "index.js",
 	"repository": "git@github.com:MONEI/MONEI-WooCommerce.git",
 	"author": "MONEI <support@monei.com>",
