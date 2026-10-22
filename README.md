@@ -4,7 +4,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.3.6
+Stable tag: 7.3.7
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -100,6 +100,11 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 ## Changelog
 
+### v7.3.7 - 2026-10-22
+
+-   fix(deps): update monei-php-sdk to 2.13 for bundled Guzzle security fixes (#131) ([adfdb48](https://github.com/MONEI/MONEI-WooCommerce/commit/adfdb48)), closes [#131](https://github.com/MONEI/MONEI-WooCommerce/issues/131)
+-   docs: regenerate readme changelog for 7.3.6 ([720369d](https://github.com/MONEI/MONEI-WooCommerce/commit/720369d))
+
 ### v7.3.6 - 2026-10-21
 
 -   fix: harden order verification on customer return (#130) ([90114b7](https://github.com/MONEI/MONEI-WooCommerce/commit/90114b7)), closes [#130](https://github.com/MONEI/MONEI-WooCommerce/issues/130)
@@ -151,10 +156,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 -   test: skip the PayPal specs instead of failing when unconfigured ([ac21f78](https://github.com/MONEI/MONEI-WooCommerce/commit/ac21f78))
 -   docs: regenerate readme changelog for 7.2.2 ([ec4dcb6](https://github.com/MONEI/MONEI-WooCommerce/commit/ec4dcb6))
-
-### v7.2.2 - 2026-08-26
-
--   test: pay with a real PayPal sandbox account end to end ([a3fdb41](https://github.com/MONEI/MONEI-WooCommerce/commit/a3fdb41))
--   test: pay with PayPal on the surface that can complete the order ([79ccdda](https://github.com/MONEI/MONEI-WooCommerce/commit/79ccdda))
--   fix: surface an express checkout failure on the cart, not only the checkout ([ae72255](https://github.com/MONEI/MONEI-WooCommerce/commit/ae72255))
--   docs: regenerate readme changelog for 7.2.1 ([19ef57a](https://github.com/MONEI/MONEI-WooCommerce/commit/19ef57a))
