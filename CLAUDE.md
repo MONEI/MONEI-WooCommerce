@@ -310,7 +310,7 @@ Each payment method has:
 Services are registered in `src/Core/container-definitions.php` and accessed via:
 
 ```php
-$container = ContainerProvider::getInstance()->getContainer();
+$container = ContainerProvider::getContainer();
 $service = $container->get( ServiceClass::class );
 ```
 

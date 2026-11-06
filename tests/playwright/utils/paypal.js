@@ -141,6 +141,8 @@ const approveInPayPal = async ( surface, account, timeout = 90000 ) => {
 		'[data-testid="submit-button-initial"]',
 		'#payment-submit-btn',
 		'[data-testid="continue-button"]',
+		'#one-time-cta',
+		'button[data-atomic-wait-intent="Pay_With_PayPal"]',
 	] );
 
 	// ⚠️ The login is not always shown. PayPal remembers a signed-in shopper and
@@ -154,12 +156,30 @@ const approveInPayPal = async ( surface, account, timeout = 90000 ) => {
 
 	if ( await email.isVisible().catch( () => false ) ) {
 		await email.fill( account.email );
-		await anyOf( [ '#btnNext', '[name="btnNext"]' ] ).click();
+		await anyOf( [
+			'#btnNext',
+			'[name="btnNext"]',
+			'button[data-atomic-wait-intent="Submit_Email"]',
+		] ).click();
 
-		const password = anyOf( [ '#password', '[name="login_password"]' ] );
-		await password.waitFor( { state: 'visible', timeout } );
+		// ⚠️ The current login page carries a hidden password field on the email
+		// step too, and swaps in the real one after Next. Filling before the
+		// password step has rendered types into the hidden field, and Log In
+		// then reports an empty password.
+		const login = anyOf( [
+			'#btnLogin',
+			'[name="btnLogin"]',
+			'button[data-atomic-wait-intent="Submit_Password"]',
+			'button:text-is("Log In")',
+		] );
+		await login.waitFor( { state: 'visible', timeout } );
+		const password = anyOf( [
+			'#password:visible',
+			'[name="login_password"]:visible',
+		] );
 		await password.fill( account.password );
-		await anyOf( [ '#btnLogin', '[name="btnLogin"]' ] ).click();
+		await expect( password ).toHaveValue( account.password );
+		await login.click();
 	}
 
 	await confirm.waitFor( { state: 'visible', timeout } );
