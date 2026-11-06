@@ -1166,36 +1166,34 @@ namespace Monei\Tests {
 		}
 
 		/**
-		 * Contract test 14. Bug: a user delete that ran while the create waited for MONEI read
-		 * no mapping, so the new MONEI customer with PII outlives the delete with no mapping and no log.
+		 * Contract test 14. The create mock runs the user delete while the create waits for
+		 * MONEI. Bug: that delete read no mapping, so the new MONEI customer with PII outlives
+		 * it with no mapping and no log; or the hook and the re-check use different markers.
 		 *
 		 * @dataProvider deletes_during_create
 		 */
-		public function test_user_deleted_during_create_deletes_the_new_customer( callable $delete_starts ) {
+		public function test_user_deleted_during_create_deletes_the_new_customer( bool $delete_finishes ) {
+			$service = $this->service();
 			$this->customers->method( 'create' )->willReturnCallback(
-				function () use ( $delete_starts ) {
-					$delete_starts();
+				function () use ( $service, $delete_finishes ) {
+					call_user_func( $this->hook( $service, 'delete_user' )[0], self::USER_ID );
+					if ( $delete_finishes ) {
+						unset( $GLOBALS['mcs_users'][ self::USER_ID ] );
+						call_user_func( $this->hook( $service, 'deleted_user' )[0], self::USER_ID );
+					}
 					return $this->customer( 'cus_new' );
 				}
 			);
 			$this->customers->expects( $this->once() )->method( 'delete' )->with( 'cus_new' );
 
-			$this->assertNull( $this->link() );
+			$this->assertNull( $service->get_or_create_customer_id( self::USER_ID, 'buyer@example.com', 'Ana Buyer', null ) );
 			$this->assertSame( array(), $this->stored() );
 		}
 
 		public function deletes_during_create(): array {
 			return array(
-				'delete hook wrote the marker' => array(
-					function () {
-						$GLOBALS['mcs_options'][ 'monei_customer_deleting_' . self::USER_ID ] = '1';
-					},
-				),
-				'user row is gone'             => array(
-					function () {
-						unset( $GLOBALS['mcs_users'][ self::USER_ID ] );
-					},
-				),
+				'delete hook is running' => array( false ),
+				'delete has finished'    => array( true ),
 			);
 		}
 	}
