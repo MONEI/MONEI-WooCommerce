@@ -63,6 +63,37 @@ class CustomerService {
 	}
 
 	/**
+	 * Adds the MONEI customer of the user to a create-payment payload. Does nothing for a guest or an unknown user.
+	 *
+	 * @param string|null $fallback_phone Used when the user has no billing phone, for example the order billing phone.
+	 */
+	public function add_customer_id( array $payload, int $user_id, ?string $fallback_phone = null ): array {
+		try {
+			$user = get_userdata( $user_id );
+			if ( ! $user ) {
+				return $payload;
+			}
+
+			$name = trim( get_user_meta( $user_id, 'billing_first_name', true ) . ' ' . get_user_meta( $user_id, 'billing_last_name', true ) );
+			if ( '' === $name ) {
+				$name = (string) $user->display_name;
+			}
+			$phone = (string) get_user_meta( $user_id, 'billing_phone', true );
+			if ( '' === $phone ) {
+				$phone = $fallback_phone;
+			}
+
+			$customer_id = $this->get_or_create_customer_id( $user_id, (string) $user->user_email, $name, $phone );
+			if ( null !== $customer_id ) {
+				$payload['customerId'] = $customer_id;
+			}
+		} catch ( Throwable $e ) {
+			WC_Monei_Logger::logError( self::LOG_PREFIX . sprintf( 'Could not add the MONEI customer of user %d to the payment: %s', $user_id, $e->getMessage() ) );
+		}
+		return $payload;
+	}
+
+	/**
 	 * Removes the mapping of the current account and mode only while it still holds $stale_id.
 	 */
 	public function forget_customer_id( int $user_id, string $stale_id ): void {

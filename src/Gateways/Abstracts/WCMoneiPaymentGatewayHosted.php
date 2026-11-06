@@ -120,6 +120,11 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			unset( $payload['allowedPaymentMethods'] );
 		}
 
+		$customer_service = $this->customer_service();
+		if ( null !== $customer_service ) {
+			$payload = $customer_service->add_customer_id( $payload, $order->get_customer_id(), $order->get_billing_phone() );
+		}
+
 		// Filter to enable external changes on payload.
 		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
 

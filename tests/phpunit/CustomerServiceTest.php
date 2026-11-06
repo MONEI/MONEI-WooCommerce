@@ -121,6 +121,10 @@ namespace Monei\Services {
 		return true;
 	}
 
+	function get_userdata( $user_id ) {
+		return $GLOBALS['mcs_users'][ (int) $user_id ] ?? false;
+	}
+
 	function wp_cache_delete( $key, $group = '' ) {
 		if ( 'user_meta' === $group ) {
 			unset( $GLOBALS['mcs_meta_cache'][ (int) $key ] );
@@ -227,6 +231,90 @@ namespace Monei\Tests {
 					}
 				)
 			);
+		}
+
+		private function add( int $user_id, ?string $fallback_phone = null ): array {
+			return $this->service()->add_customer_id( array( 'amount' => 100 ), $user_id, $fallback_phone );
+		}
+
+		/**
+		 * Contract test 1. Bug: orphan MONEI customers for guests, or a mapping read for a
+		 * user ID that has no WP user. The unknown user has a mapping, so only the user check stops it.
+		 */
+		public function test_guest_and_unknown_user_get_no_customer_id_and_no_create_call() {
+			$GLOBALS['mcs_meta'][99][ $this->key() ] = array( 'cus_orphan' );
+			$this->customers->expects( $this->never() )->method( 'create' );
+
+			$this->assertSame( array( 'amount' => 100 ), $this->add( 0 ) );
+			$this->assertSame( array( 'amount' => 100 ), $this->add( 99 ) );
+			// PHPUnit turns a property read on false into an exception that the service catches, so only the log shows a missing check.
+			$this->assertSame( array(), $this->errors() );
+		}
+
+		/**
+		 * Bug: swapped or wrong buyer fields fail at MONEI, fail open, and no buyer is ever linked.
+		 *
+		 * @dataProvider buyers
+		 */
+		public function test_create_request_takes_the_buyer_data_from_the_wp_user( array $meta, array $expected ) {
+			$GLOBALS['mcs_meta'][ self::USER_ID ] = $meta;
+			$this->customers->expects( $this->once() )->method( 'create' )
+				->with(
+					$expected + array(
+						'metadata' => array(
+							'platform'           => 'woocommerce',
+							'platformCustomerId' => '7',
+						),
+					)
+				)
+				->willReturn( $this->customer( 'cus_new' ) );
+
+			$this->assertSame( 'cus_new', $this->add( self::USER_ID, '+34 699 000 000' )['customerId'] );
+		}
+
+		public function buyers(): array {
+			return array(
+				'billing name and phone win over display name and fallback' => array(
+					array(
+						'billing_first_name' => array( 'Ana' ),
+						'billing_last_name'  => array( 'Buyer' ),
+						'billing_phone'      => array( '600123456' ),
+					),
+					array(
+						'email' => 'buyer@example.com',
+						'name'  => 'Ana Buyer',
+						'phone' => '600123456',
+					),
+				),
+				'no billing data'                                           => array(
+					array(),
+					array(
+						'email' => 'buyer@example.com',
+						'name'  => 'buyer',
+						'phone' => '+34 699 000 000',
+					),
+				),
+				'first name only'                                           => array(
+					array( 'billing_first_name' => array( 'Ana' ) ),
+					array(
+						'email' => 'buyer@example.com',
+						'name'  => 'Ana',
+						'phone' => '+34 699 000 000',
+					),
+				),
+			);
+		}
+
+		/**
+		 * Contract test 3. Bug: a customer API outage blocks checkout (an \Error is not an
+		 * \Exception), or an empty ID is stored and reused.
+		 */
+		public function test_create_error_gives_a_payload_without_customer_id_and_no_mapping() {
+			$this->customers->method( 'create' )->willThrowException( new \Error( 'outage' ) );
+
+			$this->assertSame( array( 'amount' => 100 ), $this->add( self::USER_ID ) );
+			$this->assertSame( array(), $this->stored() );
+			$this->assertCount( 1, $this->errors() );
 		}
 
 		/**

@@ -295,6 +295,11 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 			$payload['sessionId'] = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
 		}
 
+		$customer_service = $this->customer_service();
+		if ( null !== $customer_service ) {
+			$payload = $customer_service->add_customer_id( $payload, $order->get_customer_id(), $order->get_billing_phone() );
+		}
+
 		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
 		return $payload;
 	}

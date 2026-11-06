@@ -328,6 +328,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 			$payload['sessionId']    = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
 		}
 
+		$customer_service = $this->customer_service();
+		if ( null !== $customer_service ) {
+			$payload = $customer_service->add_customer_id( $payload, get_current_user_id() );
+		}
+
 		return $payload;
 	}
 
