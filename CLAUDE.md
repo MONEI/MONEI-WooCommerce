@@ -328,6 +328,14 @@ Block checkout payment methods must implement:
 -   JS SDK: Loaded via `https://js.monei.com/v2/monei.js`
 -   Components: CardInput, Bizum, PayPal, PaymentRequest (Apple/Google Pay)
 
+### MONEI Customers
+
+-   `src/Services/CustomerService.php` links the MONEI payments of logged-in buyers to a MONEI customer. It deletes at MONEI when a saved card or a user is deleted or erased.
+-   The cross-platform contract `docs/plans/20261105-monei-customers-api-contract.md` (not in git) sets the behavior. The Magento and PrestaShop plugins use the same contract. Do not change the behavior without a new contract version.
+-   Mapping: user meta `_monei_customer_{accountId}_{test|live}` holds the MONEI customer ID. Test and live can have the same account ID, so the key always holds the mode.
+-   An extra SDK client (for a key that is not the main key) must get its own `new \Monei\Configuration()`. `MoneiClient` writes its key into its configuration, and the main client uses the shared default configuration. Use `MoneiSdkClientFactory::get_client_for_mode()`.
+-   Customer errors never stop a payment or a delete: every customer code path catches `\Throwable`.
+
 ## Testing
 
 WooCommerce Blocks checkout requires testing in WordPress with WooCommerce Blocks plugin activated. Classic checkout works with standard WooCommerce.
