@@ -135,6 +135,77 @@ class CustomerService {
 	}
 
 	/**
+	 * Deletes the MONEI customer of every mapping of the user, in every account and mode.
+	 *
+	 * The caller catches: a failure to read the mappings escapes. A failing row is logged and kept, and the next row still runs.
+	 */
+	public function delete_customer( int $user_id ): void {
+		foreach ( $this->mapping_rows( $user_id ) as $row ) {
+			try {
+				$this->delete_row( $user_id, $row );
+			} catch ( Throwable $e ) {
+				WC_Monei_Logger::logError( self::LOG_PREFIX . $this->row_message( $row, 'could not be deleted: ' . $e->getMessage() ) );
+			}
+		}
+	}
+
+	/**
+	 * Every mapping value of the user. A key can hold several values: the unique check in add_metadata is not atomic.
+	 *
+	 * @return array<int, array{key: string, account_id: string, mode: string, customer_id: string}>
+	 */
+	private function mapping_rows( int $user_id ): array {
+		$all_meta = get_user_meta( $user_id );
+		if ( ! is_array( $all_meta ) ) {
+			return array();
+		}
+
+		$rows = array();
+		foreach ( $all_meta as $key => $values ) {
+			if ( ! preg_match( '/^' . self::META_PREFIX . '(.+)_(test|live)$/', (string) $key, $match ) ) {
+				continue;
+			}
+			foreach ( (array) $values as $customer_id ) {
+				$rows[] = array(
+					'key'         => (string) $key,
+					'account_id'  => $match[1],
+					'mode'        => $match[2],
+					'customer_id' => (string) $customer_id,
+				);
+			}
+		}
+		return $rows;
+	}
+
+	/**
+	 * @param array{key: string, account_id: string, mode: string, customer_id: string} $row
+	 */
+	private function delete_row( int $user_id, array $row ): void {
+		// Test and live often share one account ID, so the mode comes from the row, never from the account ID.
+		if ( $this->apiKeyService->get_account_id_for_mode( $row['mode'] ) !== $row['account_id'] || '' === $this->apiKeyService->get_api_key_for_mode( $row['mode'] ) ) {
+			WC_Monei_Logger::logError( self::LOG_PREFIX . $this->row_message( $row, 'was not deleted: no API key is configured for its account and mode.' ) );
+			return;
+		}
+
+		try {
+			$this->sdkClientFactory->get_client_for_mode( $row['mode'] )->customers->delete( $row['customer_id'] );
+		} catch ( ApiException $e ) {
+			if ( 404 !== $e->getCode() ) {
+				throw $e;
+			}
+			WC_Monei_Logger::logDebug( self::LOG_PREFIX . $this->row_message( $row, 'was already deleted at MONEI.' ) );
+		}
+		delete_user_meta( $user_id, $row['key'], $row['customer_id'] );
+	}
+
+	/**
+	 * @param array{key: string, account_id: string, mode: string, customer_id: string} $row
+	 */
+	private function row_message( array $row, string $text ): string {
+		return sprintf( 'MONEI customer %s (account %s, mode %s) %s', $row['customer_id'], $row['account_id'], $row['mode'], $text );
+	}
+
+	/**
 	 * @return string|null Null when no MONEI account ID is configured for the current mode.
 	 */
 	private function meta_key(): ?string {

@@ -133,10 +133,34 @@ namespace Monei\Services {
 	}
 }
 
+namespace Monei\Services\sdk {
+
+	// For the real MoneiSdkClientFactory in test 9.
+
+	function WC_Monei() {
+		return new class() {
+			public $version = '0.0.0';
+
+			public function plugin_path() {
+				return dirname( __DIR__, 2 );
+			}
+		};
+	}
+
+	function WC() {
+		return (object) array( 'version' => '0.0.0' );
+	}
+
+	function get_bloginfo( $show ) {
+		return '0.0';
+	}
+}
+
 namespace Monei\Tests {
 
 	use Monei\Api\CustomersApi;
 	use Monei\ApiException;
+	use Monei\Configuration;
 	use Monei\Model\Customer;
 	use Monei\MoneiClient;
 	use Monei\Services\ApiKeyService;
@@ -171,6 +195,9 @@ namespace Monei\Tests {
 		/** @var CustomersApi&MockObject */
 		private $customers;
 
+		/** @var array<string, CustomersApi&MockObject> The customers API of the client that get_client_for_mode returns. */
+		private $mode_customers;
+
 		protected function setUp(): void {
 			$GLOBALS['mcs_options']         = array(
 				'monei_apikey_mode'    => 'test',
@@ -196,14 +223,31 @@ namespace Monei\Tests {
 			$GLOBALS['wpdb']                = new FakeWpdb();
 			WC_Monei_Logger::$records       = array();
 
-			$this->customers = $this->createMock( CustomersApi::class );
+			$this->customers      = $this->createMock( CustomersApi::class );
+			$this->mode_customers = array(
+				'test' => $this->createMock( CustomersApi::class ),
+				'live' => $this->createMock( CustomersApi::class ),
+			);
+		}
+
+		protected function tearDown(): void {
+			Configuration::setDefaultConfiguration( new Configuration() );
+		}
+
+		private function client( CustomersApi $customers ): MoneiClient {
+			$client            = $this->createMock( MoneiClient::class );
+			$client->customers = $customers;
+			return $client;
 		}
 
 		private function service(): CustomerService {
-			$client            = $this->createMock( MoneiClient::class );
-			$client->customers = $this->customers;
-			$factory           = $this->createMock( MoneiSdkClientFactory::class );
-			$factory->method( 'get_client' )->willReturn( $client );
+			$factory = $this->createMock( MoneiSdkClientFactory::class );
+			$factory->method( 'get_client' )->willReturn( $this->client( $this->customers ) );
+			$factory->method( 'get_client_for_mode' )->willReturnCallback(
+				function ( string $mode ) {
+					return $this->client( $this->mode_customers[ $mode ] );
+				}
+			);
 			return new CustomerService( $factory, new ApiKeyService() );
 		}
 
@@ -428,6 +472,132 @@ namespace Monei\Tests {
 				'same message, other status' => array( array( 'customerId' => 'cus_known' ), 'Customer not found', 400 ),
 				'no customerId in payload'   => array( array( 'amount' => 100 ), 'Customer not found', 404 ),
 			);
+		}
+
+		/**
+		 * Contract test 5, deleteCustomer 404. Bug: a customer already deleted at MONEI logs an
+		 * error and keeps a row that no delete can ever remove.
+		 */
+		public function test_delete_customer_logs_a_404_at_debug_level_and_removes_the_row() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_gone' );
+			$this->mode_customers['test']->method( 'delete' )->willThrowException( $this->api_error( 'Customer not found' ) );
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( array(), $this->stored() );
+			$this->assertSame( array( WC_Monei_Logger::LEVEL_INFO ), array_column( WC_Monei_Logger::$records, 0 ) );
+		}
+
+		/**
+		 * Contract test 5, deleteCustomer 500. Bug: an outage drops the row and leaves the
+		 * customer at MONEI with no record of its ID.
+		 */
+		public function test_delete_customer_keeps_the_row_and_logs_an_error_on_a_500() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_kept' );
+			$this->mode_customers['test']->method( 'delete' )->willThrowException( $this->api_error( 'Internal error', 500 ) );
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( array( 'cus_kept' ), $this->stored() );
+			$this->assertCount( 1, $this->errors() );
+			$this->assertStringContainsString( 'MONEI customer cus_kept (account acc_1, mode test)', $this->errors()[0][1] );
+		}
+
+		/**
+		 * Contract test 7, rows of both modes. Bug: a live row deleted with the test key gets
+		 * 404, the row is removed, and the live customer stays at MONEI.
+		 */
+		public function test_delete_customer_deletes_each_row_with_the_client_of_its_own_mode() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ] = array(
+				$this->key( 'test' ) => array( 'cus_test' ),
+				$this->key( 'live' ) => array( 'cus_live' ),
+			);
+			$this->mode_customers['test']->expects( $this->once() )->method( 'delete' )->with( 'cus_test' );
+			$this->mode_customers['live']->expects( $this->once() )->method( 'delete' )->with( 'cus_live' );
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( array(), $GLOBALS['mcs_meta'][ self::USER_ID ] );
+		}
+
+		/**
+		 * Contract test 7, rows with no matching key. Bug: a row matched by account ID alone is
+		 * deleted with the key of another account or an empty key, gets an error, and is lost silently.
+		 */
+		public function test_delete_customer_keeps_rows_with_no_configured_key() {
+			$GLOBALS['mcs_options']['monei_live_apikey'] = '';
+			$GLOBALS['mcs_meta'][ self::USER_ID ]        = array(
+				'_monei_customer_acc_other_test' => array( 'cus_other' ),
+				$this->key( 'live' )             => array( 'cus_live' ),
+			);
+			$this->mode_customers['test']->expects( $this->never() )->method( 'delete' );
+			$this->mode_customers['live']->expects( $this->never() )->method( 'delete' );
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( array( 'cus_other' ), $GLOBALS['mcs_meta'][ self::USER_ID ]['_monei_customer_acc_other_test'] );
+			$this->assertSame( array( 'cus_live' ), $this->stored( 'live' ) );
+			$this->assertCount( 2, $this->errors() );
+			$this->assertStringContainsString( 'MONEI customer cus_other (account acc_other, mode test)', $this->errors()[0][1] );
+			$this->assertStringContainsString( 'MONEI customer cus_live (account acc_1, mode live)', $this->errors()[1][1] );
+		}
+
+		/**
+		 * Contract test 7, a row that throws an \Error. Bug: one failing row stops the loop, and
+		 * the other customers are lost with the user delete.
+		 */
+		public function test_delete_customer_goes_on_after_a_row_that_throws_an_error() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ] = array(
+				$this->key( 'test' ) => array( 'cus_test' ),
+				$this->key( 'live' ) => array( 'cus_live' ),
+			);
+			$this->mode_customers['test']->method( 'delete' )->willThrowException( new \Error( 'boom' ) );
+			$this->mode_customers['live']->expects( $this->once() )->method( 'delete' )->with( 'cus_live' );
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( array( 'cus_test' ), $this->stored( 'test' ) );
+			$this->assertSame( array(), $this->stored( 'live' ) );
+			$this->assertCount( 1, $this->errors() );
+			$this->assertStringContainsString( 'MONEI customer cus_test (account acc_1, mode test)', $this->errors()[0][1] );
+		}
+
+		/**
+		 * Bug: reading only the first value of a key leaves a MONEI customer with PII; deleting
+		 * without the value removes the failed row too.
+		 */
+		public function test_delete_customer_handles_each_value_of_a_key_as_its_own_row() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_a', 'cus_b' );
+			$deleted = array();
+			$this->mode_customers['test']->method( 'delete' )->willReturnCallback(
+				function ( string $id ) use ( &$deleted ) {
+					$deleted[] = $id;
+					if ( 'cus_b' === $id ) {
+						throw $this->api_error( 'Internal error', 500 );
+					}
+				}
+			);
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( array( 'cus_a', 'cus_b' ), $deleted );
+			$this->assertSame( array( 'cus_b' ), $this->stored() );
+		}
+
+		/**
+		 * Contract test 9. Bug: the client for the other mode writes its key into the shared
+		 * default Configuration, so the main client then sends the other mode's key; or it
+		 * replaces the cached main client.
+		 */
+		public function test_client_for_the_other_mode_does_not_change_the_main_client_key() {
+			$factory = new MoneiSdkClientFactory( new ApiKeyService() );
+
+			$factory->get_client();
+			$live = $factory->get_client_for_mode( 'live' );
+			$main = $factory->get_client();
+
+			$this->assertSame( 'pk_test_key', $main->getConfig()->getApiKey( 'Authorization' ) );
+			$this->assertSame( 'pk_live_key', $live->getConfig()->getApiKey( 'Authorization' ) );
 		}
 
 		/**
