@@ -5,6 +5,7 @@ namespace Monei\Gateways\Abstracts;
 use Monei\Features\Subscriptions\SubscriptionHandlerInterface;
 use Monei\Model\PaymentStatus;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\payment\PaymentTokenGuard;
 use Monei\Services\ApiKeyService;
 use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\PaymentMethodsService;
@@ -13,7 +14,9 @@ use Exception;
 use WC_Admin_Settings;
 use WC_Blocks_Utils;
 use WC_Monei_Logger;
+use WC_Order;
 use WC_Payment_Gateway;
+use WC_Payment_Tokens;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -293,6 +296,33 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 	protected function get_payment_token_id_if_selected() {
 		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		return ( isset( $_POST[ 'wc-' . $this->id . '-payment-token' ] ) ) ? filter_var( wp_unslash( $_POST[ 'wc-' . $this->id . '-payment-token' ] ), FILTER_SANITIZE_NUMBER_INT ) : false;  // WPCS: CSRF ok.
+	}
+
+	/**
+	 * Failure result when the selected saved token is not the current user's.
+	 *
+	 * Returns a result instead of throwing: callers run this outside their `try`, and
+	 * nothing catches an exception on the express checkout path.
+	 *
+	 * @param WC_Order $order Order being paid.
+	 *
+	 * @return array|null Failure result, or null when no token is selected or the token is the user's.
+	 */
+	protected function saved_token_failure( WC_Order $order ): ?array {
+		$token_id = $this->get_payment_token_id_if_selected();
+		if ( ! $token_id ) {
+			return null;
+		}
+
+		$token = WC_Payment_Tokens::get( $token_id );
+		if ( PaymentTokenGuard::belongs_to( $token ? $token->get_user_id() : null, get_current_user_id() ) ) {
+			return null;
+		}
+
+		$this->log( sprintf( 'Saved token %s rejected for order %d: not owned by the current user.', $token_id, $order->get_id() ), 'error' );
+		wc_add_notice( __( 'This payment method is not available.', 'monei' ), 'error' );
+
+		return array( 'result' => 'failure' );
 	}
 
 	/**

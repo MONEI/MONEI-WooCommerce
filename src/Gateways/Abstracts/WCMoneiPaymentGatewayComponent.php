@@ -36,6 +36,10 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
 		$order   = new WC_Order( $order_id );
+		$failure = $this->saved_token_failure( $order );
+		if ( null !== $failure ) {
+			return $failure;
+		}
 		$payload = $this->create_payload( $order, $allowed_payment_method );
 		$payload = $this->handler === null || ! ( $this->handler->is_subscription_order( $order_id ) ) ? $payload : $this->handler->create_subscription_payload( $order, $allowed_payment_method, $payload );
 
