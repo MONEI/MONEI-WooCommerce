@@ -226,12 +226,16 @@ class CustomerService {
 			if ( ! $user ) {
 				return $result;
 			}
-			$before = count( $this->mapping_rows( (int) $user->ID ) );
-			$this->delete_customer( (int) $user->ID );
-			$after = count( $this->mapping_rows( (int) $user->ID ) );
+			$before  = count( $this->mapping_rows( (int) $user->ID ) );
+			$deleted = $this->delete_mappings( (int) $user->ID );
+			$after   = count( $this->mapping_rows( (int) $user->ID ) );
 
 			$result['items_removed']  = $after < $before;
 			$result['items_retained'] = $after > 0;
+			if ( ! $deleted ) {
+				$result['messages'][] = __( 'The MONEI customer is kept because the user has an active subscription that MONEI charges.', 'monei' );
+				return $result;
+			}
 		} catch ( Throwable $e ) {
 			// No email in the log: the request is there to erase it.
 			WC_Monei_Logger::logError( self::LOG_PREFIX . 'Could not erase the MONEI customers of a privacy request: ' . $e->getMessage() );
@@ -284,13 +288,72 @@ class CustomerService {
 	 * The caller catches: a failure to read the mappings escapes. A failing row is logged and kept, and the next row still runs.
 	 */
 	public function delete_customer( int $user_id ): void {
-		foreach ( $this->mapping_rows( $user_id ) as $row ) {
+		$this->delete_mappings( $user_id );
+	}
+
+	/**
+	 * @return bool False when an active subscription keeps every row.
+	 */
+	private function delete_mappings( int $user_id ): bool {
+		$rows = $this->mapping_rows( $user_id );
+		// MONEI fails every recurring charge of a deleted customer (sandbox check e).
+		if ( $rows && $this->subscription_blocks_delete( $user_id ) ) {
+			foreach ( $rows as $row ) {
+				WC_Monei_Logger::logError( self::LOG_PREFIX . $this->row_message( $row, 'was not deleted: the user has an active subscription that MONEI charges.' ) );
+			}
+			return false;
+		}
+
+		foreach ( $rows as $row ) {
 			try {
 				$this->delete_row( $user_id, $row );
 			} catch ( Throwable $e ) {
 				WC_Monei_Logger::logError( self::LOG_PREFIX . $this->row_message( $row, 'could not be deleted: ' . $e->getMessage() ) );
 			}
 		}
+		return true;
+	}
+
+	/**
+	 * A failed check counts as an active subscription: a wrong keep leaves a logged customer that an admin can
+	 * delete, a wrong delete stops the renewals for good.
+	 */
+	private function subscription_blocks_delete( int $user_id ): bool {
+		try {
+			return $this->has_active_monei_subscription( $user_id );
+		} catch ( Throwable $e ) {
+			WC_Monei_Logger::logError( self::LOG_PREFIX . sprintf( 'Could not check the subscriptions of user %d: %s', $user_id, $e->getMessage() ) );
+			return true;
+		}
+	}
+
+	/**
+	 * True when the user has a subscription that will still charge a renewal on a MONEI sequence.
+	 */
+	private function has_active_monei_subscription( int $user_id ): bool {
+		if ( function_exists( 'wcs_get_users_subscriptions' ) ) {
+			foreach ( wcs_get_users_subscriptions( $user_id ) as $subscription ) {
+				// pending-cancel does not renew.
+				if ( $subscription->has_status( array( 'active', 'on-hold' ) ) && '' !== (string) $subscription->get_meta( '_monei_sequence_id', true ) ) {
+					return true;
+				}
+			}
+		}
+
+		if ( function_exists( 'YITH_WC_Subscription' ) && function_exists( 'ywsbs_get_subscription' ) ) {
+			// get_user_subscriptions() returns 0 when the user has none.
+			$subscription_ids = YITH_WC_Subscription()->get_user_subscriptions( $user_id );
+			foreach ( is_array( $subscription_ids ) ? $subscription_ids : array() as $subscription_id ) {
+				$subscription = ywsbs_get_subscription( $subscription_id );
+				// ywsbs_get_status() in YITH WooCommerce Subscription 4.23.0 (includes/functions-yith-wc-subscription.php:285),
+				// less cancelled, expired and pending (no first payment yet). Paused, overdue and suspended can still renew.
+				if ( $subscription->has_status( array( 'active', 'trial', 'overdue', 'suspended', 'paused' ) ) && '' !== (string) $subscription->get( '_monei_sequence_id' ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

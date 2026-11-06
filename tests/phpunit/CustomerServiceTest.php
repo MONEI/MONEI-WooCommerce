@@ -44,6 +44,57 @@ namespace {
 		}
 	}
 
+	/**
+	 * A WooCommerce Subscriptions or YITH subscription: the plugin reads its status and its MONEI sequence.
+	 */
+	class MCS_Fake_Subscription {
+		private $status;
+		private $sequence_id;
+
+		public function __construct( string $status, string $sequence_id ) {
+			$this->status      = $status;
+			$this->sequence_id = $sequence_id;
+		}
+
+		public function has_status( $statuses ) {
+			return in_array( $this->status, (array) $statuses, true );
+		}
+
+		public function get_meta( $key, $single = false ) {
+			return '_monei_sequence_id' === $key ? $this->sequence_id : '';
+		}
+
+		public function get( $prop ) {
+			return '_monei_sequence_id' === $prop ? $this->sequence_id : '';
+		}
+	}
+
+	// The subscription plugins are global functions, and CustomerService checks them with function_exists.
+
+	function wcs_get_users_subscriptions( $user_id ) {
+		if ( $GLOBALS['mcs_subscriptions_throw'] ) {
+			throw new \Error( 'subscriptions failed' );
+		}
+		return $GLOBALS['mcs_wcs_subscriptions'][ $user_id ] ?? array();
+	}
+
+	function YITH_WC_Subscription() {
+		return new class() {
+			public function get_user_subscriptions( $user_id ) {
+				return isset( $GLOBALS['mcs_yith_subscriptions'][ $user_id ] ) ? array_keys( $GLOBALS['mcs_yith_subscriptions'][ $user_id ] ) : 0;
+			}
+		};
+	}
+
+	function ywsbs_get_subscription( $subscription_id ) {
+		foreach ( $GLOBALS['mcs_yith_subscriptions'] as $subscriptions ) {
+			if ( isset( $subscriptions[ $subscription_id ] ) ) {
+				return $subscriptions[ $subscription_id ];
+			}
+		}
+		return false;
+	}
+
 	if ( ! class_exists( 'WC_Payment_Token' ) ) {
 		class WC_Payment_Token {
 			private $gateway_id;
@@ -288,6 +339,9 @@ namespace Monei\Tests {
 			$GLOBALS['mcs_option_autoload']  = array();
 			$GLOBALS['mcs_multisite']        = false;
 			$GLOBALS['mcs_current_user']     = self::ADMIN_ID;
+			$GLOBALS['mcs_wcs_subscriptions']  = array();
+			$GLOBALS['mcs_yith_subscriptions'] = array();
+			$GLOBALS['mcs_subscriptions_throw'] = false;
 			$GLOBALS['mcs_users']           = array(
 				self::USER_ID => (object) array(
 					'ID'           => self::USER_ID,
@@ -912,6 +966,75 @@ namespace Monei\Tests {
 		 */
 		public function test_plugin_init_binds_the_customer_hooks() {
 			$this->assertStringContainsString( 'ContainerProvider::getContainer()->get(CustomerService::class)->init();', $this->code( 'class-woocommerce-gateway-monei.php' ) );
+		}
+
+		private function seed_both_modes(): void {
+			$GLOBALS['mcs_meta'][ self::USER_ID ] = array(
+				$this->key( 'test' ) => array( 'cus_test' ),
+				$this->key( 'live' ) => array( 'cus_live' ),
+			);
+		}
+
+		/**
+		 * Contract test 13. Bug: deleting or erasing a subscriber makes MONEI fail every later
+		 * renewal (E999); or a cancelled subscriber, or one paid with another gateway, is never deleted.
+		 *
+		 * @dataProvider subscriptions
+		 */
+		public function test_delete_customer_keeps_the_customer_of_an_active_monei_subscriber( array $wcs, array $yith, bool $throws, bool $kept ) {
+			$this->seed_both_modes();
+			$GLOBALS['mcs_wcs_subscriptions'][ self::USER_ID ]  = $wcs;
+			$GLOBALS['mcs_yith_subscriptions'][ self::USER_ID ] = $yith;
+			$GLOBALS['mcs_subscriptions_throw']                 = $throws;
+			$this->mode_customers['test']->expects( $kept ? $this->never() : $this->once() )->method( 'delete' )->with( 'cus_test' );
+			$this->mode_customers['live']->expects( $kept ? $this->never() : $this->once() )->method( 'delete' )->with( 'cus_live' );
+
+			$this->service()->delete_customer( self::USER_ID );
+
+			$this->assertSame( $kept ? array( 'cus_test' ) : array(), $this->stored( 'test' ) );
+			$this->assertSame( $kept ? array( 'cus_live' ) : array(), $this->stored( 'live' ) );
+			$logged = implode( "\n", array_column( $this->errors(), 1 ) );
+			if ( $kept ) {
+				$this->assertStringContainsString( 'MONEI customer cus_test (account acc_1, mode test)', $logged );
+				$this->assertStringContainsString( 'MONEI customer cus_live (account acc_1, mode live)', $logged );
+			} else {
+				$this->assertSame( '', $logged );
+			}
+		}
+
+		public function subscriptions(): array {
+			return array(
+				'active, MONEI sequence'                  => array( array( new \MCS_Fake_Subscription( 'active', 'seq_1' ) ), array(), false, true ),
+				'cancelled and expired, MONEI sequence'   => array(
+					array( new \MCS_Fake_Subscription( 'cancelled', 'seq_1' ), new \MCS_Fake_Subscription( 'expired', 'seq_2' ) ),
+					array(),
+					false,
+					false,
+				),
+				'active, other gateway'                   => array( array( new \MCS_Fake_Subscription( 'active', '' ) ), array(), false, false ),
+				'subscription check fails'                => array( array(), array(), true, true ),
+				'YITH overdue, MONEI sequence'            => array( array(), array( 11 => new \MCS_Fake_Subscription( 'overdue', 'seq_1' ) ), false, true ),
+				'YITH cancelled, MONEI sequence'          => array( array(), array( 11 => new \MCS_Fake_Subscription( 'cancelled', 'seq_1' ) ), false, false ),
+			);
+		}
+
+		/**
+		 * Bug: the eraser reports a complete erasure, or gives the admin no reason, while the
+		 * MONEI customer of an active subscriber is kept.
+		 */
+		public function test_eraser_says_why_the_customer_of_an_active_subscriber_is_kept() {
+			$this->seed_both_modes();
+			$GLOBALS['mcs_wcs_subscriptions'][ self::USER_ID ] = array( new \MCS_Fake_Subscription( 'active', 'seq_1' ) );
+
+			$this->assertSame(
+				array(
+					'items_removed'  => false,
+					'items_retained' => true,
+					'messages'       => array( 'The MONEI customer is kept because the user has an active subscription that MONEI charges.' ),
+					'done'           => true,
+				),
+				$this->erase( 'buyer@example.com' )
+			);
 		}
 
 		/**
