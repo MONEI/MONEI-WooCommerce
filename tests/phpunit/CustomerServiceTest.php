@@ -128,11 +128,21 @@ namespace Monei\Services {
 	// first, so these shims answer CustomerService and ApiKeyService. They follow the
 	// WordPress semantics that the service depends on.
 
+	// Like WordPress, a missing option is remembered for the request (notoptions), so a later
+	// write by another process is not seen. A write in this process clears that entry.
 	function get_option( $key, $default = false ) {
-		return $GLOBALS['mcs_options'][ $key ] ?? $default;
+		if ( isset( $GLOBALS['mcs_notoptions'][ $key ] ) ) {
+			return $default;
+		}
+		if ( ! array_key_exists( $key, $GLOBALS['mcs_options'] ) ) {
+			$GLOBALS['mcs_notoptions'][ $key ] = true;
+			return $default;
+		}
+		return $GLOBALS['mcs_options'][ $key ];
 	}
 
 	function update_option( $key, $value, $autoload = null ) {
+		unset( $GLOBALS['mcs_notoptions'][ $key ] );
 		$GLOBALS['mcs_options'][ $key ]          = $value;
 		$GLOBALS['mcs_option_autoload'][ $key ] = $autoload;
 		return true;
@@ -289,18 +299,23 @@ namespace Monei\Tests {
 	use WC_Monei_Logger;
 
 	/**
-	 * Answers the one query CustomerService runs: does the user row still exist.
+	 * Answers the two queries CustomerService runs: does the user row still exist, and the delete marker.
+	 * Both read the backing store, never a cache.
 	 */
 	class FakeWpdb {
-		public $users = 'wp_users';
+		public $users   = 'wp_users';
+		public $options = 'wp_options';
 
 		public function prepare( $query, ...$args ) {
-			return vsprintf( $query, $args );
+			return vsprintf( str_replace( '%s', "'%s'", $query ), $args );
 		}
 
 		public function get_var( $query ) {
 			if ( preg_match( '/^SELECT ID FROM wp_users WHERE ID = (\d+)$/', $query, $match ) && isset( $GLOBALS['mcs_users'][ (int) $match[1] ] ) ) {
 				return $match[1];
+			}
+			if ( preg_match( "/^SELECT option_value FROM wp_options WHERE option_name = '([^']+)'$/", $query, $match ) && array_key_exists( $match[1], $GLOBALS['mcs_options'] ) ) {
+				return $GLOBALS['mcs_options'][ $match[1] ];
 			}
 			return null;
 		}
@@ -337,6 +352,7 @@ namespace Monei\Tests {
 			$GLOBALS['mcs_all_meta_throws'] = false;
 			$GLOBALS['mcs_get_user_by_throws'] = false;
 			$GLOBALS['mcs_option_autoload']  = array();
+			$GLOBALS['mcs_notoptions']       = array();
 			$GLOBALS['mcs_multisite']        = false;
 			$GLOBALS['mcs_current_user']     = self::ADMIN_ID;
 			$GLOBALS['mcs_wcs_subscriptions']  = array();
@@ -1195,6 +1211,42 @@ namespace Monei\Tests {
 				'delete hook is running' => array( false ),
 				'delete has finished'    => array( true ),
 			);
+		}
+
+		/**
+		 * Contract test 14, the delete runs in another process. Bug: this request cached the
+		 * absence of the marker (notoptions), so get_option() misses the marker that the delete
+		 * wrote, and the new MONEI customer outlives the delete.
+		 */
+		public function test_marker_written_by_another_process_is_seen_after_a_cached_absence() {
+			$marker = 'monei_customer_deleting_' . self::USER_ID;
+			\Monei\Services\get_option( $marker );
+			$this->customers->method( 'create' )->willReturnCallback(
+				function () use ( $marker ) {
+					$GLOBALS['mcs_options'][ $marker ] = '1';
+					return $this->customer( 'cus_new' );
+				}
+			);
+			$this->customers->expects( $this->once() )->method( 'delete' )->with( 'cus_new' );
+
+			$this->assertNull( $this->service()->get_or_create_customer_id( self::USER_ID, 'buyer@example.com', 'Ana Buyer', null ) );
+			$this->assertSame( array(), $this->stored() );
+		}
+
+		/**
+		 * The other order: the create saves its mapping and finishes before the delete hook runs.
+		 * wp_delete_user loaded the user meta cache before the hook. Bug: the hook reads that stale
+		 * cache, finds no mapping, and WordPress then deletes the row; the MONEI customer outlives it.
+		 */
+		public function test_user_delete_sees_a_mapping_saved_after_the_meta_cache_was_loaded() {
+			$service = $this->service();
+			$this->assertSame( array(), \Monei\Services\get_user_meta( self::USER_ID ) );
+			$GLOBALS['mcs_meta'][ self::USER_ID ] = array( $this->key( 'test' ) => array( 'cus_saved' ) );
+			$this->mode_customers['test']->expects( $this->once() )->method( 'delete' )->with( 'cus_saved' );
+
+			call_user_func( $this->hook( $service, 'delete_user' )[0], self::USER_ID );
+
+			$this->assertSame( array(), $this->stored( 'test' ) );
 		}
 	}
 }

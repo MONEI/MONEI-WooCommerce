@@ -176,6 +176,8 @@ class CustomerService {
 		try {
 			// Written before the mappings are read: a create that is waiting for MONEI checks it after it saves its mapping.
 			update_option( self::DELETING_OPTION_PREFIX . (int) $user_id, '1', false );
+			// wp_delete_user loaded the meta cache before this hook. A mapping saved since then is only in the database.
+			wp_cache_delete( (int) $user_id, 'user_meta' );
 			$this->delete_customer( (int) $user_id );
 		} catch ( Throwable $e ) {
 			WC_Monei_Logger::logError( self::LOG_PREFIX . sprintf( 'Could not delete the MONEI customers of user %d: %s', $user_id, $e->getMessage() ) );
@@ -502,9 +504,8 @@ class CustomerService {
 	private function user_is_being_deleted( int $user_id ): bool {
 		global $wpdb;
 
-		$option = self::DELETING_OPTION_PREFIX . $user_id;
-		wp_cache_delete( $option, 'options' );
-		if ( false !== get_option( $option ) ) {
+		// Straight from the database: get_option() can answer from a cached absence (notoptions) and miss the marker.
+		if ( null !== $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", self::DELETING_OPTION_PREFIX . $user_id ) ) ) {
 			return true;
 		}
 
