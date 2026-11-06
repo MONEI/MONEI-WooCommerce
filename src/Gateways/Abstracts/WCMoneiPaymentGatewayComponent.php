@@ -52,7 +52,10 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		 * See: https://docs.monei.com/docs/guides/send-cardholder-name/
 		 */
 		try {
-			$create_payment = $this->moneiPaymentServices->create_payment( $payload );
+			$customer_service = $this->customer_service();
+			$create_payment   = null === $customer_service
+				? $this->moneiPaymentServices->create_payment( $payload )
+				: $customer_service->create_payment( array( $this->moneiPaymentServices, 'create_payment' ), $payload, $order->get_customer_id() );
 			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
 
 			$this->log(

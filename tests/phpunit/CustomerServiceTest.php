@@ -136,6 +136,7 @@ namespace Monei\Services {
 namespace Monei\Tests {
 
 	use Monei\Api\CustomersApi;
+	use Monei\ApiException;
 	use Monei\Model\Customer;
 	use Monei\MoneiClient;
 	use Monei\Services\ApiKeyService;
@@ -315,6 +316,118 @@ namespace Monei\Tests {
 			$this->assertSame( array( 'amount' => 100 ), $this->add( self::USER_ID ) );
 			$this->assertSame( array(), $this->stored() );
 			$this->assertCount( 1, $this->errors() );
+		}
+
+		/**
+		 * An API error as the SDK throws it: the body is the raw JSON string MONEI sent (sandbox check c).
+		 */
+		private function api_error( string $message, int $status = 404 ): ApiException {
+			$body = json_encode(
+				array(
+					'statusCode' => $status,
+					'message'    => $message,
+				)
+			);
+			return new ApiException( "[$status] Error connecting to the API", $status, array(), $body );
+		}
+
+		/**
+		 * Runs CustomerService::create_payment with a $create that records each payload and
+		 * answers from $results in order (an exception is thrown).
+		 */
+		private function create_with( array &$payload, array $results, array &$sent ) {
+			return $this->service()->create_payment(
+				function ( array $sent_payload ) use ( &$results, &$sent ) {
+					$sent[] = $sent_payload;
+					$result = array_shift( $results );
+					if ( $result instanceof \Throwable ) {
+						throw $result;
+					}
+					return $result;
+				},
+				$payload,
+				self::USER_ID
+			);
+		}
+
+		/**
+		 * Contract test 6, stale customer. Bug: a buyer deleted in the MONEI dashboard can never
+		 * pay again, or the caller logs a payload that was not sent.
+		 */
+		public function test_stale_customer_is_forgotten_and_the_payment_retried_once_without_it() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_stale' );
+			$payload = array(
+				'amount'     => 100,
+				'customerId' => 'cus_stale',
+			);
+			$sent    = array();
+
+			$result = $this->create_with( $payload, array( $this->api_error( 'Customer not found' ), 'payment' ), $sent );
+
+			$this->assertSame( 'payment', $result );
+			$this->assertSame( array( array( 'amount' => 100, 'customerId' => 'cus_stale' ), array( 'amount' => 100 ) ), $sent );
+			$this->assertSame( array( 'amount' => 100 ), $payload );
+			$this->assertSame( array(), $this->stored() );
+		}
+
+		/**
+		 * Contract test 6, newer mapping. Bug: the retry deletes the ID that another request
+		 * stored meanwhile, and the next payment creates a second MONEI customer.
+		 */
+		public function test_stale_customer_retry_keeps_a_newer_mapping() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_newer' );
+			$payload = array( 'customerId' => 'cus_stale' );
+			$sent    = array();
+
+			$this->create_with( $payload, array( $this->api_error( 'Customer not found' ), 'payment' ), $sent );
+
+			$this->assertSame( array( 'cus_newer' ), $this->stored() );
+		}
+
+		/**
+		 * Contract test 6, failed retry. Bug: a retry loop, or a swallowed payment error.
+		 */
+		public function test_failure_of_the_retry_is_rethrown() {
+			$payload = array( 'customerId' => 'cus_stale' );
+			$sent    = array();
+			$second  = $this->api_error( 'Customer not found' );
+
+			try {
+				$this->create_with( $payload, array( $this->api_error( 'Customer not found' ), $second, 'payment' ), $sent );
+				$this->fail( 'the failure of the retry must be rethrown' );
+			} catch ( ApiException $e ) {
+				$this->assertSame( $second, $e );
+			}
+			$this->assertCount( 2, $sent );
+		}
+
+		/**
+		 * Contract test 6, other errors. Bug: a retry on a 404 that is not about the customer
+		 * (status alone is not enough), or a retry of a payload that has no customer to drop.
+		 *
+		 * @dataProvider errors_without_retry
+		 */
+		public function test_other_errors_are_rethrown_without_retry( array $payload, string $message, int $status ) {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_known' );
+			$sent  = array();
+			$error = $this->api_error( $message, $status );
+
+			try {
+				$this->create_with( $payload, array( $error, 'payment' ), $sent );
+				$this->fail( 'the error must be rethrown' );
+			} catch ( ApiException $e ) {
+				$this->assertSame( $error, $e );
+			}
+			$this->assertSame( array( $payload ), $sent );
+			$this->assertSame( array( 'cus_known' ), $this->stored() );
+		}
+
+		public function errors_without_retry(): array {
+			return array(
+				'same status, other message' => array( array( 'customerId' => 'cus_known' ), 'Payment method not found', 404 ),
+				'same message, other status' => array( array( 'customerId' => 'cus_known' ), 'Customer not found', 400 ),
+				'no customerId in payload'   => array( array( 'amount' => 100 ), 'Customer not found', 404 ),
+			);
 		}
 
 		/**

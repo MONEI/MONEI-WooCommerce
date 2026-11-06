@@ -2,6 +2,7 @@
 
 namespace Monei\Services;
 
+use Monei\ApiException;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use WC_Monei_Logger;
 use Throwable;
@@ -94,6 +95,32 @@ class CustomerService {
 	}
 
 	/**
+	 * Calls $create( $payload ). When MONEI no longer knows the payload's customer, forgets the mapping
+	 * and calls $create once more without customerId. Any other error is rethrown unchanged.
+	 *
+	 * @param callable $create  Creates the payment from the payload.
+	 * @param array    $payload By reference, so the caller logs and reports the payload that was sent.
+	 *
+	 * @return mixed What $create returns.
+	 * @throws ApiException
+	 */
+	public function create_payment( callable $create, array &$payload, int $user_id ) {
+		try {
+			return $create( $payload );
+		} catch ( ApiException $e ) {
+			if ( ! isset( $payload['customerId'] ) || ! $this->is_stale_customer_error( $e ) ) {
+				throw $e;
+			}
+		}
+
+		$stale_id = (string) $payload['customerId'];
+		WC_Monei_Logger::logWarning( self::LOG_PREFIX . sprintf( 'MONEI customer %s of user %d no longer exists. The payment is retried without it.', $stale_id, $user_id ) );
+		$this->forget_customer_id( $user_id, $stale_id );
+		unset( $payload['customerId'] );
+		return $create( $payload );
+	}
+
+	/**
 	 * Removes the mapping of the current account and mode only while it still holds $stale_id.
 	 */
 	public function forget_customer_id( int $user_id, string $stale_id ): void {
@@ -116,6 +143,20 @@ class CustomerService {
 			return null;
 		}
 		return self::META_PREFIX . $account_id . '_' . $this->current_mode();
+	}
+
+	/**
+	 * Sandbox check (c): MONEI rejects a deleted customer at create with 404 and this message. Other 404s also exist.
+	 */
+	private function is_stale_customer_error( ApiException $e ): bool {
+		if ( 404 !== $e->getCode() ) {
+			return false;
+		}
+		$body = $e->getResponseBody();
+		if ( is_string( $body ) ) {
+			$body = json_decode( $body );
+		}
+		return is_object( $body ) && isset( $body->message ) && 'Customer not found' === $body->message;
 	}
 
 	private function current_mode(): string {

@@ -131,7 +131,10 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 		try {
 			// We set the order, so we can use the right api key configuration.
 			$this->moneiPaymentServices->set_order( $order );
-			$payment = $this->moneiPaymentServices->create_payment( $payload );
+			$customer_service = $this->customer_service();
+			$payment          = null === $customer_service
+				? $this->moneiPaymentServices->create_payment( $payload )
+				: $customer_service->create_payment( array( $this->moneiPaymentServices, 'create_payment' ), $payload, $order->get_customer_id() );
 
 			$this->log( 'WC_Monei_API::create_payment ' . $allowed_payment_method, 'debug' );
 			$this->log( $payload, 'debug' );
