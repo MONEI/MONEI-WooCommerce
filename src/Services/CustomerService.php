@@ -135,6 +135,150 @@ class CustomerService {
 	}
 
 	/**
+	 * Binds the delete hooks. The container is lazy, so the plugin must resolve this service and call init() on every request.
+	 */
+	public function init(): void {
+		add_action( 'woocommerce_payment_token_deleted', array( $this, 'on_payment_token_deleted' ), 10, 2 );
+		// On multisite, delete_user only removes the user from one site. The user still exists.
+		if ( ! is_multisite() ) {
+			// Before wc_delete_user_data (priority 10): when the customer delete succeeds, its token deletes make no calls.
+			add_action( 'delete_user', array( $this, 'on_user_delete' ), 9 );
+		}
+		add_action( 'wpmu_delete_user', array( $this, 'on_user_delete' ) );
+		add_action( 'deleted_user', array( $this, 'on_user_deleted' ) );
+		add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_eraser' ) );
+	}
+
+	/**
+	 * @param int               $token_id WC token row ID. MONEI knows the token string only.
+	 * @param \WC_Payment_Token $token
+	 */
+	public function on_payment_token_deleted( $token_id, $token ): void {
+		try {
+			if ( ! in_array( $token->get_gateway_id(), self::MONEI_TOKEN_GATEWAYS, true ) ) {
+				return;
+			}
+			// The token owner, not the current user: an admin can delete the token of another user.
+			$user_id = (int) $token->get_user_id();
+			if ( $user_id < 1 ) {
+				return;
+			}
+			$this->delete_payment_method( $user_id, (string) $token->get_token() );
+		} catch ( Throwable $e ) {
+			WC_Monei_Logger::logError( self::LOG_PREFIX . sprintf( 'Could not delete WC token %s at MONEI: %s', $token_id, $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * @param int $user_id
+	 */
+	public function on_user_delete( $user_id ): void {
+		try {
+			// Written before the mappings are read: a create that is waiting for MONEI checks it after it saves its mapping.
+			update_option( self::DELETING_OPTION_PREFIX . (int) $user_id, '1', false );
+			$this->delete_customer( (int) $user_id );
+		} catch ( Throwable $e ) {
+			WC_Monei_Logger::logError( self::LOG_PREFIX . sprintf( 'Could not delete the MONEI customers of user %d: %s', $user_id, $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * @param int $user_id
+	 */
+	public function on_user_deleted( $user_id ): void {
+		try {
+			delete_option( self::DELETING_OPTION_PREFIX . (int) $user_id );
+		} catch ( Throwable $e ) {
+			WC_Monei_Logger::logError( self::LOG_PREFIX . sprintf( 'Could not remove the delete marker of user %d: %s', $user_id, $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * @param array $erasers
+	 *
+	 * @return array
+	 */
+	public function register_eraser( $erasers ) {
+		$erasers['monei-customer'] = array(
+			'eraser_friendly_name' => __( 'MONEI customer', 'monei' ),
+			'callback'             => array( $this, 'erase_customer' ),
+		);
+		return $erasers;
+	}
+
+	/**
+	 * Privacy eraser. WordPress fails the whole erasure request when a response lacks one of the four keys.
+	 *
+	 * @param string $email
+	 * @param int    $page
+	 *
+	 * @return array{items_removed: bool, items_retained: bool, messages: string[], done: bool}
+	 */
+	public function erase_customer( $email, $page = 1 ): array {
+		$result = array(
+			'items_removed'  => false,
+			'items_retained' => false,
+			'messages'       => array(),
+			'done'           => true,
+		);
+		try {
+			$user = get_user_by( 'email', $email );
+			if ( ! $user ) {
+				return $result;
+			}
+			$before = count( $this->mapping_rows( (int) $user->ID ) );
+			$this->delete_customer( (int) $user->ID );
+			$after = count( $this->mapping_rows( (int) $user->ID ) );
+
+			$result['items_removed']  = $after < $before;
+			$result['items_retained'] = $after > 0;
+		} catch ( Throwable $e ) {
+			// No email in the log: the request is there to erase it.
+			WC_Monei_Logger::logError( self::LOG_PREFIX . 'Could not erase the MONEI customers of a privacy request: ' . $e->getMessage() );
+			$result['items_retained'] = true;
+		}
+		if ( $result['items_retained'] ) {
+			$result['messages'][] = __( 'A MONEI customer could not be deleted. The MONEI log has its ID.', 'monei' );
+		}
+		return $result;
+	}
+
+	/**
+	 * Deletes the token at the MONEI customer of the current account and mode. It never removes the mapping:
+	 * a 404 is normal for a card saved before the link, and the next payment must still find the customer.
+	 */
+	public function delete_payment_method( int $user_id, string $token ): void {
+		$key = $this->meta_key();
+		if ( null === $key ) {
+			return;
+		}
+		$customer_id = get_user_meta( $user_id, $key, true );
+		if ( ! is_string( $customer_id ) || '' === $customer_id ) {
+			return;
+		}
+
+		try {
+			$this->sdkClientFactory->get_client()->customers->deletePaymentMethod( $customer_id, $token );
+		} catch ( Throwable $e ) {
+			$status  = $e instanceof ApiException ? $e->getCode() : 0;
+			$message = self::LOG_PREFIX . sprintf(
+				'Could not delete a payment method of MONEI customer %s (account %s, mode %s): %s',
+				$customer_id,
+				$this->apiKeyService->get_account_id(),
+				$this->current_mode(),
+				$e->getMessage()
+			);
+			if ( 404 === $status ) {
+				WC_Monei_Logger::logDebug( $message );
+			} elseif ( 409 === $status ) {
+				WC_Monei_Logger::logWarning( $message );
+			} else {
+				WC_Monei_Logger::logError( $message );
+			}
+		}
+	}
+
+	/**
 	 * Deletes the MONEI customer of every mapping of the user, in every account and mode.
 	 *
 	 * The caller catches: a failure to read the mappings escapes. A failing row is logged and kept, and the next row still runs.

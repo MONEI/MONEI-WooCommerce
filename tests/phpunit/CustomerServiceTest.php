@@ -43,6 +43,32 @@ namespace {
 			}
 		}
 	}
+
+	if ( ! class_exists( 'WC_Payment_Token' ) ) {
+		class WC_Payment_Token {
+			private $gateway_id;
+			private $user_id;
+			private $token;
+
+			public function __construct( $gateway_id = '', $user_id = 0, $token = '' ) {
+				$this->gateway_id = $gateway_id;
+				$this->user_id    = $user_id;
+				$this->token      = $token;
+			}
+
+			public function get_gateway_id() {
+				return $this->gateway_id;
+			}
+
+			public function get_user_id() {
+				return $this->user_id;
+			}
+
+			public function get_token() {
+				return $this->token;
+			}
+		}
+	}
 }
 
 namespace Monei\Services {
@@ -55,9 +81,38 @@ namespace Monei\Services {
 		return $GLOBALS['mcs_options'][ $key ] ?? $default;
 	}
 
+	function update_option( $key, $value, $autoload = null ) {
+		$GLOBALS['mcs_options'][ $key ]          = $value;
+		$GLOBALS['mcs_option_autoload'][ $key ] = $autoload;
+		return true;
+	}
+
+	function delete_option( $key ) {
+		unset( $GLOBALS['mcs_options'][ $key ] );
+		return true;
+	}
+
+	// add_action and add_filter record their arguments for the wiring tests.
 	function add_action( ...$args ) {
 		$GLOBALS['mcs_hooks'][] = $args;
 		return true;
+	}
+
+	function add_filter( ...$args ) {
+		$GLOBALS['mcs_hooks'][] = $args;
+		return true;
+	}
+
+	function is_multisite() {
+		return $GLOBALS['mcs_multisite'];
+	}
+
+	function get_current_user_id() {
+		return $GLOBALS['mcs_current_user'];
+	}
+
+	function __( $text, $domain = 'default' ) {
+		return $text;
 	}
 
 	// The backing store is $GLOBALS['mcs_meta'] (user ID => key => list of values), the
@@ -125,6 +180,18 @@ namespace Monei\Services {
 		return $GLOBALS['mcs_users'][ (int) $user_id ] ?? false;
 	}
 
+	function get_user_by( $field, $value ) {
+		if ( $GLOBALS['mcs_get_user_by_throws'] ) {
+			throw new \Error( 'get_user_by failed' );
+		}
+		foreach ( $GLOBALS['mcs_users'] as $user ) {
+			if ( 'email' === $field && $user->user_email === $value ) {
+				return $user;
+			}
+		}
+		return false;
+	}
+
 	function wp_cache_delete( $key, $group = '' ) {
 		if ( 'user_meta' === $group ) {
 			unset( $GLOBALS['mcs_meta_cache'][ (int) $key ] );
@@ -190,7 +257,11 @@ namespace Monei\Tests {
 
 	class CustomerServiceTest extends TestCase {
 
+		use SourceCode;
+
 		const USER_ID = 7;
+
+		const ADMIN_ID = 1;
 
 		/** @var CustomersApi&MockObject */
 		private $customers;
@@ -213,11 +284,20 @@ namespace Monei\Tests {
 			$GLOBALS['mcs_ignore_unique']   = false;
 			$GLOBALS['mcs_add_fails']       = false;
 			$GLOBALS['mcs_all_meta_throws'] = false;
+			$GLOBALS['mcs_get_user_by_throws'] = false;
+			$GLOBALS['mcs_option_autoload']  = array();
+			$GLOBALS['mcs_multisite']        = false;
+			$GLOBALS['mcs_current_user']     = self::ADMIN_ID;
 			$GLOBALS['mcs_users']           = array(
 				self::USER_ID => (object) array(
 					'ID'           => self::USER_ID,
 					'user_email'   => 'buyer@example.com',
 					'display_name' => 'buyer',
+				),
+				self::ADMIN_ID => (object) array(
+					'ID'           => self::ADMIN_ID,
+					'user_email'   => 'admin@example.com',
+					'display_name' => 'admin',
 				),
 			);
 			$GLOBALS['wpdb']                = new FakeWpdb();
@@ -598,6 +678,240 @@ namespace Monei\Tests {
 
 			$this->assertSame( 'pk_test_key', $main->getConfig()->getApiKey( 'Authorization' ) );
 			$this->assertSame( 'pk_live_key', $live->getConfig()->getApiKey( 'Authorization' ) );
+		}
+
+		/**
+		 * The callback that init() bound to a hook, with its priority and accepted args.
+		 *
+		 * @return array{0: callable, 1: int, 2: int}|null
+		 */
+		private function hook( CustomerService $service, string $name ): ?array {
+			$before = count( $GLOBALS['mcs_hooks'] );
+			$service->init();
+			foreach ( array_slice( $GLOBALS['mcs_hooks'], $before ) as $hook ) {
+				if ( $hook[0] === $name ) {
+					return array( $hook[1], $hook[2] ?? 10, $hook[3] ?? 1 );
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Contract test 11. Bug: every card delete of an unlinked buyer calls MONEI with an
+		 * empty customer ID and logs an error. The live mapping shows that only the
+		 * current-mode lookup stops the call.
+		 */
+		public function test_delete_payment_method_without_mapping_makes_no_call() {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key( 'live' ) ] = array( 'cus_live' );
+			$this->customers->expects( $this->never() )->method( 'deletePaymentMethod' );
+
+			$this->service()->delete_payment_method( self::USER_ID, 'tok_1' );
+
+			$this->assertSame( array(), WC_Monei_Logger::$records );
+		}
+
+		/**
+		 * Contract test 5 (deletePaymentMethod) and the 409 and other-error rows. Bug: a card
+		 * saved before the link (404) logs an error or drops the mapping, and the next payment
+		 * creates a second MONEI customer; a real failure is not logged with the IDs.
+		 *
+		 * @dataProvider payment_method_errors
+		 */
+		public function test_delete_payment_method_error_is_logged_at_its_level_and_keeps_the_mapping( int $status, int $level ) {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ] = array( 'cus_known' );
+			$this->customers->method( 'deletePaymentMethod' )->willThrowException( $this->api_error( 'Some error', $status ) );
+
+			$this->service()->delete_payment_method( self::USER_ID, 'tok_1' );
+
+			$this->assertSame( array( 'cus_known' ), $this->stored() );
+			$this->assertCount( 1, WC_Monei_Logger::$records );
+			$this->assertSame( $level, WC_Monei_Logger::$records[0][0] );
+			$this->assertStringContainsString( 'MONEI customer cus_known (account acc_1, mode test)', WC_Monei_Logger::$records[0][1] );
+		}
+
+		public function payment_method_errors(): array {
+			return array(
+				'404' => array( 404, WC_Monei_Logger::LEVEL_INFO ),
+				'409' => array( 409, WC_Monei_Logger::LEVEL_WARNING ),
+				'500' => array( 500, WC_Monei_Logger::LEVEL_ERROR ),
+			);
+		}
+
+		/**
+		 * Bug: the WC row ID ($token_id) is sent instead of the token string, so every card
+		 * delete gets a 404 that logs at debug level, and no card is ever deleted at MONEI; or
+		 * the current user (an admin) is used instead of the token owner; or a token of
+		 * another gateway is sent to MONEI.
+		 *
+		 * @dataProvider token_gateways
+		 */
+		public function test_token_hook_deletes_the_owners_token_for_monei_gateways_only( string $gateway, bool $calls ) {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ]  = array( 'cus_owner' );
+			$GLOBALS['mcs_meta'][ self::ADMIN_ID ][ $this->key() ] = array( 'cus_admin' );
+			$this->customers->expects( $calls ? $this->once() : $this->never() )->method( 'deletePaymentMethod' )->with( 'cus_owner', 'tok_string' );
+			$service = $this->service();
+
+			call_user_func( $this->hook( $service, 'woocommerce_payment_token_deleted' )[0], 55, new \WC_Payment_Token( $gateway, self::USER_ID, 'tok_string' ) );
+		}
+
+		public function token_gateways(): array {
+			return array(
+				'card'          => array( 'monei', true ),
+				'apple, google' => array( 'monei_apple_google', true ),
+				'other gateway' => array( 'stripe', false ),
+			);
+		}
+
+		/**
+		 * Bug: a callback that deletes for the current user (an admin) deletes the admin's own customer.
+		 *
+		 * @dataProvider user_delete_hooks
+		 */
+		public function test_user_delete_hooks_delete_the_deleted_users_customer( string $hook_name ) {
+			$GLOBALS['mcs_meta'][ self::USER_ID ][ $this->key() ]  = array( 'cus_owner' );
+			$GLOBALS['mcs_meta'][ self::ADMIN_ID ][ $this->key() ] = array( 'cus_admin' );
+			$this->mode_customers['test']->expects( $this->once() )->method( 'delete' )->with( 'cus_owner' );
+			$service = $this->service();
+
+			call_user_func( $this->hook( $service, $hook_name )[0], self::USER_ID );
+
+			$this->assertSame( array( 'cus_admin' ), $GLOBALS['mcs_meta'][ self::ADMIN_ID ][ $this->key() ] );
+		}
+
+		public function user_delete_hooks(): array {
+			return array(
+				'delete_user'      => array( 'delete_user' ),
+				'wpmu_delete_user' => array( 'wpmu_delete_user' ),
+			);
+		}
+
+		/**
+		 * Bug: an escaping error breaks a My Account card delete. The token stub throws in code
+		 * that runs outside the service methods, so only the hook-level catch can stop it.
+		 */
+		public function test_token_hook_lets_no_error_escape() {
+			$token = $this->createMock( \WC_Payment_Token::class );
+			$token->method( 'get_gateway_id' )->willThrowException( new \Error( 'broken token' ) );
+
+			call_user_func( $this->hook( $this->service(), 'woocommerce_payment_token_deleted' )[0], 55, $token );
+
+			$this->assertCount( 1, $this->errors() );
+		}
+
+		/**
+		 * Contract v8 marker. Bug: an escaping error stops wp_delete_user before
+		 * wc_delete_user_data runs; a marker written after the meta read misses a create that
+		 * saved its mapping in between. The all-meta read throws, which no per-row catch can
+		 * stop, and the marker must already be stored.
+		 */
+		public function test_user_delete_hook_writes_the_marker_first_and_lets_no_error_escape() {
+			$GLOBALS['mcs_all_meta_throws'] = true;
+
+			call_user_func( $this->hook( $this->service(), 'delete_user' )[0], self::USER_ID );
+
+			$this->assertSame( '1', $GLOBALS['mcs_options'][ 'monei_customer_deleting_' . self::USER_ID ] );
+			$this->assertFalse( $GLOBALS['mcs_option_autoload'][ 'monei_customer_deleting_' . self::USER_ID ] );
+			$this->assertCount( 1, $this->errors() );
+		}
+
+		/**
+		 * Bug: every user delete leaves its marker option behind forever.
+		 */
+		public function test_deleted_user_hook_removes_the_marker() {
+			$GLOBALS['mcs_options'][ 'monei_customer_deleting_' . self::USER_ID ] = '1';
+
+			call_user_func( $this->hook( $this->service(), 'deleted_user' )[0], self::USER_ID );
+
+			$this->assertArrayNotHasKey( 'monei_customer_deleting_' . self::USER_ID, $GLOBALS['mcs_options'] );
+		}
+
+		/**
+		 * The eraser through the callback that the registered filter returns.
+		 */
+		private function erase( string $email ): array {
+			$erasers = call_user_func( $this->hook( $this->service(), 'wp_privacy_personal_data_erasers' )[0], array() );
+			return call_user_func( $erasers['monei-customer']['callback'], $email, 1 );
+		}
+
+		/**
+		 * Bug: WordPress fails the whole erasure request when a response lacks one of the four
+		 * keys, or reports a complete erasure while the PII stays at MONEI.
+		 *
+		 * @dataProvider erasures
+		 */
+		public function test_eraser_reports_what_was_removed_and_retained( string $email, ?int $second_status, bool $removed, bool $retained, int $messages ) {
+			$GLOBALS['mcs_meta'][ self::USER_ID ] = array(
+				$this->key( 'test' ) => array( 'cus_test' ),
+				$this->key( 'live' ) => array( 'cus_live' ),
+			);
+			if ( null !== $second_status ) {
+				$this->mode_customers['live']->method( 'delete' )->willThrowException( $this->api_error( 'Conflict', $second_status ) );
+			}
+
+			$this->assertSame(
+				array(
+					'items_removed'  => $removed,
+					'items_retained' => $retained,
+					'messages'       => array_fill( 0, $messages, 'A MONEI customer could not be deleted. The MONEI log has its ID.' ),
+					'done'           => true,
+				),
+				$this->erase( $email )
+			);
+			$this->assertCount( $retained ? 1 : 0, $this->errors() );
+		}
+
+		public function erasures(): array {
+			return array(
+				'no user for the email' => array( 'nobody@example.com', null, false, false, 0 ),
+				'all rows deleted'      => array( 'buyer@example.com', null, true, false, 0 ),
+				'one row kept on a 409' => array( 'buyer@example.com', 409, true, true, 1 ),
+			);
+		}
+
+		/**
+		 * Bug: get_user_by throws outside every delete_customer catch, and the error escapes or
+		 * the erasure is reported as complete while the PII stays at MONEI.
+		 */
+		public function test_eraser_reports_retained_data_when_it_fails_before_the_delete() {
+			$GLOBALS['mcs_get_user_by_throws'] = true;
+
+			$result = $this->erase( 'buyer@example.com' );
+
+			$this->assertFalse( $result['items_removed'] );
+			$this->assertTrue( $result['items_retained'] );
+			$this->assertNotEmpty( $result['messages'] );
+			$this->assertTrue( $result['done'] );
+		}
+
+		/**
+		 * Bugs: without accepted_args 2 every card delete throws ArgumentCountError; at the
+		 * default priority WooCommerce deletes every token first, one MONEI call each; on
+		 * multisite, delete_user only removes the user from one site, so binding it deletes the
+		 * MONEI customer of a user who still exists; an eraser without a name or callback fails
+		 * every erasure request.
+		 */
+		public function test_init_binds_the_hooks_with_their_arguments() {
+			$service = $this->service();
+
+			$this->assertSame( 2, $this->hook( $service, 'woocommerce_payment_token_deleted' )[2] );
+			$this->assertSame( 9, $this->hook( $service, 'delete_user' )[1] );
+
+			$erasers = call_user_func( $this->hook( $service, 'wp_privacy_personal_data_erasers' )[0], array( 'other' => array( 'x' ) ) );
+			$this->assertSame( array( 'other', 'monei-customer' ), array_keys( $erasers ) );
+			$this->assertNotEmpty( $erasers['monei-customer']['eraser_friendly_name'] );
+			$this->assertIsCallable( $erasers['monei-customer']['callback'] );
+
+			$GLOBALS['mcs_multisite'] = true;
+			$this->assertNull( $this->hook( $service, 'delete_user' ) );
+			$this->assertNotNull( $this->hook( $service, 'wpmu_delete_user' ) );
+		}
+
+		/**
+		 * Bug: the container is lazy, so without this call no delete hook is bound and every
+		 * delete at MONEI stops without any error.
+		 */
+		public function test_plugin_init_binds_the_customer_hooks() {
+			$this->assertStringContainsString( 'ContainerProvider::getContainer()->get(CustomerService::class)->init();', $this->code( 'class-woocommerce-gateway-monei.php' ) );
 		}
 
 		/**

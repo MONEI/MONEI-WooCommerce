@@ -12,6 +12,7 @@ use Monei\Core\ContainerProvider;
 use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
+use Monei\Services\CustomerService;
 use Monei\Services\express\ExpressCheckoutAjaxHandler;
 use Monei\Services\express\ExpressCheckoutAssets;
 use Monei\Services\MoneiApplePayVerificationService;
@@ -304,6 +305,12 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// resolve the handler here and register them.
 			ContainerProvider::getContainer()->get( ExpressCheckoutAjaxHandler::class )->init();
 			ContainerProvider::getContainer()->get( ExpressCheckoutAssets::class )->init();
+			// Runs on every request, so a failure must not take down the site.
+			try {
+				ContainerProvider::getContainer()->get( CustomerService::class )->init();
+			} catch ( \Throwable $e ) {
+				WC_Monei_Logger::logError( '[MONEI Customers] Delete hooks are not bound: ' . $e->getMessage() );
+			}
 
 			$this->load_plugin_textdomain();
 
