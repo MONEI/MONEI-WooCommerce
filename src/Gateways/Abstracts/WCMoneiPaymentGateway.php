@@ -2,15 +2,18 @@
 
 namespace Monei\Gateways\Abstracts;
 
+use Monei\Core\ContainerProvider;
 use Monei\Features\Subscriptions\SubscriptionHandlerInterface;
 use Monei\Model\PaymentStatus;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\payment\PaymentTokenGuard;
 use Monei\Services\ApiKeyService;
+use Monei\Services\CustomerService;
 use Monei\Services\MoneiStatusCodeHandler;
 use Monei\Services\PaymentMethodsService;
 use Monei\Templates\TemplateManager;
 use Exception;
+use Throwable;
 use WC_Admin_Settings;
 use WC_Blocks_Utils;
 use WC_Monei_Logger;
@@ -323,6 +326,20 @@ abstract class WCMoneiPaymentGateway extends WC_Payment_Gateway {
 		wc_add_notice( __( 'This payment method is not available.', 'monei' ), 'error' );
 
 		return array( 'result' => 'failure' );
+	}
+
+	/**
+	 * Resolved from the container, not injected: injection would change the constructors of this class and its 6 subclasses.
+	 *
+	 * @return CustomerService|null Null when the service cannot be built; the payment then goes ahead without customerId.
+	 */
+	protected function customer_service(): ?CustomerService {
+		try {
+			return ContainerProvider::getContainer()->get( CustomerService::class );
+		} catch ( Throwable $e ) {
+			$this->log( '[MONEI Customers] Customer service is not available: ' . $e->getMessage(), 'error' );
+			return null;
+		}
 	}
 
 	/**

@@ -275,8 +275,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 
 		// Since it is a hosted version, we need to create a 0 EUR payment and send customer to MONEI.
 		try {
-			$zero_payload = $this->create_zero_eur_payload();
-			$payment      = $this->moneiPaymentServices->create_payment( $zero_payload );
+			$zero_payload     = $this->create_zero_eur_payload();
+			$customer_service = $this->customer_service();
+			$payment          = null === $customer_service
+				? $this->moneiPaymentServices->create_payment( $zero_payload )
+				: $customer_service->create_payment( array( $this->moneiPaymentServices, 'create_payment' ), $zero_payload, get_current_user_id() );
 			$this->log( 'WC_Monei_API::add_payment_method', 'debug' );
 			$this->log( $zero_payload, 'debug' );
 			$this->log( $payment, 'debug' );
@@ -326,6 +329,11 @@ class WCGatewayMoneiCC extends WCMoneiPaymentGatewayComponent {
 		if ( MONEI_GATEWAY_ID === $this->id && $monei_token ) {
 			$payload['paymentToken'] = $monei_token;
 			$payload['sessionId']    = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
+		}
+
+		$customer_service = $this->customer_service();
+		if ( null !== $customer_service ) {
+			$payload = $customer_service->add_customer_id( $payload, get_current_user_id() );
 		}
 
 		return $payload;

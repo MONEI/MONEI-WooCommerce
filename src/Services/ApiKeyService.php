@@ -50,6 +50,24 @@ class ApiKeyService {
 	}
 
 	/**
+	 * API key of a mode, whatever the selected mode.
+	 *
+	 * @param string $mode 'test' or 'live'.
+	 */
+	public function get_api_key_for_mode( string $mode ): string {
+		return ( $mode === 'test' ) ? $this->test_api_key : $this->live_api_key;
+	}
+
+	/**
+	 * Account ID of a mode, whatever the selected mode.
+	 *
+	 * @param string $mode 'test' or 'live'.
+	 */
+	public function get_account_id_for_mode( string $mode ): string {
+		return ( $mode === 'test' ) ? $this->test_account_id : $this->live_account_id;
+	}
+
+	/**
 	 * Update the API keys and mode in the service.
 	 * This can be called whenever the database is updated.
 	 */

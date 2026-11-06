@@ -52,7 +52,10 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		 * See: https://docs.monei.com/docs/guides/send-cardholder-name/
 		 */
 		try {
-			$create_payment = $this->moneiPaymentServices->create_payment( $payload );
+			$customer_service = $this->customer_service();
+			$create_payment   = null === $customer_service
+				? $this->moneiPaymentServices->create_payment( $payload )
+				: $customer_service->create_payment( array( $this->moneiPaymentServices, 'create_payment' ), $payload, $order->get_customer_id() );
 			do_action( 'wc_gateway_monei_create_payment_success', $payload, $create_payment, $order );
 
 			$this->log(
@@ -293,6 +296,11 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
 		if ( in_array( $this->id, $componentGateways, true ) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
 			$payload['sessionId'] = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
+		}
+
+		$customer_service = $this->customer_service();
+		if ( null !== $customer_service ) {
+			$payload = $customer_service->add_customer_id( $payload, $order->get_customer_id(), $order->get_billing_phone() );
 		}
 
 		$payload = apply_filters( 'wc_gateway_monei_create_payload', $payload );
