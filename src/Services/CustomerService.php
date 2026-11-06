@@ -347,6 +347,8 @@ class CustomerService {
 				$subscription = ywsbs_get_subscription( $subscription_id );
 				// ywsbs_get_status() in YITH WooCommerce Subscription 4.23.0 (includes/functions-yith-wc-subscription.php:285),
 				// less cancelled, expired and pending (no first payment yet). Paused, overdue and suspended can still renew.
+				// The PHPStan stub of ywsbs_get_subscription() returns false; YITH always returns a YWSBS_Subscription.
+				// @phpstan-ignore-next-line
 				if ( $subscription->has_status( array( 'active', 'trial', 'overdue', 'suspended', 'paused' ) ) && '' !== (string) $subscription->get( '_monei_sequence_id' ) ) {
 					return true;
 				}
