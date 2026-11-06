@@ -30,7 +30,11 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 	 * @return array
 	 */
 	public function process_payment( $order_id, $allowed_payment_method = null ) {
-		$order       = new WC_Order( $order_id );
+		$order   = new WC_Order( $order_id );
+		$failure = $this->saved_token_failure( $order );
+		if ( null !== $failure ) {
+			return $failure;
+		}
 		$amount      = monei_price_format( $order->get_total() );
 		$currency    = get_woocommerce_currency();
 		$user_email  = $order->get_billing_email();
