@@ -27,8 +27,10 @@ const LAYOUT = 'single';
  */
 const SHOPPER_CONTEXT =
 	`$user = get_user_by( 'login', '${ SHOPPER.username }' );` +
-	"$keys = array_values( array_filter( array_keys( get_user_meta( $user->ID ) ), fn( $k ) => 0 === strpos( $k, '_monei_customer_' ) ) );" +
-	"$mapped = $keys ? (string) get_user_meta( $user->ID, $keys[0], true ) : '';" +
+	// The key the plugin writes for the seeded account in test mode, so a
+	// mapping left by another account or mode is never read or deleted.
+	"$key = '_monei_customer_' . get_option( 'monei_test_accountid' ) . '_test';" +
+	'$mapped = (string) get_user_meta( $user->ID, $key, true );' +
 	"$client = \\Monei\\Core\\ContainerProvider::getContainer()->get( \\Monei\\Services\\sdk\\MoneiSdkClientFactory::class )->get_client_for_mode( 'test' );";
 
 /**
@@ -70,7 +72,7 @@ const resetShopper = () =>
 		'eval',
 		SHOPPER_CONTEXT +
 			'if ( $mapped ) { try { $client->customers->delete( $mapped ); } catch ( \\Monei\\ApiException $e ) {} }' +
-			'foreach ( $keys as $k ) { delete_user_meta( $user->ID, $k ); }' +
+			'delete_user_meta( $user->ID, $key );' +
 			'foreach ( WC_Payment_Tokens::get_customer_tokens( $user->ID ) as $t ) { WC_Payment_Tokens::delete( $t->get_id() ); }',
 	] );
 
@@ -145,6 +147,8 @@ test.describe( 'MONEI customers, logged in card payments', () => {
 	test( 'pays without a customer MONEI no longer knows, then links a new one', async ( {
 		page,
 	} ) => {
+		// Three card payments, each with a possible 3DS round trip.
+		test.slow();
 		await loginAsShopper( page );
 		await payWithNewCard( page );
 		const deleted = deleteCustomerAtMoneiOnly();
