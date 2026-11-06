@@ -7,6 +7,7 @@ use Monei\Helpers\CardBrandHelper;
 use Monei\Repositories\PaymentMethodsRepository;
 use Monei\Services\ApiKeyService;
 use Monei\Services\BlockSupportService;
+use Monei\Services\CustomerService;
 use Monei\Services\express\ExpressCartBackup;
 use Monei\Services\express\ExpressCheckoutAjaxHandler;
 use Monei\Services\express\ExpressCheckoutAssets;
@@ -60,6 +61,7 @@ $definitions            = array(
 	ApiKeyService::class                    => autowire( ApiKeyService::class ),
 	MoneiSdkClientFactory::class            => autowire( MoneiSdkClientFactory::class )
 		->constructor( get( ApiKeyService::class ) ),
+	CustomerService::class                  => autowire( CustomerService::class ),
 	PaymentMethodsRepository::class         => factory(
 		function ( ApiKeyService $apiKeyService, MoneiSdkClientFactory $sdkClientFactory ) {
 			return new PaymentMethodsRepository( $apiKeyService->get_account_id(), $sdkClientFactory->get_client() );
