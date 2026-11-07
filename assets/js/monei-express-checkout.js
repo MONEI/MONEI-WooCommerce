@@ -274,6 +274,30 @@ import { isWalletDismissal } from './helpers/monei-shared-utils';
 
 		token.value = result.token;
 
+		// The server charges the wallet's shipping pick, not the method still
+		// selected on the page, and refuses the order when its total differs from
+		// the wallet's.
+		const walletFields = [
+			[
+				'monei_express_shipping_option',
+				result.shippingOption?.id || '',
+			],
+			[ 'monei_express_final_amount', result.finalAmount ?? '' ],
+		].map( ( [ fieldName, value ] ) => {
+			const input = document.createElement( 'input' );
+			input.type = 'hidden';
+			input.name = fieldName;
+			input.value = value;
+			form.appendChild( input );
+			return input;
+		} );
+
+		// A failed checkout keeps the form, and an ordinary checkout after it must
+		// not carry this wallet's figures.
+		$( document.body ).one( 'checkout_error', () =>
+			walletFields.forEach( ( input ) => input.remove() )
+		);
+
 		$( form ).trigger( 'submit' );
 	};
 

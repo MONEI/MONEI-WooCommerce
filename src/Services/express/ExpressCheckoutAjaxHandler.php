@@ -54,6 +54,13 @@ class ExpressCheckoutAjaxHandler {
 	const NONCE_FIELD = 'security';
 
 	/**
+	 * Session key for the rate the wallet last showed as selected. The checkout page's
+	 * own `update_checkout` rewrites `chosen_shipping_methods` from the page form, so
+	 * that key cannot tell what the wallet showed.
+	 */
+	const WALLET_RATE_KEY = 'monei_express_wallet_rate';
+
+	/**
 	 * Currencies whose minor unit is the currency itself.
 	 *
 	 * @var string[]
@@ -124,6 +131,8 @@ class ExpressCheckoutAjaxHandler {
 		add_action( 'wc_ajax_monei_express_clear_cart', array( $this, 'ajax_clear_cart' ) );
 		add_action( 'wc_ajax_monei_express_create_order', array( $this, 'ajax_create_order' ) );
 		add_action( 'wp', array( $this, 'maybe_start_customer_session' ) );
+		add_filter( 'woocommerce_checkout_posted_data', array( $this, 'apply_checkout_shipping_option' ) );
+		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_checkout_amount' ), 10, 2 );
 	}
 
 	/**
@@ -204,6 +213,7 @@ class ExpressCheckoutAjaxHandler {
 		// The wallet auto-selects the first option, so the returned amount must be the
 		// total with that option already applied.
 		$this->set_chosen_shipping_method( $options[0]['id'] );
+		$this->remember_wallet_rate( $options[0]['id'] );
 		WC()->cart->calculate_totals();
 
 		wp_send_json(
@@ -225,13 +235,98 @@ class ExpressCheckoutAjaxHandler {
 	public function ajax_normalize_address() {
 		$this->verify_request();
 
+		$shipping = $this->get_posted_address( 'shipping' );
+
 		wp_send_json(
 			array(
 				'result'   => 'success',
-				'billing'  => $this->get_posted_address( 'billing' ),
-				'shipping' => $this->get_posted_address( 'shipping' ),
+				'billing'  => self::billing_address( $this->get_posted_address( 'billing' ), $shipping ),
+				'shipping' => $shipping,
 			)
 		);
+	}
+
+	/**
+	 * Uses the shipping method the shopper picked in the wallet on the classic checkout page.
+	 *
+	 * The form posts the method still selected on the page, and WooCommerce charges
+	 * that one. The wallet's pick is what the shopper approved.
+	 *
+	 * @param array<string, mixed> $data Posted checkout data.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function apply_checkout_shipping_option( $data ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before it read the posted data.
+		if ( ! isset( $_POST['monei_express_shipping_option'] ) ) {
+			return $data;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before it read the posted data.
+		$option = is_string( $_POST['monei_express_shipping_option'] ) ? wc_clean( wp_unslash( $_POST['monei_express_shipping_option'] ) ) : '';
+
+		// A sheet that shows one option does not always report it.
+		if ( '' === $option && WC()->session instanceof WC_Session ) {
+			$option = (string) WC()->session->get( self::WALLET_RATE_KEY, '' );
+		}
+
+		return self::with_shipping_option( $data, $option );
+	}
+
+	/**
+	 * @param array<string, mixed> $data   Posted checkout data.
+	 * @param string               $option Rate id the wallet returned, empty when none.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function with_shipping_option( $data, $option ) {
+		if ( '' === $option || ! is_array( $data ) ) {
+			return $data;
+		}
+
+		// The wallet prices one package. Other packages keep the methods the form posted.
+		$methods                 = isset( $data['shipping_method'] ) && is_array( $data['shipping_method'] ) ? $data['shipping_method'] : array();
+		$methods[0]              = $option;
+		$data['shipping_method'] = $methods;
+
+		return $data;
+	}
+
+	/**
+	 * Refuses a classic checkout page express order whose total differs from the wallet's.
+	 *
+	 * 🚨 The same boundary as `ajax_create_order()`: the wallet charged what it showed,
+	 * and WooCommerce must not create an order for another total.
+	 *
+	 * @param array<string, mixed> $data   Posted checkout data.
+	 * @param \WP_Error           $errors Checkout errors.
+	 *
+	 * @return void
+	 */
+	public function validate_checkout_amount( $data, $errors ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before validation.
+		if ( ( ! isset( $_POST['monei_express_final_amount'] ) && ! isset( $_POST['monei_express_shipping_option'] ) ) || ! WC()->cart instanceof WC_Cart ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- amount_matches() accepts only a number, and refuses a missing one.
+		$final_amount = isset( $_POST['monei_express_final_amount'] ) ? wp_unslash( $_POST['monei_express_final_amount'] ) : null;
+
+		if ( self::amount_matches( WC()->cart->get_total( 'edit' ), get_woocommerce_currency(), $final_amount ) ) {
+			return;
+		}
+
+		WC_Monei_Logger::log(
+			sprintf(
+				'Express checkout refused a checkout page order: the wallet reported %s and the cart recomputed to %d %s.',
+				is_scalar( $final_amount ) ? (string) $final_amount : 'nothing',
+				self::to_minor_units( WC()->cart->get_total( 'edit' ), get_woocommerce_currency() ),
+				get_woocommerce_currency()
+			),
+			WC_Monei_Logger::LEVEL_ERROR
+		);
+
+		$errors->add( 'monei_express_amount_mismatch', __( 'The payment amount did not match your cart, so nothing was charged. Please try again.', 'monei' ) );
 	}
 
 	/**
@@ -265,6 +360,7 @@ class ExpressCheckoutAjaxHandler {
 			}
 
 			$this->set_chosen_shipping_method( $rate_id );
+			$this->remember_wallet_rate( $rate_id );
 			WC()->cart->calculate_totals();
 		}
 
@@ -1109,6 +1205,17 @@ class ExpressCheckoutAjaxHandler {
 		$chosen = (array) $session->get( 'chosen_shipping_methods', array() );
 
 		return isset( $chosen[0] ) ? (string) $chosen[0] : '';
+	}
+
+	/**
+	 * @param string $rate_id Rate the wallet now shows as selected.
+	 *
+	 * @return void
+	 */
+	private function remember_wallet_rate( $rate_id ) {
+		if ( WC()->session instanceof WC_Session ) {
+			WC()->session->set( self::WALLET_RATE_KEY, $rate_id );
+		}
 	}
 
 	/**
