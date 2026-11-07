@@ -1,5 +1,9 @@
 # Changelog
 
+## <small>7.4.2 (2026-11-07)</small>
+
+-   fix: checkout page express fills a full billing address and uses the wallet's shipping pick (#138) ([81fd4a5](https://github.com/MONEI/MONEI-WooCommerce/commit/81fd4a5)), closes [#138](https://github.com/MONEI/MONEI-WooCommerce/issues/138)
+
 ## <small>7.4.1 (2026-11-07)</small>
 
 -   fix: give express orders a full billing address when PayPal returns only a country (#136) ([c740681](https://github.com/MONEI/MONEI-WooCommerce/commit/c740681)), closes [#136](https://github.com/MONEI/MONEI-WooCommerce/issues/136)

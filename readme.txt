@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.4.1
+Stable tag: 7.4.2
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -103,10 +103,13 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
+= v7.4.2 - 2026-11-07 =
+* fix: checkout page express fills a full billing address and uses the wallet's shipping pick (#138) ([81fd4a5](https://github.com/MONEI/MONEI-WooCommerce/commit/81fd4a5)), closes [#138](https://github.com/MONEI/MONEI-WooCommerce/issues/138)
+
 = v7.4.1 - 2026-11-07 =
-* fix: give express orders a full billing address when PayPal returns only a country (#136) ([c740681](https://github.com/MONEI/MONEI-WooCommerce/commit/c740681)), closes [#136](https://github.com/MONEI/MONEI-WooCommerce/issues/136)
-* chore(release): regenerate the readme in the release commit so WordPress.org gets the new changelog  ([982bde6](https://github.com/MONEI/MONEI-WooCommerce/commit/982bde6)), closes [#137](https://github.com/MONEI/MONEI-WooCommerce/issues/137)
-* docs: regenerate readme changelog for 7.4.0 ([11d5727](https://github.com/MONEI/MONEI-WooCommerce/commit/11d5727))
+-   fix: give express orders a full billing address when PayPal returns only a country (#136) ([c740681](https://github.com/MONEI/MONEI-WooCommerce/commit/c740681)), closes [#136](https://github.com/MONEI/MONEI-WooCommerce/issues/136)
+-   chore(release): regenerate the readme in the release commit so WordPress.org gets the new changelog ([982bde6](https://github.com/MONEI/MONEI-WooCommerce/commit/982bde6)), closes [#137](https://github.com/MONEI/MONEI-WooCommerce/issues/137)
+-   docs: regenerate readme changelog for 7.4.0 ([11d5727](https://github.com/MONEI/MONEI-WooCommerce/commit/11d5727))
 
 = v7.4.0 - 2026-11-07 =
 -   fix: send the guest session ID when the buyer creates an account at checkout (#135) ([b77e85a](https://github.com/MONEI/MONEI-WooCommerce/commit/b77e85a)), closes [#135](https://github.com/MONEI/MONEI-WooCommerce/issues/135)
@@ -147,8 +150,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 = v7.3.1 - 2026-09-07 =
 -   fix: cache a failed payment-methods lookup so a wrong key does not poll the API per render (#120) ([0fc7c17](https://github.com/MONEI/MONEI-WooCommerce/commit/0fc7c17)), closes [#120](https://github.com/MONEI/MONEI-WooCommerce/issues/120)
 -   docs: regenerate readme changelog for 7.3.0 ([131ac73](https://github.com/MONEI/MONEI-WooCommerce/commit/131ac73))
-
-= v7.3.0 - 2026-08-27 =
--   feat: show the card fields as separate fields by default (#119) ([9b6a1b2](https://github.com/MONEI/MONEI-WooCommerce/commit/9b6a1b2)), closes [#119](https://github.com/MONEI/MONEI-WooCommerce/issues/119)
--   chore: track the browser preview launch config ([e36eb5f](https://github.com/MONEI/MONEI-WooCommerce/commit/e36eb5f))
--   docs: regenerate readme changelog for 7.2.4 ([9689a4c](https://github.com/MONEI/MONEI-WooCommerce/commit/9689a4c))
