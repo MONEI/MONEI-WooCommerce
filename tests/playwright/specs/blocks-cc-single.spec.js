@@ -89,7 +89,14 @@ test.describe( 'Block checkout, single card field', () => {
 
 		test.afterAll( () => {
 			setOption( SIGNUP_OPTION, previousSignup );
-			wpCli( [ 'user', 'delete', email, '--yes' ] );
+			// A run that fails before the order is placed creates no account.
+			const userId = wpCli( [
+				'eval',
+				`$user = get_user_by( 'email', '${ email }' ); echo $user ? $user->ID : '';`,
+			] );
+			if ( userId ) {
+				wpCli( [ 'user', 'delete', userId, '--yes' ] );
+			}
 		} );
 
 		test( 'pays with a card', async ( { page } ) => {
