@@ -124,6 +124,8 @@ class ExpressCheckoutAjaxHandler {
 		add_action( 'wc_ajax_monei_express_clear_cart', array( $this, 'ajax_clear_cart' ) );
 		add_action( 'wc_ajax_monei_express_create_order', array( $this, 'ajax_create_order' ) );
 		add_action( 'wp', array( $this, 'maybe_start_customer_session' ) );
+		add_filter( 'woocommerce_checkout_posted_data', array( $this, 'apply_checkout_shipping_option' ) );
+		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_checkout_amount' ), 10, 2 );
 	}
 
 	/**
@@ -225,13 +227,83 @@ class ExpressCheckoutAjaxHandler {
 	public function ajax_normalize_address() {
 		$this->verify_request();
 
+		$shipping = $this->get_posted_address( 'shipping' );
+
 		wp_send_json(
 			array(
 				'result'   => 'success',
-				'billing'  => $this->get_posted_address( 'billing' ),
-				'shipping' => $this->get_posted_address( 'shipping' ),
+				'billing'  => self::billing_address( $this->get_posted_address( 'billing' ), $shipping ),
+				'shipping' => $shipping,
 			)
 		);
+	}
+
+	/**
+	 * Uses the shipping method the shopper picked in the wallet on the classic checkout page.
+	 *
+	 * The form posts the method still selected on the page, and WooCommerce charges
+	 * that one. The wallet's pick is what the shopper approved.
+	 *
+	 * @param array<string, mixed> $data Posted checkout data.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function apply_checkout_shipping_option( $data ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before it read the posted data.
+		$option = isset( $_POST['monei_express_shipping_option'] ) && is_string( $_POST['monei_express_shipping_option'] ) ? wc_clean( wp_unslash( $_POST['monei_express_shipping_option'] ) ) : '';
+
+		return self::with_shipping_option( $data, $option );
+	}
+
+	/**
+	 * @param array<string, mixed> $data   Posted checkout data.
+	 * @param string               $option Rate id the wallet returned, empty when none.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function with_shipping_option( $data, $option ) {
+		if ( '' !== $option && is_array( $data ) ) {
+			$data['shipping_method'] = array( $option );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Refuses a classic checkout page express order whose total differs from the wallet's.
+	 *
+	 * 🚨 The same boundary as `ajax_create_order()`: the wallet charged what it showed,
+	 * and WooCommerce must not create an order for another total.
+	 *
+	 * @param array<string, mixed> $data   Posted checkout data.
+	 * @param \WP_Error           $errors Checkout errors.
+	 *
+	 * @return void
+	 */
+	public function validate_checkout_amount( $data, $errors ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before validation.
+		if ( ! isset( $_POST['monei_express_final_amount'] ) || ! WC()->cart instanceof WC_Cart ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- amount_matches() accepts only a number.
+		$final_amount = wp_unslash( $_POST['monei_express_final_amount'] );
+
+		if ( self::amount_matches( WC()->cart->get_total( 'edit' ), get_woocommerce_currency(), $final_amount ) ) {
+			return;
+		}
+
+		WC_Monei_Logger::log(
+			sprintf(
+				'Express checkout refused a checkout page order: the wallet reported %s and the cart recomputed to %d %s.',
+				is_scalar( $final_amount ) ? (string) $final_amount : 'nothing',
+				self::to_minor_units( WC()->cart->get_total( 'edit' ), get_woocommerce_currency() ),
+				get_woocommerce_currency()
+			),
+			WC_Monei_Logger::LEVEL_ERROR
+		);
+
+		$errors->add( 'monei_express_amount_mismatch', __( 'The payment amount did not match your cart, so nothing was charged. Please try again.', 'monei' ) );
 	}
 
 	/**
