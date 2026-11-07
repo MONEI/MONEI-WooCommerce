@@ -41,12 +41,14 @@ pnpm release --increment minor   # 7.0.3 → 7.1.0
 pnpm release --increment major   # 7.0.3 → 8.0.0
 ```
 
-`release-it` is configured in `.release-it.json`. It tags the commit, writes
-`CHANGELOG.md` from the conventional commits, bumps the version in
-`.readme-template`, `readme.txt`, `woocommerce-gateway-monei.php` and
-`class-woocommerce-gateway-monei.php`, publishes a GitHub release, and then
-regenerates `readme.txt` and `README.md` through `scripts/generate-readme.js`.
-Nothing is published to npm.
+`release-it` is configured in `.release-it.json`. It writes `CHANGELOG.md`
+from the conventional commits, bumps the version in `.readme-template`,
+`readme.txt`, `woocommerce-gateway-monei.php` and
+`class-woocommerce-gateway-monei.php`, and regenerates `readme.txt` and
+`README.md` through `scripts/generate-readme.js`. All of this goes into the
+release commit, which it tags, before it publishes a GitHub release. The
+release starts the WordPress.org deploy, which ships the tagged files, so the
+readme must be regenerated before the tag. Nothing is published to npm.
 
 **IMPORTANT**: All commits MUST follow conventional commit format:
 
