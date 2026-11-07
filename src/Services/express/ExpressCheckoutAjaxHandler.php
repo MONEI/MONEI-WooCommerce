@@ -430,9 +430,7 @@ class ExpressCheckoutAjaxHandler {
 			$shipping = $billing;
 		}
 
-		if ( '' === $billing['country'] ) {
-			$billing = $shipping;
-		}
+		$billing = self::billing_address( $billing, $shipping );
 
 		// 🚨 The wallet is the only source of an email in express: there is no form for a
 		// guest to type one into, and WooCommerce needs one to create the order. When a
@@ -1222,6 +1220,39 @@ class ExpressCheckoutAjaxHandler {
 		}
 
 		return $mapped;
+	}
+
+	/**
+	 * The billing address the order records.
+	 *
+	 * PayPal returns the payer's address with only a country, and some wallets return
+	 * none. A billing side without a street takes the shipping address, and keeps the
+	 * payer's own name, email and phone.
+	 *
+	 * @param array<string, string> $billing  Normalized billing address from the wallet.
+	 * @param array<string, string> $shipping Normalized shipping address.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function billing_address( array $billing, array $shipping ) {
+		if ( '' !== $billing['address_1'] ) {
+			return $billing;
+		}
+
+		$address = $shipping;
+
+		if ( '' !== $billing['first_name'] || '' !== $billing['last_name'] ) {
+			$address['first_name'] = $billing['first_name'];
+			$address['last_name']  = $billing['last_name'];
+		}
+
+		foreach ( array( 'email', 'phone' ) as $field ) {
+			if ( '' !== $billing[ $field ] ) {
+				$address[ $field ] = $billing[ $field ];
+			}
+		}
+
+		return $address;
 	}
 
 	/**

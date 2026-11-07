@@ -20,6 +20,15 @@ use PHPUnit\Framework\TestCase;
 
 class ExpressAddressTest extends TestCase {
 
+	use SourceCode;
+
+	public function test_place_order_records_the_resolved_billing_address() {
+		$this->assertStringContainsString(
+			'$billing=self::billing_address($billing,$shipping);',
+			$this->code( 'src/Services/express/ExpressCheckoutAjaxHandler.php' )
+		);
+	}
+
 	const ES_STATES = array(
 		'C'  => 'A Coruña',
 		'VI' => 'Araba/Álava',
@@ -216,5 +225,62 @@ class ExpressAddressTest extends TestCase {
 			array_keys( $mapped )
 		);
 		$this->assertSame( array( '' ), array_values( array_unique( $mapped ) ) );
+	}
+
+	const SHIPPING = array(
+		'first_name' => 'John',
+		'last_name'  => 'Doe',
+		'company'    => '',
+		'address_1'  => 'Calle Vilamar 76',
+		'address_2'  => '',
+		'city'       => 'Albacete',
+		'state'      => 'AB',
+		'postcode'   => '02001',
+		'country'    => 'ES',
+		'email'      => '',
+		'phone'      => '',
+	);
+
+	public function test_paypal_billing_with_only_a_country_takes_the_shipping_street() {
+		// Live A10 on the demo: PayPal returned the payer's address as a country only,
+		// and order 552 recorded "John Doe, Spain" as its billing address.
+		$billing = ExpressCheckoutAjaxHandler::billing_address(
+			array_merge(
+				array_fill_keys( array_keys( self::SHIPPING ), '' ),
+				array(
+					'first_name' => 'Payer',
+					'last_name'  => 'Name',
+					'country'    => 'ES',
+					'email'      => 'payer@example.com',
+					'phone'      => '600000000',
+				)
+			),
+			self::SHIPPING
+		);
+
+		$this->assertSame( 'Calle Vilamar 76', $billing['address_1'] );
+		$this->assertSame( 'Albacete', $billing['city'] );
+		$this->assertSame( '02001', $billing['postcode'] );
+		$this->assertSame( 'Payer', $billing['first_name'] );
+		$this->assertSame( 'Name', $billing['last_name'] );
+		$this->assertSame( 'payer@example.com', $billing['email'] );
+		$this->assertSame( '600000000', $billing['phone'] );
+	}
+
+	public function test_billing_without_a_name_takes_the_shipping_name() {
+		$billing = ExpressCheckoutAjaxHandler::billing_address(
+			array_merge( array_fill_keys( array_keys( self::SHIPPING ), '' ), array( 'email' => 'payer@example.com' ) ),
+			self::SHIPPING
+		);
+
+		$this->assertSame( 'John', $billing['first_name'] );
+		$this->assertSame( 'Doe', $billing['last_name'] );
+		$this->assertSame( 'payer@example.com', $billing['email'] );
+	}
+
+	public function test_billing_with_a_street_is_kept() {
+		$own = array_merge( self::SHIPPING, array( 'address_1' => 'Gran Via 1', 'city' => 'Madrid', 'state' => 'M', 'postcode' => '28013' ) );
+
+		$this->assertSame( $own, ExpressCheckoutAjaxHandler::billing_address( $own, self::SHIPPING ) );
 	}
 }
