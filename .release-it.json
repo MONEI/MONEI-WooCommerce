@@ -27,6 +27,6 @@
 		}
 	},
 	"hooks": {
-		"after:git:release": "node scripts/generate-readme.js 10 && git add readme.txt README.md && git commit --amend --no-edit"
+		"before:git:release": "node scripts/generate-readme.js 10 && git add readme.txt README.md"
 	}
 }
