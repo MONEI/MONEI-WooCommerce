@@ -19,7 +19,7 @@ class TokenSessionIdTest extends TestCase {
 	use SourceCode;
 
 	protected function setUp(): void {
-		( new \ReflectionProperty( TokenSessionId::class, 'guest_session_id' ) )->setValue( null, '' );
+		TokenSessionId::remember_guest_session_id( '' );
 	}
 
 	public function test_session_without_login_is_sent_as_is() {
