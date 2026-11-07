@@ -1,5 +1,11 @@
 # Changelog
 
+## <small>7.4.1 (2026-11-07)</small>
+
+-   fix: give express orders a full billing address when PayPal returns only a country (#136) ([c740681](https://github.com/MONEI/MONEI-WooCommerce/commit/c740681)), closes [#136](https://github.com/MONEI/MONEI-WooCommerce/issues/136)
+-   chore(release): regenerate the readme in the release commit so WordPress.org gets the new changelog ([982bde6](https://github.com/MONEI/MONEI-WooCommerce/commit/982bde6)), closes [#137](https://github.com/MONEI/MONEI-WooCommerce/issues/137)
+-   docs: regenerate readme changelog for 7.4.0 ([11d5727](https://github.com/MONEI/MONEI-WooCommerce/commit/11d5727))
+
 ## 7.4.0 (2026-11-07)
 
 -   fix: send the guest session ID when the buyer creates an account at checkout (#135) ([b77e85a](https://github.com/MONEI/MONEI-WooCommerce/commit/b77e85a)), closes [#135](https://github.com/MONEI/MONEI-WooCommerce/issues/135)
