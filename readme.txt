@@ -103,7 +103,14 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
-= v7.4.0 - 2026-10-22 =
+= v7.4.0 - 2026-11-07 =
+-   fix: send the guest session ID when the buyer creates an account at checkout (#135) ([b77e85a](https://github.com/MONEI/MONEI-WooCommerce/commit/b77e85a)), closes [#135](https://github.com/MONEI/MONEI-WooCommerce/issues/135)
+-   fix: stop shoppers paying with another user's saved card (#132) ([72fde93](https://github.com/MONEI/MONEI-WooCommerce/commit/72fde93)), closes [#132](https://github.com/MONEI/MONEI-WooCommerce/issues/132)
+-   test(e2e): cover MONEI customers and unbreak the PayPal express spec (#134) ([b0ddfa0](https://github.com/MONEI/MONEI-WooCommerce/commit/b0ddfa0)), closes [#134](https://github.com/MONEI/MONEI-WooCommerce/issues/134)
+-   feat: link payments to MONEI customers and delete them with the WordPress user (#133) ([feeb9ca](https://github.com/MONEI/MONEI-WooCommerce/commit/feeb9ca)), closes [#133](https://github.com/MONEI/MONEI-WooCommerce/issues/133)
+-   docs: regenerate readme changelog for 7.3.7 ([2c1c556](https://github.com/MONEI/MONEI-WooCommerce/commit/2c1c556))
+
+= v7.3.7 - 2026-10-22 =
 -   fix(deps): update monei-php-sdk to 2.13 for bundled Guzzle security fixes (#131) ([adfdb48](https://github.com/MONEI/MONEI-WooCommerce/commit/adfdb48)), closes [#131](https://github.com/MONEI/MONEI-WooCommerce/issues/131)
 -   docs: regenerate readme changelog for 7.3.6 ([720369d](https://github.com/MONEI/MONEI-WooCommerce/commit/720369d))
 
@@ -145,7 +152,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   fix: pre-authorize wallet payments and let the capture actually stick (#118) ([2da42fa](https://github.com/MONEI/MONEI-WooCommerce/commit/2da42fa)), closes [#118](https://github.com/MONEI/MONEI-WooCommerce/issues/118)
 -   test: pay with express PayPal on a store that does not ship (#117) ([c70b798](https://github.com/MONEI/MONEI-WooCommerce/commit/c70b798)), closes [#117](https://github.com/MONEI/MONEI-WooCommerce/issues/117)
 -   docs: regenerate readme changelog for 7.2.3 ([689a789](https://github.com/MONEI/MONEI-WooCommerce/commit/689a789))
-
-= v7.2.3 - 2026-08-26 =
--   test: skip the PayPal specs instead of failing when unconfigured ([ac21f78](https://github.com/MONEI/MONEI-WooCommerce/commit/ac21f78))
--   docs: regenerate readme changelog for 7.2.2 ([ec4dcb6](https://github.com/MONEI/MONEI-WooCommerce/commit/ec4dcb6))
