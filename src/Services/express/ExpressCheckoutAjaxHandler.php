@@ -54,6 +54,13 @@ class ExpressCheckoutAjaxHandler {
 	const NONCE_FIELD = 'security';
 
 	/**
+	 * Session key for the rate the wallet last showed as selected. The checkout page's
+	 * own `update_checkout` rewrites `chosen_shipping_methods` from the page form, so
+	 * that key cannot tell what the wallet showed.
+	 */
+	const WALLET_RATE_KEY = 'monei_express_wallet_rate';
+
+	/**
 	 * Currencies whose minor unit is the currency itself.
 	 *
 	 * @var string[]
@@ -206,6 +213,7 @@ class ExpressCheckoutAjaxHandler {
 		// The wallet auto-selects the first option, so the returned amount must be the
 		// total with that option already applied.
 		$this->set_chosen_shipping_method( $options[0]['id'] );
+		$this->remember_wallet_rate( $options[0]['id'] );
 		WC()->cart->calculate_totals();
 
 		wp_send_json(
@@ -250,7 +258,17 @@ class ExpressCheckoutAjaxHandler {
 	 */
 	public function apply_checkout_shipping_option( $data ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before it read the posted data.
-		$option = isset( $_POST['monei_express_shipping_option'] ) && is_string( $_POST['monei_express_shipping_option'] ) ? wc_clean( wp_unslash( $_POST['monei_express_shipping_option'] ) ) : '';
+		if ( ! isset( $_POST['monei_express_shipping_option'] ) ) {
+			return $data;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before it read the posted data.
+		$option = is_string( $_POST['monei_express_shipping_option'] ) ? wc_clean( wp_unslash( $_POST['monei_express_shipping_option'] ) ) : '';
+
+		// A sheet that shows one option does not always report it.
+		if ( '' === $option && WC()->session instanceof WC_Session ) {
+			$option = (string) WC()->session->get( self::WALLET_RATE_KEY, '' );
+		}
 
 		return self::with_shipping_option( $data, $option );
 	}
@@ -262,9 +280,14 @@ class ExpressCheckoutAjaxHandler {
 	 * @return array<string, mixed>
 	 */
 	public static function with_shipping_option( $data, $option ) {
-		if ( '' !== $option && is_array( $data ) ) {
-			$data['shipping_method'] = array( $option );
+		if ( '' === $option || ! is_array( $data ) ) {
+			return $data;
 		}
+
+		// The wallet prices one package. Other packages keep the methods the form posted.
+		$methods                 = isset( $data['shipping_method'] ) && is_array( $data['shipping_method'] ) ? $data['shipping_method'] : array();
+		$methods[0]              = $option;
+		$data['shipping_method'] = $methods;
 
 		return $data;
 	}
@@ -282,12 +305,12 @@ class ExpressCheckoutAjaxHandler {
 	 */
 	public function validate_checkout_amount( $data, $errors ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Checkout verified its nonce before validation.
-		if ( ! isset( $_POST['monei_express_final_amount'] ) || ! WC()->cart instanceof WC_Cart ) {
+		if ( ( ! isset( $_POST['monei_express_final_amount'] ) && ! isset( $_POST['monei_express_shipping_option'] ) ) || ! WC()->cart instanceof WC_Cart ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- amount_matches() accepts only a number.
-		$final_amount = wp_unslash( $_POST['monei_express_final_amount'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- amount_matches() accepts only a number, and refuses a missing one.
+		$final_amount = isset( $_POST['monei_express_final_amount'] ) ? wp_unslash( $_POST['monei_express_final_amount'] ) : null;
 
 		if ( self::amount_matches( WC()->cart->get_total( 'edit' ), get_woocommerce_currency(), $final_amount ) ) {
 			return;
@@ -337,6 +360,7 @@ class ExpressCheckoutAjaxHandler {
 			}
 
 			$this->set_chosen_shipping_method( $rate_id );
+			$this->remember_wallet_rate( $rate_id );
 			WC()->cart->calculate_totals();
 		}
 
@@ -1181,6 +1205,17 @@ class ExpressCheckoutAjaxHandler {
 		$chosen = (array) $session->get( 'chosen_shipping_methods', array() );
 
 		return isset( $chosen[0] ) ? (string) $chosen[0] : '';
+	}
+
+	/**
+	 * @param string $rate_id Rate the wallet now shows as selected.
+	 *
+	 * @return void
+	 */
+	private function remember_wallet_rate( $rate_id ) {
+		if ( WC()->session instanceof WC_Session ) {
+			WC()->session->set( self::WALLET_RATE_KEY, $rate_id );
+		}
 	}
 
 	/**

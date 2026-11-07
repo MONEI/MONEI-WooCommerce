@@ -33,6 +33,24 @@ class ExpressCheckoutPageTest extends TestCase {
 		$this->assertSame( 'monei_paypal', $data['payment_method'] );
 	}
 
+	public function test_other_packages_keep_their_posted_methods() {
+		// WooCommerce validates one method per package, so dropping package 1 fails the checkout.
+		$data = ExpressCheckoutAjaxHandler::with_shipping_option(
+			array( 'shipping_method' => array( 'free_shipping:1', 'local_pickup:3' ) ),
+			'flat_rate:2'
+		);
+
+		$this->assertSame( array( 'flat_rate:2', 'local_pickup:3' ), $data['shipping_method'] );
+	}
+
+	public function test_wallet_callbacks_remember_the_rate_the_checkout_falls_back_on() {
+		// The sheet does not always report a single option it selected itself.
+		$code = $this->code( self::HANDLER );
+
+		$this->assertSame( 2, substr_count( $code, '$this->remember_wallet_rate(' ), 'get_shipping_options and update_shipping_method' );
+		$this->assertStringContainsString( 'WC()->session->get(self::WALLET_RATE_KEY,', $code );
+	}
+
 	public function test_no_wallet_pick_keeps_the_page_method() {
 		$data = array( 'shipping_method' => array( 'free_shipping:1' ) );
 
