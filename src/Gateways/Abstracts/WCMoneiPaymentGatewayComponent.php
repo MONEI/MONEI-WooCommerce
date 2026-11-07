@@ -4,6 +4,7 @@ namespace Monei\Gateways\Abstracts;
 
 use Monei\Model\PaymentStatus;
 use Monei\ApiException;
+use Monei\Services\payment\TokenSessionId;
 use Exception;
 use MoneiPaymentServices;
 use WC_Blocks_Utils;
@@ -295,7 +296,7 @@ abstract class WCMoneiPaymentGatewayComponent extends WCMoneiPaymentGateway {
 		$componentGateways = array( MONEI_GATEWAY_ID, self::APPLE_GOOGLE_ID );
 		// If merchant is not using redirect flow (means component CC or apple/google pay), there is a generated frontend token paymentToken and we need to add session ID to the request.
 		if ( in_array( $this->id, $componentGateways, true ) && ! $this->redirect_flow && ( $this->get_frontend_generated_monei_token() || $this->get_frontend_generated_monei_apple_google_token() ) ) {
-			$payload['sessionId'] = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
+			$payload['sessionId'] = TokenSessionId::for_token( (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' ) );
 		}
 
 		$customer_service = $this->customer_service();

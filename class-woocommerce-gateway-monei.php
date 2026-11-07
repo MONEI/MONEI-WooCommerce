@@ -17,6 +17,7 @@ use Monei\Services\express\ExpressCheckoutAjaxHandler;
 use Monei\Services\express\ExpressCheckoutAssets;
 use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\payment\TokenSessionId;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Settings\MoneiSettings;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
@@ -311,6 +312,8 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			} catch ( \Throwable $e ) {
 				WC_Monei_Logger::logError( '[MONEI Customers] Delete hooks are not bound: ' . $e->getMessage() );
 			}
+
+			add_action( 'woocommerce_guest_session_to_user_id', array( TokenSessionId::class, 'remember_guest_session_id' ) );
 
 			$this->load_plugin_textdomain();
 

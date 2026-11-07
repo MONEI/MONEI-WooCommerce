@@ -3,6 +3,7 @@
 namespace Monei\Gateways\Abstracts;
 
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\payment\TokenSessionId;
 use Monei\ApiException;
 use Exception;
 use WC_Geolocation;
@@ -114,7 +115,7 @@ abstract class WCMoneiPaymentGatewayHosted extends WCMoneiPaymentGateway {
 			if ( ! $this->isBlockCheckout() ) {
 				$payload['paymentToken'] = $token_id;
 			}
-			$payload['sessionId'] = (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' );
+			$payload['sessionId'] = TokenSessionId::for_token( (string) ( WC()->session !== null ? WC()->session->get_customer_id() : '' ) );
 			// When using component flow (with token), don't set allowedPaymentMethods
 			// The token already identifies the payment method
 			unset( $payload['allowedPaymentMethods'] );
