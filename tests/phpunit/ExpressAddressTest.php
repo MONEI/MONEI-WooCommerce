@@ -269,13 +269,38 @@ class ExpressAddressTest extends TestCase {
 
 	public function test_billing_without_a_name_takes_the_shipping_name() {
 		$billing = ExpressCheckoutAjaxHandler::billing_address(
-			array_merge( array_fill_keys( array_keys( self::SHIPPING ), '' ), array( 'email' => 'payer@example.com' ) ),
+			array_merge(
+				array_fill_keys( array_keys( self::SHIPPING ), '' ),
+				array(
+					'country' => 'ES',
+					'email'   => 'payer@example.com',
+				)
+			),
 			self::SHIPPING
 		);
 
 		$this->assertSame( 'John', $billing['first_name'] );
 		$this->assertSame( 'Doe', $billing['last_name'] );
-		$this->assertSame( 'payer@example.com', $billing['email'] );
+	}
+
+	public function test_payer_without_an_email_does_not_get_the_recipient_email() {
+		// The email decides who gets the order emails. A missing payer email must fail
+		// the order (the email check), not send the payer's order to the recipient.
+		$billing = ExpressCheckoutAjaxHandler::billing_address(
+			array_merge( array_fill_keys( array_keys( self::SHIPPING ), '' ), array( 'country' => 'ES' ) ),
+			array_merge( self::SHIPPING, array( 'email' => 'recipient@example.com' ) )
+		);
+
+		$this->assertSame( '', $billing['email'] );
+	}
+
+	public function test_billing_without_a_country_takes_the_shipping_address() {
+		$billing = ExpressCheckoutAjaxHandler::billing_address(
+			array_merge( array_fill_keys( array_keys( self::SHIPPING ), '' ), array( 'address_1' => 'Gran Via 1' ) ),
+			self::SHIPPING
+		);
+
+		$this->assertSame( self::SHIPPING, $billing );
 	}
 
 	public function test_billing_with_a_street_is_kept() {

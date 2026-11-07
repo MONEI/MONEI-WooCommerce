@@ -1225,9 +1225,10 @@ class ExpressCheckoutAjaxHandler {
 	/**
 	 * The billing address the order records.
 	 *
-	 * PayPal returns the payer's address with only a country, and some wallets return
-	 * none. A billing side without a street takes the shipping address, and keeps the
-	 * payer's own name, email and phone.
+	 * A wallet that returns no billing country gets the shipping address. PayPal
+	 * returns the payer's address with only a country: that side takes the shipping
+	 * address fields, and keeps the payer's own name, email and phone. The email stays
+	 * the payer's, so order emails never go to the shipping recipient.
 	 *
 	 * @param array<string, string> $billing  Normalized billing address from the wallet.
 	 * @param array<string, string> $shipping Normalized shipping address.
@@ -1235,24 +1236,24 @@ class ExpressCheckoutAjaxHandler {
 	 * @return array<string, string>
 	 */
 	public static function billing_address( array $billing, array $shipping ) {
+		if ( '' === $billing['country'] ) {
+			return $shipping;
+		}
+
 		if ( '' !== $billing['address_1'] ) {
 			return $billing;
 		}
 
-		$address = $shipping;
-
-		if ( '' !== $billing['first_name'] || '' !== $billing['last_name'] ) {
-			$address['first_name'] = $billing['first_name'];
-			$address['last_name']  = $billing['last_name'];
+		foreach ( array( 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country' ) as $field ) {
+			$billing[ $field ] = $shipping[ $field ];
 		}
 
-		foreach ( array( 'email', 'phone' ) as $field ) {
-			if ( '' !== $billing[ $field ] ) {
-				$address[ $field ] = $billing[ $field ];
-			}
+		if ( '' === $billing['first_name'] && '' === $billing['last_name'] ) {
+			$billing['first_name'] = $shipping['first_name'];
+			$billing['last_name']  = $shipping['last_name'];
 		}
 
-		return $address;
+		return $billing;
 	}
 
 	/**
