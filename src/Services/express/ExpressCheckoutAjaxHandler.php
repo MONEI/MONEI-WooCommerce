@@ -838,7 +838,22 @@ class ExpressCheckoutAjaxHandler {
 	private function fail_order( $code, $message ) {
 		$this->cart_backup->restore();
 
-		$this->deny( $code, '' !== $message ? $message : __( 'Express checkout could not complete your order.', 'monei' ) );
+		$message = '' !== $message ? $message : __( 'Express checkout could not complete your order.', 'monei' );
+
+		// Method and location are posted by the shopper, so they are capped to keep one
+		// request from writing an unbounded log line.
+		WC_Monei_Logger::log(
+			sprintf(
+				'Express checkout refused an order (method: %.40s, location: %.40s): %s. %s',
+				$this->get_posted_text( 'payment_method' ),
+				$this->get_posted_text( 'location' ),
+				$code,
+				$message
+			),
+			WC_Monei_Logger::LEVEL_ERROR
+		);
+
+		$this->deny( $code, $message );
 	}
 
 	/**
