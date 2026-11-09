@@ -838,9 +838,11 @@ class ExpressCheckoutAjaxHandler {
 	private function fail_order( $code, $message ) {
 		$this->cart_backup->restore();
 
+		// Method and location are posted by the shopper, so they are capped to keep one
+		// request from writing an unbounded log line.
 		WC_Monei_Logger::log(
 			sprintf(
-				'Express checkout refused an order (method: %s, location: %s): %s. %s',
+				'Express checkout refused an order (method: %.40s, location: %.40s): %s. %s',
 				$this->get_posted_text( 'payment_method' ),
 				$this->get_posted_text( 'location' ),
 				$code,
