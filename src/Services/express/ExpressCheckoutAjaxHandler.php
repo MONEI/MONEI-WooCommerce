@@ -838,6 +838,8 @@ class ExpressCheckoutAjaxHandler {
 	private function fail_order( $code, $message ) {
 		$this->cart_backup->restore();
 
+		$message = '' !== $message ? $message : __( 'Express checkout could not complete your order.', 'monei' );
+
 		// Method and location are posted by the shopper, so they are capped to keep one
 		// request from writing an unbounded log line.
 		WC_Monei_Logger::log(
@@ -851,7 +853,7 @@ class ExpressCheckoutAjaxHandler {
 			WC_Monei_Logger::LEVEL_ERROR
 		);
 
-		$this->deny( $code, '' !== $message ? $message : __( 'Express checkout could not complete your order.', 'monei' ) );
+		$this->deny( $code, $message );
 	}
 
 	/**

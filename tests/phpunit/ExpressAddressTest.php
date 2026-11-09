@@ -32,8 +32,9 @@ class ExpressAddressTest extends TestCase {
 	public function test_refused_express_orders_are_logged() {
 		// The shopper sees the refusal message and the merchant log is the only trace of
 		// it. A missing_billing_email refusal (SUP26000768) left nothing to find there.
+		// ERROR is the default log level, so anything lower is dropped on most stores.
 		$this->assertMatchesRegularExpression(
-			'/privatefunctionfail_order\([^)]*\)\{[^}]*WC_Monei_Logger::log\([^;]*\$code[^;]*\);[^}]*\$this->deny\(/',
+			'/privatefunctionfail_order\([^)]*\)\{[^}]*WC_Monei_Logger::log\([^;]*\$code[^;]*LEVEL_ERROR\);[^}]*\$this->deny\(/',
 			$this->code( 'src/Services/express/ExpressCheckoutAjaxHandler.php' )
 		);
 	}
