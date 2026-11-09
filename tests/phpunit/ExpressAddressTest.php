@@ -29,6 +29,15 @@ class ExpressAddressTest extends TestCase {
 		);
 	}
 
+	public function test_refused_express_orders_are_logged() {
+		// The shopper sees the refusal message and the merchant log is the only trace of
+		// it. A missing_billing_email refusal (SUP26000768) left nothing to find there.
+		$this->assertMatchesRegularExpression(
+			'/privatefunctionfail_order\([^)]*\)\{[^}]*WC_Monei_Logger::log\([^;]*\$code[^;]*\);[^}]*\$this->deny\(/',
+			$this->code( 'src/Services/express/ExpressCheckoutAjaxHandler.php' )
+		);
+	}
+
 	const ES_STATES = array(
 		'C'  => 'A Coruña',
 		'VI' => 'Araba/Álava',
