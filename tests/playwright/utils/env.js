@@ -110,9 +110,35 @@ const THREE_DS_SKIP_REASON =
 	`3D Secure needs a publicly reachable HTTPS store; this run targets ${ baseUrl() }. ` +
 	'Set MONEI_E2E_WP_DIR and MONEI_E2E_BASE_URL to a tunnelled or hosted site to run it.';
 
+/**
+ * wp-admin credentials of the site.
+ *
+ * A function, not a constant: a docker-compose run that never signs in to
+ * wp-admin must not stop at import for want of them. wp-env installs `admin` /
+ * `password`; another site has its own, so they are explicit there.
+ * @return {{user: string, password: string}} Credentials
+ */
+const adminCredentials = () =>
+	isWpEnv()
+		? {
+				user: process.env.MONEI_E2E_WP_ADMIN_USER || 'admin',
+				password: process.env.MONEI_E2E_WP_ADMIN_PASSWORD || 'password',
+		  }
+		: {
+				user: requireEnv(
+					'MONEI_E2E_WP_ADMIN_USER',
+					'It must be a wp-admin user of the site MONEI_E2E_BASE_URL points at.'
+				),
+				password: requireEnv(
+					'MONEI_E2E_WP_ADMIN_PASSWORD',
+					'It must be the password of MONEI_E2E_WP_ADMIN_USER.'
+				),
+		  };
+
 module.exports = {
 	PLUGIN_ROOT,
 	THREE_DS_SKIP_REASON,
+	adminCredentials,
 	baseUrl,
 	isWpEnv,
 	requireEnv,
