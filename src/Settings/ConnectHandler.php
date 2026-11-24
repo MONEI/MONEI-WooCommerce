@@ -180,6 +180,7 @@ class ConnectHandler {
 			'unknownState'            => __( 'This connect link is not valid or was already used. Start again from the MONEI settings.', 'monei' ),
 			'expiredState'            => __( 'This connect link expired. Start again from the MONEI settings.', 'monei' ),
 			'otherAccount'            => __( 'This shop uses another MONEI account. Disconnect first.', 'monei' ),
+			'otherAccountManual'      => __( 'The Live keys of this shop belong to another MONEI account. To connect this account, clear the Live Account ID and Live API Key fields, save, and connect again.', 'monei' ),
 			'access_denied'           => __( 'MONEI refused the connect. Nothing was changed.', 'monei' ),
 			'invalid_grant'           => __( 'The connect code is not valid or expired. Start again from the MONEI settings.', 'monei' ),
 			'temporarily_unavailable' => __( 'MONEI is not available now. Try again later.', 'monei' ),

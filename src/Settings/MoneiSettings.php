@@ -163,23 +163,20 @@ class MoneiSettings extends WC_Settings_Page {
 				echo '<div class="notice notice-info inline"><p>' . esc_html( $message ) . '</p></div>';
 			}
 		}
-		$has_credentials = false;
-		foreach ( array( 'test', 'live' ) as $mode ) {
-			if ( '' !== $this->apiKeyService->get_api_key_for_mode( $mode ) || '' !== $this->apiKeyService->get_account_id_for_mode( $mode ) ) {
-				$has_credentials = true;
-			}
-		}
-		$api_key = $this->apiKeyService->get_api_key();
+		$api_key     = $this->apiKeyService->get_api_key();
+		$can_connect = null !== ConnectHandler::redirect_uri();
 		?>
+		<?php // Connect is the main flow: monei-settings.js collapses the manual key fields while it is available. ?>
+		<div id="monei-connect-section" data-manual-keys="<?php echo $can_connect ? 'closed' : 'open'; ?>">
 		<h2><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></h2>
 		<p>
-			<?php if ( null !== ConnectHandler::redirect_uri() ) : ?>
+			<?php if ( $can_connect ) : ?>
 				<a id="monei-connect" class="button button-primary" target="_blank" rel="noopener"
 					href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=monei_connect_start' ), 'monei_connect_start' ) ); ?>"><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></a>
 			<?php else : ?>
 				<span id="monei-connect-manual"><?php esc_html_e( 'Use manual keys. Connect with MONEI needs a public HTTPS address for this shop.', 'monei' ); ?></span>
 			<?php endif; ?>
-			<?php if ( $has_credentials ) : ?>
+			<?php if ( ConnectHandler::connect_service()->is_connected() ) : ?>
 				<?php // A submit of the settings form would be its default button: Enter in a key field would disconnect. ?>
 				<button type="submit" id="monei-disconnect" class="button" form="<?php echo esc_attr( ConnectHandler::DISCONNECT_FORM_ID ); ?>"><?php esc_html_e( 'Disconnect', 'monei' ); ?></button>
 			<?php endif; ?>
@@ -197,6 +194,10 @@ class MoneiSettings extends WC_Settings_Page {
 			</p>
 		<?php endif; ?>
 		<p><a href="<?php echo esc_url( ConnectHandler::DASHBOARD_KEYS_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Manage and revoke API keys in the MONEI Dashboard', 'monei' ); ?></a></p>
+		<?php if ( $can_connect ) : ?>
+			<p><a href="#" id="monei-manual-keys-toggle"><?php esc_html_e( 'Enter API keys manually', 'monei' ); ?></a></p>
+		<?php endif; ?>
+		</div>
 		<?php
 	}
 

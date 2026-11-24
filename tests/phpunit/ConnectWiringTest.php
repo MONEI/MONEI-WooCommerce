@@ -165,7 +165,9 @@ class ConnectWiringTest extends TestCase {
 	 * another URL than the tab checked.
 	 */
 	public function test_the_tab_and_the_start_share_the_checked_callback_url() {
-		$this->assertStringContainsString( '<?php if(null!==ConnectHandler::redirect_uri()):?>', $this->method( self::SETTINGS, 'render_connect_section' ) );
+		$section = $this->method( self::SETTINGS, 'render_connect_section' );
+		$this->assertStringContainsString( '$can_connect=null!==ConnectHandler::redirect_uri();', $section );
+		$this->assertSame( 1, preg_match( '/<\?php if\(\$can_connect\):\?>\s*<a id="monei-connect"/', $section ) );
 		$this->assertStringContainsString( '$redirect_uri=self::redirect_uri();', $this->method( self::HANDLER, 'start' ) );
 		$this->assertStringContainsString(
 			'try{$uri=Connect::canonicalRedirectUri(self::callback_url());}catch(InvalidArgumentException$e){returnnull;}returnnull===Connect::callbackProblem(ConnectService::CLIENT,$uri)?$uri:null;',

@@ -342,10 +342,13 @@ class ConnectServiceTest extends TestCase {
 
 	/**
 	 * Bug: a shop is split across two MONEI accounts: open orders of the old Live account lose their key. The
-	 * Test result is refused too, even proven.
+	 * Test result is refused too, even proven. A manual shop has no Disconnect button, so it must not be told to
+	 * disconnect.
+	 *
+	 * @dataProvider stored_live_keys
 	 */
-	public function test_another_live_account_switches_neither_mode() {
-		$store                 = self::manual_shop();
+	public function test_another_live_account_switches_neither_mode( string $live_key, string $code ) {
+		$store                 = self::manual_shop( array( 'monei_live_apikey' => $live_key ) );
 		$before                = self::credentials( $store );
 		$this->exchange_answer = array(
 			'live' => self::keys( 'live', 'acc-other' ),
@@ -355,8 +358,15 @@ class ConnectServiceTest extends TestCase {
 		$result = $this->service( $store )->complete( self::STATE, 'the-code' );
 
 		$this->assertSame( $before, self::credentials( $store ) );
-		$this->assertSame( array( array( null, 'otherAccount' ) ), self::codes( $result ) );
+		$this->assertSame( array( array( null, $code ) ), self::codes( $result ) );
 		$this->assertSame( array(), $this->probed );
+	}
+
+	public function stored_live_keys(): array {
+		return array(
+			'manual pk_ key' => array( 'pk_live_old', 'otherAccountManual' ),
+			'connected'      => array( 'mk_live_old', 'otherAccount' ),
+		);
 	}
 
 	/**

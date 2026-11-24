@@ -106,6 +106,18 @@ class ConnectService {
 	}
 
 	/**
+	 * Whether a mode stores a scoped key (mk_) from a connect. Disconnect shows only then.
+	 */
+	public function is_connected(): bool {
+		foreach ( $this->api_keys() as $key ) {
+			if ( 0 === strpos( $key, 'mk_' ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * @return array{live: string, test: string} The stored API key of each mode.
 	 */
 	public function api_keys(): array {
@@ -139,9 +151,10 @@ class ConnectService {
 		$live_account = (string) $this->options->get( 'monei_live_accountid', '' );
 		// Open orders of the old account need its key, and a shop split across two merchants is wrong.
 		if ( isset( $result['live'] ) && '' !== $live_account && $result['live']['accountId'] !== $live_account ) {
+			// Only a connected shop has a Disconnect button; a manual shop clears its Live fields instead.
 			$problems[] = array(
 				'mode' => null,
-				'code' => 'otherAccount',
+				'code' => $this->is_connected() ? 'otherAccount' : 'otherAccountManual',
 			);
 			return array(
 				'switched' => array(),
