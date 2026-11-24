@@ -21,6 +21,7 @@ class MoneiSettings extends WC_Settings_Page {
 		$this->apiKeyService = $container->get( ApiKeyService::class );
 		parent::__construct();
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'admin_footer', array( $this, 'print_disconnect_form' ) );
 	}
 
 	public function get_settings() {
@@ -135,16 +136,83 @@ class MoneiSettings extends WC_Settings_Page {
 		if ( $template ) {
 			$template->render( $data );
 		}
+		$this->render_connect_section();
 		$settings = $this->get_settings();
 		WC_Admin_Settings::output_fields( $settings );
 	}
 
 	public function save() {
-		$settings = $this->get_settings();
+		$connect     = ConnectHandler::connect_service();
+		$keys_before = $connect->api_keys();
+		$settings    = $this->get_settings();
 		WC_Admin_Settings::save_fields( $settings );
+		$connect->forget_secrets_of_changed_keys( $keys_before );
 		$this->apiKeyService->update_keys();
 		// A saved key is the merchant's fix; make the next request try it.
 		delete_option( PaymentMethodsRepository::BACKOFF_OPTION );
+	}
+
+	/**
+	 * Connect or "Use manual keys", Disconnect, and the last 4 characters of the key in use.
+	 */
+	private function render_connect_section(): void {
+		$messages = get_option( ConnectHandler::MESSAGES_OPTION, array() );
+		if ( $messages ) {
+			delete_option( ConnectHandler::MESSAGES_OPTION );
+			foreach ( (array) $messages as $message ) {
+				echo '<div class="notice notice-info inline"><p>' . esc_html( $message ) . '</p></div>';
+			}
+		}
+		$has_credentials = false;
+		foreach ( array( 'test', 'live' ) as $mode ) {
+			if ( '' !== $this->apiKeyService->get_api_key_for_mode( $mode ) || '' !== $this->apiKeyService->get_account_id_for_mode( $mode ) ) {
+				$has_credentials = true;
+			}
+		}
+		$api_key = $this->apiKeyService->get_api_key();
+		?>
+		<h2><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></h2>
+		<p>
+			<?php if ( null !== ConnectHandler::redirect_uri() ) : ?>
+				<a id="monei-connect" class="button button-primary" target="_blank" rel="noopener"
+					href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=monei_connect_start' ), 'monei_connect_start' ) ); ?>"><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></a>
+			<?php else : ?>
+				<span id="monei-connect-manual"><?php esc_html_e( 'Use manual keys. Connect with MONEI needs a public HTTPS address for this shop.', 'monei' ); ?></span>
+			<?php endif; ?>
+			<?php if ( $has_credentials ) : ?>
+				<?php // A submit of the settings form would be its default button: Enter in a key field would disconnect. ?>
+				<button type="submit" id="monei-disconnect" class="button" form="<?php echo esc_attr( ConnectHandler::DISCONNECT_FORM_ID ); ?>"><?php esc_html_e( 'Disconnect', 'monei' ); ?></button>
+			<?php endif; ?>
+		</p>
+		<?php if ( '' !== $api_key ) : ?>
+			<p id="monei-key-in-use">
+				<?php
+				printf(
+					/* translators: 1: Test or Live, 2: last 4 characters of the API key. */
+					esc_html__( 'Key in use (%1$s): ending in %2$s', 'monei' ),
+					esc_html( $this->apiKeyService->is_test_mode() ? __( 'Test', 'monei' ) : __( 'Live', 'monei' ) ),
+					esc_html( substr( $api_key, -4 ) )
+				);
+				?>
+			</p>
+		<?php endif; ?>
+		<p><a href="<?php echo esc_url( ConnectHandler::DASHBOARD_KEYS_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Manage and revoke API keys in the MONEI Dashboard', 'monei' ); ?></a></p>
+		<?php
+	}
+
+	/**
+	 * The Disconnect form, outside the WooCommerce settings form, on the MONEI tab only.
+	 */
+	public function print_disconnect_form(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the page to print on.
+		if ( ! isset( $_GET['tab'] ) || 'monei_settings' !== $_GET['tab'] ) {
+			return;
+		}
+		?>
+		<form id="<?php echo esc_attr( ConnectHandler::DISCONNECT_FORM_ID ); ?>" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=monei_disconnect' ) ); ?>">
+			<?php wp_nonce_field( 'monei_disconnect', '_monei_disconnect_nonce' ); ?>
+		</form>
+		<?php
 	}
 
 	public function enqueue_admin_scripts( $hook ) {

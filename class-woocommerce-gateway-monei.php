@@ -19,6 +19,7 @@ use Monei\Services\MoneiApplePayVerificationService;
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\Services\payment\TokenSessionId;
 use Monei\Services\sdk\MoneiSdkClientFactory;
+use Monei\Settings\ConnectHandler;
 use Monei\Settings\MoneiSettings;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 
@@ -119,6 +120,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			}
 
 			add_action( 'admin_notices', array( $this, 'api_key_rejected_notice' ) );
+			add_action( 'admin_notices', array( $this, 'connect_notice' ) );
 
 			$this->define_constants();
 			$this->includes();
@@ -159,6 +161,13 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			include_once 'includes/class-wc-monei-pre-auth.php';
 
 			if ( $this->is_request( 'admin' ) ) {
+				// Here and not in MoneiSettings: an admin-post.php request never builds the settings pages.
+				// No admin_post_nopriv_ hook: a request without a session is refused before these run.
+				$connect_handler = new ConnectHandler();
+				add_action( 'admin_post_monei_connect_start', array( $connect_handler, 'start' ) );
+				add_action( 'admin_post_monei_connect', array( $connect_handler, 'callback' ) );
+				add_action( 'admin_post_monei_disconnect', array( $connect_handler, 'disconnect' ) );
+
 				add_filter(
 					'woocommerce_get_settings_pages',
 					function ( $settings ) use ( $container ) {
@@ -231,6 +240,38 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			$template        = $templateManager->getTemplate( 'notice-admin-api-key-rejected' );
 			if ( $template ) {
 				$template->render( array( 'until' => $until ) );
+			}
+		}
+
+		/**
+		 * Invites a shop that stores a pk_ key to connect. Each admin can dismiss it.
+		 *
+		 * @return void
+		 */
+		public function connect_notice() {
+			if ( ! current_user_can( 'manage_woocommerce' ) ) {
+				return;
+			}
+			if ( isset( $_GET['monei-hide-connect-notice'] ) ) {
+				$nonce = isset( $_GET['_monei_hide_connect_notice_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_monei_hide_connect_notice_nonce'] ) ) : '';
+				if ( wp_verify_nonce( $nonce, 'monei_hide_connect_notice' ) ) {
+					update_user_meta( get_current_user_id(), 'monei_hide_connect_notice', 1 );
+				}
+				return;
+			}
+			if ( get_user_meta( get_current_user_id(), 'monei_hide_connect_notice', true ) ) {
+				return;
+			}
+			$has_publishable_key = false;
+			foreach ( array( 'monei_test_apikey', 'monei_live_apikey' ) as $option ) {
+				$has_publishable_key = $has_publishable_key || 0 === strpos( (string) get_option( $option, '' ), 'pk_' );
+			}
+			if ( ! $has_publishable_key ) {
+				return;
+			}
+			$template = ContainerProvider::getContainer()->get( 'Monei\Templates\TemplateManager' )->getTemplate( 'notice-admin-connect' );
+			if ( $template ) {
+				$template->render( array() );
 			}
 		}
 

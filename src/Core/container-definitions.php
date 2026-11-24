@@ -20,6 +20,7 @@ use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Templates\NoticeAdminDependency;
 use Monei\Templates\NoticeAdminNewInstall;
 use Monei\Templates\NoticeApiKeyRejected;
+use Monei\Templates\NoticeConnect;
 use Monei\Templates\NoticeGatewayNotAvailable;
 use Monei\Templates\NoticeGatewayNotAvailableApi;
 use Monei\Templates\NoticeGatewayNotEnabledMonei;
@@ -39,6 +40,7 @@ $definitions            = array(
 	// Register each template as an autowired service
 	NoticeAdminNewInstall::class            => autowire( NoticeAdminNewInstall::class ),
 	NoticeApiKeyRejected::class             => autowire( NoticeApiKeyRejected::class ),
+	NoticeConnect::class                    => autowire( NoticeConnect::class ),
 	SettingsHeader::class                   => autowire( SettingsHeader::class ),
 	NoticeAdminDependency::class            => autowire( NoticeAdminDependency::class ),
 	NoticeGatewayNotAvailable::class        => autowire( NoticeGatewayNotAvailable::class ),
@@ -51,6 +53,7 @@ $definitions            = array(
 			array(
 				'notice-admin-new-install'               => get( NoticeAdminNewInstall::class ),
 				'notice-admin-api-key-rejected'          => get( NoticeApiKeyRejected::class ),
+				'notice-admin-connect'                   => get( NoticeConnect::class ),
 				'monei-settings-header'                  => get( SettingsHeader::class ),
 				'notice-admin-dependency'                => get( NoticeAdminDependency::class ),
 				'notice-admin-gateway-not-available'     => get( NoticeGatewayNotAvailable::class ),

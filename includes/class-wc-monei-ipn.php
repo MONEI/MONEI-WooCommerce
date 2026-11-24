@@ -1,7 +1,10 @@
 <?php
 
 use Monei\Core\ContainerProvider;
+use Monei\ApiException;
+use Monei\Services\CallbackVerifier;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\WpOptionStore;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Services\ApiKeyService;
 use Monei\Services\PaymentMethodFormatter;
@@ -21,6 +24,7 @@ class WC_Monei_IPN {
 	private $logging;
 	private MoneiPaymentServices $moneiPaymentServices;
 	private PaymentMethodFormatter $paymentMethodFormatter;
+	private CallbackVerifier $callbackVerifier;
 
 	/**
 	 * Constructor.
@@ -35,6 +39,24 @@ class WC_Monei_IPN {
 		$this->moneiPaymentServices   = new MoneiPaymentServices( $sdkClient );
 		$container                    = ContainerProvider::getContainer();
 		$this->paymentMethodFormatter = $container->get( PaymentMethodFormatter::class );
+		$this->callbackVerifier       = new CallbackVerifier(
+			new WpOptionStore(),
+			'time',
+			function ( string $order_id ) {
+				$order = wc_get_order( $order_id );
+				if ( ! $order ) {
+					return null;
+				}
+				return array(
+					'paymentId' => (string) $order->get_meta( '_payment_order_number_monei', true ),
+					'amount'    => (int) monei_price_format( $order->get_total() ),
+					'paid'      => $order->is_paid(),
+				);
+			},
+			function ( string $mode, string $payment_id ) use ( $sdkClient ) {
+				return $sdkClient->get_client_for_mode( $mode )->payments->get( $payment_id );
+			}
+		);
 	}
 
 	/**
@@ -60,8 +82,8 @@ class WC_Monei_IPN {
 		$raw_body = file_get_contents( 'php://input' );
 		$this->log_ipn_request( $headers, $raw_body );
 
-		// Check for signature header.
-		if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) {
+		// A shop with a scoped key verifies a callback without the header by fetching the payment.
+		if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) && ! $this->callbackVerifier->any_mode_connected() ) {
 			WC_Monei_Logger::log( '[MONEI] Webhook missing signature header from IP: ' . WC_Geolocation::get_ip_address() );
 			http_response_code( 401 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
@@ -69,21 +91,32 @@ class WC_Monei_IPN {
 			exit;
 		}
 
-		$payload = null;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$signature = isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ? wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) : null;
+		$decision  = $this->callbackVerifier->verify( (string) $raw_body, $signature );
 
-		try {
-			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$payload = $this->verify_signature_get_payload( $raw_body, wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
-			$this->logging && WC_Monei_Logger::logDebug( $payload );
-		} catch ( Throwable $e ) {
+		if ( 401 === $decision['status'] ) {
 			// Signature verification failed - this is a security issue, always log.
+			$e = new ApiException( '[401] Signature verification failed', 401 );
 			WC_Monei_Logger::log( '[MONEI] Webhook signature verification failed: ' . $e->getMessage() );
-			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
+			do_action( 'woocommerce_monei_handle_failed_ipn', null, $e );
 			http_response_code( 401 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
 			echo 'Unauthorized';
 			exit;
 		}
+
+		if ( null === $decision['payment'] ) {
+			WC_Monei_Logger::log( '[MONEI] Webhook not processed: ' . $decision['reason'] );
+			http_response_code( $decision['status'] );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 200 === $decision['status'] ? 'OK' : 'Not processed';
+			exit;
+		}
+
+		// Only the payment the verifier returns is processed, never the request body.
+		$payload = $decision['payment'];
+		$this->logging && WC_Monei_Logger::logDebug( $payload );
 
 		try {
 			$this->handle_valid_ipn( $payload );
@@ -111,11 +144,12 @@ class WC_Monei_IPN {
 	 * @return void
 	 */
 	protected function handle_valid_ipn( $payload ) {
-		$order_id       = $payload['orderId'];
-		$monei_id       = $payload['id'];
-		$status         = $payload['status'];
-		$status_code    = $payload['statusCode'];
-		$status_message = $payload['statusMessage'];
+		$order_id = $payload['orderId'];
+		$monei_id = $payload['id'];
+		$status   = $payload['status'];
+		// A fetched payment has no key for an empty field.
+		$status_code    = $payload['statusCode'] ?? '';
+		$status_message = $payload['statusMessage'] ?? '';
 		$amount         = $payload['amount'];
 
 		$order = wc_get_order( $order_id );
@@ -252,24 +286,6 @@ class WC_Monei_IPN {
 			// The order remains in its current status with a note about the partial refund.
 			return;
 		}
-	}
-
-	/**
-	 * Verify signature, if all good returns payload.
-	 * Throws Exception if signature is not valid.
-	 *
-	 * @param string $request_body    The request body.
-	 * @param string $monei_signature The MONEI signature header.
-	 *
-	 * @return array
-	 * @throws \Monei\ApiException
-	 */
-	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		$decoded_body = json_decode( $request_body );
-		if ( isset( $decoded_body->orderId ) ) {
-			$this->moneiPaymentServices->set_order( $decoded_body->orderId );
-		}
-		return (array) $this->moneiPaymentServices->verify_signature( $request_body, $monei_signature );
 	}
 
 	/**

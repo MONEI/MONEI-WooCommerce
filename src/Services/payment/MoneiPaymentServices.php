@@ -37,18 +37,6 @@ class MoneiPaymentServices {
 	}
 
 	/**
-	 * @param $body
-	 * @param $signature
-	 *
-	 * @return object
-	 * @throws \Monei\ApiException
-	 */
-	public function verify_signature( $body, $signature ) {
-		$client = $this->client->get_client();
-		return $client->verifySignature( $body, $signature );
-	}
-
-	/**
 	 * https://docs.monei.com/api/#operation/payments_create
 	 *
 	 * @param array $payload

@@ -4,8 +4,10 @@ namespace Monei\Services;
 
 use Monei\Services\payment\MoneiPaymentServices;
 use Monei\ApiException;
+use Monei\MoneiClient;
 use WC_Admin_Settings;
 use WC_Monei_Logger;
+use RuntimeException;
 
 /**
  * Class to verify Apple Pay Registration.
@@ -71,6 +73,19 @@ class MoneiApplePayVerificationService {
 				WC_Admin_Settings::add_error( __( 'Apple Pay domain registration failed. Please check the logs.', 'monei' ) );
 			}
 		}
+	}
+
+	/**
+	 * Register the shop domain with the client of a key, outside the settings save.
+	 *
+	 * @throws ApiException|\RuntimeException When MONEI refuses it or the domain is empty.
+	 */
+	public static function register_domain( MoneiClient $client ): void {
+		$domain = wp_parse_url( home_url(), PHP_URL_HOST );
+		if ( empty( $domain ) ) {
+			throw new RuntimeException( 'empty domain' );
+		}
+		$client->applePayDomain->register( array( 'domainName' => $domain ) );
 	}
 
 	/**

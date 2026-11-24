@@ -143,16 +143,25 @@ class PaymentMethodsRepository implements PaymentMethodsRepositoryInterface {
 	}
 
 	/**
+	 * Drop the cached answers of an account, so the next request asks MONEI with the current key.
+	 */
+	public static function forget( string $accountId ): void {
+		$transientKey = self::generateTransientKey( $accountId );
+		delete_transient( $transientKey );
+		delete_transient( self::fallbackKey( $transientKey ) );
+	}
+
+	/**
 	 * Generate a transient key.
 	 */
-	private function generateTransientKey( string $key ): string {
+	private static function generateTransientKey( string $key ): string {
 		return 'payment_methods_' . md5( $key );
 	}
 
 	/**
 	 * Key of the longer lived copy used when the API call fails.
 	 */
-	private function fallbackKey( string $transientKey ): string {
+	private static function fallbackKey( string $transientKey ): string {
 		return $transientKey . '_last_ok';
 	}
 }
