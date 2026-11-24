@@ -1,8 +1,8 @@
 const crypto = require( 'crypto' );
 const { test, expect } = require( '@playwright/test' );
 const { login } = require( '../utils/admin' );
-const { baseUrl } = require( '../utils/env' );
-const { getOption, wpCli } = require( '../utils/wp-cli' );
+const { adminCredentials, baseUrl } = require( '../utils/env' );
+const { getOption, setOption, wpCli } = require( '../utils/wp-cli' );
 
 /**
  * Connect with MONEI: the admin checks of the start, disconnect and callback
@@ -53,6 +53,65 @@ const credentialsDigest = () =>
 		.createHash( 'sha256' )
 		.update( JSON.stringify( CREDENTIALS.map( getOption ) ) )
 		.digest( 'hex' );
+
+/**
+ * The fake Live credentials a connect would leave, as connectedShop() stores them.
+ */
+const FAKE_LIVE = {
+	monei_live_accountid: 'e2e-live-account',
+	monei_live_apikey: 'mk_live_e2e_not_a_key',
+	monei_live_signing_secret: 'mksec_live_e2e',
+};
+
+/**
+ * Read an option, null when absent. Unlike getOption, a failed WP-CLI call
+ * throws instead of reading as empty, so a restore never writes a wrong value.
+ * @param {string} name - Option name
+ * @return {string|null} Value
+ */
+const readOption = ( name ) =>
+	JSON.parse(
+		wpCli( [
+			'eval',
+			`echo json_encode( get_option( '${ name }', null ) );`,
+		] )
+	);
+
+/**
+ * Give the shop a connected Live mode, as a connect leaves it. The selected mode
+ * stays Test, so no request goes out with the fake key.
+ * @return {Function} Puts the stored values back
+ */
+const connectedShop = () => {
+	const names = [
+		...CREDENTIALS,
+		'monei_live_signing_secret',
+		'monei_test_signing_secret',
+		'monei_apikey_mode',
+	];
+	const before = {};
+	for ( const name of names ) {
+		const value = readOption( name );
+		// A fake left by an interrupted run is not the shop's own value.
+		before[ name ] = value === FAKE_LIVE[ name ] ? null : value;
+	}
+	for ( const [ name, value ] of Object.entries( FAKE_LIVE ) ) {
+		setOption( name, value );
+	}
+	return () => {
+		for ( const [ name, value ] of Object.entries( before ) ) {
+			if ( value === null ) {
+				try {
+					wpCli( [ 'option', 'delete', name ] );
+				} catch ( error ) {
+					// It was not there to delete.
+				}
+			} else {
+				setOption( name, value );
+			}
+		}
+	};
+};
 
 test.describe( 'Connect with MONEI', () => {
 	test( 'a start without the admin check stores no state', async ( {
@@ -194,6 +253,11 @@ test.describe( 'Connect with MONEI', () => {
 			'Use manual keys'
 		);
 		await expect( page.locator( '#monei-connect' ) ).toHaveCount( 0 );
+		// Manual keys are the only way here, so their fields are open.
+		await expect( page.locator( '#monei_test_apikey' ) ).toBeVisible();
+		await expect( page.locator( '#monei-manual-keys-toggle' ) ).toHaveCount(
+			0
+		);
 	} );
 
 	test( 'an https shop starts at the broker with S256 and its callback', async ( {
@@ -203,6 +267,10 @@ test.describe( 'Connect with MONEI', () => {
 
 		await login( page );
 		await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
+		// Connect is the main flow: the manual key fields wait for a click.
+		await expect( page.locator( '#monei_test_apikey' ) ).toBeHidden();
+		await page.locator( '#monei-manual-keys-toggle' ).click();
+		await expect( page.locator( '#monei_test_apikey' ) ).toBeVisible();
 		const href = await page
 			.locator( '#monei-connect' )
 			.getAttribute( 'href' );
@@ -233,6 +301,120 @@ test.describe( 'Connect with MONEI', () => {
 					'delete',
 					`monei_connect_state_${ state }`,
 				] );
+			}
+		}
+	} );
+
+	test( 'a shop with only manual keys has no Disconnect button', async ( {
+		page,
+	} ) => {
+		expect(
+			getOption( 'monei_test_apikey' ).startsWith( 'pk_' ),
+			'the seeded store uses a manual key'
+		).toBe( true );
+
+		await login( page );
+		await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
+
+		await expect( page.locator( '#monei-disconnect' ) ).toHaveCount( 0 );
+	} );
+
+	test( 'Enter in a settings field saves and does not disconnect', async ( {
+		page,
+	} ) => {
+		const restore = connectedShop();
+		try {
+			const before = credentialsDigest();
+			await login( page );
+			await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
+			await expect( page.locator( '#monei-disconnect' ) ).toBeVisible();
+
+			if ( await page.locator( '#monei-manual-keys-toggle' ).count() ) {
+				await page.locator( '#monei-manual-keys-toggle' ).click();
+			}
+			// WooCommerce enables Save only after a change: type, then undo it.
+			const field = page.locator( '#monei_test_accountid' );
+			await field.press( 'End' );
+			await field.press( 'x' );
+			await field.press( 'Backspace' );
+			await Promise.all( [
+				page.waitForNavigation(),
+				field.press( 'Enter' ),
+			] );
+
+			await expect(
+				page.getByText( 'Your settings have been saved.' )
+			).toBeVisible();
+			expect( credentialsDigest(), 'credentials unchanged' ).toBe(
+				before
+			);
+		} finally {
+			restore();
+		}
+	} );
+
+	test( 'Disconnect clears the credentials of both modes', async ( {
+		page,
+	} ) => {
+		const restore = connectedShop();
+		try {
+			await login( page );
+			await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
+			await page.locator( '#monei-disconnect' ).click();
+
+			await expect(
+				page.locator( '.notice', { hasText: 'MONEI disconnected.' } )
+			).toBeVisible();
+			await expect( page.locator( '#monei-disconnect' ) ).toHaveCount(
+				0
+			);
+			expect(
+				CREDENTIALS.map( getOption ),
+				'every credential cleared'
+			).toEqual( [ '', '', '', '' ] );
+		} finally {
+			restore();
+		}
+	} );
+
+	test( 'a manual-key shop can dismiss the invitation to connect', async ( {
+		page,
+	} ) => {
+		const userId = wpCli( [
+			'user',
+			'get',
+			adminCredentials().user,
+			'--field=ID',
+		] );
+		const notice = page.locator(
+			'text=Connect with MONEI to stop storing your account API key.'
+		);
+		try {
+			await login( page );
+			await page.goto( '/wp-admin/index.php', {
+				waitUntil: 'domcontentloaded',
+			} );
+			await expect( notice ).toBeVisible();
+
+			await page
+				.locator( 'a[href*="monei-hide-connect-notice"]' )
+				.click();
+			await page.goto( '/wp-admin/index.php', {
+				waitUntil: 'domcontentloaded',
+			} );
+
+			await expect( notice ).toHaveCount( 0 );
+		} finally {
+			try {
+				wpCli( [
+					'user',
+					'meta',
+					'delete',
+					userId,
+					'monei_hide_connect_notice',
+				] );
+			} catch ( error ) {
+				// Not set: the dismiss never landed.
 			}
 		}
 	} );
