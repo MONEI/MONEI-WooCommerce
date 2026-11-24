@@ -38,12 +38,14 @@ Under wp-env the two cannot diverge, because WP-CLI runs inside the instance the
 
 ## Settings
 
-| Variable                | Required                | Meaning                                                                             |
-| ----------------------- | ----------------------- | ----------------------------------------------------------------------------------- |
-| `MONEI_TEST_API_KEY`    | yes                     | Test mode key of the account the suite pays with. Seeding fails on a live mode key. |
-| `MONEI_TEST_ACCOUNT_ID` | no                      | Cross-checked against the account the key belongs to; a mismatch stops the run.     |
-| `MONEI_E2E_WP_DIR`      | no                      | Switches from wp-env to an existing docker-compose site.                            |
-| `MONEI_E2E_BASE_URL`    | with `MONEI_E2E_WP_DIR` | Public URL of that site.                                                            |
+| Variable                      | Required                | Meaning                                                                             |
+| ----------------------------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| `MONEI_TEST_API_KEY`          | yes                     | Test mode key of the account the suite pays with. Seeding fails on a live mode key. |
+| `MONEI_TEST_ACCOUNT_ID`       | no                      | Cross-checked against the account the key belongs to; a mismatch stops the run.     |
+| `MONEI_E2E_WP_DIR`            | no                      | Switches from wp-env to an existing docker-compose site.                            |
+| `MONEI_E2E_BASE_URL`          | with `MONEI_E2E_WP_DIR` | Public URL of that site.                                                            |
+| `MONEI_E2E_WP_ADMIN_USER`     | with `MONEI_E2E_WP_DIR` | wp-admin user for the Connect specs. Under wp-env: `admin`.                         |
+| `MONEI_E2E_WP_ADMIN_PASSWORD` | with `MONEI_E2E_WP_DIR` | Its password. Under wp-env: `password`.                                             |
 
 The account id is derived from the key, so `MONEI_TEST_ACCOUNT_ID` only exists to catch a key and an id that disagree.
 
