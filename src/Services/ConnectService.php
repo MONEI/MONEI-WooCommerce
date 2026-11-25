@@ -90,6 +90,10 @@ class ConnectService {
 	 * on. The keys stay active at MONEI until the merchant revokes them.
 	 */
 	public function disconnect(): void {
+		// A connect started before the Disconnect must not finish after it.
+		foreach ( $this->options->names_with_prefix( self::STATE_PREFIX ) as $name ) {
+			$this->options->delete( $name );
+		}
 		// ApiKeyService copies these legacy keys into empty modes on the next request.
 		// They go first: reading the settings can run that migration while the modes still hold keys.
 		$settings = $this->options->get( 'woocommerce_monei_settings', array() );

@@ -426,8 +426,9 @@ class ConnectServiceTest extends TestCase {
 	}
 
 	/**
-	 * Bug: Disconnect deletes a manual pk_ key of the other mode, and its checkout stops; or, after a disconnect,
-	 * ApiKeyService's legacy migration copies an old pk_ key back into the empty modes on the next request.
+	 * Bug: Disconnect deletes a manual pk_ key of the other mode, and its checkout stops; after a disconnect,
+	 * ApiKeyService's legacy migration copies an old pk_ key back into the empty modes on the next request; or a
+	 * connect started before the Disconnect finishes after it.
 	 */
 	public function test_disconnect_clears_only_the_connected_mode_and_the_legacy_keys() {
 		$store = self::manual_shop(
@@ -451,5 +452,6 @@ class ConnectServiceTest extends TestCase {
 			$this->assertArrayNotHasKey( $name, $store->options, $name );
 		}
 		$this->assertSame( array( 'acc-test-old', 'pk_test_old' ), array( $store->get( 'monei_test_accountid' ), $store->get( 'monei_test_apikey' ) ) );
+		$this->assertSame( array(), $store->names_with_prefix( ConnectService::STATE_PREFIX ), 'the pending connect state is gone' );
 	}
 }
