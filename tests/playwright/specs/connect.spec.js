@@ -59,7 +59,7 @@ const credentialsDigest = () =>
  */
 const FAKE_LIVE = {
 	monei_live_accountid: 'e2e-live-account',
-	monei_live_apikey: 'mk_live_e2e_not_a_key',
+	monei_live_apikey: 'mk_placeholder',
 	monei_live_signing_secret: 'mksec_live_e2e',
 };
 
@@ -353,10 +353,51 @@ test.describe( 'Connect with MONEI', () => {
 		}
 	} );
 
-	test( 'Disconnect clears the credentials of both modes', async ( {
+	test( 'a save from a tab rendered before a connect keeps the new keys', async ( {
+		page,
+	} ) => {
+		await login( page );
+		await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
+		// The connect lands in another tab after this page was rendered.
+		const restore = connectedShop();
+		try {
+			if ( await page.locator( '#monei-manual-keys-toggle' ).count() ) {
+				await page.locator( '#monei-manual-keys-toggle' ).click();
+			}
+			// WooCommerce enables Save only after a change: type, then undo it.
+			const field = page.locator( '#monei_test_accountid' );
+			await field.press( 'End' );
+			await field.press( 'x' );
+			await field.press( 'Backspace' );
+			await Promise.all( [
+				page.waitForNavigation(),
+				field.press( 'Enter' ),
+			] );
+
+			await expect(
+				page.getByText( 'The MONEI keys changed in another tab' )
+			).toBeVisible();
+			expect(
+				[
+					readOption( 'monei_live_accountid' ),
+					readOption( 'monei_live_apikey' ),
+					readOption( 'monei_live_signing_secret' ),
+				],
+				'the connected Live credentials stay'
+			).toEqual( Object.values( FAKE_LIVE ) );
+		} finally {
+			restore();
+		}
+	} );
+
+	test( 'Disconnect clears the connected mode and keeps a manual key', async ( {
 		page,
 	} ) => {
 		const restore = connectedShop();
+		const manualTest = [
+			getOption( 'monei_test_accountid' ),
+			getOption( 'monei_test_apikey' ),
+		];
 		try {
 			await login( page );
 			await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
@@ -369,9 +410,19 @@ test.describe( 'Connect with MONEI', () => {
 				0
 			);
 			expect(
-				CREDENTIALS.map( getOption ),
-				'every credential cleared'
-			).toEqual( [ '', '', '', '' ] );
+				[
+					getOption( 'monei_live_accountid' ),
+					getOption( 'monei_live_apikey' ),
+				],
+				'the connected Live mode cleared'
+			).toEqual( [ '', '' ] );
+			expect(
+				[
+					getOption( 'monei_test_accountid' ),
+					getOption( 'monei_test_apikey' ),
+				],
+				'the manual Test key kept'
+			).toEqual( manualTest );
 		} finally {
 			restore();
 		}

@@ -245,30 +245,35 @@ class ConnectServiceTest extends TestCase {
 	}
 
 	/**
-	 * Bug: a key the edge refuses replaces working credentials, or a 400 (a mode with no enabled provider) is
-	 * taken for a refused key and blocks the connect.
+	 * Bug: a key the edge refuses replaces working credentials, a MONEI outage (5xx, 429, no answer) is taken for
+	 * proof, or a 400 (a mode with no enabled provider) is taken for a refused key and blocks the connect.
 	 *
 	 * @dataProvider call_answers
 	 */
-	public function test_the_test_call_answer_decides_the_switch( int $status, array $expected_test ) {
+	public function test_the_test_call_answer_decides_the_switch( int $status, array $expected_test, array $expected_codes ) {
 		$store                 = self::manual_shop();
 		$this->exchange_answer = array( 'test' => self::keys( 'test', 'acc-test-new' ) );
 		$this->statuses        = array( 'mk_test_new' => $status );
 
-		$this->service( $store )->complete( self::STATE, 'the-code' );
+		$result = $this->service( $store )->complete( self::STATE, 'the-code' );
 
 		$credentials = self::credentials( $store );
 		$this->assertSame( $expected_test, array( $credentials['test_accountid'], $credentials['test_apikey'], $credentials['test_signing_secret'] ) );
+		$this->assertSame( $expected_codes, self::codes( $result ) );
 	}
 
 	public function call_answers(): array {
-		$new  = array( 'acc-test-new', 'mk_test_new', 'mksec_test_new' );
-		$kept = array( 'acc-test-old', 'pk_test_old', null );
+		$new         = array( 'acc-test-new', 'mk_test_new', 'mksec_test_new' );
+		$kept        = array( 'acc-test-old', 'pk_test_old', null );
+		$unavailable = array( array( 'test', 'temporarily_unavailable' ) );
 		return array(
-			'400 proves the key' => array( 400, $new ),
-			'401'                => array( 401, $kept ),
-			'403'                => array( 403, $kept ),
-			'no answer'          => array( 0, $kept ),
+			'200 proves the key' => array( 200, $new, array() ),
+			'400 proves the key' => array( 400, $new, array() ),
+			'401'                => array( 401, $kept, array( array( 'test', 'keyRejected' ) ) ),
+			'403'                => array( 403, $kept, array( array( 'test', 'keyRejected' ) ) ),
+			'429'                => array( 429, $kept, $unavailable ),
+			'500'                => array( 500, $kept, $unavailable ),
+			'no answer'          => array( 0, $kept, $unavailable ),
 		);
 	}
 
@@ -407,12 +412,27 @@ class ConnectServiceTest extends TestCase {
 	}
 
 	/**
-	 * Bug: after a disconnect, ApiKeyService's legacy migration copies the old pk_ key back into the empty modes
-	 * on the next request.
+	 * Bug: a save from a tab rendered before a connect in another tab writes the old keys back over the new ones.
 	 */
-	public function test_disconnect_clears_both_modes_and_the_legacy_keys() {
+	public function test_a_key_changed_after_the_render_is_reported_for_its_mode_only() {
+		$store        = self::manual_shop();
+		$service      = $this->service( $store );
+		$fingerprints = $service->key_fingerprints();
+		$store->set( 'monei_test_apikey', 'mk_test_new' );
+
+		$this->assertSame( array( 'test' ), $service->modes_changed_since( $fingerprints ) );
+		$this->assertSame( array(), $service->modes_changed_since( $service->key_fingerprints() ) );
+		$this->assertSame( array(), $service->modes_changed_since( array() ), 'a form without fingerprints saves as before' );
+	}
+
+	/**
+	 * Bug: Disconnect deletes a manual pk_ key of the other mode, and its checkout stops; or, after a disconnect,
+	 * ApiKeyService's legacy migration copies an old pk_ key back into the empty modes on the next request.
+	 */
+	public function test_disconnect_clears_only_the_connected_mode_and_the_legacy_keys() {
 		$store = self::manual_shop(
 			array(
+				'monei_live_apikey'          => 'mk_live_connected',
 				'monei_live_signing_secret'  => 'mksec_live',
 				'monei_apikey'               => 'pk_live_legacy',
 				'monei_accountid'            => 'acc-legacy',
@@ -427,8 +447,9 @@ class ConnectServiceTest extends TestCase {
 		$this->service( $store )->disconnect();
 
 		$this->assertSame( array( 'orderdo' => 'completed' ), $store->get( 'woocommerce_monei_settings' ) );
-		foreach ( array( 'monei_apikey', 'monei_accountid', 'monei_live_accountid', 'monei_live_apikey', 'monei_live_signing_secret', 'monei_test_accountid', 'monei_test_apikey' ) as $name ) {
+		foreach ( array( 'monei_apikey', 'monei_accountid', 'monei_live_accountid', 'monei_live_apikey', 'monei_live_signing_secret' ) as $name ) {
 			$this->assertArrayNotHasKey( $name, $store->options, $name );
 		}
+		$this->assertSame( array( 'acc-test-old', 'pk_test_old' ), array( $store->get( 'monei_test_accountid' ), $store->get( 'monei_test_apikey' ) ) );
 	}
 }

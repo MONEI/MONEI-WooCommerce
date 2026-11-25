@@ -86,7 +86,8 @@ class ConnectService {
 	}
 
 	/**
-	 * Clear the stored credentials of both modes. The keys stay active at MONEI until the merchant revokes them.
+	 * Clear the credentials of each connected (mk_) mode. A manual key of the other mode stays, so its checkout goes
+	 * on. The keys stay active at MONEI until the merchant revokes them.
 	 */
 	public function disconnect(): void {
 		// ApiKeyService copies these legacy keys into empty modes on the next request.
@@ -98,7 +99,10 @@ class ConnectService {
 		}
 		$this->options->delete( 'monei_apikey' );
 		$this->options->delete( 'monei_accountid' );
-		foreach ( self::MODES as $mode ) {
+		foreach ( $this->api_keys() as $mode => $key ) {
+			if ( 0 !== strpos( $key, 'mk_' ) ) {
+				continue;
+			}
 			foreach ( array( 'accountid', 'apikey', 'signing_secret' ) as $field ) {
 				$this->options->delete( "monei_{$mode}_{$field}" );
 			}
@@ -125,6 +129,35 @@ class ConnectService {
 			'live' => (string) $this->options->get( 'monei_live_apikey', '' ),
 			'test' => (string) $this->options->get( 'monei_test_apikey', '' ),
 		);
+	}
+
+	/**
+	 * @return array{live: string, test: string} A fingerprint of the stored key of each mode, for the settings form.
+	 */
+	public function key_fingerprints(): array {
+		return array_map(
+			function ( string $key ): string {
+				return hash( 'sha256', $key );
+			},
+			$this->api_keys()
+		);
+	}
+
+	/**
+	 * The modes whose stored key changed after the settings form was rendered, for example by a connect in another
+	 * tab. The form's key fields of these modes hold the old keys.
+	 *
+	 * @param array<mixed> $fingerprints key_fingerprints() as the form posted them.
+	 * @return list<string>
+	 */
+	public function modes_changed_since( array $fingerprints ): array {
+		$changed = array();
+		foreach ( $this->key_fingerprints() as $mode => $fingerprint ) {
+			if ( isset( $fingerprints[ $mode ] ) && is_string( $fingerprints[ $mode ] ) && ! hash_equals( $fingerprint, $fingerprints[ $mode ] ) ) {
+				$changed[] = $mode;
+			}
+		}
+		return $changed;
 	}
 
 	/**
@@ -166,13 +199,14 @@ class ConnectService {
 			if ( ! isset( $result[ $mode ] ) ) {
 				continue;
 			}
-			$keys = $result[ $mode ];
-			// /allowed-payment-methods answers 400 for a mode without an enabled provider: any answer but 401 or 403 proves the key.
+			$keys   = $result[ $mode ];
 			$status = ( $this->probe )( $keys['apiKey'] );
-			if ( in_array( $status, array( 0, 401, 403 ), true ) ) {
+			// /allowed-payment-methods answers 400 for a mode without an enabled provider, so a 400 proves the key too.
+			// Any other answer (an outage, a rate limit) proves nothing and keeps the working credentials.
+			if ( ( $status < 200 || $status >= 300 ) && 400 !== $status ) {
 				$problems[] = array(
 					'mode' => $mode,
-					'code' => 'keyRejected',
+					'code' => in_array( $status, array( 401, 403 ), true ) ? 'keyRejected' : 'temporarily_unavailable',
 				);
 				continue;
 			}

@@ -151,10 +151,15 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
-	 * Bug: a manual key change keeps the signing secret of the replaced key.
+	 * Bug: a manual key change keeps the signing secret of the replaced key; or a tab rendered before a connect
+	 * saves its old key fields over the new keys, because the form carries no fingerprints or the save ignores them.
 	 */
 	public function test_the_settings_save_runs_the_secret_rule() {
 		$save = $this->method( self::SETTINGS, 'save' );
+
+		$this->assertStringContainsString( 'name="monei_key_fingerprint[<?php echoesc_attr($mode);?>]"', $this->method( self::SETTINGS, 'render_connect_section' ) );
+		$this->assertBefore( '$changed=$connect->modes_changed_since($fingerprints);', 'WC_Admin_Settings::save_fields($settings);', $save, 'changed modes found before the save' );
+		$this->assertBefore( 'return!in_array($field[\'id\']??\'\',$skipped,true);', 'WC_Admin_Settings::save_fields($settings);', $save, 'their fields dropped before the save' );
 
 		$this->assertBefore( '$keys_before=$connect->api_keys();', 'WC_Admin_Settings::save_fields($settings);', $save, 'keys read before the save' );
 		$this->assertBefore( 'WC_Admin_Settings::save_fields($settings);', '$connect->forget_secrets_of_changed_keys($keys_before);', $save, 'rule after the save' );

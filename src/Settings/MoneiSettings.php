@@ -142,9 +142,26 @@ class MoneiSettings extends WC_Settings_Page {
 	}
 
 	public function save() {
-		$connect     = ConnectHandler::connect_service();
-		$keys_before = $connect->api_keys();
-		$settings    = $this->get_settings();
+		$connect = ConnectHandler::connect_service();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Admin_Settings::save() checked the nonce.
+		$fingerprints = isset( $_POST['monei_key_fingerprint'] ) && is_array( $_POST['monei_key_fingerprint'] ) ? map_deep( wp_unslash( $_POST['monei_key_fingerprint'] ), 'sanitize_text_field' ) : array();
+		$changed      = $connect->modes_changed_since( $fingerprints );
+		$keys_before  = $connect->api_keys();
+		$settings     = $this->get_settings();
+		if ( $changed ) {
+			$skipped = array();
+			foreach ( $changed as $mode ) {
+				$skipped[] = "monei_{$mode}_accountid";
+				$skipped[] = "monei_{$mode}_apikey";
+			}
+			$settings = array_filter(
+				$settings,
+				function ( $field ) use ( $skipped ) {
+					return ! in_array( $field['id'] ?? '', $skipped, true );
+				}
+			);
+			WC_Admin_Settings::add_error( __( 'The MONEI keys changed in another tab, so the key fields were not saved. Reload this page.', 'monei' ) );
+		}
 		WC_Admin_Settings::save_fields( $settings );
 		$connect->forget_secrets_of_changed_keys( $keys_before );
 		$this->apiKeyService->update_keys();
@@ -168,6 +185,10 @@ class MoneiSettings extends WC_Settings_Page {
 		?>
 		<?php // Connect is the main flow: monei-settings.js collapses the manual key fields while it is available. ?>
 		<div id="monei-connect-section" data-manual-keys="<?php echo $can_connect ? 'closed' : 'open'; ?>">
+		<?php // A save compares these with the stored keys: a connect in another tab must not be undone by this form. ?>
+		<?php foreach ( ConnectHandler::connect_service()->key_fingerprints() as $mode => $fingerprint ) : ?>
+			<input type="hidden" name="monei_key_fingerprint[<?php echo esc_attr( $mode ); ?>]" value="<?php echo esc_attr( $fingerprint ); ?>">
+		<?php endforeach; ?>
 		<h2><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></h2>
 		<p>
 			<?php if ( $can_connect ) : ?>
