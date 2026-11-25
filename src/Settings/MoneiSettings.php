@@ -149,7 +149,8 @@ class MoneiSettings extends WC_Settings_Page {
 		$keys_before  = $connect->api_keys();
 		$settings     = $this->get_settings();
 		if ( $changed ) {
-			$skipped = array();
+			// A connect can also set the mode.
+			$skipped = array( 'monei_apikey_mode' );
 			foreach ( $changed as $mode ) {
 				$skipped[] = "monei_{$mode}_accountid";
 				$skipped[] = "monei_{$mode}_apikey";

@@ -412,7 +412,7 @@ class ConnectServiceTest extends TestCase {
 	}
 
 	/**
-	 * Bug: a save from a tab rendered before a connect in another tab writes the old keys back over the new ones.
+	 * Bug: a save from a tab rendered before a connect (or a Disconnect) in another tab writes the old keys back.
 	 */
 	public function test_a_key_changed_after_the_render_is_reported_for_its_mode_only() {
 		$store        = self::manual_shop();
@@ -421,6 +421,8 @@ class ConnectServiceTest extends TestCase {
 		$store->set( 'monei_test_apikey', 'mk_test_new' );
 
 		$this->assertSame( array( 'test' ), $service->modes_changed_since( $fingerprints ) );
+		$store->delete( 'monei_live_apikey' );
+		$this->assertSame( array( 'live', 'test' ), $service->modes_changed_since( $fingerprints ), 'a Disconnect after the render' );
 		$this->assertSame( array(), $service->modes_changed_since( $service->key_fingerprints() ) );
 		$this->assertSame( array(), $service->modes_changed_since( array() ), 'a form without fingerprints saves as before' );
 	}
