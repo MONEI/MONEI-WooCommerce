@@ -26,7 +26,7 @@ class CallbackVerifierTest extends TestCase {
 
 	/** @var int */
 	private $now = 1700000000;
-	/** @var array<array-key, array{paymentId: string, paymentStatus: string, paid: bool}> */
+	/** @var array<array-key, array{paymentId: string, paymentStatus: string, paid: bool, monei: bool}> */
 	private $orders = array();
 	/** @var array<string, mixed> Fields of the payment that MONEI answers. */
 	private $remote = array();
@@ -41,6 +41,7 @@ class CallbackVerifierTest extends TestCase {
 				'paymentId'     => '',
 				'paymentStatus' => '',
 				'paid'          => false,
+				'monei'         => true,
 			),
 		);
 		$this->remote = self::payment_fields( 'SUCCEEDED' );
@@ -228,15 +229,25 @@ class CallbackVerifierTest extends TestCase {
 
 	/**
 	 * Bug: a callback without an order (a card tokenization, orderId "<user>generatetoken<rand>") answers 400, so
-	 * MONEI retries it and sends failure emails.
+	 * MONEI retries it and sends failure emails; or an order of another gateway is fetched and spends the quota.
+	 *
+	 * @dataProvider orders_that_are_not_ours
 	 */
-	public function test_a_callback_without_an_order_answers_200_with_no_fetch() {
-		$body = self::body( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '1generatetoken42' ) ) );
+	public function test_a_callback_without_a_monei_order_answers_200_with_no_fetch( string $order_id ) {
+		$this->orders['1003'] = array( 'monei' => false ) + $this->orders['1001'];
+		$body                 = self::body( self::payment_fields( 'SUCCEEDED', array( 'orderId' => $order_id ) ) );
 
 		$decision = $this->verifier( self::connected_shop() )->verify( $body, null );
 
 		$this->assertSame( array( 200, null ), array( $decision['status'], $decision['payment'] ) );
 		$this->assertSame( array(), $this->fetches );
+	}
+
+	public function orders_that_are_not_ours(): array {
+		return array(
+			'no order (tokenization)'   => array( '1generatetoken42' ),
+			'an order of another gateway' => array( '1003' ),
+		);
 	}
 
 	/**
@@ -321,6 +332,7 @@ class CallbackVerifierTest extends TestCase {
 				'paymentId'     => '',
 				'paymentStatus' => '',
 				'paid'          => false,
+				'monei'         => true,
 			);
 		}
 		$last = 0;

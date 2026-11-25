@@ -33,7 +33,7 @@ class CallbackVerifier {
 	private OptionStore $options;
 	/** @var callable(): int */
 	private $clock;
-	/** @var callable(string): (array{paymentId: string, paymentStatus: string, paid: bool}|null) The order of an orderId and its stored payment. */
+	/** @var callable(string): (array{paymentId: string, paymentStatus: string, paid: bool, monei: bool}|null) The order of an orderId, its stored payment, and whether a MONEI method pays it. */
 	private $find_order;
 	/** @var callable(string, string): \Monei\Model\Payment Fetch a payment with the key of a mode. */
 	private $fetch;
@@ -89,8 +89,8 @@ class CallbackVerifier {
 		}
 		$order_id = (string) $order_id;
 		$order    = ( $this->find_order )( $order_id );
-		// A card tokenization callback has no order. A retry would never find one.
-		if ( null === $order ) {
+		// A card tokenization callback has no order, and an order of another gateway is not ours. A retry changes neither.
+		if ( null === $order || ! $order['monei'] ) {
 			return self::refused( 200, 'order' );
 		}
 		// Only an order that holds a live payment refuses another one; an abandoned attempt gives way to a retry.

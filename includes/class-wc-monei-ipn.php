@@ -51,6 +51,7 @@ class WC_Monei_IPN {
 					'paymentId'     => (string) $order->get_meta( '_payment_order_number_monei', true ),
 					'paymentStatus' => (string) $order->get_meta( '_payment_order_status_monei', true ),
 					'paid'          => $order->is_paid(),
+					'monei'         => false !== strpos( $order->get_payment_method(), 'monei' ),
 				);
 			},
 			function ( string $mode, string $payment_id ) use ( $sdkClient ) {
