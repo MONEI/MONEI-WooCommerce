@@ -455,6 +455,23 @@ test.describe( 'Connect with MONEI', () => {
 		const notice = page.locator(
 			'text=Connect with MONEI to stop storing your account API key.'
 		);
+		const meta = ( ...args ) => {
+			try {
+				return wpCli( [
+					'user',
+					'meta',
+					...args,
+					userId,
+					'monei_hide_connect_notice',
+				] );
+			} catch ( error ) {
+				// Absent: nothing to read or delete.
+				return '';
+			}
+		};
+		// A dismissal from an earlier run or by hand would hide the notice.
+		const dismissedBefore = meta( 'get' );
+		meta( 'delete' );
 		try {
 			await login( page );
 			await page.goto( '/wp-admin/index.php', {
@@ -471,16 +488,16 @@ test.describe( 'Connect with MONEI', () => {
 
 			await expect( notice ).toHaveCount( 0 );
 		} finally {
-			try {
+			meta( 'delete' );
+			if ( dismissedBefore ) {
 				wpCli( [
 					'user',
 					'meta',
-					'delete',
+					'update',
 					userId,
 					'monei_hide_connect_notice',
+					dismissedBefore,
 				] );
-			} catch ( error ) {
-				// Not set: the dismiss never landed.
 			}
 		}
 	} );
