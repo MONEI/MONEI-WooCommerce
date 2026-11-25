@@ -49,9 +49,17 @@ class ConnectWiringTest extends TestCase {
 
 		$this->assertStringContainsString( '$payload=$decision[\'payment\'];', $body );
 		$this->assertStringContainsString( 'if(null===$decision[\'payment\']){', $body );
-		$this->assertStringContainsString( '$this->handle_valid_ipn($payload);do_action(\'woocommerce_monei_handle_valid_ipn\',$payload);', $body );
+		$this->assertStringContainsString( '$this->handle_valid_ipn($payload,$decision[\'model\']);do_action(\'woocommerce_monei_handle_valid_ipn\',$payload);', $body );
 		$this->assertStringNotContainsString( 'json_decode(', $body );
 		$this->assertStringNotContainsString( 'verifySignature(', $this->code( self::IPN ) );
+	}
+
+	/**
+	 * Bug: the IPN fetches the payment a second time for its payment method display, which doubles the API calls of
+	 * the fetch path and bypasses its quota.
+	 */
+	public function test_the_ipn_reuses_the_fetched_payment_for_the_display() {
+		$this->assertStringContainsString( '$payment=$payment??$this->moneiPaymentServices->get_payment($monei_id);', $this->method( self::IPN, 'handle_valid_ipn' ) );
 	}
 
 	/**

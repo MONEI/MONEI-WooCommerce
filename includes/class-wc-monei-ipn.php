@@ -120,7 +120,7 @@ class WC_Monei_IPN {
 		$this->logging && WC_Monei_Logger::logDebug( $payload );
 
 		try {
-			$this->handle_valid_ipn( $payload );
+			$this->handle_valid_ipn( $payload, $decision['model'] );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
 			http_response_code( 200 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
@@ -141,10 +141,11 @@ class WC_Monei_IPN {
 	 * MONEI IPN
 	 *
 	 * @access public
-	 * @param array $payload
+	 * @param array                     $payload
+	 * @param \Monei\Model\Payment|null $payment The payment the verifier fetched, null when it did not fetch.
 	 * @return void
 	 */
-	protected function handle_valid_ipn( $payload ) {
+	protected function handle_valid_ipn( $payload, $payment = null ) {
 		$order_id = $payload['orderId'];
 		$monei_id = $payload['id'];
 		$status   = $payload['status'];
@@ -169,7 +170,8 @@ class WC_Monei_IPN {
 		// Fetch payment from API to get payment method information
 		try {
 			$this->moneiPaymentServices->set_order( $order );
-			$payment                = $this->moneiPaymentServices->get_payment( $monei_id );
+			// The fetch path already fetched it, and counted the fetch against its quota.
+			$payment                = $payment ?? $this->moneiPaymentServices->get_payment( $monei_id );
 			$payment_method_display = $this->paymentMethodFormatter->get_payment_method_display_from_payment( $payment );
 			if ( $payment_method_display ) {
 				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );

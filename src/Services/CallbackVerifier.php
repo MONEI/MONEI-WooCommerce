@@ -53,7 +53,8 @@ class CallbackVerifier {
 	/**
 	 * @param string      $body      Raw request body.
 	 * @param string|null $signature MONEI-Signature header, null when absent.
-	 * @return array{status: int, payment: array|null, reason: string} The payment to process, in the body's shape,
+	 * @return array{status: int, payment: array|null, model: \Monei\Model\Payment|null, reason: string} The payment to
+	 *     process in the body's shape, and the fetched model when there was a fetch (so the IPN does not fetch again);
 	 *     or null with the HTTP status to answer: 400 a failed pre-check, 401 a bad signature, 503 a failed fetch or
 	 *     a used-up quota (MONEI retries both), 200 a callback that must not change an order.
 	 */
@@ -131,7 +132,7 @@ class CallbackVerifier {
 		if ( ! in_array( $status, self::PROCESSED, true ) ) {
 			return self::refused( 200, 'status' );
 		}
-		return self::accepted( $fetched );
+		return self::accepted( $fetched, $payment );
 	}
 
 	/**
@@ -214,10 +215,14 @@ class CallbackVerifier {
 		return 0 === strpos( $key, 'mk_' );
 	}
 
-	private static function accepted( array $payment ): array {
+	/**
+	 * @param \Monei\Model\Payment|null $model The fetched payment, null without a fetch.
+	 */
+	private static function accepted( array $payment, $model = null ): array {
 		return array(
 			'status'  => 200,
 			'payment' => $payment,
+			'model'   => $model,
 			'reason'  => 'ok',
 		);
 	}
@@ -226,6 +231,7 @@ class CallbackVerifier {
 		return array(
 			'status'  => $status,
 			'payment' => null,
+			'model'   => null,
 			'reason'  => $reason,
 		);
 	}

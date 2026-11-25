@@ -136,6 +136,7 @@ class CallbackVerifierTest extends TestCase {
 
 		$this->assertSame( array( array( 'test', self::ID ) ), $this->fetches );
 		$this->assertSame( 200, $decision['status'] );
+		$this->assertInstanceOf( Payment::class, $decision['model'], 'the IPN reuses the fetched model' );
 		$this->assertSame(
 			array(
 				'id'            => self::ID,
