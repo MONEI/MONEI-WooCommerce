@@ -409,23 +409,33 @@ class CallbackVerifierTest extends TestCase {
 	}
 
 	/**
-	 * Bug: a callback of the other mode is checked with the selected mode's key, so Live callbacks of a shop in
-	 * test mode fail. Each mode verifies with its own key.
+	 * Bug: a signed callback of the other mode settles an order. Someone with the shop's test key makes a test payment
+	 * with the order id and amount of a live order, and its valid signature completes the live order.
+	 *
+	 * @dataProvider signed_callbacks_of_the_other_mode
 	 */
-	public function test_livemode_picks_the_key_of_its_mode() {
+	public function test_a_signed_callback_of_the_other_mode_changes_nothing( string $element, string $key ) {
 		$store = new MemoryOptionStore(
 			array(
-				'monei_apikey_mode' => 'test',
-				'monei_test_apikey' => 'pk_test_manual',
-				'monei_live_apikey' => 'pk_live_manual',
+				'monei_apikey_mode'         => 'live',
+				'monei_live_apikey'         => 'pk_live_manual',
+				'monei_test_apikey'         => 'pk_test_manual',
+				'monei_test_signing_secret' => self::SECRET,
 			)
 		);
-		$body  = self::body( self::payment_fields( 'SUCCEEDED', array( 'livemode' => true ) ) );
+		$body  = self::body( self::payment_fields( 'SUCCEEDED', array( 'livemode' => false ) ) );
 
-		$live = $this->verifier( $store )->verify( $body, 't=1700000000,' . self::sign( $body, 'v1', 'pk_live_manual' ) );
-		$test = $this->verifier( $store )->verify( $body, 't=1700000000,' . self::sign( $body, 'v1', 'pk_test_manual' ) );
+		$decision = $this->verifier( $store )->verify( $body, 't=1700000000,' . self::sign( $body, $element, $key ) );
 
-		$this->assertSame( array( 200, 401 ), array( $live['status'], $test['status'] ) );
+		$this->assertSame( array( 200, null, 'livemode' ), array( $decision['status'], $decision['payment'], $decision['reason'] ) );
+		$this->assertSame( array(), $this->fetches );
+	}
+
+	public function signed_callbacks_of_the_other_mode(): array {
+		return array(
+			'v2 with the test signing secret' => array( 'v2', self::SECRET ),
+			'v1 with the test key'            => array( 'v1', 'pk_test_manual' ),
+		);
 	}
 
 	/**

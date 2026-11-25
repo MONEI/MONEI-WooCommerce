@@ -78,7 +78,7 @@ class CallbackVerifier {
 		$secret = (string) $this->options->get( "monei_{$mode}_signing_secret", '' );
 
 		if ( '' !== $secret && null !== $signature && self::signature_valid( $body, $signature, '', $secret ) ) {
-			return self::accepted( (array) json_decode( $body ) );
+			return $this->signed( $body, $mode );
 		}
 		if ( self::is_scoped_key( $key ) ) {
 			return $this->fetched( $data, $signature, $mode );
@@ -87,7 +87,22 @@ class CallbackVerifier {
 		if ( '' === $key || null === $signature || ! self::signature_valid( $body, $signature, $key, null ) ) {
 			return self::refused( 401, 'signature' );
 		}
+		return $this->signed( $body, $mode );
+	}
+
+	/**
+	 * A signature proves that MONEI sent the callback, not that its mode is the shop's: someone with the test key could
+	 * make a test payment with the order id and amount of a live order. Nothing binds an order to a mode.
+	 */
+	private function signed( string $body, string $mode ): array {
+		if ( $mode !== $this->selected_mode() ) {
+			return self::refused( 200, 'livemode' );
+		}
 		return self::accepted( (array) json_decode( $body ) );
+	}
+
+	private function selected_mode(): string {
+		return 'live' === $this->options->get( 'monei_apikey_mode', 'test' ) ? 'live' : 'test';
 	}
 
 	private function fetched( array $data, ?string $signature, string $mode ): array {
@@ -129,7 +144,7 @@ class CallbackVerifier {
 			return self::refused( 200, 'orderId' );
 		}
 		// Nothing binds an order to a mode: a payment of the other mode must not settle it.
-		if ( ( $fetched['livemode'] ?? null ) !== ( 'live' === $this->options->get( 'monei_apikey_mode', 'test' ) ) ) {
+		if ( ( $fetched['livemode'] ?? null ) !== ( 'live' === $this->selected_mode() ) ) {
 			return self::refused( 200, 'livemode' );
 		}
 		// An amount mismatch goes on to handle_valid_ipn, which puts the order on hold as for a signed body.
@@ -155,7 +170,7 @@ class CallbackVerifier {
 		if ( isset( $data['livemode'] ) && is_bool( $data['livemode'] ) ) {
 			return $data['livemode'] ? 'live' : 'test';
 		}
-		return 'live' === $this->options->get( 'monei_apikey_mode', 'test' ) ? 'live' : 'test';
+		return $this->selected_mode();
 	}
 
 	/**
