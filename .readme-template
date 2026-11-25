@@ -94,7 +94,7 @@ Connect with MONEI needs a shop on a public HTTPS address. On other shops, or if
 
 * Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
 * Click on "Create API Key"
-* In WooCommerce > Settings > MONEI Settings, click "Enter API keys manually" and add your Account ID and API Key
+* In WooCommerce > Settings > MONEI Settings, add your Account ID and API Key. If the page shows "Connect with MONEI", click "Enter API keys manually" first.
 
 = Use of 3rd Party Services =
 This plugin is using [MONEI API](https://docs.monei.com/api/) to process payments as well as
