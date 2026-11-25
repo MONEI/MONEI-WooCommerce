@@ -93,9 +93,9 @@ class CallbackVerifier {
 		if ( null === $order ) {
 			return self::refused( 200, 'order' );
 		}
-		// A retry payment replaces a stored payment that ended without success.
+		// Only an order that holds a live payment refuses another one; an abandoned attempt gives way to a retry.
 		if ( '' !== $order['paymentId'] && $order['paymentId'] !== $id
-			&& ! in_array( $order['paymentStatus'], array( 'FAILED', 'CANCELED', 'EXPIRED' ), true ) ) {
+			&& in_array( $order['paymentStatus'], array( 'AUTHORIZED', 'SUCCEEDED', 'PAID_OUT' ), true ) ) {
 			return self::refused( 400, 'paymentId' );
 		}
 		if ( ! $this->take_quota( $order_id ) ) {

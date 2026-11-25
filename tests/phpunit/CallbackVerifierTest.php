@@ -240,12 +240,12 @@ class CallbackVerifierTest extends TestCase {
 	}
 
 	/**
-	 * Bug: the payment of a retry is refused for good, because the order still stores the failed first payment;
-	 * or a second payment replaces a successful one.
+	 * Bug: the payment of a retry is refused for good, because the order still stores an abandoned first payment
+	 * (FAILED, or PENDING when the buyer left); or a second payment replaces a successful one.
 	 *
 	 * @dataProvider stored_payments
 	 */
-	public function test_another_payment_id_is_fetched_only_after_the_stored_payment_failed( string $stored_status, int $fetches ) {
+	public function test_another_payment_id_is_fetched_unless_the_stored_payment_is_live( string $stored_status, int $fetches ) {
 		$this->orders['1001']['paymentId']     = str_repeat( 'c', 32 );
 		$this->orders['1001']['paymentStatus'] = $stored_status;
 
@@ -256,8 +256,8 @@ class CallbackVerifierTest extends TestCase {
 
 	public function stored_payments(): array {
 		return array(
-			'stored FAILED: a retry'          => array( 'FAILED', 1 ),
-			'stored SUCCEEDED: not replaced'  => array( 'SUCCEEDED', 0 ),
+			'stored PENDING: a retry'        => array( 'PENDING', 1 ),
+			'stored SUCCEEDED: not replaced' => array( 'SUCCEEDED', 0 ),
 		);
 	}
 
