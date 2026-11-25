@@ -26,7 +26,7 @@ class CallbackVerifierTest extends TestCase {
 
 	/** @var int */
 	private $now = 1700000000;
-	/** @var array<array-key, array{paymentId: string, paymentStatus: string, paid: bool, monei: bool}> */
+	/** @var array<array-key, array{paymentId: string, paymentStatus: string, awaitingPayment: bool, monei: bool}> */
 	private $orders = array();
 	/** @var array<string, mixed> Fields of the payment that MONEI answers. */
 	private $remote = array();
@@ -38,10 +38,10 @@ class CallbackVerifierTest extends TestCase {
 	protected function setUp(): void {
 		$this->orders = array(
 			'1001' => array(
-				'paymentId'     => '',
-				'paymentStatus' => '',
-				'paid'          => false,
-				'monei'         => true,
+				'paymentId'       => '',
+				'paymentStatus'   => '',
+				'awaitingPayment' => true,
+				'monei'           => true,
 			),
 		);
 		$this->remote = self::payment_fields( 'SUCCEEDED' );
@@ -185,10 +185,9 @@ class CallbackVerifierTest extends TestCase {
 	 *
 	 * @dataProvider payments_that_change_nothing
 	 */
-	public function test_a_fetched_payment_that_does_not_fit_changes_nothing( array $remote, bool $paid ) {
-		$this->remote                 = $remote;
-		$this->orders['1001']['paid'] = $paid;
-		$body                         = self::body( self::payment_fields( 'SUCCEEDED' ) );
+	public function test_a_fetched_payment_that_does_not_fit_changes_nothing( array $remote ) {
+		$this->remote = $remote;
+		$body         = self::body( self::payment_fields( 'SUCCEEDED' ) );
 
 		$decision = $this->verifier( self::connected_shop() )->verify( $body, null );
 
@@ -197,11 +196,24 @@ class CallbackVerifierTest extends TestCase {
 
 	public function payments_that_change_nothing(): array {
 		return array(
-			'forged SUCCEEDED, MONEI says PENDING' => array( self::payment_fields( 'PENDING' ), false ),
-			'FAILED for an order already paid'     => array( self::payment_fields( 'FAILED' ), true ),
-			'another orderId'                      => array( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '1002' ) ), false ),
-			'another payment id'                   => array( self::payment_fields( 'SUCCEEDED', array( 'id' => str_repeat( 'b', 32 ) ) ), false ),
+			'forged SUCCEEDED, MONEI says PENDING' => array( self::payment_fields( 'PENDING' ) ),
+			'another orderId'                      => array( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '1002' ) ) ),
+			'another payment id'                   => array( self::payment_fields( 'SUCCEEDED', array( 'id' => str_repeat( 'b', 32 ) ) ) ),
 		);
+	}
+
+	/**
+	 * Bug: an unsigned request reopens an order: the merchant cancels an order whose payment stays SUCCEEDED, a
+	 * forged POST makes the shop fetch it, and payment_complete() moves it back to processing. Or a FAILED payment
+	 * fails an order that is already paid.
+	 */
+	public function test_an_order_that_no_longer_awaits_payment_answers_200_with_no_fetch() {
+		$this->orders['1001']['awaitingPayment'] = false;
+
+		$decision = $this->verifier( self::connected_shop() )->verify( self::body( $this->remote ), null );
+
+		$this->assertSame( array( 200, null ), array( $decision['status'], $decision['payment'] ) );
+		$this->assertSame( array(), $this->fetches );
 	}
 
 	/**
@@ -329,10 +341,10 @@ class CallbackVerifierTest extends TestCase {
 		$store = self::connected_shop();
 		for ( $order = 1; $order <= 13; $order++ ) {
 			$this->orders[ "o$order" ] = array(
-				'paymentId'     => '',
-				'paymentStatus' => '',
-				'paid'          => false,
-				'monei'         => true,
+				'paymentId'       => '',
+				'paymentStatus'   => '',
+				'awaitingPayment' => true,
+				'monei'           => true,
 			);
 		}
 		$last = 0;

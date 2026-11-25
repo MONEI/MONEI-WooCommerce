@@ -55,6 +55,17 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
+	 * Bug: the order lookup of the fetch path lets an unsigned request reopen a cancelled or paid order, or fetch an
+	 * order of another gateway.
+	 */
+	public function test_the_ipn_order_lookup_gives_the_awaiting_statuses_and_the_gateway() {
+		$constructor = $this->method( self::IPN, '__construct' );
+
+		$this->assertStringContainsString( '\'awaitingPayment\'=>$order->has_status(array(\'pending\',\'on-hold\',\'failed\')),', $constructor );
+		$this->assertStringContainsString( '\'monei\'=>false!==strpos($order->get_payment_method(),\'monei\'),', $constructor );
+	}
+
+	/**
 	 * Bug: a connected shop refuses a callback without MONEI-Signature (an account whose v2 read failed sends
 	 * none), or a manual shop stops refusing it.
 	 */

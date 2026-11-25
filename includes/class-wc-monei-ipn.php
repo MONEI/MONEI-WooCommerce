@@ -48,10 +48,10 @@ class WC_Monei_IPN {
 					return null;
 				}
 				return array(
-					'paymentId'     => (string) $order->get_meta( '_payment_order_number_monei', true ),
-					'paymentStatus' => (string) $order->get_meta( '_payment_order_status_monei', true ),
-					'paid'          => $order->is_paid(),
-					'monei'         => false !== strpos( $order->get_payment_method(), 'monei' ),
+					'paymentId'       => (string) $order->get_meta( '_payment_order_number_monei', true ),
+					'paymentStatus'   => (string) $order->get_meta( '_payment_order_status_monei', true ),
+					'awaitingPayment' => $order->has_status( array( 'pending', 'on-hold', 'failed' ) ),
+					'monei'           => false !== strpos( $order->get_payment_method(), 'monei' ),
 				);
 			},
 			function ( string $mode, string $payment_id ) use ( $sdkClient ) {

@@ -33,7 +33,7 @@ class CallbackVerifier {
 	private OptionStore $options;
 	/** @var callable(): int */
 	private $clock;
-	/** @var callable(string): (array{paymentId: string, paymentStatus: string, paid: bool, monei: bool}|null) The order of an orderId, its stored payment, and whether a MONEI method pays it. */
+	/** @var callable(string): (array{paymentId: string, paymentStatus: string, awaitingPayment: bool, monei: bool}|null) The order of an orderId, its stored payment, whether it still awaits payment, and whether a MONEI method pays it. */
 	private $find_order;
 	/** @var callable(string, string): \Monei\Model\Payment Fetch a payment with the key of a mode. */
 	private $fetch;
@@ -93,6 +93,11 @@ class CallbackVerifier {
 		if ( null === $order || ! $order['monei'] ) {
 			return self::refused( 200, 'order' );
 		}
+		// The fetch path needs no signature: anyone can make it process an order's current MONEI state. It must not
+		// reopen an order that the merchant cancelled or that was already paid.
+		if ( ! $order['awaitingPayment'] ) {
+			return self::refused( 200, 'orderStatus' );
+		}
 		// Only an order that holds a live payment refuses another one; an abandoned attempt gives way to a retry.
 		if ( '' !== $order['paymentId'] && $order['paymentId'] !== $id
 			&& in_array( $order['paymentStatus'], array( 'AUTHORIZED', 'SUCCEEDED', 'PAID_OUT' ), true ) ) {
@@ -121,9 +126,6 @@ class CallbackVerifier {
 		$status = $fetched['status'] ?? null;
 		if ( ! in_array( $status, self::PROCESSED, true ) ) {
 			return self::refused( 200, 'status' );
-		}
-		if ( $order['paid'] && in_array( $status, array( 'FAILED', 'CANCELED' ), true ) ) {
-			return self::refused( 200, 'paid' );
 		}
 		return self::accepted( $fetched );
 	}
