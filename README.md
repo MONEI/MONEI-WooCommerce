@@ -4,7 +4,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.5.0
+Stable tag: 7.5.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -107,6 +107,10 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 ## Changelog
 
+### v7.5.1 - 2026-11-25
+
+-   fix(ipn): refuse a signed callback of the other mode (#141) ([482397b](https://github.com/MONEI/MONEI-WooCommerce/commit/482397b)), closes [#141](https://github.com/MONEI/MONEI-WooCommerce/issues/141)
+
 ### v7.5.0 - 2026-11-25
 
 -   feat: connect with MONEI (#140) ([39d84cc](https://github.com/MONEI/MONEI-WooCommerce/commit/39d84cc)), closes [#140](https://github.com/MONEI/MONEI-WooCommerce/issues/140)
@@ -160,9 +164,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   test: compare how the payment methods render at checkout (#122) ([a52e09d](https://github.com/MONEI/MONEI-WooCommerce/commit/a52e09d)), closes [#122](https://github.com/MONEI/MONEI-WooCommerce/issues/122)
 -   test: fail the Bizum case when its availability cannot be determined (#123) ([f1b0ae3](https://github.com/MONEI/MONEI-WooCommerce/commit/f1b0ae3)), closes [#123](https://github.com/MONEI/MONEI-WooCommerce/issues/123)
 -   docs: regenerate readme changelog for 7.3.2 ([b21bdd3](https://github.com/MONEI/MONEI-WooCommerce/commit/b21bdd3))
-
-### v7.3.2 - 2026-09-08
-
--   fix: stop polling the API on hosts where transients do not persist ([00797d1](https://github.com/MONEI/MONEI-WooCommerce/commit/00797d1))
--   style: align the UNAVAILABLE array the way phpcs wants it ([7111b93](https://github.com/MONEI/MONEI-WooCommerce/commit/7111b93))
--   docs: regenerate readme changelog for 7.3.1 ([95993a7](https://github.com/MONEI/MONEI-WooCommerce/commit/95993a7))

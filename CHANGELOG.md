@@ -1,5 +1,9 @@
 # Changelog
 
+## <small>7.5.1 (2026-11-25)</small>
+
+-   fix(ipn): refuse a signed callback of the other mode (#141) ([482397b](https://github.com/MONEI/MONEI-WooCommerce/commit/482397b)), closes [#141](https://github.com/MONEI/MONEI-WooCommerce/issues/141)
+
 ## 7.5.0 (2026-11-25)
 
 -   feat: connect with MONEI (#140) ([39d84cc](https://github.com/MONEI/MONEI-WooCommerce/commit/39d84cc)), closes [#140](https://github.com/MONEI/MONEI-WooCommerce/issues/140)
