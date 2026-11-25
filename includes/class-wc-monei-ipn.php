@@ -117,7 +117,8 @@ class WC_Monei_IPN {
 
 		// Only the payment the verifier returns is processed, never the request body.
 		$payload = $decision['payment'];
-		$this->logging && WC_Monei_Logger::logDebug( $payload );
+		// A payment can hold a payment token and customer data: log only these fields.
+		$this->logging && WC_Monei_Logger::logDebug( array_intersect_key( $payload, array_flip( array( 'id', 'orderId', 'status', 'statusCode', 'amount', 'currency', 'livemode' ) ) ) );
 
 		try {
 			$this->handle_valid_ipn( $payload, $decision['model'] );

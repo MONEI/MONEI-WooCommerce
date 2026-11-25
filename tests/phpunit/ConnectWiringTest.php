@@ -55,6 +55,16 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
+	 * Bug: IPN debug logging writes the whole payment, with its payment token and customer data.
+	 */
+	public function test_the_ipn_debug_log_keeps_only_allowlisted_fields() {
+		$this->assertStringContainsString(
+			'$this->logging&&WC_Monei_Logger::logDebug(array_intersect_key($payload,array_flip(array(\'id\',\'orderId\',\'status\',\'statusCode\',\'amount\',\'currency\',\'livemode\'))));',
+			$this->method( self::IPN, 'check_ipn_request' )
+		);
+	}
+
+	/**
 	 * Bug: the IPN fetches the payment a second time for its payment method display, which doubles the API calls of
 	 * the fetch path and bypasses its quota.
 	 */
