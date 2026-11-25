@@ -319,7 +319,7 @@ test.describe( 'Connect with MONEI', () => {
 		await expect( page.locator( '#monei-disconnect' ) ).toHaveCount( 0 );
 	} );
 
-	test( 'Enter in a settings field saves and does not disconnect', async ( {
+	test( 'Enter in a settings field saves, keeps the hidden connected key and does not disconnect', async ( {
 		page,
 	} ) => {
 		const restore = connectedShop();
@@ -328,6 +328,10 @@ test.describe( 'Connect with MONEI', () => {
 			await login( page );
 			await page.goto( SETTINGS, { waitUntil: 'domcontentloaded' } );
 			await expect( page.locator( '#monei-disconnect' ) ).toBeVisible();
+			expect(
+				await page.content(),
+				'the page holds no connected key'
+			).not.toContain( FAKE_LIVE.monei_live_apikey );
 
 			if ( await page.locator( '#monei-manual-keys-toggle' ).count() ) {
 				await page.locator( '#monei-manual-keys-toggle' ).click();

@@ -165,6 +165,23 @@ class ConnectService {
 	}
 
 	/**
+	 * The modes with a connected (mk_) key whose settings field came back empty. The page renders that field empty,
+	 * so an empty field means "unchanged".
+	 *
+	 * @param array{live: string, test: string} $posted_keys The posted API key field of each mode.
+	 * @return list<string>
+	 */
+	public function scoped_modes_left_empty( array $posted_keys ): array {
+		$modes = array();
+		foreach ( $this->api_keys() as $mode => $key ) {
+			if ( 0 === strpos( $key, 'mk_' ) && '' === trim( $posted_keys[ $mode ] ) ) {
+				$modes[] = $mode;
+			}
+		}
+		return $modes;
+	}
+
+	/**
 	 * After a manual save: a mode whose key changed loses its signing secret, which belongs to the old key.
 	 *
 	 * @param array{live: string, test: string} $keys_before api_keys() before the save.

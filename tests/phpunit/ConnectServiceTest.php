@@ -428,6 +428,24 @@ class ConnectServiceTest extends TestCase {
 	}
 
 	/**
+	 * Bug: a save of the page, which renders a connected key's field empty, clears that key; or an empty field of a
+	 * manual key (the merchant cleared it) is kept.
+	 */
+	public function test_only_an_empty_field_of_a_connected_key_counts_as_unchanged() {
+		$store = self::manual_shop( array( 'monei_live_apikey' => 'mk_live_connected' ) );
+
+		$modes = $this->service( $store )->scoped_modes_left_empty(
+			array(
+				'live' => '',
+				'test' => '',
+			)
+		);
+
+		$this->assertSame( array( 'live' ), $modes );
+		$this->assertSame( array(), $this->service( $store )->scoped_modes_left_empty( array( 'live' => 'pk_live_typed', 'test' => '' ) ) );
+	}
+
+	/**
 	 * Bug: Disconnect deletes a manual pk_ key of the other mode, and its checkout stops; after a disconnect,
 	 * ApiKeyService's legacy migration copies an old pk_ key back into the empty modes on the next request; or a
 	 * connect started before the Disconnect finishes after it.

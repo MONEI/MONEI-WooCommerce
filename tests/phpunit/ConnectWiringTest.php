@@ -188,8 +188,9 @@ class ConnectWiringTest extends TestCase {
 
 		$this->assertStringContainsString( 'name="monei_key_fingerprint[<?php echoesc_attr($mode);?>]"', $this->method( self::SETTINGS, 'render_connect_section' ) );
 		$this->assertBefore( '$changed=$connect->modes_changed_since($fingerprints);', 'WC_Admin_Settings::save_fields($settings);', $save, 'changed modes found before the save' );
+		$this->assertBefore( '$connect->scoped_modes_left_empty($posted_keys)', 'WC_Admin_Settings::save_fields($settings);', $save, 'empty connected key fields found before the save' );
 		$this->assertBefore( 'return!in_array($field[\'id\']??\'\',$skipped,true);', 'WC_Admin_Settings::save_fields($settings);', $save, 'their fields dropped before the save' );
-		$this->assertStringContainsString( '$skipped=array(\'monei_apikey_mode\');', $save, 'a stale save keeps the mode too' );
+		$this->assertStringContainsString( 'if($changed){$skipped[]=\'monei_apikey_mode\';', $save, 'a stale save keeps the mode too' );
 
 		$this->assertBefore( '$keys_before=$connect->api_keys();', 'WC_Admin_Settings::save_fields($settings);', $save, 'keys read before the save' );
 		$this->assertBefore( 'WC_Admin_Settings::save_fields($settings);', '$connect->forget_secrets_of_changed_keys($keys_before);', $save, 'rule after the save' );

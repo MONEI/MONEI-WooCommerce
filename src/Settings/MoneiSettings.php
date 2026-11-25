@@ -119,6 +119,21 @@ class MoneiSettings extends WC_Settings_Page {
 			),
 		);
 
+		// The page never holds a connected key: its field stays empty, and an empty save keeps the key.
+		foreach ( ConnectHandler::connect_service()->api_keys() as $mode => $key ) {
+			if ( 0 !== strpos( $key, 'mk_' ) ) {
+				continue;
+			}
+			foreach ( $settings as $index => $field ) {
+				if ( "monei_{$mode}_apikey" === ( $field['id'] ?? '' ) ) {
+					$settings[ $index ]['value']             = '';
+					$settings[ $index ]['placeholder']       = '•••• ' . substr( $key, -4 );
+					$settings[ $index ]['desc']              = __( 'Set by Connect with MONEI. Leave empty to keep this key.', 'monei' );
+					$settings[ $index ]['custom_attributes'] = array( 'autocomplete' => 'new-password' );
+				}
+			}
+		}
+
 		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings );
 	}
 
@@ -146,23 +161,32 @@ class MoneiSettings extends WC_Settings_Page {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Admin_Settings::save() checked the nonce.
 		$fingerprints = isset( $_POST['monei_key_fingerprint'] ) && is_array( $_POST['monei_key_fingerprint'] ) ? map_deep( wp_unslash( $_POST['monei_key_fingerprint'] ), 'sanitize_text_field' ) : array();
 		$changed      = $connect->modes_changed_since( $fingerprints );
-		$keys_before  = $connect->api_keys();
-		$settings     = $this->get_settings();
+		$posted_keys  = array();
+		foreach ( array( 'live', 'test' ) as $mode ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Admin_Settings::save() checked the nonce.
+			$posted_keys[ $mode ] = isset( $_POST[ "monei_{$mode}_apikey" ] ) ? sanitize_text_field( wp_unslash( $_POST[ "monei_{$mode}_apikey" ] ) ) : '';
+		}
+		$keys_before = $connect->api_keys();
+		$settings    = $this->get_settings();
+		$skipped     = array();
 		if ( $changed ) {
 			// A connect can also set the mode.
-			$skipped = array( 'monei_apikey_mode' );
+			$skipped[] = 'monei_apikey_mode';
 			foreach ( $changed as $mode ) {
 				$skipped[] = "monei_{$mode}_accountid";
 				$skipped[] = "monei_{$mode}_apikey";
 			}
-			$settings = array_filter(
-				$settings,
-				function ( $field ) use ( $skipped ) {
-					return ! in_array( $field['id'] ?? '', $skipped, true );
-				}
-			);
 			WC_Admin_Settings::add_error( __( 'The MONEI keys changed in another tab, so the key fields were not saved. Reload this page.', 'monei' ) );
 		}
+		foreach ( $connect->scoped_modes_left_empty( $posted_keys ) as $mode ) {
+			$skipped[] = "monei_{$mode}_apikey";
+		}
+		$settings = array_filter(
+			$settings,
+			function ( $field ) use ( $skipped ) {
+				return ! in_array( $field['id'] ?? '', $skipped, true );
+			}
+		);
 		WC_Admin_Settings::save_fields( $settings );
 		$connect->forget_secrets_of_changed_keys( $keys_before );
 		$this->apiKeyService->update_keys();
