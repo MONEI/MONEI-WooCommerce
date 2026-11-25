@@ -88,6 +88,23 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
+	 * Bug: a payment changes outside the IPN (a pre-auth capture or void, a subscription renewal) and the stored
+	 * status stays behind, so the fetch path takes a SUCCEEDED of a later cancelled order for a forward move.
+	 */
+	public function test_captures_voids_and_renewals_store_the_monei_status() {
+		$store = '$order->update_meta_data(\'_payment_order_status_monei\',$result->getStatus());$order->save_meta_data();';
+		$this->assertStringContainsString( $store, $this->method( 'includes/class-wc-monei-pre-auth.php', 'capture_payment_when_pre_auth' ) );
+		$this->assertStringContainsString( $store, $this->method( 'includes/class-wc-monei-pre-auth.php', 'cancel_payment_when_pre_auth' ) );
+		foreach ( array( 'src/Features/Subscriptions/WooCommerceSubscriptionsHandler.php', 'src/Features/Subscriptions/YithSubscriptionPluginHandler.php' ) as $handler ) {
+			$this->assertStringContainsString(
+				'$renewal_order->update_meta_data(\'_payment_order_status_monei\',$payment->getStatus());$renewal_order->payment_complete($payment->getId());',
+				$this->method( $handler, 'scheduled_subscription_payment' ),
+				$handler
+			);
+		}
+	}
+
+	/**
 	 * Bug: the order lookup of the fetch path hides the stored MONEI status (an unsigned request replays a SUCCEEDED
 	 * of a cancelled order), whether the order is paid, or the gateway (an order of another gateway is fetched).
 	 */
