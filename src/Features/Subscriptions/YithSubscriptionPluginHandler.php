@@ -228,6 +228,9 @@ class YithSubscriptionPluginHandler implements SubscriptionHandlerInterface {
 			$payment = $this->moneiPaymentServices->recurring_payment( $sequence_id, $payload );
 
 			if ( 'SUCCEEDED' === $payment->getStatus() ) {
+				// The callback fetch path moves an order only forward from this stored status.
+				$renewal_order->update_meta_data( '_payment_order_number_monei', $payment->getId() );
+				$renewal_order->update_meta_data( '_payment_order_status_monei', $payment->getStatus() );
 				$renewal_order->payment_complete( $payment->getId() );
 
 				$order_note  = __( 'Success Renewal scheduled_subscription_payment.', 'monei' ) . '<br>';

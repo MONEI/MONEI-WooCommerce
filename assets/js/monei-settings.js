@@ -1,8 +1,19 @@
 jQuery( document ).ready( function ( $ ) {
+	// Connect is the main flow: the manual key fields stay collapsed while the
+	// shop can connect, until the merchant asks for them.
+	let manualKeysOpen =
+		$( '#monei-connect-section' ).data( 'manual-keys' ) !== 'closed';
+
 	// Function to toggle API key and Account ID fields
 	function toggleApiKeyFields() {
 		const mode = $( '#monei_apikey_mode' ).val();
-		if ( mode === 'test' ) {
+		if ( ! manualKeysOpen ) {
+			$(
+				'.monei-test-api-key-field, .monei-test-account-id-field, .monei-live-api-key-field, .monei-live-account-id-field'
+			)
+				.closest( 'tr' )
+				.hide();
+		} else if ( mode === 'test' ) {
 			$( '.monei-test-api-key-field, .monei-test-account-id-field' )
 				.closest( 'tr' )
 				.show();
@@ -54,6 +65,12 @@ jQuery( document ).ready( function ( $ ) {
 
 	// Bind the function to the change event of the selectors
 	$( '#monei_apikey_mode' ).change( toggleApiKeyFields );
+	$( '#monei-manual-keys-toggle' ).on( 'click', function ( event ) {
+		event.preventDefault();
+		manualKeysOpen = true;
+		$( this ).closest( 'p' ).hide();
+		toggleApiKeyFields();
+	} );
 	paymentMethods.forEach( function ( method ) {
 		const gatewayId = method === 'cc' ? 'monei' : 'monei_' + method;
 		$( '#woocommerce_' + gatewayId + '_mode' ).change( function () {

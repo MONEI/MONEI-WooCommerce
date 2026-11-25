@@ -21,6 +21,7 @@ class MoneiSettings extends WC_Settings_Page {
 		$this->apiKeyService = $container->get( ApiKeyService::class );
 		parent::__construct();
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'admin_footer', array( $this, 'print_disconnect_form' ) );
 	}
 
 	public function get_settings() {
@@ -118,6 +119,21 @@ class MoneiSettings extends WC_Settings_Page {
 			),
 		);
 
+		// The page never holds a connected key: its field stays empty, and an empty save keeps the key.
+		foreach ( ConnectHandler::connect_service()->api_keys() as $mode => $key ) {
+			if ( 0 !== strpos( $key, 'mk_' ) ) {
+				continue;
+			}
+			foreach ( $settings as $index => $field ) {
+				if ( "monei_{$mode}_apikey" === ( $field['id'] ?? '' ) ) {
+					$settings[ $index ]['value']             = '';
+					$settings[ $index ]['placeholder']       = '•••• ' . substr( $key, -4 );
+					$settings[ $index ]['desc']              = __( 'Set by Connect with MONEI. Leave empty to keep this key.', 'monei' );
+					$settings[ $index ]['custom_attributes'] = array( 'autocomplete' => 'new-password' );
+				}
+			}
+		}
+
 		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings );
 	}
 
@@ -135,16 +151,115 @@ class MoneiSettings extends WC_Settings_Page {
 		if ( $template ) {
 			$template->render( $data );
 		}
+		$this->render_connect_section();
 		$settings = $this->get_settings();
 		WC_Admin_Settings::output_fields( $settings );
 	}
 
 	public function save() {
-		$settings = $this->get_settings();
+		$connect = ConnectHandler::connect_service();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Admin_Settings::save() checked the nonce.
+		$fingerprints = isset( $_POST['monei_key_fingerprint'] ) && is_array( $_POST['monei_key_fingerprint'] ) ? map_deep( wp_unslash( $_POST['monei_key_fingerprint'] ), 'sanitize_text_field' ) : array();
+		$changed      = $connect->modes_changed_since( $fingerprints );
+		$posted_keys  = array();
+		foreach ( array( 'live', 'test' ) as $mode ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC_Admin_Settings::save() checked the nonce.
+			$posted_keys[ $mode ] = isset( $_POST[ "monei_{$mode}_apikey" ] ) ? sanitize_text_field( wp_unslash( $_POST[ "monei_{$mode}_apikey" ] ) ) : '';
+		}
+		$keys_before = $connect->api_keys();
+		$settings    = $this->get_settings();
+		$skipped     = array();
+		if ( $changed ) {
+			// A connect can also set the mode.
+			$skipped[] = 'monei_apikey_mode';
+			foreach ( $changed as $mode ) {
+				$skipped[] = "monei_{$mode}_accountid";
+				$skipped[] = "monei_{$mode}_apikey";
+			}
+			WC_Admin_Settings::add_error( __( 'The MONEI keys changed in another tab, so the key fields were not saved. Reload this page.', 'monei' ) );
+		}
+		foreach ( $connect->scoped_modes_left_empty( $posted_keys ) as $mode ) {
+			$skipped[] = "monei_{$mode}_apikey";
+		}
+		$settings = array_filter(
+			$settings,
+			function ( $field ) use ( $skipped ) {
+				return ! in_array( $field['id'] ?? '', $skipped, true );
+			}
+		);
 		WC_Admin_Settings::save_fields( $settings );
+		$connect->forget_secrets_of_changed_keys( $keys_before );
 		$this->apiKeyService->update_keys();
 		// A saved key is the merchant's fix; make the next request try it.
 		delete_option( PaymentMethodsRepository::BACKOFF_OPTION );
+	}
+
+	/**
+	 * Connect or "Use manual keys", Disconnect, and the last 4 characters of the key in use.
+	 */
+	private function render_connect_section(): void {
+		$messages = get_option( ConnectHandler::MESSAGES_OPTION, array() );
+		if ( $messages ) {
+			delete_option( ConnectHandler::MESSAGES_OPTION );
+			foreach ( (array) $messages as $message ) {
+				echo '<div class="notice notice-info inline"><p>' . esc_html( $message ) . '</p></div>';
+			}
+		}
+		$api_key     = $this->apiKeyService->get_api_key();
+		$can_connect = null !== ConnectHandler::redirect_uri();
+		?>
+		<?php // Connect is the main flow: monei-settings.js collapses the manual key fields while it is available. ?>
+		<div id="monei-connect-section" data-manual-keys="<?php echo $can_connect ? 'closed' : 'open'; ?>">
+		<?php // A save compares these with the stored keys: a connect in another tab must not be undone by this form. ?>
+		<?php foreach ( ConnectHandler::connect_service()->key_fingerprints() as $mode => $fingerprint ) : ?>
+			<input type="hidden" name="monei_key_fingerprint[<?php echo esc_attr( $mode ); ?>]" value="<?php echo esc_attr( $fingerprint ); ?>">
+		<?php endforeach; ?>
+		<h2><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></h2>
+		<p>
+			<?php if ( $can_connect ) : ?>
+				<a id="monei-connect" class="button button-primary" target="_blank" rel="noopener"
+					href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=monei_connect_start' ), 'monei_connect_start' ) ); ?>"><?php esc_html_e( 'Connect with MONEI', 'monei' ); ?></a>
+			<?php else : ?>
+				<span id="monei-connect-manual"><?php esc_html_e( 'Use manual keys. Connect with MONEI needs a public HTTPS address for this shop.', 'monei' ); ?></span>
+			<?php endif; ?>
+			<?php if ( ConnectHandler::connect_service()->is_connected() ) : ?>
+				<?php // A submit of the settings form would be its default button: Enter in a key field would disconnect. ?>
+				<button type="submit" id="monei-disconnect" class="button" form="<?php echo esc_attr( ConnectHandler::DISCONNECT_FORM_ID ); ?>"><?php esc_html_e( 'Disconnect', 'monei' ); ?></button>
+			<?php endif; ?>
+		</p>
+		<?php if ( '' !== $api_key ) : ?>
+			<p id="monei-key-in-use">
+				<?php
+				printf(
+					/* translators: 1: Test or Live, 2: last 4 characters of the API key. */
+					esc_html__( 'Key in use (%1$s): ending in %2$s', 'monei' ),
+					esc_html( $this->apiKeyService->is_test_mode() ? __( 'Test', 'monei' ) : __( 'Live', 'monei' ) ),
+					esc_html( substr( $api_key, -4 ) )
+				);
+				?>
+			</p>
+		<?php endif; ?>
+		<p><a href="<?php echo esc_url( ConnectHandler::DASHBOARD_KEYS_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Manage and revoke API keys in the MONEI Dashboard', 'monei' ); ?></a></p>
+		<?php if ( $can_connect ) : ?>
+			<p><a href="#" id="monei-manual-keys-toggle"><?php esc_html_e( 'Enter API keys manually', 'monei' ); ?></a></p>
+		<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The Disconnect form, outside the WooCommerce settings form, on the MONEI tab only.
+	 */
+	public function print_disconnect_form(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the page to print on.
+		if ( ! isset( $_GET['tab'] ) || 'monei_settings' !== $_GET['tab'] ) {
+			return;
+		}
+		?>
+		<form id="<?php echo esc_attr( ConnectHandler::DISCONNECT_FORM_ID ); ?>" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=monei_disconnect' ) ); ?>">
+			<?php wp_nonce_field( 'monei_disconnect', '_monei_disconnect_nonce' ); ?>
+		</form>
+		<?php
 	}
 
 	public function enqueue_admin_scripts( $hook ) {

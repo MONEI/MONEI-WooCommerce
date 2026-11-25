@@ -1,7 +1,10 @@
 <?php
 
 use Monei\Core\ContainerProvider;
+use Monei\ApiException;
+use Monei\Services\CallbackVerifier;
 use Monei\Services\payment\MoneiPaymentServices;
+use Monei\Services\WpOptionStore;
 use Monei\Services\sdk\MoneiSdkClientFactory;
 use Monei\Services\ApiKeyService;
 use Monei\Services\PaymentMethodFormatter;
@@ -21,6 +24,7 @@ class WC_Monei_IPN {
 	private $logging;
 	private MoneiPaymentServices $moneiPaymentServices;
 	private PaymentMethodFormatter $paymentMethodFormatter;
+	private CallbackVerifier $callbackVerifier;
 
 	/**
 	 * Constructor.
@@ -35,6 +39,25 @@ class WC_Monei_IPN {
 		$this->moneiPaymentServices   = new MoneiPaymentServices( $sdkClient );
 		$container                    = ContainerProvider::getContainer();
 		$this->paymentMethodFormatter = $container->get( PaymentMethodFormatter::class );
+		$this->callbackVerifier       = new CallbackVerifier(
+			new WpOptionStore(),
+			'time',
+			function ( string $order_id ) {
+				$order = wc_get_order( $order_id );
+				if ( ! $order ) {
+					return null;
+				}
+				return array(
+					'paymentId'     => (string) $order->get_meta( '_payment_order_number_monei', true ),
+					'paymentStatus' => (string) $order->get_meta( '_payment_order_status_monei', true ),
+					'paid'          => $order->is_paid(),
+					'monei'         => false !== strpos( $order->get_payment_method(), 'monei' ),
+				);
+			},
+			function ( string $mode, string $payment_id ) use ( $sdkClient ) {
+				return $sdkClient->get_client_for_mode( $mode )->payments->get( $payment_id );
+			}
+		);
 	}
 
 	/**
@@ -60,8 +83,8 @@ class WC_Monei_IPN {
 		$raw_body = file_get_contents( 'php://input' );
 		$this->log_ipn_request( $headers, $raw_body );
 
-		// Check for signature header.
-		if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ) {
+		// A shop with a scoped key verifies a callback without the header by fetching the payment.
+		if ( ! isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) && ! $this->callbackVerifier->any_mode_connected() ) {
 			WC_Monei_Logger::log( '[MONEI] Webhook missing signature header from IP: ' . WC_Geolocation::get_ip_address() );
 			http_response_code( 401 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
@@ -69,24 +92,36 @@ class WC_Monei_IPN {
 			exit;
 		}
 
-		$payload = null;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$signature = isset( $_SERVER['HTTP_MONEI_SIGNATURE'] ) ? wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) : null;
+		$decision  = $this->callbackVerifier->verify( (string) $raw_body, $signature );
 
-		try {
-			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$payload = $this->verify_signature_get_payload( $raw_body, wp_unslash( $_SERVER['HTTP_MONEI_SIGNATURE'] ) );
-			$this->logging && WC_Monei_Logger::logDebug( $payload );
-		} catch ( Throwable $e ) {
+		if ( 401 === $decision['status'] ) {
 			// Signature verification failed - this is a security issue, always log.
+			$e = new ApiException( '[401] Signature verification failed', 401 );
 			WC_Monei_Logger::log( '[MONEI] Webhook signature verification failed: ' . $e->getMessage() );
-			do_action( 'woocommerce_monei_handle_failed_ipn', $payload, $e );
+			do_action( 'woocommerce_monei_handle_failed_ipn', null, $e );
 			http_response_code( 401 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
 			echo 'Unauthorized';
 			exit;
 		}
 
+		if ( null === $decision['payment'] ) {
+			WC_Monei_Logger::log( '[MONEI] Webhook not processed: ' . $decision['reason'] );
+			http_response_code( $decision['status'] );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 200 === $decision['status'] ? 'OK' : 'Not processed';
+			exit;
+		}
+
+		// Only the payment the verifier returns is processed, never the request body.
+		$payload = $decision['payment'];
+		// A payment can hold a payment token and customer data: log only these fields.
+		$this->logging && WC_Monei_Logger::logDebug( array_intersect_key( $payload, array_flip( array( 'id', 'orderId', 'status', 'statusCode', 'amount', 'currency', 'livemode' ) ) ) );
+
 		try {
-			$this->handle_valid_ipn( $payload );
+			$this->handle_valid_ipn( $payload, $decision['model'] );
 			do_action( 'woocommerce_monei_handle_valid_ipn', $payload );
 			http_response_code( 200 );
 			header( 'Content-Type: text/plain; charset=utf-8' );
@@ -107,15 +142,17 @@ class WC_Monei_IPN {
 	 * MONEI IPN
 	 *
 	 * @access public
-	 * @param array $payload
+	 * @param array                     $payload
+	 * @param \Monei\Model\Payment|null $payment The payment the verifier fetched, null when it did not fetch.
 	 * @return void
 	 */
-	protected function handle_valid_ipn( $payload ) {
-		$order_id       = $payload['orderId'];
-		$monei_id       = $payload['id'];
-		$status         = $payload['status'];
-		$status_code    = $payload['statusCode'];
-		$status_message = $payload['statusMessage'];
+	protected function handle_valid_ipn( $payload, $payment = null ) {
+		$order_id = $payload['orderId'];
+		$monei_id = $payload['id'];
+		$status   = $payload['status'];
+		// A fetched payment has no key for an empty field.
+		$status_code    = $payload['statusCode'] ?? '';
+		$status_message = $payload['statusMessage'] ?? '';
 		$amount         = $payload['amount'];
 
 		$order = wc_get_order( $order_id );
@@ -134,7 +171,8 @@ class WC_Monei_IPN {
 		// Fetch payment from API to get payment method information
 		try {
 			$this->moneiPaymentServices->set_order( $order );
-			$payment                = $this->moneiPaymentServices->get_payment( $monei_id );
+			// The fetch path already fetched it, and counted the fetch against its quota.
+			$payment                = $payment ?? $this->moneiPaymentServices->get_payment( $monei_id );
 			$payment_method_display = $this->paymentMethodFormatter->get_payment_method_display_from_payment( $payment );
 			if ( $payment_method_display ) {
 				$order->update_meta_data( '_monei_payment_method_display', $payment_method_display );
@@ -182,6 +220,9 @@ class WC_Monei_IPN {
 		}
 
 		if ( 'AUTHORIZED' === $status ) {
+			if ( $this->hold_on_amount_mismatch( $order, $amount ) ) {
+				return;
+			}
 			// We save is a non captured order.
 			$order->update_meta_data( '_payment_not_captured_monei', 1 );
 
@@ -194,25 +235,7 @@ class WC_Monei_IPN {
 		}
 
 		if ( 'SUCCEEDED' === $status ) {
-			$order_total = $order->get_total();
-
-			/**
-			 * If amounts don't match (within 1 cent tolerance), mark order on-hold for manual validation.
-			 * Absolute difference check allows subscription validation (0 EUR + 1 cent) while preventing
-			 * replay attacks with mismatched amounts.
-			 */
-			$expected_amount = monei_price_format( $order_total );
-			$amount_diff     = abs( (int) $amount - $expected_amount );
-			if ( $amount_diff > 1 ) {
-				$order->update_status(
-					'on-hold',
-					sprintf(
-						/* translators: 1: Order amount, 2: Notification amount */
-						__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
-						$amount,
-						monei_price_format( $order_total )
-					)
-				);
+			if ( $this->hold_on_amount_mismatch( $order, $amount ) ) {
 				return;
 			}
 
@@ -255,21 +278,29 @@ class WC_Monei_IPN {
 	}
 
 	/**
-	 * Verify signature, if all good returns payload.
-	 * Throws Exception if signature is not valid.
+	 * If amounts don't match (within 1 cent tolerance), mark order on-hold for manual validation.
+	 * Absolute difference check allows subscription validation (0 EUR + 1 cent) while preventing
+	 * replay attacks with mismatched amounts.
 	 *
-	 * @param string $request_body    The request body.
-	 * @param string $monei_signature The MONEI signature header.
-	 *
-	 * @return array
-	 * @throws \Monei\ApiException
+	 * @param WC_Order $order
+	 * @param int      $amount The payment amount in cents.
+	 * @return bool Whether the amounts differ.
 	 */
-	protected function verify_signature_get_payload( $request_body, $monei_signature ) {
-		$decoded_body = json_decode( $request_body );
-		if ( isset( $decoded_body->orderId ) ) {
-			$this->moneiPaymentServices->set_order( $decoded_body->orderId );
+	private function hold_on_amount_mismatch( $order, $amount ): bool {
+		$expected_amount = monei_price_format( $order->get_total() );
+		if ( abs( (int) $amount - $expected_amount ) <= 1 ) {
+			return false;
 		}
-		return (array) $this->moneiPaymentServices->verify_signature( $request_body, $monei_signature );
+		$order->update_status(
+			'on-hold',
+			sprintf(
+				/* translators: 1: Order amount, 2: Notification amount */
+				__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
+				$expected_amount,
+				$amount
+			)
+		);
+		return true;
 	}
 
 	/**

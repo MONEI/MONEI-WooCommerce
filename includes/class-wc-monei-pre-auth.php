@@ -57,6 +57,8 @@ class WC_Monei_Pre_Auth {
 			// moving away from. A full save writes that stale status back and puts
 			// the order straight back on hold — captured, but reading as unpaid.
 			$order->delete_meta_data( '_payment_not_captured_monei' );
+			// The callback fetch path moves an order only forward from this stored status.
+			$order->update_meta_data( '_payment_order_status_monei', $result->getStatus() );
 			$order->save_meta_data();
 
 			WC_Monei_Logger::logDebug( 'Capture Payment OK.' );
@@ -86,6 +88,7 @@ class WC_Monei_Pre_Auth {
 			// A released authorization holds nothing either, so the marker goes the
 			// same way it does after a capture.
 			$order->delete_meta_data( '_payment_not_captured_monei' );
+			$order->update_meta_data( '_payment_order_status_monei', $result->getStatus() );
 			$order->save_meta_data();
 
 			WC_Monei_Logger::logDebug( 'Cancel Payment Payment OK.' );

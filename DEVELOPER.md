@@ -111,6 +111,20 @@ seed the site. To run against a store you already have instead, set
 `MONEI_E2E_WP_DIR` and `MONEI_E2E_BASE_URL` to that same site. See
 [tests/playwright/README.md](tests/playwright/README.md).
 
+### Connect with MONEI against a development broker
+
+The Connect button talks to `https://oauth.monei.com`. To test against a
+development broker, define `MONEI_CONNECT_BASE_URL` in `wp-config.php` or set
+it as an environment variable of the PHP process:
+
+```php
+define( 'MONEI_CONNECT_BASE_URL', 'https://oauth.example-dev.monei.com' );
+```
+
+The broker accepts only a public HTTPS callback URL, so a local shop needs a
+tunnel. On an `http` shop the settings page shows "Use manual keys" instead of
+the button.
+
 ## Release Process
 
 ### Automated Release with Conventional Commits

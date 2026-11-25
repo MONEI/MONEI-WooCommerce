@@ -36,6 +36,13 @@ class MoneiSdkClientFactory {
 		return $this->build_client( $this->apiKeyService->get_api_key_for_mode( $mode ), new Configuration() );
 	}
 
+	/**
+	 * Client for a key that is not stored yet, past every cache.
+	 */
+	public function client_for_key( string $api_key ): MoneiClient {
+		return $this->build_client( $api_key, new Configuration() );
+	}
+
 	private function build_client( string $api_key, Configuration $config ): MoneiClient {
 		include_once WC_Monei()->plugin_path() . '/vendor/autoload.php';
 		$client = new MoneiClient( $api_key, $config );

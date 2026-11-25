@@ -82,17 +82,24 @@ Please contact support@monei.com with your MONEI ID. Describe your problem in de
 * Search for MONEI
 * Press Install
 * Press Activate now
-* Go to WooCommerce > Settings > Payments > MONEI
-* Add your API Key.
+* Go to WooCommerce > Settings > MONEI Settings
+* Click "Connect with MONEI", sign in to MONEI and approve the connection. The shop gets its own API keys for Test and Live mode. You never copy a key.
+* Select the API Key Mode (Test or Live) and save.
 
-= If you don't have API Key =
+To disconnect, click "Disconnect" on the same page. The keys stay active until you revoke them in [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api).
+
+= Enter API keys manually =
+
+Connect with MONEI needs a shop on a public HTTPS address. On other shops, or if you prefer, enter the keys yourself:
 
 * Go to [MONEI Dashboard > Settings > API Access](https://dashboard.monei.com/settings/api)
 * Click on "Create API Key"
+* In WooCommerce > Settings > MONEI Settings, add your Account ID and API Key. If the page shows "Connect with MONEI", click "Enter API keys manually" first.
 
 = Use of 3rd Party Services =
 This plugin is using [MONEI API](https://docs.monei.com/api/) to process payments as well as
 [MONEI UI Components](https://docs.monei.com/docs/monei-js/overview/) to securely collect sensitive payment information during checkout.
+"Connect with MONEI" uses the MONEI authorization service (https://oauth.monei.com) to create the shop's API keys after you approve the connection.
 
 By using this plugin you agree with MONEI [Terms of Service](https://monei.com/legal-notice/) and [Privacy Policy](https://monei.com/privacy-policy/)
 
