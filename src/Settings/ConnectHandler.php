@@ -130,21 +130,50 @@ class ConnectHandler {
 		}
 
 		$messages = array();
+		$lines    = array();
 		if ( $result['switched'] ) {
 			$messages[] = __( 'MONEI connected.', 'monei' );
 		}
+		foreach ( array_keys( $result['switched'] ) as $mode ) {
+			$lines[] = array(
+				'ok'   => true,
+				/* translators: Test or Live. */
+				'text' => sprintf( __( '%s: connected.', 'monei' ), 'live' === $mode ? __( 'Live', 'monei' ) : __( 'Test', 'monei' ) ),
+			);
+		}
 		foreach ( $result['problems'] as $problem ) {
 			$messages[] = self::problem_message( $problem['mode'], $problem['code'] );
+			$lines[]    = array(
+				'ok'   => false,
+				'text' => self::problem_message( $problem['mode'], $problem['code'] ),
+			);
 		}
 		$refused = ! $result['switched'] && in_array( $result['problems'][0]['code'] ?? '', array( 'missingCode', 'unknownState', 'expiredState' ), true );
 		if ( ! $refused ) {
 			update_option( self::MESSAGES_OPTION, $messages, false );
 		}
-		$html = '<p>' . implode( '</p><p>', array_map( 'esc_html', $messages ) ) . '</p>';
-		if ( ! $refused ) {
-			$html .= '<p>' . esc_html__( 'You can close this tab.', 'monei' ) . '</p>';
+		if ( $result['switched'] ) {
+			$title = __( 'MONEI is connected', 'monei' );
+		} elseif ( $refused ) {
+			$title = __( 'This connect link does not work', 'monei' );
+		} else {
+			$title = __( 'MONEI is not connected', 'monei' );
 		}
-		wp_die( wp_kses_post( $html ), esc_html__( 'Connect with MONEI', 'monei' ), array( 'response' => $refused ? 400 : 200 ) );
+		status_header( $refused ? 400 : 200 );
+		header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
+		$template = ContainerProvider::getContainer()->get( 'Monei\Templates\TemplateManager' )->getTemplate( 'connect-result' );
+		if ( $template ) {
+			$template->render(
+				array(
+					'state'        => $result['switched'] ? 'connected' : ( $refused ? 'refused' : 'failed' ),
+					'title'        => $title,
+					'lines'        => $lines,
+					'settings_url' => self::settings_url(),
+					'logo_url'     => WC_Monei()->image_url( 'monei-logo.svg' ),
+				)
+			);
+		}
+		exit;
 	}
 
 	/**
