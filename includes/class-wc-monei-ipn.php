@@ -220,6 +220,9 @@ class WC_Monei_IPN {
 		}
 
 		if ( 'AUTHORIZED' === $status ) {
+			if ( $this->hold_on_amount_mismatch( $order, $amount ) ) {
+				return;
+			}
 			// We save is a non captured order.
 			$order->update_meta_data( '_payment_not_captured_monei', 1 );
 
@@ -232,25 +235,7 @@ class WC_Monei_IPN {
 		}
 
 		if ( 'SUCCEEDED' === $status ) {
-			$order_total = $order->get_total();
-
-			/**
-			 * If amounts don't match (within 1 cent tolerance), mark order on-hold for manual validation.
-			 * Absolute difference check allows subscription validation (0 EUR + 1 cent) while preventing
-			 * replay attacks with mismatched amounts.
-			 */
-			$expected_amount = monei_price_format( $order_total );
-			$amount_diff     = abs( (int) $amount - $expected_amount );
-			if ( $amount_diff > 1 ) {
-				$order->update_status(
-					'on-hold',
-					sprintf(
-						/* translators: 1: Order amount, 2: Notification amount */
-						__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
-						$amount,
-						monei_price_format( $order_total )
-					)
-				);
+			if ( $this->hold_on_amount_mismatch( $order, $amount ) ) {
 				return;
 			}
 
@@ -290,6 +275,32 @@ class WC_Monei_IPN {
 			// The order remains in its current status with a note about the partial refund.
 			return;
 		}
+	}
+
+	/**
+	 * If amounts don't match (within 1 cent tolerance), mark order on-hold for manual validation.
+	 * Absolute difference check allows subscription validation (0 EUR + 1 cent) while preventing
+	 * replay attacks with mismatched amounts.
+	 *
+	 * @param WC_Order $order
+	 * @param int      $amount The payment amount in cents.
+	 * @return bool Whether the amounts differ.
+	 */
+	private function hold_on_amount_mismatch( $order, $amount ): bool {
+		$expected_amount = monei_price_format( $order->get_total() );
+		if ( abs( (int) $amount - $expected_amount ) <= 1 ) {
+			return false;
+		}
+		$order->update_status(
+			'on-hold',
+			sprintf(
+				/* translators: 1: Order amount, 2: Notification amount */
+				__( 'Validation error: Order vs. Notification amounts do not match (order: %1$s - received: %2$s).', 'monei' ),
+				$expected_amount,
+				$amount
+			)
+		);
+		return true;
 	}
 
 	/**

@@ -55,6 +55,21 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
+	 * Bug: an AUTHORIZED payment with another amount than the order goes on hold as a normal authorization, and
+	 * Processing captures it. Since the fetch path no longer checks the amount, handle_valid_ipn checks it for
+	 * AUTHORIZED as for SUCCEEDED, before anything marks the payment for capture or completes the order.
+	 */
+	public function test_authorized_and_succeeded_check_the_amount_first() {
+		$body       = $this->method( self::IPN, 'handle_valid_ipn' );
+		$authorized = substr( $body, (int) strpos( $body, 'if(\'AUTHORIZED\'===$status){' ) );
+		$succeeded  = substr( $body, (int) strpos( $body, 'if(\'SUCCEEDED\'===$status){' ) );
+		$check      = 'if($this->hold_on_amount_mismatch($order,$amount)){return;}';
+
+		$this->assertStringStartsWith( 'if(\'AUTHORIZED\'===$status){' . $check, $authorized );
+		$this->assertStringStartsWith( 'if(\'SUCCEEDED\'===$status){' . $check, $succeeded );
+	}
+
+	/**
 	 * Bug: IPN debug logging writes the whole payment, with its payment token and customer data.
 	 */
 	public function test_the_ipn_debug_log_keeps_only_allowlisted_fields() {
