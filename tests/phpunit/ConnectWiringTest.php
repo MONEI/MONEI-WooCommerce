@@ -88,13 +88,14 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
-	 * Bug: the order lookup of the fetch path lets an unsigned request reopen a cancelled or paid order, or fetch an
-	 * order of another gateway.
+	 * Bug: the order lookup of the fetch path hides the stored MONEI status (an unsigned request replays a SUCCEEDED
+	 * of a cancelled order), whether the order is paid, or the gateway (an order of another gateway is fetched).
 	 */
-	public function test_the_ipn_order_lookup_gives_the_awaiting_statuses_and_the_gateway() {
+	public function test_the_ipn_order_lookup_gives_the_stored_status_paid_and_the_gateway() {
 		$constructor = $this->method( self::IPN, '__construct' );
 
-		$this->assertStringContainsString( '\'awaitingPayment\'=>$order->has_status(array(\'pending\',\'on-hold\',\'failed\')),', $constructor );
+		$this->assertStringContainsString( '\'paymentStatus\'=>(string)$order->get_meta(\'_payment_order_status_monei\',true),', $constructor );
+		$this->assertStringContainsString( '\'paid\'=>$order->is_paid(),', $constructor );
 		$this->assertStringContainsString( '\'monei\'=>false!==strpos($order->get_payment_method(),\'monei\'),', $constructor );
 	}
 
