@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.5.0 (2026-11-25)
+
+-   feat: connect with MONEI (#140) ([39d84cc](https://github.com/MONEI/MONEI-WooCommerce/commit/39d84cc)), closes [#140](https://github.com/MONEI/MONEI-WooCommerce/issues/140)
+-   fix: cap the shopper-posted values in the express refusal log ([54f72b7](https://github.com/MONEI/MONEI-WooCommerce/commit/54f72b7))
+-   fix: log every refused express checkout order ([1fab155](https://github.com/MONEI/MONEI-WooCommerce/commit/1fab155))
+-   fix: pin the express refusal log to ERROR and log the fallback message ([b303b08](https://github.com/MONEI/MONEI-WooCommerce/commit/b303b08))
+
 ## <small>7.4.2 (2026-11-07)</small>
 
 -   fix: checkout page express fills a full billing address and uses the wallet's shipping pick (#138) ([81fd4a5](https://github.com/MONEI/MONEI-WooCommerce/commit/81fd4a5)), closes [#138](https://github.com/MONEI/MONEI-WooCommerce/issues/138)

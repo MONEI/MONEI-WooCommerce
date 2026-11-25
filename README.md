@@ -4,7 +4,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.4.2
+Stable tag: 7.5.0
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -107,6 +107,13 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 ## Changelog
 
+### v7.5.0 - 2026-11-25
+
+-   feat: connect with MONEI (#140) ([39d84cc](https://github.com/MONEI/MONEI-WooCommerce/commit/39d84cc)), closes [#140](https://github.com/MONEI/MONEI-WooCommerce/issues/140)
+-   fix: cap the shopper-posted values in the express refusal log ([54f72b7](https://github.com/MONEI/MONEI-WooCommerce/commit/54f72b7))
+-   fix: log every refused express checkout order ([1fab155](https://github.com/MONEI/MONEI-WooCommerce/commit/1fab155))
+-   fix: pin the express refusal log to ERROR and log the fallback message ([b303b08](https://github.com/MONEI/MONEI-WooCommerce/commit/b303b08))
+
 ### v7.4.2 - 2026-11-07
 
 -   fix: checkout page express fills a full billing address and uses the wallet's shipping pick (#138) ([81fd4a5](https://github.com/MONEI/MONEI-WooCommerce/commit/81fd4a5)), closes [#138](https://github.com/MONEI/MONEI-WooCommerce/issues/138)
@@ -159,8 +166,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   fix: stop polling the API on hosts where transients do not persist ([00797d1](https://github.com/MONEI/MONEI-WooCommerce/commit/00797d1))
 -   style: align the UNAVAILABLE array the way phpcs wants it ([7111b93](https://github.com/MONEI/MONEI-WooCommerce/commit/7111b93))
 -   docs: regenerate readme changelog for 7.3.1 ([95993a7](https://github.com/MONEI/MONEI-WooCommerce/commit/95993a7))
-
-### v7.3.1 - 2026-09-07
-
--   fix: cache a failed payment-methods lookup so a wrong key does not poll the API per render (#120) ([0fc7c17](https://github.com/MONEI/MONEI-WooCommerce/commit/0fc7c17)), closes [#120](https://github.com/MONEI/MONEI-WooCommerce/issues/120)
--   docs: regenerate readme changelog for 7.3.0 ([131ac73](https://github.com/MONEI/MONEI-WooCommerce/commit/131ac73))
