@@ -48,9 +48,9 @@ class WC_Monei_IPN {
 					return null;
 				}
 				return array(
-					'paymentId' => (string) $order->get_meta( '_payment_order_number_monei', true ),
-					'amount'    => (int) monei_price_format( $order->get_total() ),
-					'paid'      => $order->is_paid(),
+					'paymentId'     => (string) $order->get_meta( '_payment_order_number_monei', true ),
+					'paymentStatus' => (string) $order->get_meta( '_payment_order_status_monei', true ),
+					'paid'          => $order->is_paid(),
 				);
 			},
 			function ( string $mode, string $payment_id ) use ( $sdkClient ) {

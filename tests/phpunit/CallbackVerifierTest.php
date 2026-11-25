@@ -26,7 +26,7 @@ class CallbackVerifierTest extends TestCase {
 
 	/** @var int */
 	private $now = 1700000000;
-	/** @var array<array-key, array{paymentId: string, amount: int, paid: bool}> */
+	/** @var array<array-key, array{paymentId: string, paymentStatus: string, paid: bool}> */
 	private $orders = array();
 	/** @var array<string, mixed> Fields of the payment that MONEI answers. */
 	private $remote = array();
@@ -38,9 +38,9 @@ class CallbackVerifierTest extends TestCase {
 	protected function setUp(): void {
 		$this->orders = array(
 			'1001' => array(
-				'paymentId' => '',
-				'amount'    => 1000,
-				'paid'      => false,
+				'paymentId'     => '',
+				'paymentStatus' => '',
+				'paid'          => false,
 			),
 		);
 		$this->remote = self::payment_fields( 'SUCCEEDED' );
@@ -199,21 +199,66 @@ class CallbackVerifierTest extends TestCase {
 			'forged SUCCEEDED, MONEI says PENDING' => array( self::payment_fields( 'PENDING' ), false ),
 			'FAILED for an order already paid'     => array( self::payment_fields( 'FAILED' ), true ),
 			'another orderId'                      => array( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '1002' ) ), false ),
-			'the same orderId, another amount'     => array( self::payment_fields( 'SUCCEEDED', array( 'amount' => 1002 ) ), false ),
 			'another payment id'                   => array( self::payment_fields( 'SUCCEEDED', array( 'id' => str_repeat( 'b', 32 ) ) ), false ),
 		);
 	}
 
 	/**
-	 * Bug: the 1-cent tokenization payment of a 0 EUR order (a subscription start) is refused.
+	 * Bug: a fetched payment with another amount than the order answers 200 and leaves no trace. It goes on to
+	 * handle_valid_ipn, which puts the order on hold with a note, as for a signed body.
 	 */
-	public function test_a_0_eur_order_with_a_1_cent_payment_is_accepted() {
-		$this->orders['1001']['amount'] = 0;
-		$this->remote                   = self::payment_fields( 'SUCCEEDED', array( 'amount' => 1 ) );
+	public function test_a_fetched_payment_with_another_amount_goes_on_to_the_order() {
+		$this->remote = self::payment_fields( 'SUCCEEDED', array( 'amount' => 1002 ) );
 
-		$decision = $this->verifier( self::connected_shop() )->verify( self::body( $this->remote ), null );
+		$decision = $this->verifier( self::connected_shop() )->verify( self::body( self::payment_fields( 'SUCCEEDED' ) ), null );
 
-		$this->assertSame( 'SUCCEEDED', $decision['payment']['status'] );
+		$this->assertSame( 1002, $decision['payment']['amount'] );
+	}
+
+	/**
+	 * Bug: a payment with a value this SDK does not know (a new status) answers 503 on every retry.
+	 */
+	public function test_a_payment_the_sdk_cannot_read_answers_200() {
+		$this->remote = self::payment_fields( 'NEW_STATUS' );
+
+		$decision = $this->verifier( self::connected_shop() )->verify( self::body( self::payment_fields( 'SUCCEEDED' ) ), null );
+
+		$this->assertSame( array( 200, null ), array( $decision['status'], $decision['payment'] ) );
+	}
+
+	/**
+	 * Bug: a callback without an order (a card tokenization, orderId "<user>generatetoken<rand>") answers 400, so
+	 * MONEI retries it and sends failure emails.
+	 */
+	public function test_a_callback_without_an_order_answers_200_with_no_fetch() {
+		$body = self::body( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '1generatetoken42' ) ) );
+
+		$decision = $this->verifier( self::connected_shop() )->verify( $body, null );
+
+		$this->assertSame( array( 200, null ), array( $decision['status'], $decision['payment'] ) );
+		$this->assertSame( array(), $this->fetches );
+	}
+
+	/**
+	 * Bug: the payment of a retry is refused for good, because the order still stores the failed first payment;
+	 * or a second payment replaces a successful one.
+	 *
+	 * @dataProvider stored_payments
+	 */
+	public function test_another_payment_id_is_fetched_only_after_the_stored_payment_failed( string $stored_status, int $fetches ) {
+		$this->orders['1001']['paymentId']     = str_repeat( 'c', 32 );
+		$this->orders['1001']['paymentStatus'] = $stored_status;
+
+		$decision = $this->verifier( self::connected_shop() )->verify( self::body( self::payment_fields( 'SUCCEEDED' ) ), null );
+
+		$this->assertSame( array( $fetches ? 200 : 400, $fetches ), array( $decision['status'], count( $this->fetches ) ) );
+	}
+
+	public function stored_payments(): array {
+		return array(
+			'stored FAILED: a retry'          => array( 'FAILED', 1 ),
+			'stored SUCCEEDED: not replaced'  => array( 'SUCCEEDED', 0 ),
+		);
 	}
 
 	/**
@@ -243,15 +288,14 @@ class CallbackVerifierTest extends TestCase {
 
 	public function bodies_refused_before_a_fetch(): array {
 		return array(
-			'id differs from the stored payment id' => array( self::payment_fields( 'SUCCEEDED' ), null, array( 'paymentId' => str_repeat( 'c', 32 ) ) ),
-			'no order for the orderId'              => array( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '999' ) ), null, array() ),
-			'malformed id'                          => array( self::payment_fields( 'SUCCEEDED', array( 'id' => '../payments' ) ), null, array() ),
-			'a header that does not parse'          => array( self::payment_fields( 'SUCCEEDED' ), 'v1=abc', array() ),
+			'malformed id'                 => array( self::payment_fields( 'SUCCEEDED', array( 'id' => '../payments' ) ), null, array() ),
+			'a header that does not parse' => array( self::payment_fields( 'SUCCEEDED' ), 'v1=abc', array() ),
 		);
 	}
 
 	/**
-	 * Bug: one order, or the whole shop, makes unbounded fetches; or the quota never frees up.
+	 * Bug: one order, or the whole shop, makes unbounded fetches; or the quota never frees up. A refusal answers
+	 * 503, so MONEI retries a real callback that unsigned requests crowded out.
 	 */
 	public function test_the_order_quota_refuses_the_6th_attempt_in_a_minute_and_frees_after_61_s() {
 		$store    = self::connected_shop();
@@ -263,7 +307,7 @@ class CallbackVerifierTest extends TestCase {
 		$this->now += 61;
 		$statuses[] = $this->verifier( $store )->verify( $body, null )['status'];
 
-		$this->assertSame( array( 200, 200, 200, 200, 200, 400, 200 ), $statuses );
+		$this->assertSame( array( 200, 200, 200, 200, 200, 503, 200 ), $statuses );
 		$this->assertCount( 6, $this->fetches );
 	}
 
@@ -274,9 +318,9 @@ class CallbackVerifierTest extends TestCase {
 		$store = self::connected_shop();
 		for ( $order = 1; $order <= 13; $order++ ) {
 			$this->orders[ "o$order" ] = array(
-				'paymentId' => '',
-				'amount'    => 1000,
-				'paid'      => false,
+				'paymentId'     => '',
+				'paymentStatus' => '',
+				'paid'          => false,
 			);
 		}
 		$last = 0;
@@ -285,7 +329,7 @@ class CallbackVerifierTest extends TestCase {
 			$last  = $this->verifier( $store )->verify( self::body( self::payment_fields( 'SUCCEEDED', array( 'orderId' => $order ) ) ), null )['status'];
 		}
 
-		$this->assertSame( 400, $last );
+		$this->assertSame( 503, $last );
 		$this->assertCount( 60, $this->fetches );
 	}
 

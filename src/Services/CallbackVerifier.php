@@ -33,7 +33,7 @@ class CallbackVerifier {
 	private OptionStore $options;
 	/** @var callable(): int */
 	private $clock;
-	/** @var callable(string): (array{paymentId: string, amount: int, paid: bool}|null) The order of an orderId, amount in cents. */
+	/** @var callable(string): (array{paymentId: string, paymentStatus: string, paid: bool}|null) The order of an orderId and its stored payment. */
 	private $find_order;
 	/** @var callable(string, string): \Monei\Model\Payment Fetch a payment with the key of a mode. */
 	private $fetch;
@@ -54,8 +54,8 @@ class CallbackVerifier {
 	 * @param string      $body      Raw request body.
 	 * @param string|null $signature MONEI-Signature header, null when absent.
 	 * @return array{status: int, payment: array|null, reason: string} The payment to process, in the body's shape,
-	 *     or null with the HTTP status to answer: 400 a failed pre-check, 401 a bad signature, 503 a failed fetch,
-	 *     200 a payment that must not change the order.
+	 *     or null with the HTTP status to answer: 400 a failed pre-check, 401 a bad signature, 503 a failed fetch or
+	 *     a used-up quota (MONEI retries both), 200 a callback that must not change an order.
 	 */
 	public function verify( string $body, ?string $signature ): array {
 		$data = json_decode( $body, true );
@@ -89,37 +89,35 @@ class CallbackVerifier {
 		}
 		$order_id = (string) $order_id;
 		$order    = ( $this->find_order )( $order_id );
+		// A card tokenization callback has no order. A retry would never find one.
 		if ( null === $order ) {
-			return self::refused( 400, 'order' );
+			return self::refused( 200, 'order' );
 		}
-		if ( '' !== $order['paymentId'] && $order['paymentId'] !== $id ) {
+		// A retry payment replaces a stored payment that ended without success.
+		if ( '' !== $order['paymentId'] && $order['paymentId'] !== $id
+			&& ! in_array( $order['paymentStatus'], array( 'FAILED', 'CANCELED', 'EXPIRED' ), true ) ) {
 			return self::refused( 400, 'paymentId' );
 		}
 		if ( ! $this->take_quota( $order_id ) ) {
-			return self::refused( 400, 'quota' );
+			return self::refused( 503, 'quota' );
 		}
 		try {
 			$payment = ( $this->fetch )( $mode, $id );
+		} catch ( InvalidArgumentException $e ) {
+			// The SDK refuses a value it does not know, such as a new status. A retry gets the same answer.
+			return self::refused( 200, 'unknownValue' );
 		} catch ( Throwable $e ) {
 			return self::refused( 503, 'fetch' );
 		}
-		try {
-			// The model keeps its data in a protected snake_case container; this gives the camelCase body shape.
-			$fetched = (array) ObjectSerializer::sanitizeForSerialization( $payment );
-		} catch ( InvalidArgumentException $e ) {
-			// A status this SDK does not know.
-			return self::refused( 200, 'status' );
-		}
+		// The model keeps its data in a protected snake_case container; this gives the camelCase body shape.
+		$fetched = (array) ObjectSerializer::sanitizeForSerialization( $payment );
 		if ( ( $fetched['id'] ?? null ) !== $id ) {
 			return self::refused( 200, 'id' );
 		}
 		if ( (string) ( $fetched['orderId'] ?? '' ) !== $order_id ) {
 			return self::refused( 200, 'orderId' );
 		}
-		// The IPN rule: 1 cent of tolerance, for the tokenization payment of a 0 EUR order.
-		if ( abs( (int) ( $fetched['amount'] ?? 0 ) - $order['amount'] ) > 1 ) {
-			return self::refused( 200, 'amount' );
-		}
+		// An amount mismatch goes on to handle_valid_ipn, which puts the order on hold as for a signed body.
 		$status = $fetched['status'] ?? null;
 		if ( ! in_array( $status, self::PROCESSED, true ) ) {
 			return self::refused( 200, 'status' );
