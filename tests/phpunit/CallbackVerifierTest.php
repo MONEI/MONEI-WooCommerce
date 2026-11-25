@@ -199,6 +199,7 @@ class CallbackVerifierTest extends TestCase {
 			'forged SUCCEEDED, MONEI says PENDING' => array( self::payment_fields( 'PENDING' ) ),
 			'another orderId'                      => array( self::payment_fields( 'SUCCEEDED', array( 'orderId' => '1002' ) ) ),
 			'another payment id'                   => array( self::payment_fields( 'SUCCEEDED', array( 'id' => str_repeat( 'b', 32 ) ) ) ),
+			'a Live payment in test mode'          => array( self::payment_fields( 'SUCCEEDED', array( 'livemode' => true ) ) ),
 		);
 	}
 

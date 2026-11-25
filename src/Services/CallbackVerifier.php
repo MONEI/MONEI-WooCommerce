@@ -122,6 +122,10 @@ class CallbackVerifier {
 		if ( (string) ( $fetched['orderId'] ?? '' ) !== $order_id ) {
 			return self::refused( 200, 'orderId' );
 		}
+		// Nothing binds an order to a mode: a payment of the other mode must not settle it.
+		if ( ( $fetched['livemode'] ?? null ) !== ( 'live' === $this->options->get( 'monei_apikey_mode', 'test' ) ) ) {
+			return self::refused( 200, 'livemode' );
+		}
 		// An amount mismatch goes on to handle_valid_ipn, which puts the order on hold as for a signed body.
 		$status = $fetched['status'] ?? null;
 		if ( ! in_array( $status, self::PROCESSED, true ) ) {
