@@ -428,9 +428,24 @@ test.describe( 'Connect with MONEI', () => {
 		}
 	} );
 
+	test( 'an http shop gets no invitation to connect', async ( { page } ) => {
+		test.skip( HTTPS, MANUAL_SKIP_REASON );
+		await login( page );
+		await page.goto( '/wp-admin/index.php', {
+			waitUntil: 'domcontentloaded',
+		} );
+
+		await expect(
+			page.locator(
+				'text=Connect with MONEI to stop storing your account API key.'
+			)
+		).toHaveCount( 0 );
+	} );
+
 	test( 'a manual-key shop can dismiss the invitation to connect', async ( {
 		page,
 	} ) => {
+		test.skip( ! HTTPS, CONNECT_SKIP_REASON );
 		const userId = wpCli( [
 			'user',
 			'get',

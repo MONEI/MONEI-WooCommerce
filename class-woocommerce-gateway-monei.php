@@ -266,7 +266,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			foreach ( array( 'monei_test_apikey', 'monei_live_apikey' ) as $option ) {
 				$has_publishable_key = $has_publishable_key || 0 === strpos( (string) get_option( $option, '' ), 'pk_' );
 			}
-			if ( ! $has_publishable_key ) {
+			if ( ! $has_publishable_key || null === ConnectHandler::redirect_uri() ) {
 				return;
 			}
 			$template = ContainerProvider::getContainer()->get( 'Monei\Templates\TemplateManager' )->getTemplate( 'notice-admin-connect' );
@@ -350,7 +350,7 @@ if ( ! class_exists( 'Woocommerce_Gateway_Monei' ) ) :
 			// Runs on every request, so a failure must not take down the site.
 			try {
 				ContainerProvider::getContainer()->get( CustomerService::class )->init();
-			} catch ( \Throwable $e ) {
+			} catch ( Throwable $e ) {
 				WC_Monei_Logger::logError( '[MONEI Customers] Delete hooks are not bound: ' . $e->getMessage() );
 			}
 
