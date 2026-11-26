@@ -398,6 +398,31 @@ class CallbackVerifierTest extends TestCase {
 	}
 
 	/**
+	 * Bug: on a shop with Live connected and a manual Test key, a test callback takes the Live path. It fetches with the
+	 * Live key, or the unsigned callback that the IPN lets through for the connected mode settles a test order.
+	 */
+	public function test_a_mixed_shop_verifies_test_callbacks_with_v1_of_the_manual_key() {
+		$store    = new MemoryOptionStore(
+			array(
+				'monei_apikey_mode'         => 'test',
+				'monei_live_apikey'         => 'mk_live_key',
+				'monei_live_signing_secret' => 'mksec_live_secret',
+				'monei_test_apikey'         => 'pk_test_manual',
+			)
+		);
+		$body     = self::body( $this->remote );
+		$verifier = $this->verifier( $store );
+
+		$signed   = $verifier->verify( $body, 't=1700000000,' . self::sign( $body, 'v1', 'pk_test_manual' ) );
+		$unsigned = $verifier->verify( $body, null );
+
+		$this->assertSame( array( 200, 401 ), array( $signed['status'], $unsigned['status'] ) );
+		$this->assertSame( 'SUCCEEDED', $signed['payment']['status'] );
+		$this->assertNull( $unsigned['payment'] );
+		$this->assertSame( array(), $this->fetches );
+	}
+
+	/**
 	 * Bug: a mode without a key accepts a v1 made with an empty key, which anyone can compute.
 	 */
 	public function test_a_mode_without_a_key_refuses_a_v1_of_the_empty_key() {
