@@ -59,14 +59,15 @@ class ConnectWiringTest extends TestCase {
 	 * (503), and a forged or malformed request (401, 400) looks accepted.
 	 */
 	public function test_the_ipn_answers_the_verifier_status() {
-		$body = $this->method( self::IPN, 'check_ipn_request' );
+		$body   = $this->method( self::IPN, 'check_ipn_request' );
+		$branch = function ( string $start ) use ( $body ): string {
+			$code = strstr( $body, $start );
+			$this->assertNotFalse( $code, "$start not found" );
+			return (string) strstr( $code, 'exit;', true );
+		};
 
-		$refused = strstr( $body, 'if(null===$decision[\'payment\']){' );
-		$this->assertNotFalse( $refused );
-		$refused = strstr( $refused, 'exit;', true );
-
-		$this->assertStringContainsString( 'if(401===$decision[\'status\']){', $body );
-		$this->assertStringContainsString( 'http_response_code($decision[\'status\']);', $refused );
+		$this->assertStringContainsString( 'http_response_code(401);', $branch( 'if(401===$decision[\'status\']){' ) );
+		$this->assertStringContainsString( 'http_response_code($decision[\'status\']);', $branch( 'if(null===$decision[\'payment\']){' ) );
 	}
 
 	/**
