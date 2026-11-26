@@ -55,6 +55,22 @@ class ConnectWiringTest extends TestCase {
 	}
 
 	/**
+	 * Bug: the IPN answers 200 to a refused callback. MONEI then never retries a failed fetch or a used-up quota
+	 * (503), and a forged or malformed request (401, 400) looks accepted.
+	 */
+	public function test_the_ipn_answers_the_verifier_status() {
+		$body   = $this->method( self::IPN, 'check_ipn_request' );
+		$branch = function ( string $start ) use ( $body ): string {
+			$code = strstr( $body, $start );
+			$this->assertNotFalse( $code, "$start not found" );
+			return (string) strstr( $code, 'exit;', true );
+		};
+
+		$this->assertStringContainsString( 'http_response_code(401);', $branch( 'if(401===$decision[\'status\']){' ) );
+		$this->assertStringContainsString( 'http_response_code($decision[\'status\']);', $branch( 'if(null===$decision[\'payment\']){' ) );
+	}
+
+	/**
 	 * Bug: an AUTHORIZED payment with another amount than the order goes on hold as a normal authorization, and
 	 * Processing captures it. Since the fetch path no longer checks the amount, handle_valid_ipn checks it for
 	 * AUTHORIZED as for SUCCEEDED, before anything marks the payment for capture or completes the order.
