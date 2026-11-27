@@ -3,7 +3,7 @@ Tags: woocommerce, credit card, payment gateway, payments, ecommerce
 Contributors: monei, furi3r
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 7.5.1
+Stable tag: 7.5.2
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -110,8 +110,12 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 
 == Changelog ==
 
+= v7.5.2 - 2026-11-27 =
+* fix(deps): update monei-php-sdk to 2.18.3 for Connect on MONEI's demo store (#143) ([d323dff](https://github.com/MONEI/MONEI-WooCommerce/commit/d323dff)), closes [#143](https://github.com/MONEI/MONEI-WooCommerce/issues/143)
+* test(ipn): mixed shop callbacks and the IPN status pass-through (#142) ([86df10c](https://github.com/MONEI/MONEI-WooCommerce/commit/86df10c)), closes [#142](https://github.com/MONEI/MONEI-WooCommerce/issues/142)
+
 = v7.5.1 - 2026-11-25 =
-* fix(ipn): refuse a signed callback of the other mode (#141) ([482397b](https://github.com/MONEI/MONEI-WooCommerce/commit/482397b)), closes [#141](https://github.com/MONEI/MONEI-WooCommerce/issues/141)
+-   fix(ipn): refuse a signed callback of the other mode (#141) ([482397b](https://github.com/MONEI/MONEI-WooCommerce/commit/482397b)), closes [#141](https://github.com/MONEI/MONEI-WooCommerce/issues/141)
 
 = v7.5.0 - 2026-11-25 =
 -   feat: connect with MONEI (#140) ([39d84cc](https://github.com/MONEI/MONEI-WooCommerce/commit/39d84cc)), closes [#140](https://github.com/MONEI/MONEI-WooCommerce/issues/140)
@@ -151,9 +155,3 @@ By using this plugin you agree with MONEI [Terms of Service](https://monei.com/l
 -   fix: stop gateway constructors from calling the payment methods API (#127) ([fa735a5](https://github.com/MONEI/MONEI-WooCommerce/commit/fa735a5)), closes [#127](https://github.com/MONEI/MONEI-WooCommerce/issues/127)
 -   test: stop seeding the pre-7.3.0 card field layout (#125) ([5c848e4](https://github.com/MONEI/MONEI-WooCommerce/commit/5c848e4)), closes [#125](https://github.com/MONEI/MONEI-WooCommerce/issues/125)
 -   docs: regenerate readme changelog for 7.3.3 ([af742a8](https://github.com/MONEI/MONEI-WooCommerce/commit/af742a8))
-
-= v7.3.3 - 2026-09-11 =
--   fix: centre the text in the card fields (#124) ([4e51138](https://github.com/MONEI/MONEI-WooCommerce/commit/4e51138)), closes [#124](https://github.com/MONEI/MONEI-WooCommerce/issues/124)
--   test: compare how the payment methods render at checkout (#122) ([a52e09d](https://github.com/MONEI/MONEI-WooCommerce/commit/a52e09d)), closes [#122](https://github.com/MONEI/MONEI-WooCommerce/issues/122)
--   test: fail the Bizum case when its availability cannot be determined (#123) ([f1b0ae3](https://github.com/MONEI/MONEI-WooCommerce/commit/f1b0ae3)), closes [#123](https://github.com/MONEI/MONEI-WooCommerce/issues/123)
--   docs: regenerate readme changelog for 7.3.2 ([b21bdd3](https://github.com/MONEI/MONEI-WooCommerce/commit/b21bdd3))
