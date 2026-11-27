@@ -2,8 +2,8 @@
 
 ## <small>7.5.2 (2026-11-27)</small>
 
-* fix(deps): update monei-php-sdk to 2.18.3 for Connect on MONEI's demo store (#143) ([d323dff](https://github.com/MONEI/MONEI-WooCommerce/commit/d323dff)), closes [#143](https://github.com/MONEI/MONEI-WooCommerce/issues/143)
-* test(ipn): mixed shop callbacks and the IPN status pass-through (#142) ([86df10c](https://github.com/MONEI/MONEI-WooCommerce/commit/86df10c)), closes [#142](https://github.com/MONEI/MONEI-WooCommerce/issues/142)
+-   fix(deps): update monei-php-sdk to 2.18.3 for Connect on MONEI's demo store (#143) ([d323dff](https://github.com/MONEI/MONEI-WooCommerce/commit/d323dff)), closes [#143](https://github.com/MONEI/MONEI-WooCommerce/issues/143)
+-   test(ipn): mixed shop callbacks and the IPN status pass-through (#142) ([86df10c](https://github.com/MONEI/MONEI-WooCommerce/commit/86df10c)), closes [#142](https://github.com/MONEI/MONEI-WooCommerce/issues/142)
 
 ## <small>7.5.1 (2026-11-25)</small>
 
